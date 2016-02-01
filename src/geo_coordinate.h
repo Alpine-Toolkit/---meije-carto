@@ -46,38 +46,7 @@
 class QDebug;
 class QDataStream;
 
-class QcGeoSexagesimalAngle;
 class QcGeoCoordinateMercator;
-
-/**************************************************************************************************/
-
-class QC_EXPORT QcGeoAngle
-{
-  // Fixme: double like, needed ?
-
- public:
-  QcGeoAngle(double degrees, int minutes=0, double seconds=0); // sexagesimal interface ?
-  ~QcGeoAngle();
-
-  QcGeoAngle &operator=(const QcGeoAngle &other);
-
-  bool operator==(const QcGeoAngle &other) const;
-  inline bool operator!=(const QcGeoAngle &other) const {
-    return !operator==(other);
-  }
-
-  inline double decimal() const {
-    return m_value;
-  }
-  inline void set_decimal(double value) {
-    m_value = value;
-  }
-
-  QcGeoSexagesimalAngle sexagesimal() const;
-
- private:
-  double m_value;
-};
 
 /**************************************************************************************************/
 
@@ -97,8 +66,8 @@ class QC_EXPORT QcGeoSexagesimalAngle
   }
 
  public:
-  QcGeoSexagesimalAngle(double degrees);
   QcGeoSexagesimalAngle(int degrees, int minutes=0, double seconds=0);
+  QcGeoSexagesimalAngle(double degrees);
   QcGeoSexagesimalAngle(const QcGeoSexagesimalAngle &other);
   ~QcGeoSexagesimalAngle();
 
@@ -116,6 +85,7 @@ class QC_EXPORT QcGeoSexagesimalAngle
     if (is_valid_degrees(degrees))
       m_degrees = degrees;
   }
+  void set_degrees(double degrees);
 
   inline int minutes() const {
       return m_degrees;
@@ -132,7 +102,7 @@ class QC_EXPORT QcGeoSexagesimalAngle
     m_seconds = seconds;
   }
 
-  QcGeoAngle decimal() const; // Fixme: -> double
+  double decimal() const;
 
  private:
   int m_degrees;
@@ -208,7 +178,7 @@ class QC_EXPORT QcGeoCoordinateWGS84 : public QcGeoCoordinate
     return m_latitude;
   }
   inline QcGeoSexagesimalAngle sexagesimal_latitude() const {
-    return QcGeoAngle(m_latitude).sexagesimal();
+    return QcGeoSexagesimalAngle(m_latitude);
   }
 
   inline void set_longitude(double longitude) {
@@ -218,7 +188,7 @@ class QC_EXPORT QcGeoCoordinateWGS84 : public QcGeoCoordinate
     return m_longitude;
   }
   inline QcGeoSexagesimalAngle sexagesimal_longitude() const {
-    return QcGeoAngle(m_longitude).sexagesimal();
+    return QcGeoSexagesimalAngle(m_longitude);
   }
 
   QcGeoCoordinateMercator mercator() const;

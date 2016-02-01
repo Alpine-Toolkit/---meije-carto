@@ -40,39 +40,6 @@
 
 /**************************************************************************************************/
 
-QcGeoAngle::QcGeoAngle(double degrees, int minutes, double seconds)
-  : m_value(seconds)
-{
-  // Fixme: check input
-  m_value = QcGeoSexagesimalAngle::to_decimal(degrees, minutes, seconds);
-}
-
-QcGeoAngle::~QcGeoAngle()
-{}
-
-QcGeoAngle &
-QcGeoAngle::operator=(const QcGeoAngle &other)
-{
-  if (this != &other) {
-    m_value = other.m_value;
-  }
-
-  return *this;
-}
-
-bool
-QcGeoAngle::operator==(const QcGeoAngle &other) const
-{
-  return qFuzzyCompare(m_value, other.m_value);;
-}
-
-QcGeoSexagesimalAngle
-QcGeoAngle::sexagesimal() const {
-  return QcGeoSexagesimalAngle(m_value);
-}
-
-/**************************************************************************************************/
-
 double
 QcGeoSexagesimalAngle::to_decimal(int degrees, int minutes, double seconds)
 {
@@ -137,11 +104,15 @@ QcGeoSexagesimalAngle::operator==(const QcGeoSexagesimalAngle &other) const
   return (degrees_equal && minutes_equal && seconds_equal);
 }
 
-QcGeoAngle
-QcGeoSexagesimalAngle::decimal() const {
-  double degrees = to_decimal(m_degrees, m_minutes, m_seconds);
+void
+QcGeoSexagesimalAngle::set_degrees(double degrees)
+{
+  to_sexagesimal(degrees, m_degrees, m_minutes, m_seconds);
+}
 
-  return QcGeoAngle(degrees);
+double
+QcGeoSexagesimalAngle::decimal() const {
+  return to_decimal(m_degrees, m_minutes, m_seconds);
 }
 
 /**************************************************************************************************/
@@ -160,7 +131,7 @@ QcGeoCoordinateWGS84::QcGeoCoordinateWGS84()
 {}
 
 QcGeoCoordinateWGS84::QcGeoCoordinateWGS84(QcGeoSexagesimalAngle &latitude, QcGeoSexagesimalAngle &longitude)
-  : QcGeoCoordinateWGS84(latitude.decimal().decimal(), longitude.decimal().decimal()) // Fixme: direct ?
+  : QcGeoCoordinateWGS84(latitude.decimal(), longitude.decimal())
 {}
 
 QcGeoCoordinateWGS84::QcGeoCoordinateWGS84(const QcGeoCoordinateWGS84 &other)
@@ -347,6 +318,7 @@ QDebug operator<<(QDebug debug, const QcGeoCoordinateWGS84 &coordinate)
     else
         debug << longitude;
     debug << ')';
+
     return debug;
 }
 #endif
