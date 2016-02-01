@@ -26,6 +26,8 @@
 **
 ***************************************************************************************************/
 
+// Fixme: qreal ???
+
 #ifndef GEO_COORDINATE_H
 #define GEO_COORDINATE_H
 
@@ -51,13 +53,10 @@ class QcGeoCoordinateMercator;
 
 class QC_EXPORT QcGeoAngle
 {
- public:
-  static double to_decimal(int degrees, int minutes=0, double seconds=0);
-  // static to_sexagesimal(double angle, int &degrees, int &minutes, double &second);
+  // Fixme: double like, needed ?
 
  public:
-  // Fixme: qreal ???
-  QcGeoAngle(double degrees, int minutes=0, double seconds=0);
+  QcGeoAngle(double degrees, int minutes=0, double seconds=0); // sexagesimal interface ?
   ~QcGeoAngle();
 
   QcGeoAngle &operator=(const QcGeoAngle &other);
@@ -85,9 +84,12 @@ class QC_EXPORT QcGeoAngle
 class QC_EXPORT QcGeoSexagesimalAngle
 {
  public:
+  static double to_decimal(int degrees, int minutes=0, double seconds=0);
+  static void to_sexagesimal(double angle, int &degrees, int &minutes, double &seconds);
+
   inline static bool is_valid_degrees(int degrees) {
-    // Fixme: -0
-    return -60 <= degrees && degrees <= 60;
+    // Fixme: -0 sign, 360 ? modulo ?
+    return -360 <= degrees && degrees <= 360;
   }
 
   inline static bool is_valid_minutes(int degrees) {
@@ -95,6 +97,7 @@ class QC_EXPORT QcGeoSexagesimalAngle
   }
 
  public:
+  QcGeoSexagesimalAngle(double degrees);
   QcGeoSexagesimalAngle(int degrees, int minutes=0, double seconds=0);
   QcGeoSexagesimalAngle(const QcGeoSexagesimalAngle &other);
   ~QcGeoSexagesimalAngle();
@@ -129,7 +132,7 @@ class QC_EXPORT QcGeoSexagesimalAngle
     m_seconds = seconds;
   }
 
-  QcGeoAngle decimal() const;
+  QcGeoAngle decimal() const; // Fixme: -> double
 
  private:
   int m_degrees;
@@ -143,8 +146,9 @@ class QC_EXPORT QcGeoCoordinate
 {
  public:
   // Equatorial radius (half major axis) of the ellipsoid
-  const double EQUATORIAL_RADIUS = 6378137.0; // m
-  const double EQUATORIAL_DIAMETER = 2 * EQUATORIAL_RADIUS; // m
+  static constexpr double EQUATORIAL_RADIUS = 6378137.0; // m
+  static constexpr double EQUATORIAL_DIAMETER = 2 * EQUATORIAL_RADIUS; // m
+  static constexpr double HALF_EQUATORIAL_PERIMETER = M_PI * EQUATORIAL_RADIUS; // m
 
  public:
   virtual const char *srid() = 0;
@@ -182,17 +186,9 @@ class QC_EXPORT QcGeoCoordinateWGS84 : public QcGeoCoordinate
   }
 
  public:
-  /* enum CoordinateFormat { */
-  /*     Degrees, */
-  /*     DegreesWithHemisphere, */
-  /*     DegreesMinutes, */
-  /*     DegreesMinutesWithHemisphere, */
-  /*     DegreesMinutesSeconds, */
-  /*     DegreesMinutesSecondsWithHemisphere */
-  /* }; */
-
   QcGeoCoordinateWGS84();
   QcGeoCoordinateWGS84(double latitude, double longitude);
+  QcGeoCoordinateWGS84(QcGeoSexagesimalAngle &latitude, QcGeoSexagesimalAngle &longitude);
   QcGeoCoordinateWGS84(const QcGeoCoordinateWGS84 &other);
   ~QcGeoCoordinateWGS84();
 
@@ -204,7 +200,6 @@ class QC_EXPORT QcGeoCoordinateWGS84 : public QcGeoCoordinate
   }
 
   /* bool isValid() const; */
-  /* CoordinateType type() const; */
 
   inline void set_latitude(double latitude) {
     m_latitude = latitude;
@@ -212,12 +207,18 @@ class QC_EXPORT QcGeoCoordinateWGS84 : public QcGeoCoordinate
   inline double latitude() const {
     return m_latitude;
   }
+  inline QcGeoSexagesimalAngle sexagesimal_latitude() const {
+    return QcGeoAngle(m_latitude).sexagesimal();
+  }
 
   inline void set_longitude(double longitude) {
     m_longitude = longitude;
   }
   inline double longitude() const {
     return m_longitude;
+  }
+  inline QcGeoSexagesimalAngle sexagesimal_longitude() const {
+    return QcGeoAngle(m_longitude).sexagesimal();
   }
 
   QcGeoCoordinateMercator mercator() const;
@@ -232,6 +233,17 @@ class QC_EXPORT QcGeoCoordinateWGS84 : public QcGeoCoordinate
   double m_latitude;
   double m_longitude;
 };
+
+// Q_DECLARE_TYPEINFO(QcGeoCoordinateWGS84, Q_MOVABLE_TYPE);
+
+#ifndef QT_NO_DEBUG_STREAM
+QC_EXPORT QDebug operator<<(QDebug, const QcGeoCoordinateWGS84 &);
+#endif
+
+#ifndef QT_NO_DATASTREAM
+QC_EXPORT QDataStream &operator<<(QDataStream &stream, const QcGeoCoordinateWGS84 &coordinate);
+QC_EXPORT QDataStream &operator>>(QDataStream &stream, QcGeoCoordinateWGS84 &coordinate);
+#endif
 
 /**************************************************************************************************/
 
@@ -255,13 +267,9 @@ class QC_EXPORT QcGeoCoordinateMercator : public QcGeoCoordinate
     return "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs";
   };
 
-  // inline static bool is_valid_x(double x) {
-  //   return -90. <= x && x <= 90.;
-  // }
-
-  // inline static bool is_valid_y(double y) {
-  //   return -180. <= y && y <= 180.;
-  // }
+  inline static bool is_valid_x(double x) {
+    return -HALF_EQUATORIAL_PERIMETER <= x && x <= HALF_EQUATORIAL_PERIMETER;
+  }
 
  public:
 
@@ -296,22 +304,9 @@ class QC_EXPORT QcGeoCoordinateMercator : public QcGeoCoordinate
   double m_y;
 };
 
-/*
-Q_DECLARE_TYPEINFO(QGeoCoordinate, Q_MOVABLE_TYPE);
-
-#ifndef QT_NO_DEBUG_STREAM
-Q_POSITIONING_EXPORT QDebug operator<<(QDebug, const QGeoCoordinate &);
-#endif
-
-#ifndef QT_NO_DATASTREAM
-Q_POSITIONING_EXPORT QDataStream &operator<<(QDataStream &stream, const QGeoCoordinate &coordinate);
-Q_POSITIONING_EXPORT QDataStream &operator>>(QDataStream &stream, QGeoCoordinate &coordinate);
-#endif
-*/
-
 // QT_END_NAMESPACE
 
-// Q_DECLARE_METATYPE(QGeoCoordinate)
+// Q_DECLARE_METATYPE(QcGeoCoordinateWGS84)
 
 /**************************************************************************************************/
 

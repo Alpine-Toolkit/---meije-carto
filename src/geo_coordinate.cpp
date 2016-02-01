@@ -24,63 +24,27 @@
 **
 ***************************************************************************************************/
 
+/**************************************************************************************************/
+
 #include <cmath>
 
 #include <QDataStream>
 #include <QDebug>
+#include <QtMath>
 #include <qnumeric.h>
 
+/**************************************************************************************************/
+
+#include "qc_math.h"
 #include "geo_coordinate.h"
 
 /**************************************************************************************************/
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
-inline static double deg_to_rad(double degrees)
-{
-  return degrees / 180. * M_PI;
-}
-
-inline static double rad_to_deg(double radians)
-{
-  return radians / M_PI * 180.;
-}
-
-inline static double haversine(double theta)
-{
-  // hav = sin(.5 * theta)**2
-  return .5*(1 - cos(theta));
-}
-
-/**************************************************************************************************/
-
-double
-QcGeoAngle::to_decimal(int degrees, int minutes, double seconds)
-{
-  return degrees + (minutes + seconds / 60.) / 60.;
-}
-
-/*
-void
-QcGeoAngle::to_sexagesimal(double angle, int &degrees, int &minutes, double &second)
-{
-  double _degrees, _minutes;
-  f = modf(angle, *_degrees);
-  f = modf(f * 60, *_minutes);
-  second = f * 60;
-
-  degrees = cast<int>(_degrees);
-  minutes = cast<int>(_minutes);
-}
-*/
 
 QcGeoAngle::QcGeoAngle(double degrees, int minutes, double seconds)
   : m_value(seconds)
 {
   // Fixme: check input
-  m_value = to_decimal(degrees, minutes, seconds);
+  m_value = QcGeoSexagesimalAngle::to_decimal(degrees, minutes, seconds);
 }
 
 QcGeoAngle::~QcGeoAngle()
@@ -104,17 +68,34 @@ QcGeoAngle::operator==(const QcGeoAngle &other) const
 
 QcGeoSexagesimalAngle
 QcGeoAngle::sexagesimal() const {
-  // to_sexagesimal(m_value, degrees, minutes, second);
-
-  double degrees, minutes, second, f;
-  f = modf(m_value, &degrees);
-  f = modf(f * 60, &minutes);
-  second = f * 60;
-
-  return QcGeoSexagesimalAngle(static_cast<int>(degrees), static_cast<int>(minutes), second);
+  return QcGeoSexagesimalAngle(m_value);
 }
 
 /**************************************************************************************************/
+
+double
+QcGeoSexagesimalAngle::to_decimal(int degrees, int minutes, double seconds)
+{
+  return degrees + (minutes + seconds / 60.) / 60.;
+}
+
+void
+QcGeoSexagesimalAngle::to_sexagesimal(double angle, int &degrees, int &minutes, double &seconds)
+{
+  double _degrees, _minutes, f;
+  f = modf(angle, &_degrees);
+  f = modf(f * 60, &_minutes);
+  seconds = f * 60;
+
+  degrees = int(_degrees);
+  minutes = int(_minutes);
+}
+
+QcGeoSexagesimalAngle::QcGeoSexagesimalAngle(double degrees)
+  : m_degrees(0), m_minutes(0), m_seconds(qQNaN())
+{
+  to_sexagesimal(degrees, m_degrees, m_minutes, m_seconds);
+}
 
 QcGeoSexagesimalAngle::QcGeoSexagesimalAngle(int degrees, int minutes, double seconds)
   : m_degrees(0), m_minutes(0), m_seconds(qQNaN())
@@ -133,6 +114,7 @@ QcGeoSexagesimalAngle::QcGeoSexagesimalAngle(const QcGeoSexagesimalAngle &other)
 QcGeoSexagesimalAngle::~QcGeoSexagesimalAngle()
 {}
 
+// Fixme: default
 QcGeoSexagesimalAngle &
 QcGeoSexagesimalAngle::operator=(const QcGeoSexagesimalAngle &other)
 {
@@ -157,7 +139,7 @@ QcGeoSexagesimalAngle::operator==(const QcGeoSexagesimalAngle &other) const
 
 QcGeoAngle
 QcGeoSexagesimalAngle::decimal() const {
-  double degrees = QcGeoAngle::to_decimal(m_degrees, m_minutes, m_seconds);
+  double degrees = to_decimal(m_degrees, m_minutes, m_seconds);
 
   return QcGeoAngle(degrees);
 }
@@ -177,6 +159,10 @@ QcGeoCoordinateWGS84::QcGeoCoordinateWGS84()
   : QcGeoCoordinateWGS84(.0, .0)
 {}
 
+QcGeoCoordinateWGS84::QcGeoCoordinateWGS84(QcGeoSexagesimalAngle &latitude, QcGeoSexagesimalAngle &longitude)
+  : QcGeoCoordinateWGS84(latitude.decimal().decimal(), longitude.decimal().decimal()) // Fixme: direct ?
+{}
+
 QcGeoCoordinateWGS84::QcGeoCoordinateWGS84(const QcGeoCoordinateWGS84 &other)
   : m_latitude(other.m_latitude), m_longitude(other.m_longitude)
 {}
@@ -184,6 +170,7 @@ QcGeoCoordinateWGS84::QcGeoCoordinateWGS84(const QcGeoCoordinateWGS84 &other)
 QcGeoCoordinateWGS84::~QcGeoCoordinateWGS84()
 {}
 
+// Fixme: default
 QcGeoCoordinateWGS84 &
 QcGeoCoordinateWGS84::operator=(const QcGeoCoordinateWGS84 &other)
 {
@@ -213,8 +200,8 @@ QcGeoCoordinateWGS84::operator==(const QcGeoCoordinateWGS84 &other) const
 QcGeoCoordinateMercator
 QcGeoCoordinateWGS84::mercator() const
 {
-  double x = deg_to_rad(m_longitude);
-  double y = log(tan(deg_to_rad(m_latitude)/2 + M_PI/4));
+  double x = qDegreesToRadians(m_longitude);
+  double y = log(tan(qDegreesToRadians(m_latitude)/2 + M_PI/4));
   x *= EQUATORIAL_RADIUS;
   y *= EQUATORIAL_RADIUS;
   // y = R/2 * math.log((1 + sin(latitude))/(1 - sin(latitude))
@@ -243,11 +230,11 @@ double QcGeoCoordinateWGS84::distance_to(const QcGeoCoordinateWGS84 &other) cons
 
   // Haversine formula https://en.wikipedia.org/wiki/Haversine_formula
 
-  double latitude1 = deg_to_rad(m_latitude);
-  double latitude2 = deg_to_rad(other.m_latitude);
+  double latitude1 = qDegreesToRadians(m_latitude);
+  double latitude2 = qDegreesToRadians(other.m_latitude);
 
-  double delta_latitude = deg_to_rad(other.m_latitude - m_latitude);
-  double delta_longitude = deg_to_rad(other.m_longitude - m_longitude);
+  double delta_latitude = qDegreesToRadians(other.m_latitude - m_latitude);
+  double delta_longitude = qDegreesToRadians(other.m_longitude - m_longitude);
 
   double haversine_delta_latitude = haversine(delta_latitude);
   double haversine_delta_longitude = haversine(delta_longitude);
@@ -278,9 +265,9 @@ QcGeoCoordinateWGS84::azimuth_to(const QcGeoCoordinateWGS84 &other) const
 
   // Fixme: find reference
 
-  double delta_longitude = deg_to_rad(other.m_longitude - m_longitude);
-  double latitude1 = deg_to_rad(m_latitude);
-  double latitude2 = deg_to_rad(other.m_latitude);
+  double delta_longitude = qDegreesToRadians(other.m_longitude - m_longitude);
+  double latitude1 = qDegreesToRadians(m_latitude);
+  double latitude2 = qDegreesToRadians(other.m_latitude);
 
   double y = sin(delta_longitude) * cos(latitude2);
   double x = cos(latitude1) * sin(latitude2) - sin(latitude1) * cos(latitude2) * cos(delta_longitude);
@@ -292,7 +279,7 @@ QcGeoCoordinateWGS84::azimuth_to(const QcGeoCoordinateWGS84 &other) const
 
   // Fixme: check int -> double ...
   double whole;
-  double fraction = modf(rad_to_deg(theta), &whole);
+  double fraction = modf(qRadiansToDegrees(theta), &whole);
   return double((int(whole) + 360) % 360) + fraction;
 }
 
@@ -315,9 +302,9 @@ QcGeoCoordinateWGS84::at_distance_and_azimuth(double distance, double _azimuth) 
   // Fixme: find reference
   // http://www.movable-type.co.uk/scripts/latlong.html
 
-  double latitude1 = deg_to_rad(m_latitude);
-  double longitude1 = deg_to_rad(m_longitude);
-  double azimuth = deg_to_rad(_azimuth);
+  double latitude1 = qDegreesToRadians(m_latitude);
+  double longitude1 = qDegreesToRadians(m_longitude);
+  double azimuth = qDegreesToRadians(_azimuth);
 
   double cos_latitude1 = cos(latitude1);
   double sin_latitude1 = sin(latitude1);
@@ -332,8 +319,8 @@ QcGeoCoordinateWGS84::at_distance_and_azimuth(double distance, double _azimuth) 
   double longitude2_rad = longitude1 + atan2(sin_azimuth * sin_delta * cos_latitude1,
 					     cos_delta - sin_latitude1 * sin(latitude2_rad));
 
-  double latitude2 = rad_to_deg(latitude2_rad);
-  double longitude2 = rad_to_deg(longitude2_rad);
+  double latitude2 = qRadiansToDegrees(latitude2_rad);
+  double longitude2 = qRadiansToDegrees(longitude2_rad);
   if (longitude2 > 180.0)
     longitude2 -= 360.0;
   else if (longitude2 < -180.0)
@@ -388,14 +375,12 @@ QDataStream &operator>>(QDataStream &stream, QcGeoCoordinateWGS84 &coordinate)
 /**************************************************************************************************/
 
 QcGeoCoordinateMercator::QcGeoCoordinateMercator(double x, double y)
-  : m_x(x), m_y(y)
+  : m_x(qQNaN()), m_y(qQNaN())
 {
-  /*
-  if (is_valid_x(x) && is_valid_y(y)) {
+  if (is_valid_x(x) && is_valid_x(y)) {
     m_x = x;
     m_y = y;
   }
-  */
 }
 
 QcGeoCoordinateMercator::QcGeoCoordinateMercator()
