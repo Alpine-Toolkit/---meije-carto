@@ -118,7 +118,7 @@ QcGeoSexagesimalAngle::decimal() const {
 /**************************************************************************************************/
 
 //#ifdef WITH_PROJ4
-QcProjection::QcProjection(const char * definition, projCtx context)
+QcProjection::QcProjection(const QString & definition, projCtx context)
   : m_projection(nullptr)
 {
   // cf. https://trac.osgeo.org/proj/wiki/ThreadSafety
@@ -126,7 +126,7 @@ QcProjection::QcProjection(const char * definition, projCtx context)
     context = pj_get_default_ctx();
   // context = pj_ctx_alloc();
 
-  m_projection = pj_init_plus_ctx(context, definition);
+  m_projection = pj_init_plus_ctx(context, definition.toStdString().c_str());
 }
 
 QcProjection::~QcProjection()

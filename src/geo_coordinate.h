@@ -34,6 +34,7 @@
 /**************************************************************************************************/
 
 #include <QtCore/QMetaType>
+#include <QString>
 
 #include "qtcarto_global.h"
 
@@ -58,7 +59,7 @@ class QC_EXPORT QcGeoSexagesimalAngle
 {
  public:
   static double to_decimal(int degrees, int minutes=0, double seconds=0);
-  static void to_sexagesimal(double angle, int &degrees, int &minutes, double &seconds);
+  static void to_sexagesimal(double angle, int & degrees, int & minutes, double & seconds);
 
   inline static bool is_valid_degrees(int degrees) {
     // Fixme: -0 sign, 360 ? modulo ?
@@ -72,13 +73,13 @@ class QC_EXPORT QcGeoSexagesimalAngle
  public:
   QcGeoSexagesimalAngle(int degrees, int minutes=0, double seconds=0);
   QcGeoSexagesimalAngle(double degrees);
-  QcGeoSexagesimalAngle(const QcGeoSexagesimalAngle &other);
+  QcGeoSexagesimalAngle(const QcGeoSexagesimalAngle & other);
   ~QcGeoSexagesimalAngle();
 
-  QcGeoSexagesimalAngle &operator=(const QcGeoSexagesimalAngle &other);
+  QcGeoSexagesimalAngle &operator=(const QcGeoSexagesimalAngle & other);
 
-  bool operator==(const QcGeoSexagesimalAngle &other) const;
-  inline bool operator!=(const QcGeoSexagesimalAngle &other) const {
+  bool operator==(const QcGeoSexagesimalAngle & other) const;
+  inline bool operator!=(const QcGeoSexagesimalAngle & other) const {
     return !operator==(other);
   }
 
@@ -120,10 +121,10 @@ class QC_EXPORT QcGeoSexagesimalAngle
 class QC_EXPORT QcProjection
 {
  public:
-  QcProjection(const char * definition, projCtx context = nullptr);
+  QcProjection(const QString & definition, projCtx context=nullptr);
   ~QcProjection();
 
-  void transform(QcProjection &proj2, double &x, double &y) const;
+  void transform(QcProjection & proj2, double & x, double & y) const;
 
   bool is_latlong() const;
 
@@ -143,8 +144,10 @@ class QC_EXPORT QcGeoCoordinate
   static constexpr double HALF_EQUATORIAL_PERIMETER = M_PI * EQUATORIAL_RADIUS; // m
 
  public:
-  virtual const char *srid() = 0;
-  virtual const char *proj4_definition() = 0;
+  virtual const char * srid() = 0;
+  virtual QString proj4_definition() {
+    return QString("+init=") + srid();
+  };
 
   virtual double coordinate1() const = 0;
   virtual void set_coordinate1(double value) = 0;
@@ -181,14 +184,13 @@ class QC_EXPORT QcGeoCoordinateWGS84 : public QcGeoCoordinate
 
   // static
   inline const char *srid() {
-    return "EPSG:4326";
+    return "epsg:4326";
   };
 
-  // static
-  inline const char *proj4_definition() {
-    // +init=epsg:4326
-    return "+proj=longlat +datum=WGS84 +no_defs";
-  };
+  // const char *proj4_definition() {
+  //   return "+init=epsg:4326";
+  //   // return "+proj=longlat +datum=WGS84 +no_defs";
+  // };
 
   inline static bool is_valid_longitude(double longitude) {
     return -180. <= longitude && longitude <= 180.;
@@ -201,14 +203,14 @@ class QC_EXPORT QcGeoCoordinateWGS84 : public QcGeoCoordinate
  public:
   QcGeoCoordinateWGS84();
   QcGeoCoordinateWGS84(double longitude, double latitude);
-  QcGeoCoordinateWGS84(QcGeoSexagesimalAngle &longitude, QcGeoSexagesimalAngle &latitude);
-  QcGeoCoordinateWGS84(const QcGeoCoordinateWGS84 &other);
+  QcGeoCoordinateWGS84(QcGeoSexagesimalAngle & longitude, QcGeoSexagesimalAngle & latitude);
+  QcGeoCoordinateWGS84(const QcGeoCoordinateWGS84 & other);
   ~QcGeoCoordinateWGS84();
 
-  QcGeoCoordinateWGS84 &operator=(const QcGeoCoordinateWGS84 &other);
+  QcGeoCoordinateWGS84 &operator=(const QcGeoCoordinateWGS84 & other);
 
-  bool operator==(const QcGeoCoordinateWGS84 &other) const;
-  inline bool operator!=(const QcGeoCoordinateWGS84 &other) const {
+  bool operator==(const QcGeoCoordinateWGS84 & other) const;
+  inline bool operator!=(const QcGeoCoordinateWGS84 & other) const {
     return !operator==(other);
   }
 
@@ -250,8 +252,8 @@ class QC_EXPORT QcGeoCoordinateWGS84 : public QcGeoCoordinate
 
   QcGeoCoordinateMercator mercator() const;
 
-  Q_INVOKABLE double distance_to(const QcGeoCoordinateWGS84 &other) const;
-  Q_INVOKABLE double azimuth_to(const QcGeoCoordinateWGS84 &other) const;
+  Q_INVOKABLE double distance_to(const QcGeoCoordinateWGS84 & other) const;
+  Q_INVOKABLE double azimuth_to(const QcGeoCoordinateWGS84 & other) const;
   Q_INVOKABLE QcGeoCoordinateWGS84 at_distance_and_azimuth(double distance, double azimuth) const;
 
   /* Q_INVOKABLE QString toString(CoordinateFormat format = DegreesMinutesSecondsWithHemisphere) const; */
@@ -269,8 +271,8 @@ QC_EXPORT QDebug operator<<(QDebug, const QcGeoCoordinateWGS84 &);
 #endif
 
 #ifndef QT_NO_DATASTREAM
-QC_EXPORT QDataStream &operator<<(QDataStream &stream, const QcGeoCoordinateWGS84 &coordinate);
-QC_EXPORT QDataStream &operator>>(QDataStream &stream, QcGeoCoordinateWGS84 &coordinate);
+QC_EXPORT QDataStream &operator<<(QDataStream & stream, const QcGeoCoordinateWGS84 & coordinate);
+QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcGeoCoordinateWGS84 & coordinate);
 #endif
 
 /**************************************************************************************************/
@@ -285,16 +287,14 @@ class QC_EXPORT QcGeoCoordinateMercator : public QcGeoCoordinate
 
  public:
 
-  // static
   inline const char *srid() {
-    return "EPSG:3857";
+    return "epsg:3857";
   };
 
-  // static
-  inline const char *proj4_definition() {
-    // +init=epsg:4326
-    return "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs";
-  };
+  // const char *proj4_definition() {
+  //   return "+init=epsg:3857";
+  //   // return "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs";
+  // };
 
   inline static bool is_valid_x(double x) {
     return -HALF_EQUATORIAL_PERIMETER <= x && x <= HALF_EQUATORIAL_PERIMETER;
@@ -304,13 +304,13 @@ class QC_EXPORT QcGeoCoordinateMercator : public QcGeoCoordinate
 
   QcGeoCoordinateMercator();
   QcGeoCoordinateMercator(double x, double y);
-  QcGeoCoordinateMercator(const QcGeoCoordinateMercator &other);
+  QcGeoCoordinateMercator(const QcGeoCoordinateMercator & other);
   ~QcGeoCoordinateMercator();
 
-  QcGeoCoordinateMercator &operator=(const QcGeoCoordinateMercator &other);
+  QcGeoCoordinateMercator &operator=(const QcGeoCoordinateMercator & other);
 
-  bool operator==(const QcGeoCoordinateMercator &other) const;
-  inline bool operator!=(const QcGeoCoordinateMercator &other) const {
+  bool operator==(const QcGeoCoordinateMercator & other) const;
+  inline bool operator!=(const QcGeoCoordinateMercator & other) const {
     return !operator==(other);
   }
 
@@ -354,8 +354,8 @@ QC_EXPORT QDebug operator<<(QDebug, const QcGeoCoordinateMercator &);
 #endif
 
 #ifndef QT_NO_DATASTREAM
-QC_EXPORT QDataStream &operator<<(QDataStream &stream, const QcGeoCoordinateMercator &coordinate);
-QC_EXPORT QDataStream &operator>>(QDataStream &stream, QcGeoCoordinateMercator &coordinate);
+QC_EXPORT QDataStream &operator<<(QDataStream & stream, const QcGeoCoordinateMercator & coordinate);
+QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcGeoCoordinateMercator & coordinate);
 #endif
 
 // QT_END_NAMESPACE
