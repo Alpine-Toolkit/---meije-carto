@@ -56,7 +56,8 @@ enable_testing()
 # Compiler Options
 #
 
-SET(CMAKE_BUILD_TYPE RELEASE)
+# SET(CMAKE_BUILD_TYPE RELEASE)
+SET(CMAKE_BUILD_TYPE DEBUG)
 SET(CMAKE_VERBOSE_MAKEFILE ON)
 
 include(CheckCXXCompilerFlag)
@@ -71,7 +72,7 @@ else()
 endif()
 
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
-  set(CMAKE_CXX_FLAGS_COMMON  "-Wall -DSystemLinux")
+  set(CMAKE_CXX_FLAGS_COMMON  "-Wall -DSystemLinux -fdiagnostics-color=auto")
   set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_COMMON} -g -O0 -DDEBUG")
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_COMMON} $ENV{GCC_OPTIMISATION}")
 endif(CMAKE_SYSTEM_NAME MATCHES "Linux")
@@ -95,6 +96,17 @@ find_package(Qt5Test REQUIRED)
 # INCLUDE_DIRECTORIES(${Qt5Core_INCLUDES})
 # ADD_DEFINITIONS(${Qt5Core_DEFINITIONS})
 # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
+
+####################################################################################################
+#
+# Find Qt
+#
+
+include(FindProj4)
+if(PROJ4_FOUND)
+  add_definitions(-DWITH_PROJ4)
+  INCLUDE_DIRECTORIES(PROJ4_INCLUDE_DIR)
+endif(PROJ4_FOUND)
 
 ####################################################################################################
 #

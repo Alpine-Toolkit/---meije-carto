@@ -16,7 +16,7 @@ set(qtcarto_files
   geo_coordinate.cpp
 )
 add_library(qtcarto SHARED ${qtcarto_files})
-target_link_libraries(qtcarto Qt5::Core)
+target_link_libraries(qtcarto Qt5::Core ${PROJ4_LIBRARIES})
 
 ####################################################################################################
 #

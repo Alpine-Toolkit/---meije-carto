@@ -117,12 +117,68 @@ QcGeoSexagesimalAngle::decimal() const {
 
 /**************************************************************************************************/
 
-QcGeoCoordinateWGS84::QcGeoCoordinateWGS84(double latitude, double longitude)
-  : m_latitude(qQNaN()), m_longitude(qQNaN())
+//#ifdef WITH_PROJ4
+QcProjection::QcProjection(const char * definition, projCtx context)
+  : m_projection(nullptr)
 {
-  if (is_valid_latitude(latitude) && is_valid_longitude(longitude)) {
-    m_latitude = latitude;
+  // cf. https://trac.osgeo.org/proj/wiki/ThreadSafety
+  if (!context)
+    context = pj_get_default_ctx();
+  // context = pj_ctx_alloc();
+
+  m_projection = pj_init_plus_ctx(context, definition);
+}
+
+QcProjection::~QcProjection()
+{
+  if (m_projection)
+    pj_free(m_projection);
+}
+
+void
+QcProjection::transform(QcProjection &proj2, double &x, double &y) const
+{
+  // int pj_transform( projPJ src, projPJ dst, long point_count, int point_offset,
+  //                 double *x, double *y, double *z );
+
+  long point_count = 1;
+  int point_offset = 1;
+  double z = 0;
+  int error = pj_transform(m_projection, proj2.m_projection, point_count, point_offset, &x, &y, &z);
+  // if (error != 0)
+  //   raise ...(pj_strerrno(error))
+}
+
+bool
+QcProjection::is_latlong() const {
+  return pj_is_latlong(m_projection);
+}
+//#endif WITH_PROJ4
+
+/**************************************************************************************************/
+
+void
+QcGeoCoordinate::transform(QcGeoCoordinate & other)
+{
+  double _coordinate1 = coordinate1();
+  double _coordinate2 = coordinate2();
+  if (projection().is_latlong()) {
+      _coordinate1 = qDegreesToRadians(_coordinate1);
+      _coordinate2 = qDegreesToRadians(_coordinate2);
+    }
+  projection().transform(other.projection(), _coordinate1, _coordinate2);
+  other.set_coordinate1(_coordinate1);
+  other.set_coordinate2(_coordinate2);
+}
+
+/**************************************************************************************************/
+
+QcGeoCoordinateWGS84::QcGeoCoordinateWGS84(double longitude, double latitude)
+  : m_longitude(qQNaN()), m_latitude(qQNaN())
+{
+  if (is_valid_longitude(longitude) && is_valid_latitude(latitude)) {
     m_longitude = longitude;
+    m_latitude = latitude;
   }
 }
 
@@ -130,12 +186,12 @@ QcGeoCoordinateWGS84::QcGeoCoordinateWGS84()
   : QcGeoCoordinateWGS84(.0, .0)
 {}
 
-QcGeoCoordinateWGS84::QcGeoCoordinateWGS84(QcGeoSexagesimalAngle &latitude, QcGeoSexagesimalAngle &longitude)
-  : QcGeoCoordinateWGS84(latitude.decimal(), longitude.decimal())
+QcGeoCoordinateWGS84::QcGeoCoordinateWGS84(QcGeoSexagesimalAngle &longitude, QcGeoSexagesimalAngle &latitude)
+  : QcGeoCoordinateWGS84(longitude.decimal(), latitude.decimal())
 {}
 
 QcGeoCoordinateWGS84::QcGeoCoordinateWGS84(const QcGeoCoordinateWGS84 &other)
-  : m_latitude(other.m_latitude), m_longitude(other.m_longitude)
+  : m_longitude(other.m_longitude), m_latitude(other.m_latitude)
 {}
 
 QcGeoCoordinateWGS84::~QcGeoCoordinateWGS84()
@@ -146,8 +202,8 @@ QcGeoCoordinateWGS84 &
 QcGeoCoordinateWGS84::operator=(const QcGeoCoordinateWGS84 &other)
 {
   if (this != &other) {
-    m_latitude = other.m_latitude;
     m_longitude = other.m_longitude;
+    m_latitude = other.m_latitude;
   }
 
   return *this;
@@ -156,16 +212,16 @@ QcGeoCoordinateWGS84::operator=(const QcGeoCoordinateWGS84 &other)
 bool
 QcGeoCoordinateWGS84::operator==(const QcGeoCoordinateWGS84 &other) const
 {
-  bool latitude_equal = ((qIsNaN(m_latitude) && qIsNaN(other.m_latitude))
-			 || qFuzzyCompare(m_latitude, other.m_latitude));
   bool longitude_equal = ((qIsNaN(m_longitude) && qIsNaN(other.m_longitude))
 			  || qFuzzyCompare(m_longitude, other.m_longitude));
+  bool latitude_equal = ((qIsNaN(m_latitude) && qIsNaN(other.m_latitude))
+			 || qFuzzyCompare(m_latitude, other.m_latitude));
 
   // Fixme: compact
   if (!qIsNaN(m_longitude) && ((m_latitude == 90.0) || (m_latitude == -90.0)))
     longitude_equal = true;
 
-  return (latitude_equal && longitude_equal);
+  return (longitude_equal && latitude_equal);
 }
 
 QcGeoCoordinateMercator
@@ -304,19 +360,19 @@ QcGeoCoordinateWGS84::at_distance_and_azimuth(double distance, double _azimuth) 
 QDebug operator<<(QDebug debug, const QcGeoCoordinateWGS84 &coordinate)
 {
     QDebugStateSaver saver(debug);
-    double latitude = coordinate.latitude();
     double longitude = coordinate.longitude();
+    double latitude = coordinate.latitude();
 
     debug.nospace() << "QcGeoCoordinateWGS84(";
-    if (qIsNaN(latitude))
-        debug << '?';
-    else
-        debug << latitude;
-    debug << ", ";
     if (qIsNaN(longitude))
         debug << '?';
     else
         debug << longitude;
+    debug << ", ";
+    if (qIsNaN(latitude))
+        debug << '?';
+    else
+        debug << latitude;
     debug << ')';
 
     return debug;
@@ -326,8 +382,8 @@ QDebug operator<<(QDebug debug, const QcGeoCoordinateWGS84 &coordinate)
 #ifndef QT_NO_DATASTREAM
 QDataStream &operator<<(QDataStream &stream, const QcGeoCoordinateWGS84 &coordinate)
 {
-    stream << coordinate.latitude();
     stream << coordinate.longitude();
+    stream << coordinate.latitude();
     return stream;
 }
 #endif
@@ -337,9 +393,9 @@ QDataStream &operator>>(QDataStream &stream, QcGeoCoordinateWGS84 &coordinate)
 {
     double value;
     stream >> value;
-    coordinate.set_latitude(value);
-    stream >> value;
     coordinate.set_longitude(value);
+    stream >> value;
+    coordinate.set_latitude(value);
     return stream;
 }
 #endif
@@ -385,6 +441,50 @@ QcGeoCoordinateMercator::operator==(const QcGeoCoordinateMercator &other) const
 
   return (x_equal && y_equal);
 }
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug debug, const QcGeoCoordinateMercator &coordinate)
+{
+    QDebugStateSaver saver(debug);
+    double x = coordinate.x();
+    double y = coordinate.y();
+
+    debug.nospace() << "QcGeoCoordinateMercator(";
+    if (qIsNaN(x))
+        debug << '?';
+    else
+        debug << x;
+    debug << ", ";
+    if (qIsNaN(y))
+        debug << '?';
+    else
+        debug << y;
+    debug << ')';
+
+    return debug;
+}
+#endif
+
+#ifndef QT_NO_DATASTREAM
+QDataStream &operator<<(QDataStream &stream, const QcGeoCoordinateMercator &coordinate)
+{
+    stream << coordinate.x();
+    stream << coordinate.y();
+    return stream;
+}
+#endif
+
+#ifndef QT_NO_DATASTREAM
+QDataStream &operator>>(QDataStream &stream, QcGeoCoordinateMercator &coordinate)
+{
+    double value;
+    stream >> value;
+    coordinate.set_x(value);
+    stream >> value;
+    coordinate.set_y(value);
+    return stream;
+}
+#endif
 
 /***************************************************************************************************
  *
