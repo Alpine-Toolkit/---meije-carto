@@ -37,6 +37,7 @@
 #include <QString>
 
 #include "qtcarto_global.h"
+#include "map/earth.h"
 
 /**************************************************************************************************/
 
@@ -137,12 +138,6 @@ class QC_EXPORT QcProjection
 
 class QC_EXPORT QcGeoCoordinate
 {
- public:
-  // Equatorial radius (half major axis) of the ellipsoid
-  static constexpr double EQUATORIAL_RADIUS = 6378137.0; // m
-  static constexpr double EQUATORIAL_DIAMETER = 2 * EQUATORIAL_RADIUS; // m
-  static constexpr double HALF_EQUATORIAL_PERIMETER = M_PI * EQUATORIAL_RADIUS; // m
-
  public:
   virtual const char * srid() = 0;
   virtual QString proj4_definition() {

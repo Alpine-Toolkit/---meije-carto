@@ -1,3 +1,5 @@
+// -*- mode: c++ -*-
+
 /***************************************************************************************************
 **
 ** $QTCARTO_BEGIN_LICENSE:GPL3$
@@ -24,29 +26,30 @@
 **
 ***************************************************************************************************/
 
-#ifndef QC_MATH_H
-#define QC_MATH_H
+#ifndef EARTH_H
+#define EARTH_H
 
 /**************************************************************************************************/
 
-#include <cmath>
+#include "qtcarto_global.h"
 
 /**************************************************************************************************/
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
+// QC_BEGIN_NAMESPACE
 
 /**************************************************************************************************/
 
-inline static double haversine(double theta)
-{
-  return .5*(1 - cos(theta)); // = sin(theta / 2)**2
-}
+// Equatorial radius (half major axis) of the ellipsoid
+constexpr double EQUATORIAL_RADIUS = 6378137.0; // m
+constexpr double EQUATORIAL_DIAMETER = 2 * EQUATORIAL_RADIUS; // m
+constexpr double HALF_EQUATORIAL_PERIMETER = M_PI * EQUATORIAL_RADIUS; // m
+constexpr double EQUATORIAL_PERIMETER = 2 * HALF_EQUATORIAL_PERIMETER; // m
+
+// QT_END_NAMESPACE
 
 /**************************************************************************************************/
 
-#endif // QC_MATH_H
+#endif // EARTH_H
 
 /***************************************************************************************************
  *

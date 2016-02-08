@@ -12,10 +12,16 @@
 # Executable
 #
 
-add_executable(test_geo_coordinate test_geo_coordinate.cpp)
-
-target_link_libraries(test_geo_coordinate Qt5::Test qtcarto)
-add_test(NAME geo_coordinate COMMAND test_geo_coordinate)
+foreach(name
+    geo_coordinate
+    tile_matrix_set
+    interval
+    vector
+    )
+  add_executable(test_${name} test_${name}.cpp)
+  target_link_libraries(test_${name} Qt5::Test qtcarto)
+  add_test(NAME ${name} COMMAND test_${name})
+endforeach(name)
 
 ####################################################################################################
 #

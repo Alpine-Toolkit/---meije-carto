@@ -24,66 +24,42 @@
 **
 ***************************************************************************************************/
 
-#include <cmath>
+/**************************************************************************************************/
+
 #include <iostream>
 
 #include <QtTest/QtTest>
-#include <QtDebug>
 
 /**************************************************************************************************/
 
-#include "map/geo_coordinate.h"
+#include "map/tile_matrix_set.h"
 
 /***************************************************************************************************/
 
-class TestQcGeoCoordinateWGS84: public QObject
+class TestQcTileMatrixSet: public QObject
 {
   Q_OBJECT
 private slots:
   void constructor();
 };
 
-void TestQcGeoCoordinateWGS84::constructor()
+void TestQcTileMatrixSet::constructor()
 {
-  QcGeoCoordinateWGS84 coordinate0;
-  QVERIFY(coordinate0.longitude() == .0);
-  QVERIFY(coordinate0.latitude() == .0);
+  QcTileMatrixSet tile_matrix_set("wtms", 20, 256);
 
-  // echo '2.478917 48.805639' | cs2cs -f "%.2f" +init=epsg:4326 +to +init=epsg:3857
-  // 275951.78 6241946.52 0.00
-  double longitude = 2.478917;
-  double latitude = 48.805639;
-  double x = 275951.7782; // 275951.78
-  double y = 6241946.516; // 6241946.52
-  QcGeoCoordinateWGS84 coordinate1(longitude, latitude);
-  QVERIFY(coordinate1.longitude() == longitude);
-  QVERIFY(coordinate1.latitude() == latitude);
+  for (size_t i = 0; i < tile_matrix_set.number_of_levels(); i++) {
+    std::cout << "Level " << tile_matrix_set[i].level() << std::endl;
+  }
 
-  QcGeoCoordinateWGS84 coordinate2(coordinate1);
-  QVERIFY(coordinate2.longitude() == longitude);
-  QVERIFY(coordinate2.latitude() == latitude);
-
-  QcGeoCoordinateMercator coordinate3 = coordinate1.mercator();
-  // qInfo() << coordinate1;
-  // qInfo() << coordinate3;
-  // std::cout.precision(10);
-  // std::cout << coordinate3.x() << " " << coordinate3.y() << std::endl;
-  // QVERIFY(qFuzzyCompare(coordinate3.x(), x));
-  // QVERIFY(qFuzzyCompare(coordinate3.y(), y));
-  QVERIFY(abs(coordinate3.x() - x) < 1e-1);
-  QVERIFY(abs(coordinate3.y() - y) < 1e-1);
-
-  QcGeoCoordinateMercator coordinate4;
-  coordinate1.transform(coordinate4);
-  // std::cout << coordinate4.x() << " " << coordinate4.y() << std::endl;
-  QVERIFY(qFuzzyCompare(coordinate3.x(), coordinate4.x()));
-  QVERIFY(qFuzzyCompare(coordinate3.y(), coordinate4.y()));
+  for (const QcTileMatrix & tile_matrix : tile_matrix_set) {
+    std::cout << "Level " << tile_matrix.level() << std::endl;
+  }
 }
 
 /***************************************************************************************************/
 
-QTEST_MAIN(TestQcGeoCoordinateWGS84)
-#include "test_geo_coordinate.moc"
+QTEST_MAIN(TestQcTileMatrixSet)
+#include "test_tile_matrix_set.moc"
 
 /***************************************************************************************************
  *
