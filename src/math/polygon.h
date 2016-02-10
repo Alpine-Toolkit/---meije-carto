@@ -50,6 +50,8 @@
 
 /**************************************************************************************************/
 
+class QcTiledPolygon;
+
 class QC_EXPORT QcPolygon
 {
  public:
@@ -62,14 +64,65 @@ class QC_EXPORT QcPolygon
 
   void add_vertex(const QcVectorDouble & vertex);
 
+  inline const QList<QcVectorDouble> & vertexes() const {
+    return m_vertexes;
+  }
+
+  inline const QcInterval2DDouble & interval() const {
+    return m_interval;
+  }
+
   bool contains(const QcVectorDouble & point) const;
 
-  void intersec_with_grid(double grid_step) const;
+  QcTiledPolygon intersec_with_grid(double grid_step) const;
 
-private:
+ private:
   // Fixme: QVector
   QList<QcVectorDouble> m_vertexes;
   QcInterval2DDouble m_interval;
+};
+
+class QC_EXPORT QcTiledPolygonRun
+{
+ public:
+  QcTiledPolygonRun(int y, const QcIntervalInt & interval);
+
+  inline int y() const {
+    return m_y;
+  }
+
+  inline const QcIntervalInt & interval() const {
+    return m_interval;
+  }
+
+  bool operator==(const QcTiledPolygonRun & other) const;
+
+ private:
+  int m_y;
+  QcIntervalInt m_interval;
+};
+
+class QC_EXPORT QcTiledPolygon
+{
+ public:
+  QcTiledPolygon(const QcPolygon & polygon, double grid_step);
+
+  inline const QcPolygon & polygon() const {
+    return m_polygon;
+  }
+
+  inline double grid_step() const {
+    return m_grid_step;
+  }
+
+  inline const QList<QcTiledPolygonRun> runs() const {
+    return m_runs;
+  }
+
+ private:
+  const QcPolygon & m_polygon;
+  double m_grid_step;
+  QList<QcTiledPolygonRun> m_runs;
 };
 
 /**************************************************************************************************/

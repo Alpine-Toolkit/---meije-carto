@@ -318,25 +318,48 @@ public:
   double direction;
 };
 
-void
-QcPolygon::intersec_with_grid(double grid_step) const
+QcTiledPolygon
+QcPolygon::intersec_with_grid(double grid_step) const {
+  return QcTiledPolygon(*this, grid_step);
+}
+
+/**************************************************************************************************/
+
+QcTiledPolygonRun::QcTiledPolygonRun(int y, const QcIntervalInt & interval)
+  : m_y(y), m_interval(interval)
 {
-  QcInterval2DInt interval_on_grid(to_grid(m_interval.x().inf(), grid_step),
-				   to_grid(m_interval.x().sup(), grid_step),
-				   to_grid(m_interval.y().inf(), grid_step),
-				   to_grid(m_interval.y().sup(), grid_step));
+}
+
+bool
+QcTiledPolygonRun::operator==(const QcTiledPolygonRun & other) const
+{
+  return (m_y == other.m_y) && (m_interval == other.m_interval);
+}
+
+/**************************************************************************************************/
+
+QcTiledPolygon::QcTiledPolygon(const QcPolygon & polygon, double grid_step)
+  : m_polygon(polygon), m_grid_step(grid_step)
+{
+  const QcInterval2DDouble & polygon_interval = polygon.interval();
+  const QList<QcVectorDouble> & vertexes = polygon.vertexes();
+
+  QcInterval2DInt interval_on_grid(to_grid(polygon_interval.x().inf(), grid_step),
+				   to_grid(polygon_interval.x().sup(), grid_step),
+				   to_grid(polygon_interval.y().inf(), grid_step),
+				   to_grid(polygon_interval.y().sup(), grid_step));
 
   int Y_min = interval_on_grid.y().inf();
   size_t number_of_rows = interval_on_grid.y().length() + 1; // Fixme: int length
   QVector<QList<OpenInterval>> rows(number_of_rows);
 
-  size_t number_of_vertexes = m_vertexes.size();
+  size_t number_of_vertexes = vertexes.size();
   for (size_t i = 0; i < number_of_vertexes; i++) {
-    const QcVectorDouble & p0 = m_vertexes[i];
+    const QcVectorDouble & p0 = vertexes[i];
     size_t ii = i + 1;
     if (ii == number_of_vertexes)
       ii = 0;
-    const QcVectorDouble & p1 = m_vertexes[ii];
+    const QcVectorDouble & p1 = vertexes[ii];
 
     double X0 = to_grid(p0.x(), grid_step);
     double Y0 = to_grid(p0.y(), grid_step);
@@ -375,7 +398,6 @@ QcPolygon::intersec_with_grid(double grid_step) const
     }
   }
 
-  // QList<QcIntervalDouble> runs;
   for (size_t i = 0; i < number_of_rows; i++) {
     QList<OpenInterval> & row = rows[i];
     std::sort(row.begin(), row.end());
@@ -398,11 +420,8 @@ QcPolygon::intersec_with_grid(double grid_step) const
 	}
       }
     for (const QcIntervalInt & interval : intervals)
-      std::cout << Y << " " << interval.inf() << " " << interval.sup() << std::endl;
-    // runs.push_back((Y, interval));
+      m_runs.push_back(QcTiledPolygonRun(Y, interval));
   }
-
-  // return TilePolygon(self, runs)
 }
 
 /***************************************************************************************************

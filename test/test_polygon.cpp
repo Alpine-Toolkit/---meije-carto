@@ -84,21 +84,31 @@ TestQcPolygon::intersec_with_grid()
   };
   QcPolygon polygon(vertexes);
   double grid_step = 1.;
-  polygon.intersec_with_grid(grid_step);
+  QcTiledPolygon tiled_polygon = polygon.intersec_with_grid(grid_step);
 
-  // 1 1 6
-  // 2 0 13
-  // 3 0 17
-  // 4 0 18
-  // 5 0 3
-  // 5 6 18
-  // 6 0 2
-  // 6 6 18
-  // 7 1 2
-  // 7 6 15
-  // 8 7 14
-  // 9 11 13
-  // 10 12 13
+  QVector<int> run_data({
+    1, 1, 6,
+    2, 0, 13,
+    3, 0, 17,
+    4, 0, 18,
+    5, 0, 3,
+    5, 6, 18,
+    6, 0, 2,
+    6, 6, 18,
+    7, 1, 2,
+    7, 6, 15,
+    8, 7, 14,
+    9, 11, 13,
+    10, 12, 13
+      });
+  size_t i = 0;
+  for (const QcTiledPolygonRun & run: tiled_polygon.runs()) {
+    size_t j = 3*i;
+    int y = run_data[j];
+    QcIntervalInt interval(run_data[j+1], run_data[j+2]);
+    QVERIFY(run == QcTiledPolygonRun(y, interval));
+    i++;
+  }
 }
 
 /***************************************************************************************************/
