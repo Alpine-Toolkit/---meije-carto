@@ -213,6 +213,7 @@ class QC_EXPORT QcTileMatrix
   }
 
   QcTileMatrixIndex mercator_to_matrix_index(const QcGeoCoordinateMercator & coordinate) const;
+  QcTileMatrixIndex mercator_to_matrix_index(const QcGeoCoordinateNormalisedMercator & coordinate) const;
 
  private:
   QcTileMatrixSet & m_tile_matrix_set;

@@ -109,15 +109,30 @@ QcTileMatrix::QcTileMatrix(QcTileMatrixSet & tile_matrix_set, size_t level)
 QcTileMatrixIndex
 QcTileMatrix::mercator_to_matrix_index(const QcGeoCoordinateMercator & coordinate) const
 {
+  // return mercator_to_matrix_index(coordinate.normalised_mercator());
+
   double xm = coordinate.x() - QcTileMatrixSet::x_offset;
   double ym = QcTileMatrixSet::y_offset - coordinate.y();
 
   size_t x = int(xm / m_tile_length_m);
   size_t y = int(ym / m_tile_length_m);
-  return QcTileMatrixIndex(x, y);
 
-  // if (x < m_mosaic_size and y < m_mosaic_size)
-  // else raise
+  if (x < m_mosaic_size and y < m_mosaic_size)
+    return QcTileMatrixIndex(x, y);
+  else
+    throw std::invalid_argument("Invalid coordinate");
+}
+
+QcTileMatrixIndex
+QcTileMatrix::mercator_to_matrix_index(const QcGeoCoordinateNormalisedMercator & coordinate) const
+{
+  size_t x = int(coordinate.x() * m_mosaic_size);
+  size_t y = int(coordinate.x() * m_mosaic_size);
+
+  if (x < m_mosaic_size and y < m_mosaic_size)
+    return QcTileMatrixIndex(x, y);
+  else
+    throw std::invalid_argument("Invalid coordinate");
 }
 
 /***************************************************************************************************

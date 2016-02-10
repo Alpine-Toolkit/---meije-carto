@@ -180,6 +180,8 @@ QcGeoCoordinateWGS84::QcGeoCoordinateWGS84(double longitude, double latitude)
     m_longitude = longitude;
     m_latitude = latitude;
   }
+  else
+    throw std::invalid_argument("Invalid coordinate");
 }
 
 QcGeoCoordinateWGS84::QcGeoCoordinateWGS84()
@@ -227,6 +229,9 @@ QcGeoCoordinateWGS84::operator==(const QcGeoCoordinateWGS84 &other) const
 QcGeoCoordinateMercator
 QcGeoCoordinateWGS84::mercator() const
 {
+  // 128/pi 2^level (m_longitude + pi) px
+  // 128/pi 2^level (pi - ln(tan(latitude/2 + pi/4))) px
+
   double x = qDegreesToRadians(m_longitude);
   double y = log(tan(qDegreesToRadians(m_latitude)/2 + M_PI/4));
   x *= EQUATORIAL_RADIUS;
@@ -234,6 +239,22 @@ QcGeoCoordinateWGS84::mercator() const
   // y = R/2 * math.log((1 + sin(latitude))/(1 - sin(latitude))
 
   return QcGeoCoordinateMercator(x, y);
+}
+
+QcGeoCoordinateNormalisedMercator
+QcGeoCoordinateWGS84::normalised_mercator() const
+{
+  // 128/pi 2^level (m_longitude + pi) px
+  // 128/pi 2^level (pi - ln(tan(latitude/2 + pi/4))) px
+
+  double x = qDegreesToRadians(m_longitude);
+  double y = log(tan(qDegreesToRadians(m_latitude)/2 + M_PI/4));
+  x /= M_2PI;
+  y /= M_2PI;
+  x += .5;
+  y = .5 - y;
+
+  return QcGeoCoordinateNormalisedMercator(x, y);
 }
 
 /*!
@@ -356,6 +377,15 @@ QcGeoCoordinateWGS84::at_distance_and_azimuth(double distance, double _azimuth) 
   return QcGeoCoordinateWGS84(latitude2, longitude2);
 }
 
+QcGeoCoordinateNormalisedMercator
+QcGeoCoordinateMercator::normalised_mercator() const
+{
+  double x = (m_x + HALF_EQUATORIAL_PERIMETER) * INVERSE_EQUATORIAL_PERIMETER;
+  double y = (HALF_EQUATORIAL_PERIMETER - m_y) * INVERSE_EQUATORIAL_PERIMETER;
+
+  return QcGeoCoordinateNormalisedMercator(x, y);
+}
+
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, const QcGeoCoordinateWGS84 &coordinate)
 {
@@ -476,6 +506,92 @@ QDataStream &operator<<(QDataStream &stream, const QcGeoCoordinateMercator &coor
 
 #ifndef QT_NO_DATASTREAM
 QDataStream &operator>>(QDataStream &stream, QcGeoCoordinateMercator &coordinate)
+{
+    double value;
+    stream >> value;
+    coordinate.set_x(value);
+    stream >> value;
+    coordinate.set_y(value);
+    return stream;
+}
+#endif
+
+/**************************************************************************************************/
+
+QcGeoCoordinateNormalisedMercator::QcGeoCoordinateNormalisedMercator(double x, double y)
+  : m_x(qQNaN()), m_y(qQNaN())
+{
+  //if (is_valid_x(x) && is_valid_x(y)) {
+    m_x = x;
+    m_y = y;
+    //}
+}
+
+QcGeoCoordinateNormalisedMercator::QcGeoCoordinateNormalisedMercator()
+  : m_x(0), m_y(0)
+{}
+
+QcGeoCoordinateNormalisedMercator::QcGeoCoordinateNormalisedMercator(const QcGeoCoordinateNormalisedMercator &other)
+  : m_x(other.m_x), m_y(other.m_y)
+{}
+
+QcGeoCoordinateNormalisedMercator::~QcGeoCoordinateNormalisedMercator()
+{}
+
+QcGeoCoordinateNormalisedMercator &
+QcGeoCoordinateNormalisedMercator::operator=(const QcGeoCoordinateNormalisedMercator &other)
+{
+  if (this != &other) {
+    m_x = other.m_x;
+    m_y = other.m_y;
+  }
+
+  return *this;
+}
+
+bool
+QcGeoCoordinateNormalisedMercator::operator==(const QcGeoCoordinateNormalisedMercator &other) const
+{
+  bool x_equal = qFuzzyCompare(m_x, other.m_x);
+  bool y_equal = qFuzzyCompare(m_y, other.m_y);
+
+  return (x_equal && y_equal);
+}
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug debug, const QcGeoCoordinateNormalisedMercator &coordinate)
+{
+    QDebugStateSaver saver(debug); // Fixme: ???
+    double x = coordinate.x();
+    double y = coordinate.y();
+
+    debug.nospace() << "QcGeoCoordinateNormalisedMercator(";
+    if (qIsNaN(x))
+        debug << '?';
+    else
+        debug << x;
+    debug << ", ";
+    if (qIsNaN(y))
+        debug << '?';
+    else
+        debug << y;
+    debug << ')';
+
+    return debug;
+}
+#endif
+
+#ifndef QT_NO_DATASTREAM
+QDataStream &operator<<(QDataStream &stream, const QcGeoCoordinateNormalisedMercator &coordinate)
+{
+    stream << coordinate.x();
+    stream << coordinate.y();
+    return stream;
+}
+#endif
+
+#ifndef QT_NO_DATASTREAM
+QDataStream &operator>>(QDataStream &stream, QcGeoCoordinateNormalisedMercator &coordinate)
 {
     double value;
     stream >> value;

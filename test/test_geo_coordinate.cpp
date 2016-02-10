@@ -27,7 +27,7 @@
 /**************************************************************************************************/
 
 #include <cmath>
-// #include <iostream>
+#include <iostream>
 
 #include <QtTest/QtTest>
 #include <QtDebug>
@@ -79,8 +79,15 @@ void TestQcGeoCoordinateWGS84::constructor()
   QcGeoCoordinateMercator coordinate4;
   coordinate1.transform(coordinate4);
   // std::cout << coordinate4.x() << " " << coordinate4.y() << std::endl;
-  QVERIFY(qFuzzyCompare(coordinate3.x(), coordinate4.x()));
-  QVERIFY(qFuzzyCompare(coordinate3.y(), coordinate4.y()));
+  // QVERIFY(qFuzzyCompare(coordinate3.x(), coordinate4.x()));
+  // QVERIFY(qFuzzyCompare(coordinate3.y(), coordinate4.y()));
+  QVERIFY(coordinate3 == coordinate4);
+
+  QcGeoCoordinateNormalisedMercator normalised_coordinate1 = coordinate1.normalised_mercator();
+  QcGeoCoordinateNormalisedMercator normalised_coordinate3 = coordinate3.normalised_mercator();
+  // std::cout << normalised_coordinate1.x() << " " << normalised_coordinate1.y() << std::endl;
+  // std::cout << normalised_coordinate3.x() << " " << normalised_coordinate3.y() << std::endl;
+  QVERIFY(normalised_coordinate1 == normalised_coordinate3);
 }
 
 /***************************************************************************************************/

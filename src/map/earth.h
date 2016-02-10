@@ -38,10 +38,11 @@
 // QC_BEGIN_NAMESPACE
 
 // Equatorial radius (half major axis) of the ellipsoid
-constexpr double EQUATORIAL_RADIUS = 6378137.0; // m
-constexpr double EQUATORIAL_DIAMETER = 2 * EQUATORIAL_RADIUS; // m
+constexpr double EQUATORIAL_RADIUS = 6378137.0; // m WGS84
+constexpr double EQUATORIAL_DIAMETER = 2. * EQUATORIAL_RADIUS; // m
 constexpr double HALF_EQUATORIAL_PERIMETER = M_PI * EQUATORIAL_RADIUS; // m
-constexpr double EQUATORIAL_PERIMETER = 2 * HALF_EQUATORIAL_PERIMETER; // m
+constexpr double EQUATORIAL_PERIMETER = 2. * HALF_EQUATORIAL_PERIMETER; // m
+constexpr double INVERSE_EQUATORIAL_PERIMETER = 1. / EQUATORIAL_PERIMETER; // m
 
 // QT_END_NAMESPACE
 
