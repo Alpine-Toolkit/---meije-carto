@@ -26,6 +26,8 @@
 **
 ***************************************************************************************************/
 
+/**************************************************************************************************/
+
 #ifndef __INTERVAL_H__
 #define __INTERVAL_H__
 
@@ -49,8 +51,7 @@ class QC_EXPORT QcInterval
  public:
   QcInterval()
     : m_inf(0), m_sup(0), m_empty(true)
-    {
-    }
+    {}
 
   QcInterval(T inf, T sup)
     : m_inf(0), m_sup(0), m_empty(false)

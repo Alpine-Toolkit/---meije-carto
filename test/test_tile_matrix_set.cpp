@@ -39,6 +39,7 @@
 class TestQcTileMatrixSet: public QObject
 {
   Q_OBJECT
+
 private slots:
   void constructor();
 };

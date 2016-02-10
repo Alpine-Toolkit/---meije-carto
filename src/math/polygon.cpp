@@ -28,9 +28,6 @@
 
 #include <algorithm>
 #include <exception>
-#include <iostream>
-
-#include <QDebug>
 
 #include "polygon.h"
 #include "segment.h"
@@ -39,7 +36,7 @@
 /**************************************************************************************************/
 
 QcPolygon::QcPolygon()
-  : m_vertexes() // , m_edges()
+  : m_vertexes()
 {
 }
 
@@ -62,23 +59,6 @@ QcPolygon::QcPolygon(const QList<QcVectorDouble> & vertexes)
     for (size_t i = 1; i < number_of_vertexes; i++)
       m_interval |= m_vertexes[i].to_interval();
   }
-
-  /*
-  if (number_of_vertexes >= 2) {
-    // Fixme: const
-    QcVectorDouble & vertex0 = m_vertexes[0];
-    for (size_t i = 1; i < number_of_vertexes; i++) {
-      const QcVectorDouble & vertex1 = m_vertexes[i];
-      QcVectorDouble edge = vertex1 - vertex0;
-      m_edges.push_back(edge);
-      vertex0 = vertex1;
-    }
-    // close the polygon
-    const QcVectorDouble & vertex1 = m_vertexes[0];
-    QcVectorDouble edge = vertex1 - vertex0;
-    m_edges.push_back(edge);
-  }
-  */
 }
 
 QcPolygon::QcPolygon(const QVector<double> & coordinates)
@@ -93,60 +73,23 @@ QcPolygon::QcPolygon(const QVector<double> & coordinates)
 }
 
 QcPolygon::QcPolygon(const QcPolygon & polygon)
-  : m_vertexes(polygon.m_vertexes) //, m_edges(polygon.m_edges)
+  : m_vertexes(polygon.m_vertexes)
 {}
 
 QcPolygon::~QcPolygon()
 {}
 
 void
-QcPolygon::add_vertex(const QcVectorDouble & vertex, bool close_polygon)
+QcPolygon::add_vertex(const QcVectorDouble & vertex)
 {
-  // qInfo() << "add_vertex" << vertex;
-  size_t number_of_vertexes = m_vertexes.size();
-  /*
-  size_t number_of_edges = m_edges.size();
-  if (number_of_edges == number_of_vertexes)
-    m_edges.removeLast();
-  */
-
   QcInterval2DDouble vertex_interval = vertex.to_interval();
+  size_t number_of_vertexes = m_vertexes.size();
   if (! number_of_vertexes)
     m_interval = vertex_interval;
   else
     m_interval |= vertex_interval;
   m_vertexes.push_back(vertex);
-  number_of_vertexes += 1;
-
-  /*
-  if (number_of_vertexes >= 2) {
-    const QcVectorDouble & vertex0 = m_vertexes[number_of_vertexes -2];
-    QcVectorDouble edge = vertex - vertex0;
-    m_edges.push_back(edge);
-  }
-
-  if (close_polygon)
-    close();
-  */
 }
-
-/*
-void
-QcPolygon::close()
-{
-  size_t number_of_vertexes = m_vertexes.size();
-  size_t number_of_edges = m_edges.size();
-
-  const QcVectorDouble & vertex0 = m_vertexes[number_of_vertexes -1];
-  const QcVectorDouble & vertex1 = m_vertexes[0];
-  QcVectorDouble edge = vertex1 - vertex0;
-
-  if (number_of_edges == number_of_vertexes)
-    m_edges.replace(number_of_edges -1, edge);
-  else
-    m_edges.push_back(edge);
-}
-*/
 
 /*
   Travelling from p0 to p1 to p2.
@@ -161,12 +104,6 @@ triangle_orientation(const QcVectorDouble & p0, const QcVectorDouble & p1, const
   double dy1 = p1.y() - p0.y();
   double dx2 = p2.x() - p0.x();
   double dy2 = p2.y() - p0.y();
-
-  // std::cout << "triangle_orientation"
-	    // << " (" << p0.x() << ", " << p0.y() << ")"
-	    // << " (" << p1.x() << ", " << p1.y() << ")"
-	    // << " (" << p2.x() << ", " << p2.y() << ")"
-	    // << std::endl;
 
   // second slope is greater than the first one --> counter-clockwise
   if (dx1 * dy2 > dx2 * dy1) {
@@ -209,8 +146,6 @@ intersect(const QcSegmentDouble & line1, const QcSegmentDouble & line2)
   int ccw21 = triangle_orientation(line2.p1(), line2.p2(), line1.p1());
   int ccw22 = triangle_orientation(line2.p1(), line2.p2(), line1.p2());
 
-  // std::cout << "intersect " << ccw11 << " " << ccw12 << " " << ccw21 << " " << ccw22 << std::endl;
-
   return (((ccw11 * ccw12 < 0) && (ccw21 * ccw22 < 0))
 	  // one ccw value is zero to detect an intersection
 	  || (ccw11 * ccw12 * ccw21 * ccw22 == 0)) ? 1 : 0;
@@ -237,9 +172,6 @@ bool
 QcPolygon::contains(const QcVectorDouble & test_point) const
 {
   size_t number_of_vertexes = m_vertexes.size();
-  // size_t number_of_edges = m_edges.size();
-  // if (number_of_edges < 3 || number_of_edges != number_of_vertexes)
-  //   return false;
 
   // Initial start point
   const QcVectorDouble origin(0, 0);
@@ -251,8 +183,6 @@ QcPolygon::contains(const QcVectorDouble & test_point) const
   QcSegmentDouble x_axis_positive(origin, origin);
 
   int start_node_position = -1;
-
-  // std::cout << "origin " << origin.x() << origin.y() << std::endl;
 
   // Is test_point on a node?
   // Move polygon to 0|0
@@ -282,11 +212,9 @@ QcPolygon::contains(const QcVectorDouble & test_point) const
     if (x < x_axis.p1().x()) {
       x_axis.p1().set_x(x);
     }
-    // std::cout << "origin " << origin.x() << origin.y() << std::endl;
   }
 
   // Move test_point to 0|0
-  // std::cout << "origin " << origin.x() << origin.y() << std::endl;
   QcSegmentDouble test_point_line(origin, origin);
   QcSegmentDouble edge;
 
@@ -295,12 +223,7 @@ QcPolygon::contains(const QcVectorDouble & test_point) const
     edge.set_p1(vertexes[i]);
     // Get correct index of successor edge
     edge.set_p2(vertexes[get_next_index(number_of_vertexes, i)]);
-    // std::cout << test_point_line.p1().x() << test_point_line.p1().y() << std::endl;
-    // std::cout << test_point_line.p2().x() << test_point_line.p2().y() << std::endl;
-    // std::cout << edge.p1().x() << edge.p1().y() << std::endl;
-    // std::cout << edge.p2().x() << edge.p2().y() << std::endl;
     if (intersect(test_point_line, edge) == 1) {
-        // std::cout << "R2" << std::endl;
 	return true;
     }
   }
@@ -308,7 +231,6 @@ QcPolygon::contains(const QcVectorDouble & test_point) const
   // No start point found and point is not on an edge or node
   // --> point is outside
   if (start_node_position == -1) {
-    // std::cout << "R3" << std::endl;
     return false;
   }
 
@@ -354,7 +276,6 @@ QcPolygon::contains(const QcVectorDouble & test_point) const
 
   // Odd count --> in the polygon (1)
   // Even count --> outside (0)
-  // std::cout << "R4 " << count << std::endl;
   return bool(count % 2);
 }
 
@@ -407,7 +328,6 @@ QcPolygon::intersec_with_grid(double grid_step) const
 
   int Y_min = interval_on_grid.y().inf();
   size_t number_of_rows = interval_on_grid.y().length() + 1; // Fixme: int length
-  // std::cout << "number_of_rows " << number_of_rows << std::endl;
   QVector<QList<OpenInterval>> rows(number_of_rows);
 
   size_t number_of_vertexes = m_vertexes.size();
@@ -455,8 +375,6 @@ QcPolygon::intersec_with_grid(double grid_step) const
     }
   }
 
-  // std::cout << "rows built" << std::endl;
-
   // QList<QcIntervalDouble> runs;
   for (size_t i = 0; i < number_of_rows; i++) {
     QList<OpenInterval> & row = rows[i];
@@ -469,7 +387,6 @@ QcPolygon::intersec_with_grid(double grid_step) const
     size_t number_of_intervals = row.size();
     if (number_of_intervals > 1)
       for (size_t j = 1; j < number_of_intervals; j++) {
-	// std::cout << i << " " << j << "/" << number_of_intervals << std::endl;
  	const OpenInterval & open_interval = row[j];
 	if (open_interval.is_gap(previous_interval)) {
 	  double x_inf = open_interval.x;
@@ -481,7 +398,6 @@ QcPolygon::intersec_with_grid(double grid_step) const
 	}
       }
     for (const QcIntervalInt & interval : intervals)
-      // qInfo() << Y << interval;
       std::cout << Y << " " << interval.inf() << " " << interval.sup() << std::endl;
     // runs.push_back((Y, interval));
   }

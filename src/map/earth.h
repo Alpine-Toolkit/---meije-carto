@@ -37,8 +37,6 @@
 
 // QC_BEGIN_NAMESPACE
 
-/**************************************************************************************************/
-
 // Equatorial radius (half major axis) of the ellipsoid
 constexpr double EQUATORIAL_RADIUS = 6378137.0; // m
 constexpr double EQUATORIAL_DIAMETER = 2 * EQUATORIAL_RADIUS; // m

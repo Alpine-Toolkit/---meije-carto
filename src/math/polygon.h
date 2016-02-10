@@ -26,6 +26,8 @@
 **
 ***************************************************************************************************/
 
+/**************************************************************************************************/
+
 #ifndef __POLYGON_H__
 #define __POLYGON_H__
 
@@ -58,11 +60,7 @@ class QC_EXPORT QcPolygon
   QcPolygon(const QcPolygon & polygon);
   ~QcPolygon();
 
-  void add_vertex(const QcVectorDouble & vertex, bool close = false);
-  // void close();
-  // inline bool closed() const {
-  //   return m_vertexes.size() == m_edges.size();
-  // }
+  void add_vertex(const QcVectorDouble & vertex);
 
   bool contains(const QcVectorDouble & point) const;
 
@@ -71,7 +69,6 @@ class QC_EXPORT QcPolygon
 private:
   // Fixme: QVector
   QList<QcVectorDouble> m_vertexes;
-  // QList<QcVectorDouble> m_edges;
   QcInterval2DDouble m_interval;
 };
 

@@ -24,8 +24,10 @@
 **
 ***************************************************************************************************/
 
+/**************************************************************************************************/
+
 #include <cmath>
-#include <iostream>
+// #include <iostream>
 
 #include <QtTest/QtTest>
 #include <QtDebug>
@@ -39,6 +41,7 @@
 class TestQcGeoCoordinateWGS84: public QObject
 {
   Q_OBJECT
+
 private slots:
   void constructor();
 };
