@@ -145,8 +145,8 @@ QcProjection::transform(QcProjection &proj2, double &x, double &y) const
   int point_offset = 1;
   double z = 0;
   int error = pj_transform(m_projection, proj2.m_projection, point_count, point_offset, &x, &y, &z);
-  // if (error != 0)
-  //   raise ...(pj_strerrno(error))
+  if (error != 0)
+    throw; // Fixme: (pj_strerrno(error))
 }
 
 bool
@@ -445,7 +445,7 @@ QcGeoCoordinateMercator::operator==(const QcGeoCoordinateMercator &other) const
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, const QcGeoCoordinateMercator &coordinate)
 {
-    QDebugStateSaver saver(debug);
+    QDebugStateSaver saver(debug); // Fixme: ???
     double x = coordinate.x();
     double y = coordinate.y();
 

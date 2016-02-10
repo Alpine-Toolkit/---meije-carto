@@ -1,3 +1,5 @@
+// -*- mode: c++ -*-
+
 /***************************************************************************************************
 **
 ** $QTCARTO_BEGIN_LICENSE:GPL3$
@@ -24,73 +26,95 @@
 **
 ***************************************************************************************************/
 
-#ifndef QC_MATH_H
-#define QC_MATH_H
+#ifndef __SEGMENT_H__
+#define __SEGMENT_H__
 
 /**************************************************************************************************/
 
 #include <cmath>
+#include "math/qc_math.h"
+
+// #include <QtCore/QMetaType>
+#include <QDebug>
+
+#include "qtcarto_global.h"
 
 /**************************************************************************************************/
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
+// QC_BEGIN_NAMESPACE
 
 /**************************************************************************************************/
 
-// Fixme: static ?
-inline static double
-haversine(double theta)
+template <typename T>
+class QC_EXPORT QcSegment
 {
-  return .5*(1 - cos(theta)); // = sin(theta / 2)**2
-}
+ public:
+  typedef QcVector<T> Point;
+  typedef QcSegment<T> Segment;
+
+  QcSegment()
+    : m_p1(), m_p2()
+    {}
+
+  QcSegment(const Point & p1, const Point & p2)
+    : m_p1(p1), m_p2(p2)
+    {}
+
+  QcSegment(const Segment & other)
+    : m_p1(other.m_p1), m_p2(other.m_p2)
+    {}
+
+  ~QcSegment()
+    {}
+
+  Segment & operator=(const Segment & other)
+    {
+      if (this != &other) {
+	m_p1 = other.m_p1;
+	m_p2 = other.m_p2;
+      }
+
+      return *this;
+    }
+
+  inline const Point & p1() const {
+    return m_p1;
+  }
+
+  inline Point & p1() {
+    return m_p1;
+  }
+
+  inline void set_p1(const Point & point) {
+    m_p1 = point;
+  }
+
+  inline Point & p2() {
+    return m_p2;
+  }
+
+  inline const Point & p2() const {
+    return m_p2;
+  }
+
+  inline void set_p2(const Point & point) {
+    m_p2 = point;
+  }
+
+ private:
+  Point m_p1;
+  Point m_p2;
+};
+
+typedef QcSegment<double> QcSegmentDouble;
 
 /**************************************************************************************************/
 
-inline static
-double
-middle(double a, double b)
-{
-  return .5*(a + b);
-}
+// QT_END_NAMESPACE
 
 /**************************************************************************************************/
 
-// Fixme: sign_of ?
-inline static
-double
-sign(double x)
-{
-  return copysign(1., x);
-}
-
-/**************************************************************************************************/
-
-inline static
-double
-epsilon_float(double a, double b, double epsilon = 1e-3)
-{
-  return fabs(a-b) <= epsilon;
-}
-
-/**************************************************************************************************/
-
-// Clamp x in the range [-1.,1].
-double trignometric_clamp(double x);
-
-/**************************************************************************************************/
-
-inline static
-bool
-is_in_trignometric_range(double x)
-{
-  return -1. <= x && x <= 1.;
-}
-
-/**************************************************************************************************/
-
-#endif // QC_MATH_H
+#endif /* __SEGMENT_H__ */
 
 /***************************************************************************************************
  *

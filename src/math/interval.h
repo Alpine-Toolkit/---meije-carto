@@ -31,6 +31,8 @@
 
 /**************************************************************************************************/
 
+#include <algorithm>
+
 // #include <QtCore/QMetaType>
 
 #include "qtcarto_global.h"
@@ -80,8 +82,17 @@ class QC_EXPORT QcInterval
     return m_inf;
   }
 
+  inline void set_inf(T value) {
+    // Fixme: check
+    m_inf = value;
+  }
+
   inline T sup() const {
     return m_sup;
+  }
+
+  inline void set_sup(T value) {
+    m_sup = value;
   }
 
   inline bool is_empty() const {
@@ -183,8 +194,8 @@ class QC_EXPORT QcInterval
   // Intersection
   QcInterval<T> & operator&=(const QcInterval<T> & other) {
     if (intersect(other)) {
-      m_inf = max(m_inf, other.m_inf);
-      m_sup = min(m_sup, other.m_sup);
+      m_inf = std::max(m_inf, other.m_inf);
+      m_sup = std::min(m_sup, other.m_sup);
     }
     else {
       m_inf = 0;
@@ -197,8 +208,8 @@ class QC_EXPORT QcInterval
   friend QcInterval<T> operator&(const QcInterval<T> & interval1, const QcInterval<T> & interval2)
   {
     if (interval1.intersect(interval2)) {
-      return QcInterval(max(interval1.m_inf, interval2.m_inf),
-			min(interval1.m_sup, interval2.m_sup));
+      return QcInterval(std::max(interval1.m_inf, interval2.m_inf),
+			std::min(interval1.m_sup, interval2.m_sup));
     }
     else {
       return QcInterval();
@@ -208,8 +219,8 @@ class QC_EXPORT QcInterval
   // Union
   QcInterval<T> & operator|=(const QcInterval<T> & other) {
     if (!(m_empty || other.m_empty)) {
-      m_inf = min(m_inf, other.m_inf);
-      m_sup = max(m_sup, other.m_sup);
+      m_inf = std::min(m_inf, other.m_inf);
+      m_sup = std::max(m_sup, other.m_sup);
     }
     else if (m_empty && !other.m_empty) {
       m_inf = other.m_inf;
@@ -221,8 +232,8 @@ class QC_EXPORT QcInterval
   friend QcInterval<T> operator|(const QcInterval<T> & interval1, const QcInterval<T> & interval2)
   {
     if (!(interval1.m_empty || interval2.m_empty))
-      return QcInterval(min(interval1.m_inf, interval2.m_inf),
-			max(interval1.m_sup, interval2.m_sup));
+      return QcInterval(std::min(interval1.m_inf, interval2.m_inf),
+			std::max(interval1.m_sup, interval2.m_sup));
     else if (interval1.m_empty && !interval2.m_empty)
       return QcInterval(*interval2);
     else
@@ -257,7 +268,7 @@ class QC_EXPORT QcInterval2D
     : m_x(other.m_x), m_y(other.m_y)
     {}
 
-  QcInterval2D &operator=(const QcInterval2D & other)
+  QcInterval2D & operator=(const QcInterval2D & other)
     {
       if (this != &other) {
 	m_x = other.m_x;
@@ -268,19 +279,19 @@ class QC_EXPORT QcInterval2D
     }
 
   inline QcInterval<T> & x() {
-    return &m_x;
+    return m_x;
   }
 
   inline QcInterval<T> & y() {
-    return &m_y;
+    return m_y;
   }
 
   inline const QcInterval<T> & x() const {
-    return &m_x;
+    return m_x;
   }
 
   inline const QcInterval<T> & y() const {
-    return &m_y;
+    return m_y;
   }
 
   inline bool is_empty() const {

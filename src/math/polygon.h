@@ -1,3 +1,5 @@
+// -*- mode: c++ -*-
+
 /***************************************************************************************************
 **
 ** $QTCARTO_BEGIN_LICENSE:GPL3$
@@ -24,73 +26,62 @@
 **
 ***************************************************************************************************/
 
-#ifndef QC_MATH_H
-#define QC_MATH_H
+#ifndef __POLYGON_H__
+#define __POLYGON_H__
 
 /**************************************************************************************************/
 
 #include <cmath>
+#include "math/qc_math.h"
+
+// #include <QtCore/QMetaType>
+#include <QVector>
+#include <QList>
+
+#include "qtcarto_global.h"
+#include "interval.h"
+#include "vector.h"
 
 /**************************************************************************************************/
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
+// QC_BEGIN_NAMESPACE
 
 /**************************************************************************************************/
 
-// Fixme: static ?
-inline static double
-haversine(double theta)
+class QC_EXPORT QcPolygon
 {
-  return .5*(1 - cos(theta)); // = sin(theta / 2)**2
-}
+ public:
+  QcPolygon();
+  // QcPolygon(size_t number_of_vertexes);
+  QcPolygon(const QList<QcVectorDouble> & vertexes);
+  QcPolygon(const QVector<double> & coordinates);
+  QcPolygon(const QcPolygon & polygon);
+  ~QcPolygon();
+
+  void add_vertex(const QcVectorDouble & vertex, bool close = false);
+  // void close();
+  // inline bool closed() const {
+  //   return m_vertexes.size() == m_edges.size();
+  // }
+
+  bool contains(const QcVectorDouble & point) const;
+
+  void intersec_with_grid(double grid_step) const;
+
+private:
+  // Fixme: QVector
+  QList<QcVectorDouble> m_vertexes;
+  // QList<QcVectorDouble> m_edges;
+  QcInterval2DDouble m_interval;
+};
 
 /**************************************************************************************************/
 
-inline static
-double
-middle(double a, double b)
-{
-  return .5*(a + b);
-}
+// QT_END_NAMESPACE
 
 /**************************************************************************************************/
 
-// Fixme: sign_of ?
-inline static
-double
-sign(double x)
-{
-  return copysign(1., x);
-}
-
-/**************************************************************************************************/
-
-inline static
-double
-epsilon_float(double a, double b, double epsilon = 1e-3)
-{
-  return fabs(a-b) <= epsilon;
-}
-
-/**************************************************************************************************/
-
-// Clamp x in the range [-1.,1].
-double trignometric_clamp(double x);
-
-/**************************************************************************************************/
-
-inline static
-bool
-is_in_trignometric_range(double x)
-{
-  return -1. <= x && x <= 1.;
-}
-
-/**************************************************************************************************/
-
-#endif // QC_MATH_H
+#endif /* __POLYGON_H__ */
 
 /***************************************************************************************************
  *

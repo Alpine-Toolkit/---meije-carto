@@ -17,6 +17,8 @@ foreach(name
     tile_matrix_set
     interval
     vector
+    line
+    polygon
     )
   add_executable(test_${name} test_${name}.cpp)
   target_link_libraries(test_${name} Qt5::Test qtcarto)

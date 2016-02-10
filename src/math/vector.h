@@ -35,8 +35,10 @@
 #include "math/qc_math.h"
 
 // #include <QtCore/QMetaType>
+#include <QDebug>
 
 #include "qtcarto_global.h"
+#include "interval.h"
 
 /**************************************************************************************************/
 
@@ -51,18 +53,30 @@ class QC_EXPORT QcVector
   QcVector()
     : QcVector(0, 0)
     {
+      // qInfo() << "QcVector()" << *this << this;
     }
 
   QcVector(T x, T y)
     : m_x(x), m_y(y)
-    {}
+    {
+      // qInfo() << "QcVector(x, y)" << *this << this;
+    }
 
   QcVector(const QcVector<T> & other)
     : m_x(other.m_x), m_y(other.m_y)
-    {}
-
-  QcVector<T> &operator=(const QcVector<T> & other)
     {
+      // qInfo() << "QcVector(const QcVector<T> & other)" << *this << &other << this;
+    }
+
+  ~QcVector()
+    {
+      // qInfo() << "~QcVector()" << *this << this;
+    }
+
+  QcVector<T> & operator=(const QcVector<T> & other)
+    {
+      // qInfo() << "operator=(const QcVector<T> & other)" << *this;
+
       if (this != &other) {
 	m_x = other.m_x;
 	m_y = other.m_y;
@@ -311,12 +325,37 @@ class QC_EXPORT QcVector
     return angle_sign * qRadiansToDegrees(angle);
   }
 
+  QcInterval2D<T> to_interval() const {
+    return QcInterval2D<T>(m_x, m_x, m_y, m_y);
+  }
+
  private:
   T m_x;
   T m_y;
 };
 
 typedef QcVector<double> QcVectorDouble;
+typedef QcVector<double> QcVectorDouble;
+
+#ifndef QT_NO_DEBUG_STREAM
+QC_EXPORT QDebug operator<<(QDebug debug, const QcVectorDouble & vector)
+{
+  QDebugStateSaver saver(debug); // Fixme: ???
+
+  debug.nospace() << "QcVectorDouble(";
+  debug << vector.x();
+  debug << ", ";
+  debug << vector.y();
+  debug << ')';
+
+  return debug;
+}
+#endif
+
+// #ifndef QT_NO_DATASTREAM
+// QC_EXPORT QDataStream &operator<<(QDataStream & stream, const QcVector & vector);
+// QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcVector & vector);
+// #endif
 
 /**************************************************************************************************/
 

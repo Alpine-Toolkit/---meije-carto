@@ -24,73 +24,41 @@
 **
 ***************************************************************************************************/
 
-#ifndef QC_MATH_H
-#define QC_MATH_H
+/**************************************************************************************************/
+
+#include <iostream>
+
+#include <QtTest/QtTest>
 
 /**************************************************************************************************/
 
-#include <cmath>
+#include "math/line.h"
 
-/**************************************************************************************************/
+/***************************************************************************************************/
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
-/**************************************************************************************************/
-
-// Fixme: static ?
-inline static double
-haversine(double theta)
+class TestQcLine: public QObject
 {
-  return .5*(1 - cos(theta)); // = sin(theta / 2)**2
+  Q_OBJECT
+private slots:
+  void constructor();
+};
+
+void TestQcLine::constructor()
+{
+  QcLineDouble line1(QcVectorDouble(1., 10.), QcVectorDouble(2., 3.));
+
+  const QcVectorDouble & point = line1.point();
+  QVERIFY(point.x() == 1.);
+  QVERIFY(point.y() == 10.);
+  const QcVectorDouble & vector = line1.vector();
+  QVERIFY(vector.x() == 2.);
+  QVERIFY(vector.y() == 3.);
 }
 
-/**************************************************************************************************/
+/***************************************************************************************************/
 
-inline static
-double
-middle(double a, double b)
-{
-  return .5*(a + b);
-}
-
-/**************************************************************************************************/
-
-// Fixme: sign_of ?
-inline static
-double
-sign(double x)
-{
-  return copysign(1., x);
-}
-
-/**************************************************************************************************/
-
-inline static
-double
-epsilon_float(double a, double b, double epsilon = 1e-3)
-{
-  return fabs(a-b) <= epsilon;
-}
-
-/**************************************************************************************************/
-
-// Clamp x in the range [-1.,1].
-double trignometric_clamp(double x);
-
-/**************************************************************************************************/
-
-inline static
-bool
-is_in_trignometric_range(double x)
-{
-  return -1. <= x && x <= 1.;
-}
-
-/**************************************************************************************************/
-
-#endif // QC_MATH_H
+QTEST_MAIN(TestQcLine)
+#include "test_line.moc"
 
 /***************************************************************************************************
  *

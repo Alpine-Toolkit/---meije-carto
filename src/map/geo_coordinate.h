@@ -345,7 +345,7 @@ class QC_EXPORT QcGeoCoordinateMercator : public QcGeoCoordinate
 // Q_DECLARE_TYPEINFO(QcGeoCoordinateMercator, Q_MOVABLE_TYPE);
 
 #ifndef QT_NO_DEBUG_STREAM
-QC_EXPORT QDebug operator<<(QDebug, const QcGeoCoordinateMercator &);
+QC_EXPORT QDebug operator<<(QDebug debug, const QcGeoCoordinateMercator & coordinate);
 #endif
 
 #ifndef QT_NO_DATASTREAM
