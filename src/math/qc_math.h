@@ -45,6 +45,11 @@
 #define M_2PI 2 * M_PI
 #endif
 
+#ifndef M_HALF_PI
+// constepxr double
+#define M_HALF_PI M_PI / 2.
+#endif
+
 /**************************************************************************************************/
 
 // Fixme: static ?

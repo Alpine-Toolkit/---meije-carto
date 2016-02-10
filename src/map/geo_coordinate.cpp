@@ -377,14 +377,6 @@ QcGeoCoordinateWGS84::at_distance_and_azimuth(double distance, double _azimuth) 
   return QcGeoCoordinateWGS84(latitude2, longitude2);
 }
 
-QcGeoCoordinateNormalisedMercator
-QcGeoCoordinateMercator::normalised_mercator() const
-{
-  double x = (m_x + HALF_EQUATORIAL_PERIMETER) * INVERSE_EQUATORIAL_PERIMETER;
-  double y = (HALF_EQUATORIAL_PERIMETER - m_y) * INVERSE_EQUATORIAL_PERIMETER;
-
-  return QcGeoCoordinateNormalisedMercator(x, y);
-}
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, const QcGeoCoordinateWGS84 &coordinate)
@@ -472,6 +464,25 @@ QcGeoCoordinateMercator::operator==(const QcGeoCoordinateMercator &other) const
   return (x_equal && y_equal);
 }
 
+QcGeoCoordinateWGS84
+QcGeoCoordinateMercator::wgs84() const
+{
+  double longitude = m_x / EQUATORIAL_RADIUS;
+  double y = m_y / EQUATORIAL_RADIUS;
+  double latitude = 2*atan(exp(y)) - M_HALF_PI;
+
+  return QcGeoCoordinateWGS84(qRadiansToDegrees(longitude), qRadiansToDegrees(latitude));
+}
+
+QcGeoCoordinateNormalisedMercator
+QcGeoCoordinateMercator::normalised_mercator() const
+{
+  double x = (m_x + HALF_EQUATORIAL_PERIMETER) * INVERSE_EQUATORIAL_PERIMETER;
+  double y = (HALF_EQUATORIAL_PERIMETER - m_y) * INVERSE_EQUATORIAL_PERIMETER;
+
+  return QcGeoCoordinateNormalisedMercator(x, y);
+}
+
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, const QcGeoCoordinateMercator &coordinate)
 {
@@ -556,6 +567,24 @@ QcGeoCoordinateNormalisedMercator::operator==(const QcGeoCoordinateNormalisedMer
   bool y_equal = qFuzzyCompare(m_y, other.m_y);
 
   return (x_equal && y_equal);
+}
+
+QcGeoCoordinateMercator
+QcGeoCoordinateNormalisedMercator::mercator() const
+{
+  double x = m_x * EQUATORIAL_PERIMETER - HALF_EQUATORIAL_PERIMETER;
+  double y = HALF_EQUATORIAL_PERIMETER - m_y * EQUATORIAL_PERIMETER;
+
+  return QcGeoCoordinateMercator(x, y);
+}
+
+QcGeoCoordinateWGS84
+QcGeoCoordinateNormalisedMercator::wgs84() const
+{
+  double longitude = M_2PI * m_x - M_PI;
+  double latitude = 2*atan(exp(M_PI - M_2PI * m_y)) - M_HALF_PI;
+
+  return QcGeoCoordinateWGS84(qRadiansToDegrees(longitude), qRadiansToDegrees(latitude));
 }
 
 #ifndef QT_NO_DEBUG_STREAM
