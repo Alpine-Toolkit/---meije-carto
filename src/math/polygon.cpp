@@ -323,6 +323,16 @@ QcPolygon::intersec_with_grid(double grid_step) const {
   return QcTiledPolygon(*this, grid_step);
 }
 
+QcPolygon
+QcPolygon::rotate_counter_clockwise(double angle) const
+{
+  QList<QcVectorDouble> vertexes(m_vertexes);
+  for (QcVectorDouble & vertex: vertexes)
+    vertex.rotate_counter_clockwise(angle);
+
+  return QcPolygon(vertexes);
+}
+
 /**************************************************************************************************/
 
 QcTiledPolygonRun::QcTiledPolygonRun(int y, const QcIntervalInt & interval)
@@ -350,7 +360,7 @@ QcTiledPolygon::QcTiledPolygon(const QcPolygon & polygon, double grid_step)
 				   to_grid(polygon_interval.y().sup(), grid_step));
 
   int Y_min = interval_on_grid.y().inf();
-  size_t number_of_rows = interval_on_grid.y().length() + 1; // Fixme: int length
+  size_t number_of_rows = interval_on_grid.y().length();
   QVector<QList<OpenInterval>> rows(number_of_rows);
 
   size_t number_of_vertexes = vertexes.size();

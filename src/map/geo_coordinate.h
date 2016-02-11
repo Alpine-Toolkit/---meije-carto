@@ -41,6 +41,7 @@
 #include "qtcarto_global.h"
 #include "map/earth.h"
 #include "math/interval.h"
+#include "math/vector.h"
 
 /**************************************************************************************************/
 
@@ -341,9 +342,33 @@ class QC_EXPORT QcGeoCoordinateMercator : public QcGeoCoordinate
   //   // return "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs";
   // };
 
-  // argmax(latitude) is computed for y(latitude max) = pi
+  // argmax(latitude) is computed for y(latitude max) = pi * EQUATORIAL_RADIUS
   // argmax(latitude) = 2*atan(exp(pi)) - pi/2 = 85.051 128 779 806 6
   static constexpr double latitude_max = 85.0511287798060;
+
+  static inline QcIntervalDouble longitude_interval() {
+    return QcIntervalDouble(QcGeoCoordinateWGS84::westward_longitude, QcGeoCoordinateWGS84::eastward_longitude);
+  }
+
+  static inline QcIntervalDouble latitude_interval() {
+    return QcIntervalDouble(-latitude_max, latitude_max);
+  }
+
+  static inline QcInterval2DDouble wgs84_domain() {
+    return QcInterval2DDouble(longitude_interval(), latitude_interval());
+  }
+
+  static inline QcIntervalDouble x_interval() {
+    return QcIntervalDouble(-HALF_EQUATORIAL_PERIMETER, HALF_EQUATORIAL_PERIMETER);
+  }
+
+  static inline QcIntervalDouble y_interval() {
+    return QcIntervalDouble(-HALF_EQUATORIAL_PERIMETER, HALF_EQUATORIAL_PERIMETER);
+  }
+
+  static inline QcInterval2DDouble domain() {
+    return QcInterval2DDouble(x_interval(), y_interval());
+  }
 
   inline static bool is_valid_x(double x) {
     return -HALF_EQUATORIAL_PERIMETER <= x && x <= HALF_EQUATORIAL_PERIMETER;
@@ -391,8 +416,12 @@ class QC_EXPORT QcGeoCoordinateMercator : public QcGeoCoordinate
     return m_y;
   }
 
-  QcGeoCoordinateNormalisedMercator normalised_mercator() const;
   QcGeoCoordinateWGS84 wgs84() const;
+  QcGeoCoordinateNormalisedMercator normalised_mercator() const;
+
+  inline QcVectorDouble vector() const {
+    return QcVectorDouble(m_x, m_y);
+  }
 
  private:
   double m_x;
@@ -430,6 +459,18 @@ class QC_EXPORT QcGeoCoordinateNormalisedMercator : public QcGeoCoordinate
   inline const char *srid() {
     return "epsg:none";
   };
+
+  static inline QcIntervalDouble x_interval() {
+    return QcIntervalDouble(0, 1);
+  }
+
+  static inline QcIntervalDouble y_interval() {
+    return QcIntervalDouble(0, 1);
+  }
+
+  static inline QcInterval2DDouble domain() {
+    return QcInterval2DDouble(x_interval(), y_interval());
+  }
 
   inline static bool is_valid_x(double x) {
     return 0 <= x && x <= 1.;

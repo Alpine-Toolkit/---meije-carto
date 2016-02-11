@@ -34,13 +34,14 @@
 /**************************************************************************************************/
 
 #include <cmath>
-#include "math/qc_math.h"
 
 // #include <QtCore/QMetaType>
+#include <QtMath>
 #include <QDebug>
 
 #include "qtcarto_global.h"
-#include "interval.h"
+#include "math/qc_math.h"
+#include "math/interval.h"
 
 /**************************************************************************************************/
 
@@ -239,12 +240,12 @@ class QC_EXPORT QcVector
     return QcVector<T>(xp, yp);
   }
 
-  //  Return a new vector equal to self rotated of 90 degree in the counter clockwise direction
+  // Return a new vector equal to self rotated of 90 degree in the counter clockwise direction
   QcVector<T> rotate_counter_clockwise_90() const {
     return QcVector<T>(-m_y, m_x);
   }
 
-  //  Return a new vector equal to  rotated of 90 degree in the clockwise direction
+  // Return a new vector equal to  rotated of 90 degree in the clockwise direction
   QcVector<T> rotate_clockwise_90() const {
     return QcVector<T>(m_y, -m_x);
   }
@@ -253,6 +254,14 @@ class QC_EXPORT QcVector
   // parity
   QcVector<T> rotate_180() const {
     return QcVector<T> (-m_x, -m_y);
+  }
+
+  QcVector<T> mirror_x() const {
+    return QcVector<T>(-m_x, m_y);
+  }
+
+  QcVector<T> mirror_y() const {
+    return QcVector<T>(m_x, -m_y);
   }
 
   // Return the tangent
@@ -336,22 +345,11 @@ class QC_EXPORT QcVector
   T m_y;
 };
 
-typedef QcVector<double> QcVectorDouble;
+typedef QcVector<int> QcVectorInt;
 typedef QcVector<double> QcVectorDouble;
 
 #ifndef QT_NO_DEBUG_STREAM
-QC_EXPORT QDebug operator<<(QDebug debug, const QcVectorDouble & vector)
-{
-  QDebugStateSaver saver(debug); // Fixme: ???
-
-  debug.nospace() << "QcVectorDouble(";
-  debug << vector.x();
-  debug << ", ";
-  debug << vector.y();
-  debug << ')';
-
-  return debug;
-}
+QC_EXPORT QDebug operator<<(QDebug debug, const QcVectorDouble & vector);
 #endif
 
 // #ifndef QT_NO_DATASTREAM

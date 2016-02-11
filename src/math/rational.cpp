@@ -33,10 +33,10 @@
 unsigned int
 euclidian_recursive_gcd(unsigned int u, unsigned int v)
 {
-  if (v = 0)
+  if (v == 0)
     return u;
   else
-    return gcd(v, u % v);
+    return euclidian_recursive_gcd(v, u % v);
 }
 
 unsigned int
@@ -44,7 +44,7 @@ euclidian_iterative_gcd(unsigned int u, unsigned int v)
 {
   while (v != 0) {
     unsigned int t = v;
-    b = u % v;
+    v = u % v;
     u = t;
   }
 
@@ -68,19 +68,19 @@ binary_recursive_gcd(unsigned int u, unsigned int v)
   if (~u & 1) // u is even
     {
       if (v & 1) // v is odd
-	return gcd(u >> 1, v);
+	return binary_recursive_gcd(u >> 1, v);
       else // both u and v are even
-	return gcd(u >> 1, v >> 1) << 1;
+	return binary_recursive_gcd(u >> 1, v >> 1) << 1;
     }
 
   if (~v & 1) // u is odd, v is even
-    return gcd(u, v >> 1);
+    return binary_recursive_gcd(u, v >> 1);
 
   // reduce larger argument
   if (u > v)
-    return gcd((u - v) >> 1, v);
+    return binary_recursive_gcd((u - v) >> 1, v);
 
-  return gcd((v - u) >> 1, u);
+  return binary_recursive_gcd((v - u) >> 1, u);
 }
 
 unsigned int
@@ -122,6 +122,168 @@ binary_iterative_gcd(unsigned int u, unsigned int v)
 
   /* restore common factors of 2 */
   return u << shift;
+}
+
+/**************************************************************************************************/
+
+QcRational::QcRational()
+  : QcRational(0, 0)
+{}
+
+QcRational::QcRational(unsigned int numerator, unsigned int denominator, int sign)
+  : m_numerator(numerator), m_denominator(denominator), m_sign(sign < 0 ? -1 : 1)
+{}
+
+QcRational::QcRational(const QcRational & other)
+  : m_numerator(other.m_numerator), m_denominator(other.m_denominator), m_sign(other.m_sign)
+{}
+
+QcRational::~QcRational()
+{}
+
+QcRational &
+QcRational::operator=(const QcRational & other)
+{
+  if (this != &other) {
+    m_numerator = other.m_numerator;
+    m_denominator = other.m_denominator;
+  }
+
+  return *this;
+}
+
+double
+QcRational::to_double() const
+{
+  if (is_null())
+    return .0;
+  else if (is_one())
+    return m_sign;
+  else if (is_infinite())
+    // return +/- inf
+    throw std::invalid_argument("Denominator is null");
+  else if (is_integer())
+    return m_sign * m_numerator;
+  else
+    return m_sign * (m_numerator / m_denominator);
+}
+
+void
+QcRational::simplify()
+{
+  unsigned int gcd = binary_iterative_gcd(m_numerator, m_denominator);
+  m_numerator /= gcd;
+  m_denominator /= gcd;
+}
+
+QcRational &
+QcRational::operator+=(const QcRational & other) {
+  m_denominator *= other.m_denominator;
+  unsigned int a = m_numerator * other.m_denominator;
+  unsigned int b = other.m_numerator * m_denominator;
+  if (same_sign(other)) {
+    m_numerator = a + b;
+  }
+  else if (is_negative()) {
+    if (b > a) {
+      m_numerator = b - a;
+      m_sign = 1;
+    }
+    else {
+      m_numerator = a - b;
+    }
+  }
+  else {
+    if (a > b) {
+      m_numerator = a - b;
+    }
+    else {
+      m_numerator = a - b;
+      m_sign = -1;
+    }
+  }
+  return *this;
+}
+
+QcRational
+operator+(const QcRational & rational1, const QcRational & rational2)
+{
+  QcRational rational(rational1);
+  rational += rational2;
+  return rational;
+}
+
+QcRational &
+QcRational::operator-=(const QcRational & other) {
+  QcRational rational2(other);
+  rational2.inverse_sign();
+  *this += rational2;
+  return *this;
+}
+
+QcRational
+operator-(const QcRational & rational1, const QcRational & rational2)
+{
+  QcRational rational(rational1);
+  rational -= rational2;
+  return rational;
+}
+
+QcRational &
+QcRational::operator*=(const QcRational & other) {
+  m_numerator *= other.m_numerator;
+  m_denominator *= other.m_denominator;
+  m_sign *= other.m_sign;
+  return *this;
+}
+
+QcRational
+operator*(const QcRational & rational1, const QcRational & rational2)
+{
+  return QcRational(rational1.m_numerator * rational2.m_numerator,
+		    rational1.m_denominator * rational2.m_denominator,
+		    rational1.m_sign * rational2.m_sign);
+}
+
+QcRational &
+QcRational::operator/=(const QcRational & other) {
+  m_numerator *= other.m_denominator;
+  m_denominator *= other.m_numerator;
+  m_sign *= other.m_sign;
+  return *this;
+}
+
+QcRational
+operator/(const QcRational & rational1, const QcRational & rational2)
+{
+  return QcRational(rational1.m_numerator * rational2.m_denominator,
+		    rational1.m_denominator * rational2.m_numerator,
+		    rational1.m_sign * rational2.m_sign);
+}
+
+QcRational &
+QcRational::operator*=(unsigned int factor) {
+  m_numerator *= factor;
+  return *this;
+}
+
+QcRational
+operator*(const QcRational & rational, unsigned int factor)
+{
+  return QcRational(rational.m_numerator * factor, rational.m_denominator);
+}
+
+QcRational &
+QcRational::operator/=(unsigned int factor)
+{
+  m_denominator *= factor;
+  return *this;
+}
+
+QcRational
+operator/(const QcRational & rational, unsigned int factor)
+{
+  return QcRational(rational.m_numerator, rational.m_denominator * factor);
 }
 
 /***************************************************************************************************

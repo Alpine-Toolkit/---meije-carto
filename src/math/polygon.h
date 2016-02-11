@@ -76,6 +76,8 @@ class QC_EXPORT QcPolygon
 
   QcTiledPolygon intersec_with_grid(double grid_step) const;
 
+  QcPolygon rotate_counter_clockwise(double angle) const;
+
  private:
   // Fixme: QVector
   QList<QcVectorDouble> m_vertexes;

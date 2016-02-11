@@ -53,169 +53,109 @@ unsigned int binary_iterative_gcd(unsigned int u, unsigned int v);
 
 /**************************************************************************************************/
 
-template <typename T>
 class QC_EXPORT QcRational
 {
  public:
-  QcRational()
-    : QcRational(0, 0)
-    {}
+  QcRational();
+  QcRational(unsigned int numerator, unsigned int denominator, int sign = 1);
+  QcRational(const QcRational & other);
+  ~QcRational();
 
-  QcRational(T numerator, T denominator)
-    : m_numerator(numerator), m_denominator(denominator)
-    {}
+  QcRational & operator=(const QcRational & other);
 
-  QcRational(const QcRational<T> & other)
-    : m_numerator(other.m_numerator), m_denominator(other.m_denominator)
-    {}
-
-  ~QcRational()
-    {}
-
-  QcRational<T> & operator=(const QcRational<T> & other)
-    {
-      if (this != &other) {
-	m_numerator = other.m_numerator;
-	m_denominator = other.m_denominator;
-      }
-
-      return *this;
-    }
-
-  inline T numerator() const {
+  inline unsigned int numerator() const {
     return m_numerator;
   }
 
-  inline void set_numerator(T numerator) {
+  inline void set_numerator(unsigned int numerator) {
     m_numerator = numerator;
   }
 
-  inline T denominator() const {
+  inline unsigned int denominator() const {
     return m_denominator;
   }
 
-  inline void set_denominator(T denominator) {
+  inline void set_denominator(unsigned int denominator) {
     m_denominator = denominator;
   }
 
-  double to_double() const {
-    if (is_null())
-      return .0;
-    else if (is_one())
-      return 1.;
-    else if (is_infinite())
-      // return +/- inf
-      throw std::invalid_argument("Denominator is null");
-    else
-      return m_numerator / m_denominator;
+  inline int sign() const {
+    return m_denominator;
+  }
+
+  inline void set_sign(int sign) {
+    m_sign = sign;
+  }
+
+  inline void inverse_sign() {
+    m_sign = -m_sign;
+  }
+
+  inline bool is_negative() const {
+    return m_sign < 0;
+  }
+
+  inline bool is_positive() const {
+    return m_sign >= 0;
   }
 
   inline bool is_null() const {
     return m_numerator == 0;
   }
 
-  inline bool is_one() const {
-    return m_numerator == m_denominator;
-  }
-
   inline bool is_infinite() const {
     return m_denominator == 0;
   }
 
-  bool operator==(const QcRational<T> & other) const {
-    return (m_numerator == other.m_numerator) && (m_denominator == other.m_denominator);
+  inline bool is_one() const {
+    return m_numerator == m_denominator;
   }
-  inline bool operator!=(const QcRational<T> & other) const
+
+  inline bool is_integer() const {
+    return m_denominator == 1;
+  }
+
+  inline bool same_sign(const QcRational & other) const {
+    return m_sign == other.m_sign;
+  }
+
+  inline bool operator==(const QcRational & other) const {
+    return same_sign(other) && (m_numerator == other.m_numerator) && (m_denominator == other.m_denominator);
+  }
+
+  inline bool operator!=(const QcRational & other) const
   {
     return !operator==(other);
   }
 
-  void simplify()
+  double to_double() const;
+  void simplify();
 
-  QcRational<T> & operator+=(const QcRational<T> & other) {
-    m_numerator *= other.m_denominator;
-    m_denominator *= other.m_denominator;
-    m_numerator += other.m_numerator * m_denominator
-    return *this;
-  }
-
-  friend QcRational<T> operator+(const QcRational<T> & rational1, const QcRational<T> & rational2)
-  {
-    return QcRational(rational1.m_numerator * rational2.m_denominator + rational2.m_numerator * rational1*m_denominator,
-		      rational1.m_denominator * rational2.m_denominator);
-  }
-
-  QcRational<T> & operator-=(const QcRational<T> & other) {
-    m_numerator *= other.m_denominator;
-    m_denominator *= other.m_denominator;
-    m_numerator -= other.m_numerator * m_denominator
-    return *this;
-  }
-
-  friend QcRational<T> operator-(const QcRational<T> & rational1, const QcRational<T> & rational2)
-  {
-    return QcRational(rational1.m_numerator * rational2.m_denominator - rational2.m_numerator * rational1*m_denominator,
-		      rational1.m_denominator * rational2.m_denominator);
-  }
-
-  QcRational<T> & operator*=(const QcRational<T> & other) {
-    m_numerator *= other.m_numerator;
-    m_denominator *= other.m_denominator;
-    return *this;
-  }
-
-  friend QcRational<T> operator*(const QcRational<T> & rational1, const QcRational<T> & rational2)
-  {
-    return QcRational(rational1.m_numerator * rational2.m_numerator,
-		      rational1.m_denominator * rational2.m_denominator);
-  }
-
-  QcRational<T> & operator/=(const QcRational<T> & other) {
-    m_numerator *= other.m_denominator;
-    m_denominator *= other.m_numerator;
-    return *this;
-  }
-
-  friend QcRational<T> operator/(const QcRational<T> & rational1, const QcRational<T> & rational2)
-  {
-    return QcRational(rational1.m_numerator * rational2.m_denominator,
-		      rational1.m_denominator * rational2.m_numerator);
-  }
-
-  QcRational<T> & operator*=(T factor) {
-    m_numerator *= factor;
-    return *this;
-  }
-
-  friend QcRational<T> operator*(const QcRational<T> & rational, T factor)
-  {
-    return QcRational(rational.m_numerator * factor, rational.m_denominator);
-  }
-
-  QcRational<T> & operator/=(T factor) {
-    m_denominator *= factor;
-    return *this;
-  }
-
-  friend QcRational<T> operator/(const QcRational<T> & rational, T factor)
-  {
-    return QcRational(rational.m_numerator, rational.m_denominator * factor);
-  }
+  QcRational & operator*=(const QcRational & other);
+  QcRational & operator*=(unsigned int factor);
+  QcRational & operator+=(const QcRational & other);
+  QcRational & operator-=(const QcRational & other);
+  QcRational & operator/=(const QcRational & other);
+  QcRational & operator/=(unsigned int factor);
+  friend QcRational operator*(const QcRational & rational, unsigned int factor);
+  friend QcRational operator*(const QcRational & rational1, const QcRational & rational2);
+  friend QcRational operator+(const QcRational & rational1, const QcRational & rational2);
+  friend QcRational operator-(const QcRational & rational1, const QcRational & rational2);
+  friend QcRational operator/(const QcRational & rational, unsigned int factor);
+  friend QcRational operator/(const QcRational & rational1, const QcRational & rational2);
 
  private:
-  T m_numerator;
-  T m_denominator;
+  unsigned int m_numerator;
+  unsigned int m_denominator;
+  int m_sign;
 };
 
-typedef QcRational<int> QcRationalInt;
-// typedef QcRational<double> QcRationalDouble;
-
 #ifndef QT_NO_DEBUG_STREAM
-QC_EXPORT QDebug operator<<(QDebug debug, const QcRationalInt & rational)
+QC_EXPORT QDebug operator<<(QDebug debug, const QcRational & rational)
 {
   QDebugStateSaver saver(debug); // Fixme: ???
 
-  debug.nospace() << "QcRationalInt(";
+  debug.nospace() << "QcRational(";
   debug << rational.numerator();
   debug << ", ";
   debug << rational.denominator();

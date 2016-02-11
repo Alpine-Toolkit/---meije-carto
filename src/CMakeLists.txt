@@ -15,8 +15,12 @@
 set(qtcarto_files
   map/geo_coordinate.cpp
   map/tile_matrix_set.cpp
-  math/qc_math.cpp
+  map/viewport.cpp
+  math/interval.cpp
   math/polygon.cpp
+  math/qc_math.cpp
+  math/rational.cpp
+  math/vector.cpp
 )
 add_library(qtcarto SHARED ${qtcarto_files})
 target_link_libraries(qtcarto Qt5::Core ${PROJ4_LIBRARIES})

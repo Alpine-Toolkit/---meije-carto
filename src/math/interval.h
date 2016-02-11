@@ -34,6 +34,7 @@
 /**************************************************************************************************/
 
 #include <algorithm>
+#include <stdexcept>
 
 // #include <QtCore/QMetaType>
 
@@ -171,25 +172,41 @@ class QC_EXPORT QcInterval
       return m_inf <= x && x <= m_sup;
   }
 
+  T truncate(T x) const {
+    if (x > m_sup)
+      return m_sup;
+    else if (x < m_inf)
+      return m_inf;
+    else
+      return x;
+  }
+
+  T wrap(T x) const {
+    if (contains(x))
+      return x;
+    else
+      return ((x - m_inf) % length()) + m_inf;
+  }
+
   // Test whether the interval intersects with i2?
-  bool intersect(const QcInterval<T> & other) {
+  bool intersect(const QcInterval<T> & other) const {
     if (m_empty || other.m_empty)
       return false;
     else
-      return m_inf <= other.sup && other.inf <= m_sup;
+      return m_inf <= other.m_sup && other.m_inf <= m_sup;
   }
 
   // Test whether the interval is included in i1?
-  bool is_included_in(const QcInterval<T> & other) {
-    return other.inf <= m_inf && m_sup <= other.sup;
+  bool is_included_in(const QcInterval<T> & other) const {
+    return other.m_inf <= m_inf && m_sup <= other.m_sup;
   }
 
   // Test whether the interval is outside of i2?
-  bool is_outside_of(const QcInterval<T> & other) {
+  bool is_outside_of(const QcInterval<T> & other) const {
     if (m_empty || other.m_empty)
       return false;
     else
-      return m_inf < other.inf && other.sup < m_sup;
+      return m_inf < other.m_inf && other.m_sup < m_sup;
   }
 
   // Intersection
@@ -265,11 +282,11 @@ class QC_EXPORT QcInterval2D
     : m_x(x), m_y(y)
     {}
 
-  QcInterval2D(const QcInterval2D & other)
+  QcInterval2D(const QcInterval2D<T> & other)
     : m_x(other.m_x), m_y(other.m_y)
     {}
 
-  QcInterval2D & operator=(const QcInterval2D & other)
+  QcInterval2D<T> & operator=(const QcInterval2D<T> & other)
     {
       if (this != &other) {
 	m_x = other.m_x;
@@ -299,10 +316,10 @@ class QC_EXPORT QcInterval2D
     return x.is_empty() || y.is_empty();
   }
 
-  bool operator==(const QcInterval2D & other) const {
+  bool operator==(const QcInterval2D<T> & other) const {
     return (m_x == other.m_x) && (m_y == other.m_y);
   }
-  inline bool operator!=(const QcInterval2D & other) const
+  inline bool operator!=(const QcInterval2D<T> & other) const
   {
     return !operator==(other);
   }
@@ -318,29 +335,29 @@ class QC_EXPORT QcInterval2D
   }
 
   // Test whether the interval intersects with i2?
-  bool intersect(const QcInterval2D & other) {
+  bool intersect(const QcInterval2D<T> & other) const {
     return m_x.intersect(other.m_x) && m_y.intersect(other.m_y);
   }
 
   // Test whether the interval is included in i1?
-  bool is_included_in(const QcInterval2D & other) {
+  bool is_included_in(const QcInterval2D<T> & other) const {
     return m_x.is_included_in(other.m_x) && m_y.is_included_in(other.m_y);
   }
 
   // Test whether the interval is outside of i2?
-  bool is_outside_of(const QcInterval2D & other) {
+  bool is_outside_of(const QcInterval2D<T> & other) const {
     return m_x.is_outside_of(other.m_x) && m_y.is_outside_of(other.m_y);
   }
 
   // Intersection
-  QcInterval2D & operator&=(const QcInterval2D & other) {
+  QcInterval2D<T> & operator&=(const QcInterval2D<T> & other) {
     m_x &= other.m_x;
     m_y &= other.m_y;
     return *this;
   }
 
   /*
-  QcInterval2D operator&(const QcInterval2D & interval1, const QcInterval2D & T interval2) {
+  QcInterval2D<T> operator&(const QcInterval2D<T> & interval1, const QcInterval2D<T> & T interval2) {
     if (interval1.intersect(interval2)) {
       return QcInterval2D(interval1.m_x & interval2.m_x,
 			  interval1.m_y & interval2.m_y);
@@ -352,20 +369,20 @@ class QC_EXPORT QcInterval2D
   */
 
   // Union
-  QcInterval2D & operator|=(const QcInterval2D & other) {
+  QcInterval2D<T> & operator|=(const QcInterval2D<T> & other) {
     m_x |= other.m_x;
     m_y |= other.m_y;
     return *this;
   }
 
   /*
-  QcInterval2D operator|(const QcInterval2D & interval1, const QcInterval2D & T interval2) {
+  QcInterval2D<T> operator|(const QcInterval2D<T> & interval1, const QcInterval2D<T> & T interval2) {
     if (!(interval1.is_empty() || interval2.is_empty()))
       return QcInterval2D(interval1.m_x | interval2.m_x,
 			  interval1.m_y | interval2.m_y);
     else if (interval1.empty() && !interval2.is_empty())
       return QcInterval(*interval2);
-    else:
+    else
       return QcInterval(*interval1);
   }
   */
@@ -377,6 +394,12 @@ class QC_EXPORT QcInterval2D
 
 typedef QcInterval<int> QcIntervalInt;
 typedef QcInterval<double> QcIntervalDouble;
+
+template<> inline int QcIntervalInt::length() const {
+  return m_sup - m_inf +1;
+}
+
+template<> double QcIntervalDouble::wrap(double x) const;
 
 typedef QcInterval2D<int> QcInterval2DInt;
 typedef QcInterval2D<double> QcInterval2DDouble;
