@@ -49,296 +49,89 @@
 
 /**************************************************************************************************/
 
+template <typename T> class QcVector;
+
+template <typename T> QcVector<T> operator+(const QcVector<T> & vector1, const QcVector<T> & vector2);
+template <typename T> QcVector<T> operator-(const QcVector<T> & vector1, const QcVector<T> & vector2);
+template <typename T> QcVector<T> operator*(const QcVector<T> & vector, T factor);
+template <typename T> QcVector<T> operator/(const QcVector<T> & vector, T factor);
+
 template <typename T>
 class QC_EXPORT QcVector
 {
  public:
-  QcVector()
-    : QcVector(0, 0)
-    {
-      // qInfo() << "QcVector()" << *this << this;
-    }
+  QcVector();
+  QcVector(T x, T y);
+  QcVector(const QcVector<T> & other);
+  ~QcVector();
 
-  QcVector(T x, T y)
-    : m_x(x), m_y(y)
-    {
-      // qInfo() << "QcVector(x, y)" << *this << this;
-    }
+  QcVector<T> & operator=(const QcVector<T> & other);
 
-  QcVector(const QcVector<T> & other)
-    : m_x(other.m_x), m_y(other.m_y)
-    {
-      // qInfo() << "QcVector(const QcVector<T> & other)" << *this << &other << this;
-    }
+  T x() const;
+  T y() const;
+  void set_x(T value);
+  void set_y(T value);
 
-  ~QcVector()
-    {
-      // qInfo() << "~QcVector()" << *this << this;
-    }
+  T & operator[](size_t i);
+  T operator[](size_t i) const;
 
-  QcVector<T> & operator=(const QcVector<T> & other)
-    {
-      // qInfo() << "operator=(const QcVector<T> & other)" << *this;
+  T magnitude_square() const;
+  T magnitude() const;
+  void normalise();
+  QcVector<T> normalised() const;
+  inline bool is_null() const;
 
-      if (this != &other) {
-	m_x = other.m_x;
-	m_y = other.m_y;
-      }
+  bool operator==(const QcVector<T> & other) const;
+  inline bool operator!=(const QcVector<T> & other) const;
 
-      return *this;
-    }
+  QcVector<T> & operator+=(const QcVector<T> & other);
+  QcVector<T> & operator-=(const QcVector<T> & other);
+  QcVector<T> & operator*=(T factor);
+  QcVector<T> & operator/=(T factor);
 
-  inline T x() const {
-    return m_x;
-  }
-
-  inline void set_x(T value) {
-    m_x = value;
-  }
-
-  inline T y() const {
-    return m_y;
-  }
-
-  inline void set_y(T value) {
-    m_y = value;
-  }
-
-  T & operator[](size_t i) {
-    if (i == 0)
-      return m_x;
-    else if (i == 1)
-      return m_y;
-    else
-      throw std::invalid_argument("invalid index");
-  }
-
-  T operator[](size_t i) const {
-    if (i == 0)
-      return m_x;
-    else if (i == 1)
-      return m_y;
-    else
-      throw std::invalid_argument("invalid index");
-  }
-
-  inline T magnitude_square() const {
-    return m_x * m_x + m_y * m_y;
-  }
-
-  inline T magnitude() const {
-    return sqrt(magnitude_square());
-  }
-
-  void normalise() {
-    *this /= magnitude();
-  }
-
-  QcVector<T> normalised() const {
-    return *this / magnitude();
-  }
-
-  inline bool is_null() const {
-    return m_x == 0 && m_y == 0;
-  }
-
-  bool operator==(const QcVector<T> & other) const {
-    return (m_x == other.m_x) && (m_y == other.m_y);
-  }
-  inline bool operator!=(const QcVector<T> & other) const
-  {
-    return !operator==(other);
-  }
-
-  QcVector<T> & operator+=(const QcVector<T> & other) {
-    m_x += other.m_x;
-    m_y += other.m_y;
-    return *this;
-  }
-
-  friend QcVector<T> operator+(const QcVector<T> & vector1, const QcVector<T> & vector2)
-  {
-    return QcVector(vector1.m_x + vector2.m_x, vector1.m_y + vector2.m_y);
-  }
-
-  QcVector<T> & operator-=(const QcVector<T> & other) {
-    m_x -= other.m_x;
-    m_y -= other.m_y;
-    return *this;
-  }
-
-  friend QcVector<T> operator-(const QcVector<T> & vector1, const QcVector<T> & vector2)
-  {
-    return QcVector(vector1.m_x - vector2.m_x, vector1.m_y - vector2.m_y);
-  }
-
-  QcVector<T> & operator*=(T factor) {
-    m_x *= factor;
-    m_y *= factor;
-    return *this;
-  }
-
-  friend QcVector<T> operator*(const QcVector<T> & vector, T factor)
-  {
-    return QcVector(vector.m_x * factor, vector.m_y * factor);
-  }
-
-  QcVector<T> & operator/=(T factor) {
-    m_x /= factor;
-    m_y /= factor;
-    return *this;
-  }
-
-  friend QcVector<T> operator/(const QcVector<T> & vector, T factor)
-  {
-    return QcVector(vector.m_x / factor, vector.m_y / factor);
-  }
+  friend QcVector<T> operator+<>(const QcVector<T> & vector1, const QcVector<T> & vector2);
+  friend QcVector<T> operator-<>(const QcVector<T> & vector1, const QcVector<T> & vector2);
+  friend QcVector<T> operator*<>(const QcVector<T> & vector, T factor);
+  friend QcVector<T> operator/<>(const QcVector<T> & vector, T factor);
 
   // Return the orientation in degree
-  T orientation() const {
-    /*
-     * 2 | 1
-     * - + -
-     * 4 | 3
-     *
-     *       | 1    | 2         | 3    | 4         |
-     * x     | +    | -         | +    | -         |
-     * y     | +    | +         | -    | -         |
-     * tan   | +    | -         | -    | +         |
-     * atan  | +    | -         | -    | +         |
-     * theta | atan | atan + pi | atan | atan - pi |
-     */
-
-    if (is_null())
-      throw std::invalid_argument("Null Vector");
-
-    if (m_x == 0)
-      return copysign(90, m_y);
-    else if (m_y == 0)
-      return m_x >= 0 ? 0 : 180;
-    else {
-      orientation = qRadiansToDegrees(atan(tan()));
-      if (m_x < 0) {
-	if (m_y > 0)
-	  orientation += 180;
-	else
-	  orientation -= 180;
-      }
-      return orientation;
-    }
-  }
-
+  T orientation() const;
   // Return a new vector equal to self rotated of angle degree in the counter clockwise direction
-  QcVector<T> rotate_counter_clockwise(T angle) const {
-    T radians = qDegreesToRadians(angle);
-    T c = cos(radians);
-    T s = sin(radians);
-
-    T xp = c * m_x - s * m_y;
-    T yp = s * m_x + c * m_y;
-
-    return QcVector<T>(xp, yp);
-  }
-
+  QcVector<T> rotate_counter_clockwise(T angle) const;
   // Return a new vector equal to self rotated of 90 degree in the counter clockwise direction
-  QcVector<T> rotate_counter_clockwise_90() const {
-    return QcVector<T>(-m_y, m_x);
-  }
-
+  QcVector<T> rotate_counter_clockwise_90() const;
   // Return a new vector equal to  rotated of 90 degree in the clockwise direction
-  QcVector<T> rotate_clockwise_90() const {
-    return QcVector<T>(m_y, -m_x);
-  }
-
+  QcVector<T> rotate_clockwise_90() const;
   // Return a new vector equal to  rotated of 180 degree
   // parity
-  QcVector<T> rotate_180() const {
-    return QcVector<T> (-m_x, -m_y);
-  }
-
-  QcVector<T> mirror_x() const {
-    return QcVector<T>(-m_x, m_y);
-  }
-
-  QcVector<T> mirror_y() const {
-    return QcVector<T>(m_x, -m_y);
-  }
+  QcVector<T> rotate_180() const;
+  QcVector<T> mirror_x() const;
+  QcVector<T> mirror_y() const;
 
   // Return the tangent
-  T tan() const {
-    if (m_x != 0)
-      return m_y / m_x;
-    else
-      throw std::invalid_argument("x is null");
-  }
-
+  T tan() const;
   // Return the inverse tangent
-  T inverse_tan() const {
-    if (m_y != 0)
-      return m_x / m_y;
-    else
-      throw std::invalid_argument("y is null");
-  }
+  T inverse_tan() const;
 
   // Return the dot product of  with other
-  T dot(const QcVector<T> & other) const {
-    return m_x * other.m_x + m_y * other.m_y;
-  }
-
+  T dot(const QcVector<T> & other) const;
   // Return the cross product of  with other
-  T cross(const QcVector<T> & other) const {
-    return m_x * other.m_y - m_y * other.m_x;
-  }
-
+  T cross(const QcVector<T> & other) const;
   // is parallel with other
-  bool is_parallel(const QcVector<T> & other) const {
-    // Fixme: round
-    return round(cross(other), 7) == 0;
-  }
-
+  bool is_parallel(const QcVector<T> & other) const;
   // is orthogonal with other
-  bool is_orthogonal(const QcVector<T> & other) const {
-    // Fixme: round
-    return round(dot(other), 7) == 0;
-  }
-
+  bool is_orthogonal(const QcVector<T> & other) const;
   // Return the cosinus of  with direction
-  T cos_with(const QcVector<T> & direction) const {
-    T cos = dot(direction) / (direction.magnitude() * magnitude());
-    return trignometric_clamp(cos);
-  }
-
+  T cos_with(const QcVector<T> & direction) const;
   //  Return the projection of  on direction
-  T projection_on(const QcVector<T> & direction) const {
-    return dot(direction) / direction.magnitude();
-  }
-
+  T projection_on(const QcVector<T> & direction) const;
   //  Return the sinus of  with other
-  T sin_with(const QcVector<T> & direction) const {
-    //turn from direction to
-    T sin = direction.cross(*this) / (direction.magnitude() * magnitude());
-    return trignometric_clamp(sin);
-  }
-
+  T sin_with(const QcVector<T> & direction) const;
   //  Return the deviation of  with other
-  T deviation_with(const QcVector<T> & direction) const {
-    return direction.cross(*this) / direction.magnitude();
-  }
+  T deviation_with(const QcVector<T> & direction) const;
+  T orientation_with(const QcVector<T> & direction) const;
 
-  T orientation_with(const QcVector<T> & direction) const {
-    // Fixme: check all cases
-    // -> angle_with
-    //  Return the angle of on direction
-
-    T angle = acos(cos_with(direction));
-    T angle_sign = sign(sin_with(direction));
-
-    return angle_sign * qRadiansToDegrees(angle);
-  }
-
-  QcInterval2D<T> to_interval() const {
-    return QcInterval2D<T>(m_x, m_x, m_y, m_y);
-  }
+  QcInterval2D<T> to_interval() const;
 
  private:
   T m_x;
@@ -360,6 +153,12 @@ QC_EXPORT QDebug operator<<(QDebug debug, const QcVectorDouble & vector);
 /**************************************************************************************************/
 
 // QT_END_NAMESPACE
+
+/**************************************************************************************************/
+
+#ifndef QC_MANUAL_INSTANTIATION
+#include "vector.hxx"
+#endif
 
 /**************************************************************************************************/
 
