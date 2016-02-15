@@ -79,10 +79,10 @@ class QC_EXPORT QcVector
   T magnitude() const;
   void normalise();
   QcVector<T> normalised() const;
-  inline bool is_null() const;
+  bool is_null() const;
 
   bool operator==(const QcVector<T> & other) const;
-  inline bool operator!=(const QcVector<T> & other) const;
+  bool operator!=(const QcVector<T> & other) const;
 
   QcVector<T> & operator+=(const QcVector<T> & other);
   QcVector<T> & operator-=(const QcVector<T> & other);

@@ -46,217 +46,75 @@
 
 /**************************************************************************************************/
 
+template <typename T> class QcInterval;
+
+template <typename T> QcInterval<T> operator+(const QcInterval<T> & interval, T dx);
+template <typename T> QcInterval<T> operator-(const QcInterval<T> & interval, T dx);
+template <typename T> QcInterval<T> operator|(const QcInterval<T> & interval1, const QcInterval<T> & interval2);
+template <typename T> QcInterval<T> operator&(const QcInterval<T> & interval1, const QcInterval<T> & interval2);
+
 template <typename T>
 class QC_EXPORT QcInterval
 {
  public:
-  QcInterval()
-    : m_inf(0), m_sup(0), m_empty(true)
-    {}
+  QcInterval();
+  QcInterval(T inf, T sup);
+  QcInterval(const QcInterval<T> & other);
 
-  QcInterval(T inf, T sup)
-    : m_inf(0), m_sup(0), m_empty(false)
-    {
-      if (inf <= sup) {
-	m_inf = inf;
-	m_sup = sup;
-      }
-      else
-	throw std::invalid_argument("inf > sup");
-    }
-
-  QcInterval(const QcInterval<T> & other)
-    : m_inf(other.m_inf), m_sup(other.m_sup), m_empty(other.m_empty)
-    {}
-
-  QcInterval<T> &operator=(const QcInterval<T> & other)
-    {
-      if (this != &other) {
-	m_inf = other.m_inf;
-	m_sup = other.m_sup;
-	m_empty = other.m_empty;
-      }
-
-      return *this;
-    }
+  QcInterval<T> &operator=(const QcInterval<T> & other);
 
   inline T inf() const {
     return m_inf;
-  }
-
-  inline void set_inf(T value) {
-    // Fixme: check
-    m_inf = value;
   }
 
   inline T sup() const {
     return m_sup;
   }
 
-  inline void set_sup(T value) {
-    m_sup = value;
-  }
-
   inline bool is_empty() const {
     return m_empty;
   }
 
-  inline T length() const {
-    return m_sup - m_inf;
-  }
+  void set_inf(T value);
+  void set_sup(T value);
 
-  inline T center() const {
-    return (m_sup + m_inf) / 2; // Fixme: double ?
-  }
+  T length() const;
+  T center() const;
 
-  bool operator==(const QcInterval<T> & other) const {
-    return (m_empty == other.m_empty) && (m_inf == other.m_inf) && (m_sup == other.m_sup);
-  }
-  inline bool operator!=(const QcInterval<T> & other) const
-  {
-    return !operator==(other);
-  }
+  bool operator==(const QcInterval<T> & other) const;
+  bool operator!=(const QcInterval<T> & other) const;
 
-  bool operator<(const QcInterval<T> & other) const {
-    return m_sup < other.m_inf;
-  }
+  bool operator<(const QcInterval<T> & other) const;
+  bool operator>(const QcInterval<T> & other) const;
 
-  bool operator>(const QcInterval<T> & other) const {
-    return other.m_sup < m_inf;
-  }
+  QcInterval<T> & operator+=(T dx);
+  QcInterval<T> & operator-=(T dx);
 
-  QcInterval<T> & operator+=(T dx) {
-    if (! m_empty) {
-      m_inf += dx;
-      m_sup += dx;
-    }
-    return *this;
-  }
+  friend QcInterval<T> operator+<>(const QcInterval<T> & interval, T dx);
+  friend QcInterval<T> operator-<>(const QcInterval<T> & interval, T dx);
 
-  friend QcInterval<T> operator+(const QcInterval<T> & interval, T dx)
-  {
-    if (interval.m_empty)
-      return QcInterval();
-    else
-      return QcInterval(interval.m_inf + dx, interval.m_sup + dx);
-  }
-
-  QcInterval<T> & operator-=(T dx) {
-    if (! m_empty) {
-      m_inf -= dx;
-      m_sup -= dx;
-    }
-    return *this;
-  }
-
-  friend QcInterval<T> operator-(const QcInterval<T> & interval, T dx)
-  {
-    if (interval.m_empty)
-      return QcInterval();
-    else
-      return QcInterval(interval.m_inf - dx, interval.m_sup - dx);
-  }
-
-  void enlarge(T dx) {
-    if (! m_empty) {
-      m_inf -= dx;
-      m_sup += dx;
-    }
-  }
+  void enlarge(T dx);
 
   // Test if x is in the interval?
-  bool contains(T x) const {
-    if (m_empty)
-      return false;
-    else
-      return m_inf <= x && x <= m_sup;
-  }
-
-  T truncate(T x) const {
-    if (x > m_sup)
-      return m_sup;
-    else if (x < m_inf)
-      return m_inf;
-    else
-      return x;
-  }
-
-  T wrap(T x) const {
-    if (contains(x))
-      return x;
-    else
-      return ((x - m_inf) % length()) + m_inf;
-  }
+  bool contains(T x) const;
+  T truncate(T x) const;
+  T wrap(T x) const;
 
   // Test whether the interval intersects with i2?
-  bool intersect(const QcInterval<T> & other) const {
-    if (m_empty || other.m_empty)
-      return false;
-    else
-      return m_inf <= other.m_sup && other.m_inf <= m_sup;
-  }
-
+  bool intersect(const QcInterval<T> & other) const;
   // Test whether the interval is included in i1?
-  bool is_included_in(const QcInterval<T> & other) const {
-    return other.m_inf <= m_inf && m_sup <= other.m_sup;
-  }
-
+  bool is_included_in(const QcInterval<T> & other) const;
   // Test whether the interval is outside of i2?
-  bool is_outside_of(const QcInterval<T> & other) const {
-    if (m_empty || other.m_empty)
-      return false;
-    else
-      return m_inf < other.m_inf && other.m_sup < m_sup;
-  }
+  bool is_outside_of(const QcInterval<T> & other) const;
 
   // Intersection
-  QcInterval<T> & operator&=(const QcInterval<T> & other) {
-    if (intersect(other)) {
-      m_inf = std::max(m_inf, other.m_inf);
-      m_sup = std::min(m_sup, other.m_sup);
-    }
-    else {
-      m_inf = 0;
-      m_sup = 0;
-      m_empty = true;
-    }
-    return *this;
-  }
+  QcInterval<T> & operator&=(const QcInterval<T> & other);
 
-  friend QcInterval<T> operator&(const QcInterval<T> & interval1, const QcInterval<T> & interval2)
-  {
-    if (interval1.intersect(interval2)) {
-      return QcInterval(std::max(interval1.m_inf, interval2.m_inf),
-			std::min(interval1.m_sup, interval2.m_sup));
-    }
-    else {
-      return QcInterval();
-    }
-  }
+  friend QcInterval<T> operator&<>(const QcInterval<T> & interval1, const QcInterval<T> & interval2);
 
   // Union
-  QcInterval<T> & operator|=(const QcInterval<T> & other) {
-    if (!(m_empty || other.m_empty)) {
-      m_inf = std::min(m_inf, other.m_inf);
-      m_sup = std::max(m_sup, other.m_sup);
-    }
-    else if (m_empty && !other.m_empty) {
-      m_inf = other.m_inf;
-      m_sup = other.m_sup;
-    }
-    return *this;
-  }
-
-  friend QcInterval<T> operator|(const QcInterval<T> & interval1, const QcInterval<T> & interval2)
-  {
-    if (!(interval1.m_empty || interval2.m_empty))
-      return QcInterval(std::min(interval1.m_inf, interval2.m_inf),
-			std::max(interval1.m_sup, interval2.m_sup));
-    else if (interval1.m_empty && !interval2.m_empty)
-      return QcInterval(*interval2);
-    else
-      return QcInterval(*interval1);
-  }
+  QcInterval<T> & operator|=(const QcInterval<T> & other);
+  friend QcInterval<T> operator|<>(const QcInterval<T> & interval1, const QcInterval<T> & interval2);
 
  private:
   T m_inf;
@@ -270,31 +128,12 @@ template <typename T>
 class QC_EXPORT QcInterval2D
 {
  public:
-  QcInterval2D()
-    : m_x(), m_y()
-    {}
+  QcInterval2D();
+  QcInterval2D(T x_inf, T x_sup, T y_inf, T y_sup);
+  QcInterval2D(const QcInterval<T> & x, const QcInterval<T> & y);
+  QcInterval2D(const QcInterval2D<T> & other);
 
-  QcInterval2D(T x_inf, T x_sup, T y_inf, T y_sup)
-    : m_x(x_inf, x_sup), m_y(y_inf, y_sup)
-    {}
-
-  QcInterval2D(const QcInterval<T> & x, const QcInterval<T> & y)
-    : m_x(x), m_y(y)
-    {}
-
-  QcInterval2D(const QcInterval2D<T> & other)
-    : m_x(other.m_x), m_y(other.m_y)
-    {}
-
-  QcInterval2D<T> & operator=(const QcInterval2D<T> & other)
-    {
-      if (this != &other) {
-	m_x = other.m_x;
-	m_y = other.m_y;
-      }
-
-      return *this;
-    }
+  QcInterval2D<T> & operator=(const QcInterval2D<T> & other);
 
   inline QcInterval<T> & x() {
     return m_x;
@@ -312,80 +151,27 @@ class QC_EXPORT QcInterval2D
     return m_y;
   }
 
-  inline bool is_empty() const {
-    return x.is_empty() || y.is_empty();
-  }
+  bool is_empty() const;
 
-  bool operator==(const QcInterval2D<T> & other) const {
-    return (m_x == other.m_x) && (m_y == other.m_y);
-  }
-  inline bool operator!=(const QcInterval2D<T> & other) const
-  {
-    return !operator==(other);
-  }
+  bool operator==(const QcInterval2D<T> & other) const;
+  bool operator!=(const QcInterval2D<T> & other) const;
 
-  void enlarge(T dx) {
-    m_x.enlarge(dx);
-    m_y.enlarge(dx);
-  }
+  void enlarge(T dx);
 
   // Test if x is in the interval?
-  bool contains(T x, T y) const {
-    return m_x.contains(x) && m_y.contains(y);
-  }
-
+  bool contains(T x, T y) const;
   // Test whether the interval intersects with i2?
-  bool intersect(const QcInterval2D<T> & other) const {
-    return m_x.intersect(other.m_x) && m_y.intersect(other.m_y);
-  }
-
+  bool intersect(const QcInterval2D<T> & other) const;
   // Test whether the interval is included in i1?
-  bool is_included_in(const QcInterval2D<T> & other) const {
-    return m_x.is_included_in(other.m_x) && m_y.is_included_in(other.m_y);
-  }
-
+  bool is_included_in(const QcInterval2D<T> & other) const;
   // Test whether the interval is outside of i2?
-  bool is_outside_of(const QcInterval2D<T> & other) const {
-    return m_x.is_outside_of(other.m_x) && m_y.is_outside_of(other.m_y);
-  }
+  bool is_outside_of(const QcInterval2D<T> & other) const;
 
   // Intersection
-  QcInterval2D<T> & operator&=(const QcInterval2D<T> & other) {
-    m_x &= other.m_x;
-    m_y &= other.m_y;
-    return *this;
-  }
-
-  /*
-  QcInterval2D<T> operator&(const QcInterval2D<T> & interval1, const QcInterval2D<T> & T interval2) {
-    if (interval1.intersect(interval2)) {
-      return QcInterval2D(interval1.m_x & interval2.m_x,
-			  interval1.m_y & interval2.m_y);
-    }
-    else {
-      return QcInterval2D();
-    }
-  }
-  */
+  QcInterval2D<T> & operator&=(const QcInterval2D<T> & other);
 
   // Union
-  QcInterval2D<T> & operator|=(const QcInterval2D<T> & other) {
-    m_x |= other.m_x;
-    m_y |= other.m_y;
-    return *this;
-  }
-
-  /*
-  QcInterval2D<T> operator|(const QcInterval2D<T> & interval1, const QcInterval2D<T> & T interval2) {
-    if (!(interval1.is_empty() || interval2.is_empty()))
-      return QcInterval2D(interval1.m_x | interval2.m_x,
-			  interval1.m_y | interval2.m_y);
-    else if (interval1.empty() && !interval2.is_empty())
-      return QcInterval(*interval2);
-    else
-      return QcInterval(*interval1);
-  }
-  */
+  QcInterval2D<T> & operator|=(const QcInterval2D<T> & other);
 
  private:
   QcInterval<T> m_x;
@@ -395,9 +181,7 @@ class QC_EXPORT QcInterval2D
 typedef QcInterval<int> QcIntervalInt;
 typedef QcInterval<double> QcIntervalDouble;
 
-template<> inline int QcIntervalInt::length() const {
-  return m_sup - m_inf +1;
-}
+template<> int QcIntervalInt::length() const;
 
 template<> double QcIntervalDouble::wrap(double x) const;
 
@@ -405,6 +189,12 @@ typedef QcInterval2D<int> QcInterval2DInt;
 typedef QcInterval2D<double> QcInterval2DDouble;
 
 // QT_END_NAMESPACE
+
+/**************************************************************************************************/
+
+#ifndef QC_MANUAL_INSTANTIATION
+#include "interval.hxx"
+#endif
 
 /**************************************************************************************************/
 
