@@ -99,7 +99,7 @@ QcTileMatrixSet::closest_level(double resolution) const
 QcTileMatrix::QcTileMatrix(QcTileMatrixSet & tile_matrix_set, size_t level)
   : m_tile_matrix_set(tile_matrix_set),
     m_level(level),
-    m_mosaic_size(2^level),
+    m_mosaic_size(1 << level),
     m_resolution(tile_matrix_set.level_resolution(level)),
     m_tile_length_m(0)
 {

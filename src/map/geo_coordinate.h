@@ -521,6 +521,10 @@ class QC_EXPORT QcGeoCoordinateNormalisedMercator : public QcGeoCoordinate
   QcGeoCoordinateMercator mercator() const;
   QcGeoCoordinateWGS84 wgs84() const;
 
+  inline QcVectorDouble vector() const {
+    return QcVectorDouble(m_x, m_y);
+  }
+
  private:
   double m_x;
   double m_y;

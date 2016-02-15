@@ -211,7 +211,7 @@ class QC_EXPORT QcViewport
     return m_state.wgs84();
   }
 
-  inline unsigned int zoom_factor() const {
+  inline double zoom_factor() const {
     return m_state.tiled_zoom_level().zoom_factor();
   }
 
@@ -243,6 +243,10 @@ class QC_EXPORT QcViewport
 
   bool cross_datum() const {
     return m_cross_datum;
+  }
+
+  const QcPolygon & polygon() const {
+    return m_polygon;
   }
 
  private:

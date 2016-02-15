@@ -144,7 +144,7 @@ class QC_EXPORT QcTileMatrixSet
 
   // Return the resolution of the given level [m/px].
   inline double level_resolution(size_t level) const {
-    return m_root_resolution / double(2^level);
+    return m_root_resolution / double(1 << level);
   }
 
   // Return the smallest available resolution.

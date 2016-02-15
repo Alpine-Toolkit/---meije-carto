@@ -82,6 +82,7 @@ QcPolygon::~QcPolygon()
 void
 QcPolygon::add_vertex(const QcVectorDouble & vertex)
 {
+  qInfo() << "add_vertex" << vertex;
   QcInterval2DDouble vertex_interval = vertex.to_interval();
   size_t number_of_vertexes = m_vertexes.size();
   if (! number_of_vertexes)
@@ -376,6 +377,7 @@ QcTiledPolygon::QcTiledPolygon(const QcPolygon & polygon, double grid_step)
     double X1 = to_grid(p1.x(), grid_step);
     double Y1 = to_grid(p1.y(), grid_step);
 
+    qInfo() << "P0 - P1" << i << X0 << Y0 << X1 << Y1;
     QcLineDouble line = QcLineDouble::from_two_points(p0, p1);
 
     if (Y1 > Y0) {
@@ -407,9 +409,12 @@ QcTiledPolygon::QcTiledPolygon(const QcPolygon & polygon, double grid_step)
       rows[Y0 - Y_min].push_back(OpenInterval(X0, -1));
     }
   }
+  qInfo() << "OpenInterval built";
 
   for (size_t i = 0; i < number_of_rows; i++) {
     QList<OpenInterval> & row = rows[i];
+    if (!row.size()) // Fixme: check
+      continue;
     std::sort(row.begin(), row.end());
     int Y = Y_min + i;
     OpenInterval previous_interval = row[0];
@@ -420,6 +425,7 @@ QcTiledPolygon::QcTiledPolygon(const QcPolygon & polygon, double grid_step)
     if (number_of_intervals > 1)
       for (size_t j = 1; j < number_of_intervals; j++) {
  	const OpenInterval & open_interval = row[j];
+	qInfo() << "i,j: " << i << j << open_interval.x << open_interval.direction;
 	if (open_interval.is_gap(previous_interval)) {
 	  double x_inf = open_interval.x;
 	  intervals.push_back(QcIntervalInt(x_inf, x_inf));

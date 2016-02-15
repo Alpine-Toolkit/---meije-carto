@@ -26,10 +26,13 @@
 
 /**************************************************************************************************/
 
+#include <iostream>
+
 #include <QtTest/QtTest>
 
 /**************************************************************************************************/
 
+#include "map/tile_matrix_set.h"
 #include "map/viewport.h"
 #include "map/earth.h"
 
@@ -45,11 +48,44 @@ private slots:
 
 void TestQcViewport::constructor()
 {
-  QcGeoCoordinateNormalisedMercator coordinate(0, 0);
+  size_t number_of_levels = 20;
+  size_t tile_size = 256;
+  QcTileMatrixSet tile_matrix_set("wtms", number_of_levels, tile_size);
+
+  QcGeoCoordinateNormalisedMercator coordinate_origin(0, 0);
   QcTiledZoomLevel tiled_zoom_level(EQUATORIAL_PERIMETER, 256, 0); // map can have different tile size !
-  QcViewportState viewport_state(coordinate, tiled_zoom_level, 0);
-  QSize viewport_size(2000, 1000);
+  QcViewportState viewport_state(coordinate_origin, tiled_zoom_level, 0);
+  QSize viewport_size(1000, 1000);
   QcViewport viewport(viewport_state, viewport_size);
+
+  size_t level = 16;
+  double resolution = tile_matrix_set[level].resolution();
+  double tile_length_m = tile_matrix_set[level].tile_length_m();
+  std::cout << "Resolution " << resolution << std::endl;
+  std::cout << "tile length m " << tile_length_m << std::endl;
+
+  viewport.zoom_at(QcGeoCoordinateWGS84(0, 0).mercator(), level);
+  QcGeoCoordinateWGS84 coordinate = viewport.wgs84();
+  std::cout << coordinate.longitude() << " " << coordinate.latitude() << std::endl;
+  QcGeoCoordinateMercator mercator_coordinate = viewport.mercator();
+  std::cout << mercator_coordinate.x() << " " << mercator_coordinate.y() << std::endl;
+  QcGeoCoordinateNormalisedMercator normalised_mercator_coordinate = viewport.normalised_mercator();
+  std::cout << normalised_mercator_coordinate.x() << " " << normalised_mercator_coordinate.y() << std::endl;
+
+  const QcPolygon & polygon = viewport.polygon();
+  const QcVectorDouble & vertex = polygon.vertexes()[0];
+  std::cout << "(" << vertex.x() << ", " << vertex.y() << ")" << std::endl;
+  const QcInterval2DDouble & interval = polygon.interval();
+  std::cout << "[" << interval.x().inf() << ", " << interval.x().sup() << "]"
+	    << "x"
+	    << "[" << interval.y().inf() << ", " << interval.y().sup() << "]"
+	    << std::endl;
+  QcTiledPolygon tiled_polygon = polygon.intersec_with_grid(tile_length_m);
+  for (const QcTiledPolygonRun & run:  tiled_polygon.runs()) {
+    const QcIntervalInt & run_interval = run.interval();
+    std::cout << run.y() << " [" << run_interval.inf() << ", " << run_interval.sup() << "]" << std::endl;
+  }
+
 }
 
 /***************************************************************************************************/

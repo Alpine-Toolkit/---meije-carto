@@ -73,6 +73,7 @@ QcZoomFactor::operator=(const QcZoomFactor & other)
 void
 QcZoomFactor::set_zoom_factor(double zoom_factor)
 {
+  qInfo() << "set_zoom_factor" << zoom_factor;
   if (zoom_factor > 0)
     m_zoom_factor = zoom_factor;
   else
@@ -132,8 +133,11 @@ void
 QcTiledZoomLevel::set_zoom_level(unsigned int zoom_level)
 {
   m_zoom_level = zoom_level;
-  unsigned int map_size_px = m_tile_size << zoom_level;
-  set_zoom_factor(m_map_size / double(map_size_px));
+  size_t mosaic_size = 1 << zoom_level;
+  unsigned int map_size_px = m_tile_size * mosaic_size;
+  double zoom_factor = m_map_size / double(map_size_px);
+  set_zoom_factor(zoom_factor);
+  qInfo() << "set_zoom_level" << zoom_level << map_size_px;
 }
 
 /**************************************************************************************************/
@@ -272,7 +276,9 @@ QcViewport::set_zoom_factor(double zoom_factor)
 void
 QcViewport::zoom_at(const QcGeoCoordinateMercator & coordinate, unsigned int zoom_level)
 {
-  m_state.set_zoom_level(zoom_level);
+  qInfo() << "zoom_at" << coordinate << zoom_level;
+  if (zoom_level != m_state.zoom_level())
+    m_state.set_zoom_level(zoom_level);
   set_coordinate(coordinate); // move and scale polygon
 }
 
@@ -290,18 +296,24 @@ QcViewport::update_area()
   // cache them ?
   QcVectorDouble viewport_size = QcVectorDouble(m_viewport_size.width(), m_viewport_size.height());
   QcVectorDouble new_area_size = viewport_size * zoom_factor(); // [px] * [m/px]
-  QcVectorDouble center = mercator().vector();
+  // Fixme: merctor vs web
+  QcVectorDouble center = normalised_mercator().vector() * EQUATORIAL_PERIMETER;
+  qInfo() << "viewport_size" << viewport_size;
+  qInfo() << "zoom_factor" << zoom_factor();
+  qInfo() << "new_area_size" << new_area_size;
+  qInfo() << "center" << center;
 
   // QcInterval2DDouble new_area = interval_from_center_and_size(center, new_area_size);
 
-  QcVectorDouble point1 = center + new_area_size * .5;
-  QcVectorDouble point2 = point1.mirror_x();
-  QcVectorDouble point3 = point1.rotate_180();
-  QcVectorDouble point4 = point1.mirror_y();
+  QcVectorDouble half_diagonal = new_area_size * .5;
+  QcVectorDouble point1 = center + half_diagonal;
+  QcVectorDouble point2 = center + half_diagonal.mirror_x();
+  QcVectorDouble point3 = center + half_diagonal.rotate_180();
+  QcVectorDouble point4 = center + half_diagonal.mirror_y();
   QcPolygon polygon; // = {}
-  polygon.add_vertex(point1);
-  polygon.add_vertex(point2);
   polygon.add_vertex(point3);
+  polygon.add_vertex(point2);
+  polygon.add_vertex(point1);
   polygon.add_vertex(point4);
   double _bearing = bearing();
   if (_bearing)
