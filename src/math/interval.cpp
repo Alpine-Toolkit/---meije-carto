@@ -40,6 +40,156 @@ QcIntervalDouble::wrap(double x) const
     return fmod(x - m_inf, length()) + m_inf;
 }
 
+template<>
+QcIntervalInt
+QcIntervalInt::cut(const QcIntervalInt & other, QcIntervalInt & left, QcIntervalInt & right, bool & exchanged) const
+{
+  QcIntervalInt _left;
+  QcIntervalInt _right;
+  if (*this < other) {
+    _left = *this;
+    _right = other;
+    exchanged = false;
+  } else {
+    _left = other;
+    _right = *this;
+    exchanged = true;
+  }
+
+  QcIntervalInt intersection = _left & _right;
+  if (intersection.is_empty()) {
+    left = _left;
+    right = _right;
+  } else {
+    int inf, sup;
+
+    inf = _left.inf();
+    sup = intersection.inf() -1;
+    if (inf <= sup)
+      left = QcIntervalInt(inf, sup);
+    else
+      left = QcIntervalInt();
+
+    inf = intersection.sup() +1;
+    sup = _right.sup();
+    if (inf <= sup)
+      right = QcIntervalInt(inf, sup);
+    else
+      right = QcIntervalInt();
+  }
+
+  return intersection;
+}
+
+template<>
+QcIntervalDouble
+QcIntervalDouble::cut(const QcIntervalDouble & other, QcIntervalDouble & left, QcIntervalDouble & right, bool & exchanged) const
+{
+  QcIntervalDouble _left;
+  QcIntervalDouble _right;
+  if (*this < other) {
+    _left = *this;
+    _right = other;
+    exchanged = false;
+  } else {
+    _left = other;
+    _right = *this;
+    exchanged = true;
+  }
+
+  QcIntervalDouble intersection = _left & _right;
+  if (intersection.is_empty()) {
+    left = _left;
+    right = _right;
+  } else {
+    int inf, sup;
+
+    inf = _left.inf();
+    sup = intersection.inf();
+    if (inf <= sup)
+      left = QcIntervalDouble(inf, sup);
+    else
+      left = QcIntervalDouble();
+
+    inf = intersection.sup();
+    sup = _right.sup();
+    if (inf <= sup)
+      right = QcIntervalDouble(inf, sup);
+    else
+      right = QcIntervalDouble();
+  }
+
+  return intersection;
+}
+
+#ifndef QT_NO_DEBUG_STREAM
+QC_EXPORT QDebug operator<<(QDebug debug, const QcIntervalInt & interval)
+{
+  QDebugStateSaver saver(debug); // Fixme: ???
+
+  debug.nospace() << "QcIntervalInt(";
+  debug << interval.inf();
+  debug << ", ";
+  debug << interval.sup();
+  debug << ')';
+
+  return debug;
+}
+#endif
+
+#ifndef QT_NO_DEBUG_STREAM
+QC_EXPORT QDebug operator<<(QDebug debug, const QcIntervalDouble & interval)
+{
+  QDebugStateSaver saver(debug); // Fixme: ???
+
+  debug.nospace() << "QcIntervalDouble(";
+  debug << interval.inf();
+  debug << ", ";
+  debug << interval.sup();
+  debug << ')';
+
+  return debug;
+}
+#endif
+
+#ifndef QT_NO_DEBUG_STREAM
+QC_EXPORT QDebug operator<<(QDebug debug, const QcInterval2DInt & interval)
+{
+  QDebugStateSaver saver(debug); // Fixme: ???
+
+  debug.nospace() << "QcInterval2DInt(";
+  debug << interval.x().inf();
+  debug << ", ";
+  debug << interval.x().sup();
+  debug << ", ";
+  debug << interval.y().inf();
+  debug << ", ";
+  debug << interval.y().sup();
+  debug << ')';
+
+  return debug;
+}
+#endif
+
+#ifndef QT_NO_DEBUG_STREAM
+QC_EXPORT QDebug operator<<(QDebug debug, const QcInterval2DDouble & interval)
+{
+  QDebugStateSaver saver(debug); // Fixme: ???
+
+  debug.nospace() << "QcInterval2DDouble(";
+  debug << interval.x().inf();
+  debug << ", ";
+  debug << interval.x().sup();
+  debug << ", ";
+  debug << interval.y().inf();
+  debug << ", ";
+  debug << interval.y().sup();
+  debug << ')';
+
+  return debug;
+}
+#endif
+
 /***************************************************************************************************
  *
  * End

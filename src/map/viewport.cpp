@@ -321,6 +321,8 @@ QcViewport::update_area()
   else
     m_polygon = polygon;
   m_cross_datum = m_polygon.interval().is_included_in(QcGeoCoordinateMercator::domain());
+
+  emit viewport_changed();
 }
 
 /***************************************************************************************************

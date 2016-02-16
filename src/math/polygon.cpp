@@ -26,10 +26,13 @@
 
 /**************************************************************************************************/
 
+#include "polygon.h"
+
 #include <algorithm>
 #include <exception>
 
-#include "polygon.h"
+#include <QVector>
+
 #include "segment.h"
 #include "line.h"
 
@@ -82,7 +85,7 @@ QcPolygon::~QcPolygon()
 void
 QcPolygon::add_vertex(const QcVectorDouble & vertex)
 {
-  qInfo() << "add_vertex" << vertex;
+  // qinfo() << "add_vertex" << vertex;
   QcInterval2DDouble vertex_interval = vertex.to_interval();
   size_t number_of_vertexes = m_vertexes.size();
   if (! number_of_vertexes)
@@ -347,6 +350,30 @@ QcTiledPolygonRun::operator==(const QcTiledPolygonRun & other) const
   return (m_y == other.m_y) && (m_interval == other.m_interval);
 }
 
+bool
+QcTiledPolygonRun::cut(const QcTiledPolygonRun & other,
+		       QcIntervalInt & intersection, QcIntervalInt & left,  QcIntervalInt & right,
+		       bool & exchanged) const
+{
+  if (m_y == other.m_y) {
+    intersection = m_interval.cut(other.m_interval, left, right, exchanged);
+    return true;
+  }
+  else
+    return false;
+}
+
+QVector<QcTileMatrixIndex>
+QcTiledPolygonRun::tile_indexes() const
+{
+  QVector<QcTileMatrixIndex> _tile_indexes(m_interval.length());
+  size_t i;
+  int x;
+  for (i = 0, x = m_interval.inf(); x <= m_interval.sup(); x++, i++)
+    _tile_indexes[i] = QcTileMatrixIndex(x, m_y);
+  return _tile_indexes;
+}
+
 /**************************************************************************************************/
 
 QcTiledPolygon::QcTiledPolygon(const QcPolygon & polygon, double grid_step)
@@ -377,7 +404,7 @@ QcTiledPolygon::QcTiledPolygon(const QcPolygon & polygon, double grid_step)
     double X1 = to_grid(p1.x(), grid_step);
     double Y1 = to_grid(p1.y(), grid_step);
 
-    qInfo() << "P0 - P1" << i << X0 << Y0 << X1 << Y1;
+    // qinfo() << "P0 - P1" << i << X0 << Y0 << X1 << Y1;
     QcLineDouble line = QcLineDouble::from_two_points(p0, p1);
 
     if (Y1 > Y0) {
@@ -409,7 +436,7 @@ QcTiledPolygon::QcTiledPolygon(const QcPolygon & polygon, double grid_step)
       rows[Y0 - Y_min].push_back(OpenInterval(X0, -1));
     }
   }
-  qInfo() << "OpenInterval built";
+  // qinfo() << "OpenInterval built";
 
   for (size_t i = 0; i < number_of_rows; i++) {
     QList<OpenInterval> & row = rows[i];
@@ -425,7 +452,7 @@ QcTiledPolygon::QcTiledPolygon(const QcPolygon & polygon, double grid_step)
     if (number_of_intervals > 1)
       for (size_t j = 1; j < number_of_intervals; j++) {
  	const OpenInterval & open_interval = row[j];
-	qInfo() << "i,j: " << i << j << open_interval.x << open_interval.direction;
+	// qinfo() << "i,j: " << i << j << open_interval.x << open_interval.direction;
 	if (open_interval.is_gap(previous_interval)) {
 	  double x_inf = open_interval.x;
 	  intervals.push_back(QcIntervalInt(x_inf, x_inf));
@@ -438,6 +465,61 @@ QcTiledPolygon::QcTiledPolygon(const QcPolygon & polygon, double grid_step)
     for (const QcIntervalInt & interval : intervals)
       m_runs.push_back(QcTiledPolygonRun(Y, interval));
   }
+}
+
+QcTiledPolygonDiff
+QcTiledPolygon::diff(const QcTiledPolygon & old_tiled_polygon)
+{
+  QcTiledPolygonDiff tiled_polygon_diff;
+  QcTiledPolygonRunList old_runs = old_tiled_polygon.m_runs;
+
+  bool exchanged;
+  QcIntervalInt intersection;
+  QcIntervalInt left;
+  QcIntervalInt right;
+  QVector<unsigned int> intersection_count(old_runs.size(), 0);
+
+  for (const QcTiledPolygonRun & new_run : m_runs) {
+    bool has_intersection = false;
+    size_t i = 0;
+    for (const QcTiledPolygonRun & old_run : old_runs) {
+      if (new_run.cut(old_run, intersection, left, right, exchanged)) {
+	int y = new_run.y();
+	qInfo() << y << intersection << left << right << exchanged;
+	has_intersection = true;
+	intersection_count[i] += 1;
+
+	tiled_polygon_diff.add_same_area(QcTiledPolygonRun(y, intersection));
+
+	if (left.is_not_empty()) {
+	  QcTiledPolygonRun run(y, left);
+	  if (exchanged)
+	    tiled_polygon_diff.add_old_area(run);
+	  else
+	    tiled_polygon_diff.add_new_area(run);
+	}
+
+	if (right.is_not_empty()) {
+	  QcTiledPolygonRun run(y, right);
+	  if (exchanged)
+	    tiled_polygon_diff.add_new_area(run);
+	  else
+	    tiled_polygon_diff.add_old_area(run);
+	}
+      }
+      i++;
+    }
+
+    if (!has_intersection)
+      tiled_polygon_diff.add_new_area(new_run);
+  }
+
+  for (int i = 0; i < old_runs.size(); i++) {
+    if (!intersection_count[i])
+      tiled_polygon_diff.add_old_area(old_runs[i]);
+  }
+
+  return tiled_polygon_diff;
 }
 
 /***************************************************************************************************

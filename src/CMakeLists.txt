@@ -14,6 +14,7 @@
 
 set(qtcarto_files
   map/geo_coordinate.cpp
+  map/mosaic_painter.cpp
   map/tile_matrix_set.cpp
   map/viewport.cpp
   math/interval.cpp

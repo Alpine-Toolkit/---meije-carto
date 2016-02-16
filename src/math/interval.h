@@ -37,6 +37,7 @@
 #include <stdexcept>
 
 // #include <QtCore/QMetaType>
+#include <QDebug>
 
 #include "qtcarto_global.h"
 
@@ -75,6 +76,10 @@ class QC_EXPORT QcInterval
     return m_empty;
   }
 
+  inline bool is_not_empty() const {
+    return !m_empty;
+  }
+
   void set_inf(T value);
   void set_sup(T value);
 
@@ -109,8 +114,11 @@ class QC_EXPORT QcInterval
 
   // Intersection
   QcInterval<T> & operator&=(const QcInterval<T> & other);
-
   friend QcInterval<T> operator&<>(const QcInterval<T> & interval1, const QcInterval<T> & interval2);
+
+  QcInterval<T> cut(const QcInterval<T> & other,
+		    QcInterval<T> & left,  QcInterval<T> & right,
+		    bool & exchanged) const;
 
   // Union
   QcInterval<T> & operator|=(const QcInterval<T> & other);
@@ -121,6 +129,33 @@ class QC_EXPORT QcInterval
   T m_sup;
   bool m_empty;
 };
+
+typedef QcInterval<int> QcIntervalInt;
+typedef QcInterval<double> QcIntervalDouble;
+
+template<> int QcIntervalInt::length() const;
+
+template<> double QcIntervalDouble::wrap(double x) const;
+
+template<>
+QcIntervalInt QcIntervalInt::cut(const QcIntervalInt & other,
+				 QcIntervalInt & left,  QcIntervalInt & right,
+				 bool & exchanged) const;
+
+template<>
+QcIntervalDouble QcIntervalDouble::cut(const QcIntervalDouble & other,
+				       QcIntervalDouble & left, QcIntervalDouble & right,
+				       bool & exchanged) const;
+
+#ifndef QT_NO_DEBUG_STREAM
+QC_EXPORT QDebug operator<<(QDebug debug, const QcIntervalInt & interval);
+QC_EXPORT QDebug operator<<(QDebug debug, const QcIntervalDouble & interval);
+#endif
+
+// #ifndef QT_NO_DATASTREAM
+// QC_EXPORT QDataStream &operator<<(QDataStream & stream, const QcIntervalInt & interval);
+// QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcIntervalInt & interval);
+// #endif
 
 /**************************************************************************************************/
 
@@ -178,15 +213,18 @@ class QC_EXPORT QcInterval2D
   QcInterval<T> m_y;
 };
 
-typedef QcInterval<int> QcIntervalInt;
-typedef QcInterval<double> QcIntervalDouble;
-
-template<> int QcIntervalInt::length() const;
-
-template<> double QcIntervalDouble::wrap(double x) const;
-
 typedef QcInterval2D<int> QcInterval2DInt;
 typedef QcInterval2D<double> QcInterval2DDouble;
+
+#ifndef QT_NO_DEBUG_STREAM
+QC_EXPORT QDebug operator<<(QDebug debug, const QcInterval2DInt & interval);
+QC_EXPORT QDebug operator<<(QDebug debug, const QcInterval2DDouble & interval);
+#endif
+
+// #ifndef QT_NO_DATASTREAM
+// QC_EXPORT QDataStream &operator<<(QDataStream & stream, const QcInterval2DInt & interval);
+// QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcInterval2DInt & interval);
+// #endif
 
 // QT_END_NAMESPACE
 

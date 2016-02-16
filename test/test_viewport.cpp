@@ -32,9 +32,10 @@
 
 /**************************************************************************************************/
 
+#include "map/earth.h"
 #include "map/tile_matrix_set.h"
 #include "map/viewport.h"
-#include "map/earth.h"
+#include "map/mosaic_painter.h"
 
 /***************************************************************************************************/
 
@@ -57,6 +58,7 @@ void TestQcViewport::constructor()
   QcViewportState viewport_state(coordinate_origin, tiled_zoom_level, 0);
   QSize viewport_size(1000, 1000);
   QcViewport viewport(viewport_state, viewport_size);
+  QcMosaicPainter mosaic_painter(viewport);
 
   size_t level = 16;
   double resolution = tile_matrix_set[level].resolution();
@@ -66,26 +68,52 @@ void TestQcViewport::constructor()
 
   viewport.zoom_at(QcGeoCoordinateWGS84(0, 0).mercator(), level);
   QcGeoCoordinateWGS84 coordinate = viewport.wgs84();
-  std::cout << coordinate.longitude() << " " << coordinate.latitude() << std::endl;
+  std::cout << "wgs84 " << coordinate.longitude() << " " << coordinate.latitude() << std::endl;
   QcGeoCoordinateMercator mercator_coordinate = viewport.mercator();
-  std::cout << mercator_coordinate.x() << " " << mercator_coordinate.y() << std::endl;
+  std::cout << "mercator " << mercator_coordinate.x() << " " << mercator_coordinate.y() << std::endl;
   QcGeoCoordinateNormalisedMercator normalised_mercator_coordinate = viewport.normalised_mercator();
-  std::cout << normalised_mercator_coordinate.x() << " " << normalised_mercator_coordinate.y() << std::endl;
+  std::cout << "normalised mercator " << normalised_mercator_coordinate.x() << " " << normalised_mercator_coordinate.y() << std::endl;
 
-  const QcPolygon & polygon = viewport.polygon();
-  const QcVectorDouble & vertex = polygon.vertexes()[0];
-  std::cout << "(" << vertex.x() << ", " << vertex.y() << ")" << std::endl;
-  const QcInterval2DDouble & interval = polygon.interval();
-  std::cout << "[" << interval.x().inf() << ", " << interval.x().sup() << "]"
+  const QcPolygon & polygon1 = viewport.polygon();
+  // const QcVectorDouble & vertex = polygon.vertexes()[0];
+  // std::cout << "(" << vertex.x() << ", " << vertex.y() << ")" << std::endl;
+  const QcInterval2DDouble & interval = polygon1.interval();
+  std::cout << "polygon interval"
+	    << "[" << interval.x().inf() << ", " << interval.x().sup() << "]"
 	    << "x"
 	    << "[" << interval.y().inf() << ", " << interval.y().sup() << "]"
 	    << std::endl;
-  QcTiledPolygon tiled_polygon = polygon.intersec_with_grid(tile_length_m);
-  for (const QcTiledPolygonRun & run:  tiled_polygon.runs()) {
+  QcTiledPolygon tiled_polygon1 = polygon1.intersec_with_grid(tile_length_m);
+  for (const QcTiledPolygonRun & run:  tiled_polygon1.runs()) {
     const QcIntervalInt & run_interval = run.interval();
-    std::cout << run.y() << " [" << run_interval.inf() << ", " << run_interval.sup() << "]" << std::endl;
+    std::cout << "Run " << run.y() << " [" << run_interval.inf() << ", " << run_interval.sup() << "]" << std::endl;
   }
 
+  viewport.pan(700, 700);
+  mercator_coordinate = viewport.mercator();
+  std::cout << "mercator " << mercator_coordinate.x() << " " << mercator_coordinate.y() << std::endl;
+  const QcPolygon & polygon2 = viewport.polygon();
+  QcTiledPolygon tiled_polygon2 = polygon2.intersec_with_grid(tile_length_m);
+  for (const QcTiledPolygonRun & run:  tiled_polygon2.runs()) {
+    const QcIntervalInt & run_interval = run.interval();
+    std::cout << "Run " << run.y() << " [" << run_interval.inf() << ", " << run_interval.sup() << "]" << std::endl;
+  }
+
+  QcTiledPolygonDiff tile_polygon_diff = tiled_polygon2.diff(tiled_polygon1);
+  for (const QcTiledPolygonRun & run:  tile_polygon_diff.new_area()) {
+    const QcIntervalInt & run_interval = run.interval();
+    std::cout << "New Run " << run.y() << " [" << run_interval.inf() << ", " << run_interval.sup() << "]" << std::endl;
+    for (const QcTileMatrixIndex & tile_index: run.tile_indexes())
+      qInfo() << tile_index;
+  }
+  for (const QcTiledPolygonRun & run:  tile_polygon_diff.same_area()) {
+    const QcIntervalInt & run_interval = run.interval();
+    std::cout << "Same Run " << run.y() << " [" << run_interval.inf() << ", " << run_interval.sup() << "]" << std::endl;
+  }
+  for (const QcTiledPolygonRun & run:  tile_polygon_diff.old_area()) {
+    const QcIntervalInt & run_interval = run.interval();
+    std::cout << "Old Run " << run.y() << " [" << run_interval.inf() << ", " << run_interval.sup() << "]" << std::endl;
+  }
 }
 
 /***************************************************************************************************/

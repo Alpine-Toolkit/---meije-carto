@@ -41,8 +41,9 @@
 #include <QList>
 
 #include "qtcarto_global.h"
-#include "interval.h"
-#include "vector.h"
+#include "math/interval.h"
+#include "math/vector.h"
+#include "map/tile_matrix_set.h"
 
 /**************************************************************************************************/
 
@@ -51,6 +52,10 @@
 /**************************************************************************************************/
 
 class QcTiledPolygon;
+class QcTiledPolygonRun;
+class QcTiledPolygonDiff;
+
+typedef QList<QcTiledPolygonRun> QcTiledPolygonRunList;
 
 class QC_EXPORT QcPolygon
 {
@@ -99,6 +104,16 @@ class QC_EXPORT QcTiledPolygonRun
 
   bool operator==(const QcTiledPolygonRun & other) const;
 
+  inline bool intersect(const QcTiledPolygonRun & other) const {
+    return m_y == other.m_y && m_interval.intersect(other.m_interval);
+  }
+
+  bool cut(const QcTiledPolygonRun & other,
+	   QcIntervalInt & intersection, QcIntervalInt & left,  QcIntervalInt & right,
+	   bool & exchanged) const;
+
+  QVector<QcTileMatrixIndex> tile_indexes() const;
+
  private:
   int m_y;
   QcIntervalInt m_interval;
@@ -121,10 +136,45 @@ class QC_EXPORT QcTiledPolygon
     return m_runs;
   }
 
+  QcTiledPolygonDiff diff(const QcTiledPolygon & polygon);
+
  private:
   const QcPolygon & m_polygon;
   double m_grid_step;
-  QList<QcTiledPolygonRun> m_runs;
+  QcTiledPolygonRunList m_runs;
+};
+
+class QC_EXPORT QcTiledPolygonDiff
+{
+ public:
+  inline const QcTiledPolygonRunList & new_area() const {
+    return m_new_area;
+  }
+
+  inline const QcTiledPolygonRunList & old_area() const {
+    return m_old_area;
+  }
+
+  inline const QcTiledPolygonRunList & same_area() const {
+    return m_same_area;
+  }
+
+  void add_new_area(const QcTiledPolygonRun & run) {
+    m_new_area.push_back(run);
+  }
+
+  void add_old_area(const QcTiledPolygonRun & run) {
+    m_old_area.push_back(run);
+  }
+
+  void add_same_area(const QcTiledPolygonRun & run) {
+    m_same_area.push_back(run);
+  }
+
+ private:
+  QcTiledPolygonRunList m_new_area;
+  QcTiledPolygonRunList m_old_area;
+  QcTiledPolygonRunList m_same_area;
 };
 
 /**************************************************************************************************/

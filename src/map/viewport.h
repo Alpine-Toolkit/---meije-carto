@@ -33,7 +33,7 @@
 
 /**************************************************************************************************/
 
-#include <QtCore/QMetaType>
+#include <QObject>
 #include <QSize>
 
 #include "qtcarto_global.h"
@@ -187,8 +187,10 @@ class QC_EXPORT QcViewportState
 
 /**************************************************************************************************/
 
-class QC_EXPORT QcViewport
+class QC_EXPORT QcViewport : public QObject
 {
+  Q_OBJECT
+
  public:
   QcInterval2DDouble interval_from_center_and_size(const QcVectorDouble & center, const QcVectorDouble & size);
 
@@ -248,6 +250,9 @@ class QC_EXPORT QcViewport
   const QcPolygon & polygon() const {
     return m_polygon;
   }
+
+ signals:
+  void viewport_changed();
 
  private:
   void update_area();

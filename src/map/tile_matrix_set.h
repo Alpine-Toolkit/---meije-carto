@@ -36,6 +36,7 @@
 #include <vector>
 
 #include <QtCore/QMetaType>
+#include <QDebug>
 #include <QString>
 
 #include "qtcarto_global.h"
@@ -86,6 +87,10 @@ class QC_EXPORT QcTileMatrixIndex
   size_t m_x; // column
   size_t m_y; // row
 };
+
+#ifndef QT_NO_DEBUG_STREAM
+QC_EXPORT QDebug operator<<(QDebug debug, const QcTileMatrixIndex & tile_index);
+#endif
 
 /**************************************************************************************************/
 

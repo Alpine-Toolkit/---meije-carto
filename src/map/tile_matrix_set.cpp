@@ -65,6 +65,21 @@ QcTileMatrixIndex::operator==(const QcTileMatrixIndex &other) const
   return (m_x == other.m_x) && (m_y == other.m_y);
 }
 
+#ifndef QT_NO_DEBUG_STREAM
+QC_EXPORT QDebug operator<<(QDebug debug, const QcTileMatrixIndex & tile_index)
+{
+  QDebugStateSaver saver(debug); // Fixme: ???
+
+  debug.nospace() << "QcTileMatrixIndex(";
+  debug << tile_index.x();
+  debug << ", ";
+  debug << tile_index.y();
+  debug << ')';
+
+  return debug;
+}
+#endif
+
 /**************************************************************************************************/
 
 QcTileMatrixSetIterator::QcTileMatrixSetIterator (const QcTileMatrixSet * tile_matrix_set, size_t position)
