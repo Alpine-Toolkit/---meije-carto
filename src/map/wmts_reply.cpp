@@ -119,8 +119,8 @@
 /*!
     Constructs a tiled map reply object based on \a request,  with parent \a parent.
 */
-QcWmtsReply::QcWmtsReply(const QcTileSpec & tile_spec, QObject * parent)
-  : QObject(parent),
+QcWmtsReply::QcWmtsReply(const QcTileSpec & tile_spec)
+  : QObject(),
     m_error(QcWmtsReply::NoError),
     m_is_finished(false),
     m_is_cached(false),
@@ -130,8 +130,8 @@ QcWmtsReply::QcWmtsReply(const QcTileSpec & tile_spec, QObject * parent)
 /*!
   Constructs a tiled map reply object with a given \a error and \a errorString and the specified \a parent.
 */
-QcWmtsReply::QcWmtsReply(Error error, const QString & error_string, QObject * parent)
-  : QObject(parent),
+QcWmtsReply::QcWmtsReply(Error error, const QString & error_string)
+  : QObject(),
     m_error(error),
     m_error_string(error_string),
     m_is_finished(true),
@@ -289,8 +289,6 @@ QcWmtsReply::abort()
   if (!is_finished())
     set_finished(true);
 }
-
-// #include "moc_qgeotiledmapreply_p.cpp"
 
 // QC_END_NAMESPACE
 

@@ -49,7 +49,7 @@ class QcGeoportailWmtsTileFetcher : public QcWmtsTileFetcher
   Q_OBJECT
 
 public:
-  QcGeoportailWmtsTileFetcher(const QcGeoPortailWmtsLicence & license, QObject * parent = 0);
+  QcGeoportailWmtsTileFetcher(const QcGeoPortailWmtsLicence & license);
 
   const QcGeoPortailWmtsLicence & license() const {
     return m_licence;
@@ -70,12 +70,6 @@ private:
   const QcGeoPortailWmtsLicence & m_licence;
   QByteArray m_user_agent;
   QString m_reply_format;
-
-  // QString m_format;
-  // QString m_apiKey;
-  // QString m_user;
-  // QString m_password;
-  // QString m_accessToken;
 };
 
 // QC_END_NAMESPACE

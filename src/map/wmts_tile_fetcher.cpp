@@ -70,8 +70,8 @@
 
 /**************************************************************************************************/
 
-QcWmtsTileFetcher::QcWmtsTileFetcher(QObject * parent) // Fixme: parent ?
-  : QObject(parent),
+QcWmtsTileFetcher::QcWmtsTileFetcher()
+  : QObject(),
     m_enabled(true)
 {
   // if (!m_queue.isEmpty())
@@ -102,10 +102,6 @@ QcWmtsTileFetcher::update_tile_requests(const QSet<QcTileSpec> &tiles_added,
 void
 QcWmtsTileFetcher::cancel_tile_requests(const QSet<QcTileSpec> & tiles)
 {
-  // typedef QSet<QcTileSpec>::const_iterator tile_iterator;
-  // tile_iterator tile = tiles.constBegin();
-  // tile_iterator end = tiles.constEnd();
-  // for (; tile != end; ++tile) {
   for (const QcTileSpec & tile_spec: tiles) {
     QcWmtsReply * reply = m_invmap.value(tile_spec, nullptr);
     if (reply) {
@@ -125,10 +121,7 @@ QcWmtsTileFetcher::request_next_tile()
 
   QMutexLocker mutex_locker(&m_queue_mutex);
 
-  if (!m_enabled)
-    return;
-
-  if (m_queue.isEmpty())
+  if (!m_enabled || m_queue.isEmpty())
     return;
 
   QcTileSpec tile_spec = m_queue.takeFirst();
@@ -177,18 +170,14 @@ void
 QcWmtsTileFetcher::timerEvent(QTimerEvent * event)
 {
   qInfo() << "QcWmtsTileFetcher::timerEvent";
-
   if (event->timerId() != m_timer.timerId()) {
     QObject::timerEvent(event);
     return;
-  }
-
-  if (m_queue.isEmpty()) {
+  } else if (m_queue.isEmpty()) {
     m_timer.stop();
     return;
-  }
-
-  request_next_tile();
+  } else
+    request_next_tile();
 }
 
 void

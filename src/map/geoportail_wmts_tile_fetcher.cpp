@@ -37,8 +37,8 @@
 
 /**************************************************************************************************/
 
-QcGeoportailWmtsTileFetcher::QcGeoportailWmtsTileFetcher(const QcGeoPortailWmtsLicence & license, QObject * parent)
-  : QcWmtsTileFetcher(parent),
+QcGeoportailWmtsTileFetcher::QcGeoportailWmtsTileFetcher(const QcGeoPortailWmtsLicence & license)
+  : QcWmtsTileFetcher(),
     m_network_manager(new QNetworkAccessManager(this)),
     m_licence(license),
     m_user_agent("QtCarto based application"),

@@ -92,8 +92,8 @@ class QC_EXPORT QcWmtsReply : public QObject
     UnknownError
   };
 
-  QcWmtsReply(const QcTileSpec & tile_spec, QObject * parent = 0);
-  QcWmtsReply(Error error, const QString & error_string, QObject * parent = 0);
+  QcWmtsReply(const QcTileSpec & tile_spec);
+  QcWmtsReply(Error error, const QString & error_string);
   virtual ~QcWmtsReply();
 
   bool is_finished() const;
@@ -109,7 +109,7 @@ class QC_EXPORT QcWmtsReply : public QObject
 
   virtual void abort();
 
- Q_SIGNALS:
+ signals:
   void finished();
   void error(QcWmtsReply::Error error, const QString & error_string = QString());
 

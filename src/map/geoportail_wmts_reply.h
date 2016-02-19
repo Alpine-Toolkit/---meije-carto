@@ -47,14 +47,14 @@ class QcGeoportailWmtsReply : public QcWmtsReply
   Q_OBJECT
 
 public:
-  explicit QcGeoportailWmtsReply(QNetworkReply * reply, const QcTileSpec & spec, const QString & format, QObject * parent = 0);
+  explicit QcGeoportailWmtsReply(QNetworkReply * reply, const QcTileSpec & spec, const QString & format);
   ~QcGeoportailWmtsReply();
 
   void abort();
 
   QNetworkReply * network_reply() const;
 
-private Q_SLOTS:
+private slots:
   void network_reply_finished();
   void network_reply_error(QNetworkReply::NetworkError error);
 

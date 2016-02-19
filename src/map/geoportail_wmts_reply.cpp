@@ -32,12 +32,12 @@
 
 QcGeoportailWmtsReply::QcGeoportailWmtsReply(QNetworkReply * reply,
 					     const QcTileSpec & tile_spec,
-					     const QString & format,
-					     QObject * parent)
-  : QcWmtsReply(tile_spec, parent), m_reply(reply), m_format(format)
+					     const QString & format)
+  : QcWmtsReply(tile_spec), m_reply(reply), m_format(format)
 {
   connect(m_reply, SIGNAL(finished()),
 	  this, SLOT(network_reply_finished()));
+
   connect(m_reply, SIGNAL(error(QNetworkReply::NetworkError)),
 	  this, SLOT(network_reply_error(QNetworkReply::NetworkError)));
 }
@@ -53,10 +53,8 @@ QcGeoportailWmtsReply::~QcGeoportailWmtsReply()
 void
 QcGeoportailWmtsReply::abort()
 {
-  if (!m_reply)
-    return;
-
-  m_reply->abort();
+  if (m_reply)
+    m_reply->abort();
 }
 
 QNetworkReply *

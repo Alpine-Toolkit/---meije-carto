@@ -73,7 +73,6 @@
 
 #include <QHash>
 #include <QList>
-#include <QLocale>
 #include <QMap>
 #include <QMutex>
 #include <QMutexLocker>
@@ -88,16 +87,12 @@
 
 // QC_BEGIN_NAMESPACE
 
-// class QGeoMapRequestOptions;
-
-// class QGeoTiledMappingManagerEngine;
-
 class QC_EXPORT QcWmtsTileFetcher : public QObject
 {
   Q_OBJECT
 
  public:
-  QcWmtsTileFetcher(QObject * parent = 0);
+  QcWmtsTileFetcher();
   virtual ~QcWmtsTileFetcher();
 
  public slots:
