@@ -32,56 +32,6 @@
 
 /**************************************************************************************************/
 
-QcTileMatrixIndex::QcTileMatrixIndex(size_t x, size_t y)
-  : m_x(x), m_y(y)
-{}
-
-QcTileMatrixIndex::QcTileMatrixIndex()
-  : QcTileMatrixIndex(0, 0)
-{}
-
-QcTileMatrixIndex::QcTileMatrixIndex(const QcTileMatrixIndex & other)
-  : QcTileMatrixIndex(other.m_x, other.m_y)
-{
-}
-
-QcTileMatrixIndex::~QcTileMatrixIndex()
-{}
-
-QcTileMatrixIndex &
-QcTileMatrixIndex::operator=(const QcTileMatrixIndex &other)
-{
-  if (this != &other) {
-    m_x = other.m_x;
-    m_y = other.m_y;
-  }
-
-  return *this;
-}
-
-bool
-QcTileMatrixIndex::operator==(const QcTileMatrixIndex &other) const
-{
-  return (m_x == other.m_x) && (m_y == other.m_y);
-}
-
-#ifndef QT_NO_DEBUG_STREAM
-QC_EXPORT QDebug operator<<(QDebug debug, const QcTileMatrixIndex & tile_index)
-{
-  QDebugStateSaver saver(debug); // Fixme: ???
-
-  debug.nospace() << "QcTileMatrixIndex(";
-  debug << tile_index.x();
-  debug << ", ";
-  debug << tile_index.y();
-  debug << ')';
-
-  return debug;
-}
-#endif
-
-/**************************************************************************************************/
-
 QcTileMatrixSetIterator::QcTileMatrixSetIterator (const QcTileMatrixSet * tile_matrix_set, size_t position)
   : m_position(position), m_tile_matrix_set(tile_matrix_set)
 {}

@@ -14,9 +14,11 @@
 
 foreach(name
     geo_coordinate
+    geoportail_license
     interval
     line
     polygon
+    geoportail_wmts_tile_fetcher
     tile_matrix_set
     vector
     viewport

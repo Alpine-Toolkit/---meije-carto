@@ -40,57 +40,13 @@
 #include <QString>
 
 #include "qtcarto_global.h"
-#include "map/geo_coordinate.h"
 #include "map/earth.h"
+#include "map/geo_coordinate.h"
+#include "map/tile_matrix_index.h"
 
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
-
-/**************************************************************************************************/
-
-// class QDebug;
-// class QDataStream;
-
-/**************************************************************************************************/
-
-class QC_EXPORT QcTileMatrixIndex
-{
- public:
-  QcTileMatrixIndex();
-  QcTileMatrixIndex(size_t x, size_t y);
-  QcTileMatrixIndex(const QcTileMatrixIndex & other);
-  ~QcTileMatrixIndex();
-
-  QcTileMatrixIndex &operator=(const QcTileMatrixIndex & other);
-
-  bool operator==(const QcTileMatrixIndex & other) const;
-  inline bool operator!=(const QcTileMatrixIndex & other) const {
-    return !operator==(other);
-  }
-
-  inline void set_x(size_t x) {
-    m_x = x;
-  }
-  inline size_t x() const {
-    return m_x;
-  }
-
-  inline void set_y(size_t y) {
-    m_y = y;
-  }
-  inline size_t y() const {
-    return m_y;
-  }
-
- private:
-  size_t m_x; // column
-  size_t m_y; // row
-};
-
-#ifndef QT_NO_DEBUG_STREAM
-QC_EXPORT QDebug operator<<(QDebug debug, const QcTileMatrixIndex & tile_index);
-#endif
 
 /**************************************************************************************************/
 

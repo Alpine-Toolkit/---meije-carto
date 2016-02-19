@@ -91,6 +91,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 
 find_package(Qt5Core REQUIRED)
+find_package(Qt5Network REQUIRED)
 find_package(Qt5Test REQUIRED)
 
 # INCLUDE_DIRECTORIES(${Qt5Core_INCLUDES})
