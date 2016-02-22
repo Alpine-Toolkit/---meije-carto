@@ -113,7 +113,7 @@ class QC_EXPORT QcWmtsReply : public QObject
 
  signals:
   void finished();
-  void error(QcWmtsReply::Error error, const QString & error_string = QString());
+  void error(Error error, const QString & error_string = QString());
 
  protected:
   void set_error(Error error, const QString & error_string);
@@ -128,7 +128,7 @@ class QC_EXPORT QcWmtsReply : public QObject
   Q_DISABLE_COPY(QcWmtsReply);
 
  private:
-  QcWmtsReply::Error m_error;
+  Error m_error;
   QString m_error_string;
   bool m_is_finished;
   bool m_is_cached; // Fixme: purpose ?

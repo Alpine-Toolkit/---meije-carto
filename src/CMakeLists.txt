@@ -26,7 +26,7 @@ set(qtcarto_files
   map/viewport.cpp
   map/wmts_manager.cpp
   map/wmts_reply.cpp
-  # map/wmts_request_manager.cpp
+  map/wmts_request_manager.cpp
   map/wmts_tile_fetcher.cpp
   math/interval.cpp
   math/polygon.cpp

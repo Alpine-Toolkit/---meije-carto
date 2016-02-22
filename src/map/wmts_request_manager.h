@@ -64,105 +64,61 @@
 
 /**************************************************************************************************/
 
-#ifndef __WMTS_MANAGER_H__
-#define __WMTS_MANAGER_H__
+#ifndef __WMTS_REQUEST_MANAGER_H__
+#define __WMTS_REQUEST_MANAGER_H__
 
 /**************************************************************************************************/
 
 #include <QHash>
 #include <QObject>
-#include <QPair>
+#include <QPointer>
 #include <QSet>
+#include <QSharedPointer>
 #include <QSize>
 
 #include "qtcarto_global.h"
-#include "file_tile_cache.h"
-// #include "map_view.h" // circular
-#include "wmts_tile_fetcher.h"
+#include "map/file_tile_cache.h"
+#include "map/tile_spec.h"
+#include "map/wmts_manager.h"
+
+/**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
 
 /**************************************************************************************************/
 
-class QcMapView;
-typedef QSet<QcMapView *> QcMapViewPointerSet;
+class RetryFuture;
 
-/**************************************************************************************************/
-
-class QC_EXPORT QcWmtsManager : public QObject
+class QcWmtsRequestManager : public QObject
 {
   Q_OBJECT
 
  public:
-  enum CacheArea {
-    DiskCache = 0x01,
-    MemoryCache = 0x02,
-    AllCaches = 0xFF
-  };
-  Q_DECLARE_FLAGS(CacheAreas, CacheArea)
+  explicit QcWmtsRequestManager(QcMapView * map_view, QcWmtsManager * wmts_manager);
+  ~QcWmtsRequestManager();
 
- public:
-  explicit QcWmtsManager();
-  virtual ~QcWmtsManager();
+  QList<QSharedPointer<QcTileTexture> > request_tiles(const QcTileSpecSet & tile_specs);
 
-  QcMapView * create_map();
-  void release_map(QcMapView * map_view);
-
-  QcWmtsTileFetcher * tile_fetcher();
-  QcFileTileCache * tile_cache();
-
-  void update_tile_requests(QcMapView * map_view,
-			    const QcTileSpecSet & tiles_added,
-			    const QcTileSpecSet & tiles_removed);
-
-  QSharedPointer<QcTileTexture> get_tile_texture(const QcTileSpec & tile_spec);
-
-  void dump() const;
-
-  // QSize tileSize() const;
-  // int tileVersion() const;
-  // QcWmtsManager::CacheAreas cache_hint() const;
-
- private slots:
-  void engine_tile_finished(const QcTileSpec & tile_spec, const QByteArray & bytes, const QString & format);
-  void engine_tile_error(const QcTileSpec & tile_spec, const QString & error_string);
-
- signals:
+  void tile_fetched(const QcTileSpec & tile_spec);
   void tile_error(const QcTileSpec & tile_spec, const QString & error_string);
-  void tile_version_changed();
 
-  // protected:
- public:
-  void set_tile_fetcher(QcWmtsTileFetcher * tile_fetcher);
-  void set_tile_cache(QcFileTileCache * cache);
-  // void set_tile_size(const QSize &tileSize);
-  // void set_tile_version(int version);
-  // void set_cache_hint(QcWmtsManager::CacheAreas cacheHint);
+  QSharedPointer<QcTileTexture> tile_texture(const QcTileSpec & tile_spec);
 
  private:
-  void remove_tile_spec(const QcTileSpec & tile_spec);
+  QcMapView * m_map_view;
+  QPointer<QcWmtsManager> m_wmts_manager;
+  QHash<QcTileSpec, int> m_retries;
+  QHash<QcTileSpec, QSharedPointer<RetryFuture> > m_futures;
+  QcTileSpecSet m_requested;
 
- private:
-  QHash<QcMapView *, QcTileSpecSet > m_map_view_hash;
-  QHash<QcTileSpec, QcMapViewPointerSet > m_tile_hash;
-  QcFileTileCache * m_tile_cache;
-  QcWmtsTileFetcher * m_tile_fetcher;
-  // QSize m_tile_size;
-  // int m_tile_version;
-  // QcWmtsManager::CacheAreas m_cache_hint;
-
-  Q_DISABLE_COPY(QcWmtsManager);
-
-  friend class QcWmtsTileFetcher;
+  Q_DISABLE_COPY(QcWmtsRequestManager)
 };
-
-// Q_DECLARE_OPERATORS_FOR_FLAGS(QcWmtsManager::CacheAreas)
 
 // QC_END_NAMESPACE
 
 /**************************************************************************************************/
 
-#endif /* __WMTS_MANAGER_H__ */
+#endif /* __WMTS_REQUEST_MANAGER_H__ */
 
 /***************************************************************************************************
  *

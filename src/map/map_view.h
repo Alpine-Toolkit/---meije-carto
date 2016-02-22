@@ -72,20 +72,34 @@
 #include <QObject>
 
 #include "qtcarto_global.h"
+#include "map/tile_spec.h"
+#include "map/wmts_manager.h" // circular
+#include "map/wmts_request_manager.h" // circular
 
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
+
+// class QcWmtsManager;
+// class QcWmtsRequestManager;
+
+/**************************************************************************************************/
 
 class QC_EXPORT QcMapView : public QObject
 {
   Q_OBJECT
 
  public:
-  QcMapView();
+  QcMapView(QcWmtsManager * wmts_manager);
   ~QcMapView();
 
-  //QcWmtsManager request_manager();
+  QcWmtsRequestManager * request_manager();
+
+  void update_tile(const QcTileSpec & tile_spec);
+
+ private:
+  QPointer<QcWmtsManager> m_wmts_manager;
+  QcWmtsRequestManager * m_request_manager;
 };
 
 typedef QSet<QcMapView *> QcMapViewPointerSet;

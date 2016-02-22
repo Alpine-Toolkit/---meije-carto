@@ -63,6 +63,7 @@
 /**************************************************************************************************/
 
 #include "wmts_manager.h"
+#include "map_view.h" // circular
 
 #include <QDir>
 #include <QLocale>
@@ -247,9 +248,8 @@ QcWmtsManager::engine_tile_finished(const QcTileSpec & tile_spec, const QByteArr
   remove_tile_spec(tile_spec);
   tile_cache()->insert(tile_spec, bytes, format); // , m_cache_hint
 
-  // Fixme:
-  // for (QcMapView * map_view : map_views)
-  //   (*map_view)->request_manager()->tile_fetched(tile_spec);
+  for (QcMapView * map_view : map_views)
+    map_view->request_manager()->tile_fetched(tile_spec);
 }
 
 void
@@ -259,9 +259,8 @@ QcWmtsManager::engine_tile_error(const QcTileSpec & tile_spec, const QString & e
   QcMapViewPointerSet map_views = m_tile_hash.value(tile_spec);
   remove_tile_spec(tile_spec);
 
-  // Fixme:
-  // for (QcMapView * map_view : map_views)
-  //   (*map_view)->requestManager()->tile_error(spec, error_string);
+  for (QcMapView * map_view : map_views)
+    map_view->request_manager()->tile_error(tile_spec, error_string);
 
   emit tile_error(tile_spec, error_string);
 }

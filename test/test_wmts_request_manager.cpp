@@ -32,13 +32,11 @@
 /**************************************************************************************************/
 
 #include "map/map_view.h"
-#include "map/wmts_manager.h"
-#include "map/wmts_reply.h"
-#include "map/wmts_tile_fetcher.h"
+#include "map/wmts_request_manager.h"
 
 /***************************************************************************************************/
 
-class TestQcWmtsManager : public QObject
+class TestQcWmtsRequestManager : public QObject
 {
   Q_OBJECT;
 
@@ -87,59 +85,41 @@ class FakeWmtsTileFetcher : public QcWmtsTileFetcher
   }
 };
 
-void TestQcWmtsManager::constructor()
+void TestQcWmtsRequestManager::constructor()
 {
   QcWmtsManager wmts_manager;
-
   FakeWmtsTileFetcher tile_fetcher;
   wmts_manager.set_tile_fetcher(&tile_fetcher);
   wmts_manager.tile_cache()->clear_all();
 
-  QcMapView map_view1(&wmts_manager);
-  map_view1.setObjectName("map1");
+  QcMapView map_view(&wmts_manager);
+  QcWmtsRequestManager * request_manager = map_view.request_manager();
 
-  QcMapView map_view2(&wmts_manager);
-  map_view2.setObjectName("map2");
-
-  QSet<QcTileSpec> tiles_added;
-  QcTileSpecSet tiles_removed ;
+  QSet<QcTileSpec> tile_specs;
 
   QcTileSpec tile_spec1("geoportail", 1, 16, 1, 1);
-  tiles_added = {tile_spec1};
-  tiles_removed = {} ;
-  wmts_manager.update_tile_requests(&map_view1, tiles_added, tiles_removed);
+  tile_specs = {tile_spec1};
+  request_manager->request_tiles(tile_specs);
   wmts_manager.dump();
   QTest::qWait(1);
 
   QcTileSpec tile_spec2("geoportail", 1, 16, 2, 2);
-  tiles_added = {tile_spec2};
-  tiles_removed = {} ;
-  wmts_manager.update_tile_requests(&map_view2, tiles_added, tiles_removed);
-  wmts_manager.dump();
-  QTest::qWait(1);
-
-  tiles_added = {tile_spec2};
-  tiles_removed = {tile_spec1} ;
-  wmts_manager.update_tile_requests(&map_view1, tiles_added, tiles_removed);
+  tile_specs = {tile_spec1, tile_spec2};
+  request_manager->request_tiles(tile_specs);
   wmts_manager.dump();
   QTest::qWait(1);
 
   QcTileSpec tile_spec3("geoportail", 1, 16, 3, 3);
-  tiles_added = {tile_spec3};
-  tiles_removed = {} ;
-  wmts_manager.update_tile_requests(&map_view2, tiles_added, tiles_removed);
+  tile_specs = {tile_spec2, tile_spec3};
+  request_manager->request_tiles(tile_specs);
   wmts_manager.dump();
   QTest::qWait(1);
-
-  qInfo() << "Release map2";
-  wmts_manager.release_map(&map_view2);
-  wmts_manager.dump();
 }
 
 /***************************************************************************************************/
 
-QTEST_MAIN(TestQcWmtsManager)
-#include "test_wmts_manager.moc"
+QTEST_MAIN(TestQcWmtsRequestManager)
+#include "test_wmts_request_manager.moc"
 
 /***************************************************************************************************
  *
