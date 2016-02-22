@@ -91,7 +91,7 @@ QC_EXPORT QDebug operator<<(QDebug, const QcTileSpec & tile_spec);
 
 // QC_END_NAMESPACE
 
-// Q_DECLARE_METATYPE(QcTileSpec)
+Q_DECLARE_METATYPE(QcTileSpec)
 
 #endif /* __TILE_SPEC_H__ */
 

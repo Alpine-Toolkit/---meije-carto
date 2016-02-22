@@ -64,84 +64,30 @@
 
 /**************************************************************************************************/
 
-#ifndef __WMTS_REPLY_H__
-#define __WMTS_REPLY_H__
+#ifndef __MAP_VIEW_H__
+#define __MAP_VIEW_H__
 
 /**************************************************************************************************/
 
-#include <QByteArray>
-#include <QObject>
-#include <QString>
-
 #include "qtcarto_global.h"
-#include "map/tile_spec.h"
+
+/**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
 
-/**************************************************************************************************/
-
-// QcWmtsReply is a kind of future
-
-class QC_EXPORT QcWmtsReply : public QObject
+class QC_EXPORT QcMapView : public QObject
 {
   Q_OBJECT
 
  public:
-  enum Error { // Fixme: check
-    NoError,
-    CommunicationError,
-    ParseError,
-    UnknownError
-  };
-
-  QcWmtsReply(const QcTileSpec & tile_spec);
-  QcWmtsReply(Error error, const QString & error_string);
-  virtual ~QcWmtsReply();
-
-  bool is_finished() const;
-  Error error() const;
-  QString error_string() const;
-
-  bool is_cached() const;
-
-  QcTileSpec tile_spec() const;
-
-  QByteArray map_image_data() const;
-  QString map_image_format() const;
-
-  virtual void abort();
-
- signals:
-  void finished();
-  void error(QcWmtsReply::Error error, const QString & error_string = QString());
-
- protected:
-  void set_error(Error error, const QString & error_string);
-  void set_finished(bool finished);
-
-  void set_cached(bool cached);
-
-  void set_map_image_data(const QByteArray & data);
-  void set_map_image_format(const QString & format);
-
- private:
-  Q_DISABLE_COPY(QcWmtsReply);
-
- private:
-  QcWmtsReply::Error m_error;
-  QString m_error_string;
-  bool m_is_finished;
-  bool m_is_cached; // Fixme: purpose ?
-  QcTileSpec m_tile_spec;
-  QByteArray m_map_image_data;
-  QString m_map_image_format;
+  //QcWmtsManager request_manager();
 };
 
 // QC_END_NAMESPACE
 
 /**************************************************************************************************/
 
-#endif /* __WMTS_REPLY_H__ */
+#endif /* __MAP_VIEW_H__ */
 
 /***************************************************************************************************
  *
