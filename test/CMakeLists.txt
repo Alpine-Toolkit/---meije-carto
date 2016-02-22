@@ -13,6 +13,7 @@
 #
 
 foreach(name
+    file_tile_cache
     geo_coordinate
     geoportail_license
     geoportail_wmts_tile_fetcher

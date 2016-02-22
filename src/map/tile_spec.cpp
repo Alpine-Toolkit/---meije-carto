@@ -92,6 +92,7 @@ QcTileSpec &
 QcTileSpec::operator=(const QcTileSpec & other)
 {
   if (this != &other) {
+    QcTileMatrixIndex::operator=(other);
     m_plugin = other.m_plugin;
     m_map_id = other.m_map_id;
     m_level = other.m_level;

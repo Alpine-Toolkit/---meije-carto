@@ -80,6 +80,8 @@
 
 /**************************************************************************************************/
 
+// QcWmtsReply is a kind of future
+
 class QC_EXPORT QcWmtsReply : public QObject
 {
   Q_OBJECT
@@ -129,7 +131,7 @@ class QC_EXPORT QcWmtsReply : public QObject
   QcWmtsReply::Error m_error;
   QString m_error_string;
   bool m_is_finished;
-  bool m_is_cached;
+  bool m_is_cached; // Fixme: purpose ?
   QcTileSpec m_tile_spec;
   QByteArray m_map_image_data;
   QString m_map_image_format;

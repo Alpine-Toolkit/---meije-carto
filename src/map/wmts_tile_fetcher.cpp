@@ -74,6 +74,7 @@ QcWmtsTileFetcher::QcWmtsTileFetcher()
   : QObject(),
     m_enabled(true)
 {
+  // Fixme: useless ?
   // if (!m_queue.isEmpty())
   //   m_timer.start(0, this);
 }
@@ -90,11 +91,10 @@ QcWmtsTileFetcher::update_tile_requests(const QSet<QcTileSpec> &tiles_added,
   QMutexLocker mutex_locker(&m_queue_mutex);
 
   cancel_tile_requests(tiles_removed);
-
   m_queue += tiles_added.toList();
 
+  // Start timer to fetch tiles from queue
   if (m_enabled && !m_queue.isEmpty() && !m_timer.isActive()) {
-    qInfo() << "Start timer";
     m_timer.start(0, this);
   }
 }
@@ -102,6 +102,7 @@ QcWmtsTileFetcher::update_tile_requests(const QSet<QcTileSpec> &tiles_added,
 void
 QcWmtsTileFetcher::cancel_tile_requests(const QSet<QcTileSpec> & tiles)
 {
+  // Delete objects and abort requests if they are still running
   for (const QcTileSpec & tile_spec: tiles) {
     QcWmtsReply * reply = m_invmap.value(tile_spec, nullptr);
     if (reply) {
@@ -110,6 +111,7 @@ QcWmtsTileFetcher::cancel_tile_requests(const QSet<QcTileSpec> & tiles)
       if (reply->is_finished())
 	reply->deleteLater();
     }
+    // Fixme: else ?
     m_queue.removeAll(tile_spec);
   }
 }
@@ -117,8 +119,6 @@ QcWmtsTileFetcher::cancel_tile_requests(const QSet<QcTileSpec> & tiles)
 void
 QcWmtsTileFetcher::request_next_tile()
 {
-  qInfo() << "QcWmtsTileFetcher::request_next_tile";
-
   QMutexLocker mutex_locker(&m_queue_mutex);
 
   if (!m_enabled || m_queue.isEmpty())
@@ -126,16 +126,17 @@ QcWmtsTileFetcher::request_next_tile()
 
   QcTileSpec tile_spec = m_queue.takeFirst();
 
-  qInfo() << "  request tile" << tile_spec;
+  qInfo() << "QcWmtsTileFetcher::request_next_tile" << tile_spec;
   QcWmtsReply *wmts_reply = get_tile_image(tile_spec);
 
+  // If the request is already finished then handle it
+  // Else connect the finished signal
   if (wmts_reply->is_finished()) {
     handle_reply(wmts_reply, tile_spec);
   } else {
     connect(wmts_reply, SIGNAL(finished()),
 	    this, SLOT(finished()),
 	    Qt::QueuedConnection);
-
     m_invmap.insert(tile_spec, wmts_reply);
   }
 
@@ -151,12 +152,12 @@ QcWmtsTileFetcher::finished()
   QMutexLocker mutex_locker(&m_queue_mutex);
 
   QcWmtsReply *wmts_reply = qobject_cast<QcWmtsReply *>(sender());
-  if (!wmts_reply)
+  if (!wmts_reply) // Fixme: when ?
     return;
 
   QcTileSpec tile_spec = wmts_reply->tile_spec();
 
-  if (!m_invmap.contains(tile_spec)) {
+  if (!m_invmap.contains(tile_spec)) { // Fixme: when ?
     wmts_reply->deleteLater();
     return;
   }
@@ -169,8 +170,7 @@ QcWmtsTileFetcher::finished()
 void
 QcWmtsTileFetcher::timerEvent(QTimerEvent * event)
 {
-  qInfo() << "QcWmtsTileFetcher::timerEvent";
-  if (event->timerId() != m_timer.timerId()) {
+  if (event->timerId() != m_timer.timerId()) { // Fixme: when ?
     QObject::timerEvent(event);
     return;
   } else if (m_queue.isEmpty()) {
@@ -190,6 +190,7 @@ QcWmtsTileFetcher::handle_reply(QcWmtsReply * wmts_reply, const QcTileSpec & til
     return;
   }
 
+  // emit signal according to the reply status
   if (wmts_reply->error() == QcWmtsReply::NoError) {
     qInfo() << "QcWmtsTileFetcher::handle_reply emit tile_finished";
     emit tile_finished(tile_spec, wmts_reply->map_image_data(), wmts_reply->map_image_format());

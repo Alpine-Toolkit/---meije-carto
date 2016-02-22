@@ -53,18 +53,18 @@ QcGeoportailWmtsTileFetcher::QcGeoportailWmtsTileFetcher(const QcGeoPortailWmtsL
 /*
 void QcGeoportailWmtsTileFetcher::setFormat(const QString &format)
 {
-    m_format = format;
+  m_format = format;
 
-    if (m_format == "jpg")
-      m_replyFormat = "jpg";
-    else
-        qWarning() << "Unknown map format " << m_format;
+  if (m_format == "jpg")
+    m_replyFormat = "jpg";
+  else
+    qWarning() << "Unknown map format " << m_format;
 }
 
 void
 QcGeoportailWmtsTileFetcher::setAccessToken(const QString &accessToken)
 {
-    m_accessToken = accessToken;
+  m_accessToken = accessToken;
 }
 */
 

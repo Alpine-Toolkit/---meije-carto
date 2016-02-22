@@ -63,23 +63,26 @@ QcGeoportailWmtsReply::network_reply() const
   return m_reply;
 }
 
+// Handle a successful request : store image data
 void
 QcGeoportailWmtsReply::network_reply_finished()
 {
   if (!m_reply)
     return;
 
-  if (m_reply->error() != QNetworkReply::NoError)
+  if (m_reply->error() != QNetworkReply::NoError) // Fixme: when ?
     return;
 
   set_map_image_data(m_reply->readAll());
   set_map_image_format(m_format);
-  set_finished(true);
 
+  // Fixme: duplicated code
+  set_finished(true);
   m_reply->deleteLater();
   m_reply = nullptr;
 }
 
+// Handle an unsuccessful request : set error message
 void
 QcGeoportailWmtsReply::network_reply_error(QNetworkReply::NetworkError error)
 {

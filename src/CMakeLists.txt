@@ -13,6 +13,7 @@
 #
 
 set(qtcarto_files
+  map/file_tile_cache.cpp
   map/geo_coordinate.cpp
   map/geoportail_license.cpp
   map/geoportail_wmts_reply.cpp
@@ -31,7 +32,7 @@ set(qtcarto_files
   math/vector.cpp
 )
 add_library(qtcarto SHARED ${qtcarto_files})
-target_link_libraries(qtcarto Qt5::Core Qt5::Network ${PROJ4_LIBRARIES})
+target_link_libraries(qtcarto Qt5::Core Qt5::Gui Qt5::Network ${PROJ4_LIBRARIES})
 
 ####################################################################################################
 #
