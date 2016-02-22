@@ -112,6 +112,45 @@ QcWmtsManager::tile_fetcher()
   return m_tile_fetcher;
 }
 
+void
+QcWmtsManager::set_tile_cache(QcFileTileCache * cache)
+{
+  Q_ASSERT_X(!m_tile_cache, Q_FUNC_INFO, "This should be called only once");
+  m_tile_cache = cache;
+}
+
+QcFileTileCache *
+QcWmtsManager::tile_cache()
+{
+  if (!m_tile_cache) {
+    // QString cache_directory;
+    // if (!manager_name().isEmpty())
+    //   cache_directory = QcFileTileCache::base_cache_directory() + manager_name();
+    m_tile_cache = new QcFileTileCache(); // cache_directory
+  }
+  return m_tile_cache;
+}
+
+void
+QcWmtsManager::remove_tile_spec(const QcTileSpec & tile_spec)
+{
+  // Remove tile_spec in sets
+
+  QcMapViewPointerSet map_views = m_tile_hash.value(tile_spec);
+
+  // Fixme: inplace update ?
+  for (auto map_view : map_views) {
+    QcTileSpecSet tile_set = m_map_view_hash.value(map_view);
+    tile_set.remove(tile_spec);
+    if (tile_set.isEmpty())
+      m_map_view_hash.remove(map_view);
+    else
+      m_map_view_hash.insert(map_view, tile_set);
+  }
+
+  m_tile_hash.remove(tile_spec);
+}
+
 QcMapView *
 QcWmtsManager::create_map()
 {
@@ -124,12 +163,13 @@ QcWmtsManager::release_map(QcMapView * map_view)
   m_map_view_hash.remove(map_view);
 
   // Update m_tile_hash
-  QHash<QcTileSpec, QSet<QcMapView *> > new_tile_hash = m_tile_hash;
-  typedef QHash<QcTileSpec, QSet<QcMapView *> >::const_iterator hash_iterator;
+  QHash<QcTileSpec, QcMapViewPointerSet > new_tile_hash = m_tile_hash;
+  // for (auto & tile_spec : m_tile_hash.keys())
+  typedef QHash<QcTileSpec, QcMapViewPointerSet >::const_iterator hash_iterator;
   hash_iterator iter = m_tile_hash.constBegin();
   hash_iterator iter_end = m_tile_hash.constEnd();
   for (; iter != iter_end; ++iter) { // Fixme: cxx11
-    QSet<QcMapView *> map_views = iter.value();
+    QcMapViewPointerSet map_views = iter.value();
     if (map_views.contains(map_view)) {
       map_views.remove(map_view);
       if (map_views.isEmpty())
@@ -143,82 +183,58 @@ QcWmtsManager::release_map(QcMapView * map_view)
 
 void
 QcWmtsManager::update_tile_requests(QcMapView * map_view,
-				    const QSet<QcTileSpec> & tiles_added,
-				    const QSet<QcTileSpec> & tiles_removed)
+				    const QcTileSpecSet & tiles_added,
+				    const QcTileSpecSet & tiles_removed)
 {
-  typedef QSet<QcTileSpec>::const_iterator tile_iter;
+  typedef QcTileSpecSet::const_iterator tile_iter;
   tile_iter iter, iter_end;
 
   // add and remove tiles from tileset for this map_view
-
-  QSet<QcTileSpec> old_tiles = m_map_view_hash.value(map_view);
-
-  iter = tiles_removed.constBegin();
-  iter_end = tiles_removed.constEnd();
-  for (; iter != iter_end; ++iter) {
-    old_tiles.remove(*iter);
-  }
-
-  iter = tiles_added.constBegin();
-  iter_end = tiles_added.constEnd();
-  for (; iter != iter_end; ++iter) {
-    old_tiles.insert(*iter);
-  }
-
+  QcTileSpecSet old_tiles = m_map_view_hash.value(map_view);
+  old_tiles -= tiles_removed;
+  old_tiles += tiles_added;
   m_map_view_hash.insert(map_view, old_tiles);
 
   // add and remove map from mapset for the tiles
 
-  QSet<QcTileSpec> requested_tiles;
-  QSet<QcTileSpec> canceled_tiles;
-
-  iter = tiles_removed.constBegin();
-  for (; iter != iter_end; ++iter) {
-    QSet<QcMapView *> map_view_set = m_tile_hash.value(*iter);
+  // Fixme: duplicated code, inplace update ?
+  QcTileSpecSet canceled_tiles;
+  for (auto & tile_spec : tiles_removed) {
+    QcMapViewPointerSet map_view_set = m_tile_hash.value(tile_spec);
     map_view_set.remove(map_view);
     if (map_view_set.isEmpty()) {
-      canceled_tiles.insert(*iter);
-      m_tile_hash.remove(*iter);
+      m_tile_hash.remove(tile_spec);
+      canceled_tiles.insert(tile_spec);
     } else {
-      m_tile_hash.insert(*iter, map_view_set);
+      m_tile_hash.insert(tile_spec, map_view_set);
     }
   }
 
-  iter = tiles_added.constBegin();
-  for (; iter != iter_end; ++iter) {
-    QSet<QcMapView *> map_view_set = m_tile_hash.value(*iter);
+  QcTileSpecSet requested_tiles;
+  for (auto & tile_spec : tiles_added) {
+    QcMapViewPointerSet map_view_set = m_tile_hash.value(tile_spec);
     if (map_view_set.isEmpty()) {
-      requested_tiles.insert(*iter);
+      requested_tiles.insert(tile_spec);
     }
     map_view_set.insert(map_view);
-    m_tile_hash.insert(*iter, map_view_set);
+    m_tile_hash.insert(tile_spec, map_view_set);
   }
 
+  // Fixme: why ?
   canceled_tiles -= requested_tiles;
 
+  // async call
   QMetaObject::invokeMethod(m_tile_fetcher, "update_tile_requests",
 			    Qt::QueuedConnection,
-			    Q_ARG(QSet<QcTileSpec>, requested_tiles),
-			    Q_ARG(QSet<QcTileSpec>, canceled_tiles));
+			    Q_ARG(QcTileSpecSet, requested_tiles),
+			    Q_ARG(QcTileSpecSet, canceled_tiles));
 }
 
 void
 QcWmtsManager::engine_tile_finished(const QcTileSpec & tile_spec, const QByteArray & bytes, const QString & format)
 {
-  QSet<QcMapView *> map_views = m_tile_hash.value(tile_spec);
-
-  // Remove tile_spec in sets
-  // Fixme: duplicated code, inplace update ?
-  for (QcMapView * map_view : map_views) {
-    QSet<QcTileSpec> tile_set = m_map_view_hash.value(map_view);
-    tile_set.remove(tile_spec);
-    if (tile_set.isEmpty())
-      m_map_view_hash.remove(map_view);
-    else
-      m_map_view_hash.insert(map_view, tile_set);
-  }
-  m_tile_hash.remove(tile_spec);
-
+  QcMapViewPointerSet map_views = m_tile_hash.value(tile_spec);
+  remove_tile_spec(tile_spec);
   tile_cache()->insert(tile_spec, bytes, format); // , m_cache_hint
 
   // Fixme:
@@ -229,25 +245,20 @@ QcWmtsManager::engine_tile_finished(const QcTileSpec & tile_spec, const QByteArr
 void
 QcWmtsManager::engine_tile_error(const QcTileSpec & tile_spec, const QString & error_string)
 {
-  QSet<QcMapView *> map_views = m_tile_hash.value(tile_spec);
-
-  // Remove tile_spec in sets
-  // Fixme: duplicated code, inplace update ?
-  for (QcMapView * map_view : map_views) {
-    QSet<QcTileSpec> tile_set = m_map_view_hash.value(map_view);
-    tile_set.remove(tile_spec);
-    if (tile_set.isEmpty())
-      m_map_view_hash.remove(map_view);
-    else
-      m_map_view_hash.insert(map_view, tile_set);
-  }
-  m_tile_hash.remove(tile_spec);
+  QcMapViewPointerSet map_views = m_tile_hash.value(tile_spec);
+  remove_tile_spec(tile_spec);
 
   // Fixme:
   // for (QcMapView * map_view : map_views)
   //   (*map_view)->requestManager()->tile_error(spec, error_string);
 
   emit tile_error(tile_spec, error_string);
+}
+
+QSharedPointer<QcTileTexture>
+QcWmtsManager::get_tile_texture(const QcTileSpec & tile_spec)
+{
+  return m_tile_cache->get(tile_spec);
 }
 
 /*
@@ -288,31 +299,6 @@ QcWmtsManager::engine_tile_error(const QcTileSpec & tile_spec, const QString & e
   m_cache_hint = cache_hint;
   }
 */
-
-void
-QcWmtsManager::set_tile_cache(QcFileTileCache * cache)
-{
-  Q_ASSERT_X(!m_tile_cache, Q_FUNC_INFO, "This should be called only once");
-  m_tile_cache = cache;
-}
-
-QcFileTileCache *
-QcWmtsManager::tile_cache()
-{
-  if (!m_tile_cache) {
-    // QString cache_directory;
-    // if (!manager_name().isEmpty())
-    //   cache_directory = QcFileTileCache::base_cache_directory() + manager_name();
-    m_tile_cache = new QcFileTileCache(); // cache_directory
-  }
-  return m_tile_cache;
-}
-
-QSharedPointer<QcTileTexture>
-QcWmtsManager::get_tile_texture(const QcTileSpec & tile_spec)
-{
-  return m_tile_cache->get(tile_spec);
-}
 
 // QC_END_NAMESPACE
 

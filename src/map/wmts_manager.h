@@ -100,21 +100,20 @@ class QC_EXPORT QcWmtsManager : public QObject
   explicit QcWmtsManager();
   virtual ~QcWmtsManager();
 
-  QcWmtsTileFetcher * tile_fetcher();
-
   QcMapView * create_map();
   void release_map(QcMapView * map_view);
 
-  // QSize tileSize() const;
-  // int tileVersion() const;
+  QcWmtsTileFetcher * tile_fetcher();
+  QcFileTileCache * tile_cache();
 
   void update_tile_requests(QcMapView * map_view,
-			    const QSet<QcTileSpec> & tiles_added,
-			    const QSet<QcTileSpec> & tiles_removed);
+			    const QcTileSpecSet & tiles_added,
+			    const QcTileSpecSet & tiles_removed);
 
-  QcFileTileCache * tile_cache();
   QSharedPointer<QcTileTexture> get_tile_texture(const QcTileSpec & tile_spec);
 
+  // QSize tileSize() const;
+  // int tileVersion() const;
   // QcWmtsManager::CacheAreas cache_hint() const;
 
  private slots:
@@ -127,17 +126,20 @@ class QC_EXPORT QcWmtsManager : public QObject
 
  protected:
   void set_tile_fetcher(QcWmtsTileFetcher * tile_fetcher);
+  void set_tile_cache(QcFileTileCache * cache);
   // void set_tile_size(const QSize &tileSize);
   // void set_tile_version(int version);
   // void set_cache_hint(QcWmtsManager::CacheAreas cacheHint);
-  void set_tile_cache(QcFileTileCache * cache);
 
  private:
-  // QSize tileSize_;
-  // int m_tileVersion;
-  QHash<QcMapView *, QSet<QcTileSpec> > m_map_view_hash;
-  QHash<QcTileSpec, QSet<QcMapView *> > m_tile_hash;
-  // Q..::CacheAreas cacheHint_;
+  void remove_tile_spec(const QcTileSpec & tile_spec);
+
+ private:
+  // QSize m_tile_size;
+  // int m_tile_version;
+  QHash<QcMapView *, QcTileSpecSet > m_map_view_hash;
+  QHash<QcTileSpec, QcMapViewPointerSet > m_tile_hash;
+  // QcWmtsManager::CacheAreas m_cache_hint;
   QcFileTileCache * m_tile_cache;
   QcWmtsTileFetcher * m_tile_fetcher;
 

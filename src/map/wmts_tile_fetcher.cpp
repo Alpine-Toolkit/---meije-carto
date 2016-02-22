@@ -83,8 +83,8 @@ QcWmtsTileFetcher::~QcWmtsTileFetcher()
 {}
 
 void
-QcWmtsTileFetcher::update_tile_requests(const QSet<QcTileSpec> &tiles_added,
-					const QSet<QcTileSpec> &tiles_removed)
+QcWmtsTileFetcher::update_tile_requests(const QcTileSpecSet &tiles_added,
+					const QcTileSpecSet &tiles_removed)
 {
   qInfo() << "QcWmtsTileFetcher::update_tile_requests";
 
@@ -100,7 +100,7 @@ QcWmtsTileFetcher::update_tile_requests(const QSet<QcTileSpec> &tiles_added,
 }
 
 void
-QcWmtsTileFetcher::cancel_tile_requests(const QSet<QcTileSpec> & tiles)
+QcWmtsTileFetcher::cancel_tile_requests(const QcTileSpecSet & tiles)
 {
   // Delete objects and abort requests if they are still running
   for (const QcTileSpec & tile_spec: tiles) {

@@ -71,7 +71,7 @@
 #include <QStandardPaths>
 
 // Q_DECLARE_METATYPE(QList<QcTileSpec>)
-// Q_DECLARE_METATYPE(QSet<QcTileSpec>)
+// Q_DECLARE_METATYPE(QcTileSpecSet)
 
 // QC_BEGIN_NAMESPACE
 

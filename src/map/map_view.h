@@ -83,6 +83,8 @@ class QC_EXPORT QcMapView : public QObject
   //QcWmtsManager request_manager();
 };
 
+typedef QSet<QcMapView *> QcMapViewPointerSet;
+
 // QC_END_NAMESPACE
 
 /**************************************************************************************************/
