@@ -71,7 +71,6 @@ void TestQcGeoportailWmtsTileFetcher::constructor()
   TileFetcherHelper tile_fetcher_helper;
   // connect(&tile_fetcher, SIGNAL(tile_finished()),
   // 	     &tile_fetcher_helper, SLOT(tile_finished()));
-
   connect(&tile_fetcher, &QcGeoportailWmtsTileFetcher::tile_finished,
   	  &tile_fetcher_helper, &TileFetcherHelper::tile_finished);
 

@@ -18,13 +18,15 @@ set(qtcarto_files
   map/geoportail_license.cpp
   map/geoportail_wmts_reply.cpp
   map/geoportail_wmts_tile_fetcher.cpp
+  map/map_view.cpp
   map/mosaic_painter.cpp
   map/tile_matrix_index.cpp
   map/tile_matrix_set.cpp
   map/tile_spec.cpp
   map/viewport.cpp
-  map/wmts_reply.cpp
   map/wmts_manager.cpp
+  map/wmts_reply.cpp
+  # map/wmts_request_manager.cpp
   map/wmts_tile_fetcher.cpp
   math/interval.cpp
   math/polygon.cpp

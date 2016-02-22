@@ -69,6 +69,8 @@
 
 /**************************************************************************************************/
 
+#include <QObject>
+
 #include "qtcarto_global.h"
 
 /**************************************************************************************************/
@@ -80,6 +82,9 @@ class QC_EXPORT QcMapView : public QObject
   Q_OBJECT
 
  public:
+  QcMapView();
+  ~QcMapView();
+
   //QcWmtsManager request_manager();
 };
 

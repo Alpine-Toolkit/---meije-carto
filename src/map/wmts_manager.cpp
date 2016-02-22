@@ -87,12 +87,15 @@ QcWmtsManager::QcWmtsManager()
 */
 QcWmtsManager::~QcWmtsManager()
 {
-  delete m_tile_cache;
+  if (m_tile_cache)
+    delete m_tile_cache;
 }
 
 void
 QcWmtsManager::set_tile_fetcher(QcWmtsTileFetcher * tile_fetcher)
 {
+  m_tile_fetcher = tile_fetcher;
+
   qRegisterMetaType<QcTileSpec>();
 
   // Connect tile fetcher signals
@@ -115,6 +118,7 @@ QcWmtsManager::tile_fetcher()
 void
 QcWmtsManager::set_tile_cache(QcFileTileCache * cache)
 {
+  // Fixme: delete
   Q_ASSERT_X(!m_tile_cache, Q_FUNC_INFO, "This should be called only once");
   m_tile_cache = cache;
 }
@@ -191,8 +195,8 @@ QcWmtsManager::update_tile_requests(QcMapView * map_view,
 
   // add and remove tiles from tileset for this map_view
   QcTileSpecSet old_tiles = m_map_view_hash.value(map_view);
-  old_tiles -= tiles_removed;
   old_tiles += tiles_added;
+  old_tiles -= tiles_removed;
   m_map_view_hash.insert(map_view, old_tiles);
 
   // add and remove map from mapset for the tiles
@@ -224,15 +228,21 @@ QcWmtsManager::update_tile_requests(QcMapView * map_view,
   canceled_tiles -= requested_tiles;
 
   // async call
+  // qInfo() << "async call update_tile_requests +" << requested_tiles << "-" << canceled_tiles;
   QMetaObject::invokeMethod(m_tile_fetcher, "update_tile_requests",
-			    Qt::QueuedConnection,
-			    Q_ARG(QcTileSpecSet, requested_tiles),
-			    Q_ARG(QcTileSpecSet, canceled_tiles));
+			    Qt::DirectConnection,
+			    // Fixme: segfault requested_tiles ???
+  			    // Qt::QueuedConnection,
+  			    Q_ARG(QSet<QcTileSpec>, requested_tiles), // QcTileSpecSet
+  			    Q_ARG(QSet<QcTileSpec>, canceled_tiles));
+  qInfo() << "end of QcWmtsManager::update_tile_requests";
 }
 
+// Fixme: name
 void
 QcWmtsManager::engine_tile_finished(const QcTileSpec & tile_spec, const QByteArray & bytes, const QString & format)
 {
+  qInfo() << "QcWmtsManager::engine_tile_finished";
   QcMapViewPointerSet map_views = m_tile_hash.value(tile_spec);
   remove_tile_spec(tile_spec);
   tile_cache()->insert(tile_spec, bytes, format); // , m_cache_hint
@@ -245,6 +255,7 @@ QcWmtsManager::engine_tile_finished(const QcTileSpec & tile_spec, const QByteArr
 void
 QcWmtsManager::engine_tile_error(const QcTileSpec & tile_spec, const QString & error_string)
 {
+  qInfo() << "QcWmtsManager::engine_tile_finished";
   QcMapViewPointerSet map_views = m_tile_hash.value(tile_spec);
   remove_tile_spec(tile_spec);
 
@@ -259,6 +270,16 @@ QSharedPointer<QcTileTexture>
 QcWmtsManager::get_tile_texture(const QcTileSpec & tile_spec)
 {
   return m_tile_cache->get(tile_spec);
+}
+
+void
+QcWmtsManager::dump() const
+{
+  qInfo() << "Dump QcWmtsManager";
+  for (auto & tile_spec : m_tile_hash.keys())
+    qInfo() << tile_spec << "--->" << m_tile_hash[tile_spec];
+  for (auto & map_view : m_map_view_hash.keys())
+    qInfo() << map_view << "--->" << m_map_view_hash[map_view];
 }
 
 /*

@@ -83,10 +83,12 @@ QcWmtsTileFetcher::~QcWmtsTileFetcher()
 {}
 
 void
-QcWmtsTileFetcher::update_tile_requests(const QcTileSpecSet &tiles_added,
-					const QcTileSpecSet &tiles_removed)
+QcWmtsTileFetcher::update_tile_requests(const QcTileSpecSet & tiles_added,
+					const QcTileSpecSet & tiles_removed)
 {
   qInfo() << "QcWmtsTileFetcher::update_tile_requests";
+  // qInfo() << tiles_added;
+  // qInfo() << tiles_removed;
 
   QMutexLocker mutex_locker(&m_queue_mutex);
 
@@ -119,6 +121,8 @@ QcWmtsTileFetcher::cancel_tile_requests(const QcTileSpecSet & tiles)
 void
 QcWmtsTileFetcher::request_next_tile()
 {
+  // qInfo() << "QcWmtsTileFetcher::request_next_tile";
+
   QMutexLocker mutex_locker(&m_queue_mutex);
 
   if (!m_enabled || m_queue.isEmpty())
@@ -170,6 +174,7 @@ QcWmtsTileFetcher::finished()
 void
 QcWmtsTileFetcher::timerEvent(QTimerEvent * event)
 {
+  qInfo() << "QcWmtsTileFetcher::timerEvent";
   if (event->timerId() != m_timer.timerId()) { // Fixme: when ?
     QObject::timerEvent(event);
     return;

@@ -24,6 +24,8 @@ foreach(name
     tile_matrix_set
     vector
     viewport
+    wmts_manager
+    wmts_request_manager
     )
   add_executable(test_${name} test_${name}.cpp)
   target_link_libraries(test_${name} Qt5::Test qtcarto)

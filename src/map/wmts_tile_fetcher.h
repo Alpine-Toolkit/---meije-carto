@@ -96,7 +96,8 @@ class QC_EXPORT QcWmtsTileFetcher : public QObject
   virtual ~QcWmtsTileFetcher();
 
  public slots:
-  void update_tile_requests(const QcTileSpecSet & tiles_added, const QcTileSpecSet & tiles_removed);
+  // void update_tile_requests(const QcTileSpecSet & tiles_added, const QcTileSpecSet & tiles_removed);
+  void update_tile_requests(const QSet<QcTileSpec> & tiles_added, const QSet<QcTileSpec> & tiles_removed);
 
  private slots:
   void cancel_tile_requests(const QcTileSpecSet & tile_specs);

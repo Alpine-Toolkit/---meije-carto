@@ -94,6 +94,7 @@ typedef QSet<QcTileSpec> QcTileSpecSet;
 // QC_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QcTileSpec)
+// Q_DECLARE_METATYPE(QcTileSpecSet)
 
 #endif /* __TILE_SPEC_H__ */
 

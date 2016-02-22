@@ -112,6 +112,8 @@ class QC_EXPORT QcWmtsManager : public QObject
 
   QSharedPointer<QcTileTexture> get_tile_texture(const QcTileSpec & tile_spec);
 
+  void dump() const;
+
   // QSize tileSize() const;
   // int tileVersion() const;
   // QcWmtsManager::CacheAreas cache_hint() const;
@@ -124,7 +126,8 @@ class QC_EXPORT QcWmtsManager : public QObject
   void tile_error(const QcTileSpec & tile_spec, const QString & error_string);
   void tile_version_changed();
 
- protected:
+  // protected:
+ public:
   void set_tile_fetcher(QcWmtsTileFetcher * tile_fetcher);
   void set_tile_cache(QcFileTileCache * cache);
   // void set_tile_size(const QSize &tileSize);
@@ -135,13 +138,13 @@ class QC_EXPORT QcWmtsManager : public QObject
   void remove_tile_spec(const QcTileSpec & tile_spec);
 
  private:
-  // QSize m_tile_size;
-  // int m_tile_version;
   QHash<QcMapView *, QcTileSpecSet > m_map_view_hash;
   QHash<QcTileSpec, QcMapViewPointerSet > m_tile_hash;
-  // QcWmtsManager::CacheAreas m_cache_hint;
   QcFileTileCache * m_tile_cache;
   QcWmtsTileFetcher * m_tile_fetcher;
+  // QSize m_tile_size;
+  // int m_tile_version;
+  // QcWmtsManager::CacheAreas m_cache_hint;
 
   Q_DISABLE_COPY(QcWmtsManager);
 
