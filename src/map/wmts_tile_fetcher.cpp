@@ -207,6 +207,10 @@ QcWmtsTileFetcher::handle_reply(QcWmtsReply * wmts_reply, const QcTileSpec & til
   wmts_reply->deleteLater();
 }
 
+/**************************************************************************************************/
+
+// #include "wmts_tile_fetcher.moc"
+
 /***************************************************************************************************
  *
  * End

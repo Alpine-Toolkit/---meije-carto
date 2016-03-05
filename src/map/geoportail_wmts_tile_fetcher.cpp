@@ -102,6 +102,10 @@ QcGeoportailWmtsTileFetcher::on_authentication_request_slot(QNetworkReply *reply
   authenticator->setPassword(m_licence.password());
 }
 
+/**************************************************************************************************/
+
+// #include "geoportail_wmts_tile_fetcher.moc"
+
 // QC_END_NAMESPACE
 
 /***************************************************************************************************

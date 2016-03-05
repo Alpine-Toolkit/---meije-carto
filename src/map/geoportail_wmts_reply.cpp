@@ -97,6 +97,10 @@ QcGeoportailWmtsReply::network_reply_error(QNetworkReply::NetworkError error)
   m_reply = nullptr;
 }
 
+/**************************************************************************************************/
+
+// #include "geoportail_wmts_reply.moc"
+
 /***************************************************************************************************
  *
  * End
