@@ -87,7 +87,24 @@
 
 /**************************************************************************************************/
 
-class RetryFuture;
+// class RetryFuture;
+
+// Represents a tile that needs to be retried after a certain period of time
+class RetryFuture : public QObject
+{
+  Q_OBJECT
+
+ public:
+  RetryFuture(const QcTileSpec & tile_spec, QcMapView * map_view, QcWmtsManager * wmts_manager);
+
+ public slots:
+  void retry();
+
+ private:
+  QcTileSpec m_tile_spec;
+  QcMapView * m_map_view;
+  QPointer<QcWmtsManager> m_wmts_manager;
+};
 
 class QcWmtsRequestManager : public QObject
 {
