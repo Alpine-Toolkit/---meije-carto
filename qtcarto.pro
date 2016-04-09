@@ -3,7 +3,9 @@
 TEMPLATE = subdirs
 SUBDIRS = \
   src \
-  test
+  test \
+  imports \
+  mapviewer
 
 test.depends = src
 

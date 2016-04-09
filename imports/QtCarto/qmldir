@@ -1,0 +1,3 @@
+module QtCarto
+plugin qmlqtcartoplugin
+classname QtCartoDeclarativeModule

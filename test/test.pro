@@ -13,19 +13,14 @@ QT += testlib
 
 INCLUDEPATH += ../src
 
+# Fixme: libqtcarto.so.1 => not found
 LIBS += ../src/libqtcarto.so
 PRE_TARGETDEPS += ../src/libqtcarto.so
 
 LIBS += -lproj
 
 SOURCES += test_geo_coordinate.cpp
-# more than one main !
-
-# test_interval.cpp \
-# test_line.cpp \
-# test_polygon.cpp \
-# test_tile_matrix_set.cpp \
-# test_vector.cpp
+# Fixme: more than one main !
 
 ####################################################################################################
 #

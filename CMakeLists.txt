@@ -89,11 +89,20 @@ endif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # Instruct CMake to run moc automatically when needed.
 set(CMAKE_AUTOMOC ON)
+# Instruct CMake to run rcc automatically when needed.
+set(CMAKE_AUTORCC ON)
 
 find_package(Qt5Core REQUIRED)
-find_package(Qt5Network REQUIRED)
 find_package(Qt5Gui REQUIRED)
+find_package(Qt5Network REQUIRED)
+find_package(Qt5Positioning REQUIRED)
+find_package(Qt5Qml REQUIRED)
+find_package(Qt5Quick REQUIRED) # QtQuickWidgets
+find_package(Qt5Sensors REQUIRED)
 find_package(Qt5Test REQUIRED)
+# find_package(Qt5WebView REQUIRED)
+
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DQT_QML_DEBUG") # Fixme: right way to do?
 
 # INCLUDE_DIRECTORIES(${Qt5Core_INCLUDES})
 # ADD_DEFINITIONS(${Qt5Core_DEFINITIONS})
@@ -119,6 +128,8 @@ INCLUDE_DIRECTORIES(src)
 
 add_subdirectory(src)
 add_subdirectory(test)
+add_subdirectory(imports)
+add_subdirectory(mapviewer)
 
 ####################################################################################################
 #
