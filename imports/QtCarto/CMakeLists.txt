@@ -16,7 +16,8 @@ set(qtcarto_files
   qtcarto.cpp
 )
 add_library(qmlqtcartoplugin SHARED ${qtcarto_files})
-target_link_libraries(qmlqtcartoplugin Qt5::Qml)
+# include QImage requires Qui
+target_link_libraries(qmlqtcartoplugin qtcarto Qt5::Qml Qt5::Quick)
 
 ####################################################################################################
 #

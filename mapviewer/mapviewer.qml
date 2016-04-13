@@ -15,7 +15,7 @@ ApplicationWindow {
     height: 800
     title: "QtCarto"
 
-    TestItem {
+    MapItem {
         anchors.fill: parent
         focus: true
         Keys.onPressed: {

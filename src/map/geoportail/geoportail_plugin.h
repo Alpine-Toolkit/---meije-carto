@@ -56,6 +56,11 @@ public:
   QcWmtsPlugin(const QString & name, size_t number_of_levels, size_t tile_size);
   ~QcWmtsPlugin();
 
+  QcTileMatrixSet & tile_matrix_set() {
+    return m_tile_matrix_set;
+  }
+
+  // Fixme: & or *
   QcWmtsManager * wmts_manager() {
     return &m_wmts_manager;
   }
