@@ -43,48 +43,11 @@ class TestItem : public QQuickItem
 {
   Q_OBJECT
 
-  // Q_PROPERTY(QPointF p1 READ p1 WRITE setP1 NOTIFY p1Changed)
-  // Q_PROPERTY(QPointF p2 READ p2 WRITE setP2 NOTIFY p2Changed)
-  // Q_PROPERTY(QPointF p3 READ p3 WRITE setP3 NOTIFY p3Changed)
-  // Q_PROPERTY(QPointF p4 READ p4 WRITE setP4 NOTIFY p4Changed)
-
-  // Q_PROPERTY(int segmentCount READ segmentCount WRITE setSegmentCount NOTIFY segmentCountChanged)
-
 public:
   TestItem(QQuickItem *parent = 0);
   ~TestItem();
 
   QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
-
-  // QPointF p1() const { return m_p1; }
-  // QPointF p2() const { return m_p2; }
-  // QPointF p3() const { return m_p3; }
-  // QPointF p4() const { return m_p4; }
-
-  // int segmentCount() const { return m_segmentCount; }
-
-  // void setP1(const QPointF &p);
-  // void setP2(const QPointF &p);
-  // void setP3(const QPointF &p);
-  // void setP4(const QPointF &p);
-
-  // void setSegmentCount(int count);
-
-  // signals:
-  // void p1Changed(const QPointF &p);
-  // void p2Changed(const QPointF &p);
-  // void p3Changed(const QPointF &p);
-  // void p4Changed(const QPointF &p);
-
-  // void segmentCountChanged(int count);
-
-  // private:
-  // QPointF m_p1;
-  // QPointF m_p2;
-  // QPointF m_p3;
-  // QPointF m_p4;
-
-  // int m_segmentCount;
 };
 
 /**************************************************************************************************/
@@ -94,11 +57,6 @@ public:
 
 TestItem::TestItem(QQuickItem *parent)
   : QQuickItem(parent)
-    // , m_p1(0, 0)
-    // , m_p2(1, 0)
-    // , m_p3(0, 1)
-    // , m_p4(1, 1)
-    // , m_segmentCount(32)
 {
   setFlag(ItemHasContents, true);
 }
@@ -106,56 +64,6 @@ TestItem::TestItem(QQuickItem *parent)
 TestItem::~TestItem()
 {
 }
-
-// void TestItem::setP1(const QPointF &p)
-// {
-//     if (p == m_p1)
-//         return;
-
-//     m_p1 = p;
-//     emit p1Changed(p);
-//     update();
-// }
-
-// void TestItem::setP2(const QPointF &p)
-// {
-//     if (p == m_p2)
-//         return;
-
-//     m_p2 = p;
-//     emit p2Changed(p);
-//     update();
-// }
-
-// void TestItem::setP3(const QPointF &p)
-// {
-//     if (p == m_p3)
-//         return;
-
-//     m_p3 = p;
-//     emit p3Changed(p);
-//     update();
-// }
-
-// void TestItem::setP4(const QPointF &p)
-// {
-//     if (p == m_p4)
-//         return;
-
-//     m_p4 = p;
-//     emit p4Changed(p);
-//     update();
-// }
-
-// void TestItem::setSegmentCount(int count)
-// {
-//     if (m_segmentCount == count)
-//         return;
-
-//     m_segmentCount = count;
-//     emit segmentCountChanged(count);
-//     update();
-// }
 
 QSGNode *
 TestItem::updatePaintNode(QSGNode *old_node, UpdatePaintNodeData *)
@@ -187,16 +95,16 @@ TestItem::updatePaintNode(QSGNode *old_node, UpdatePaintNodeData *)
   }
 
   QRectF bounds = boundingRect();
-  qInfo() << bounds;
+  qInfo() << bounds; // QRectF(0,0 1280x800)
   QSGGeometry::Point2D * vertices = geometry->vertexDataAsPoint2D();
   float x, y;
   x = bounds.x() + 0 * bounds.width();
   y = bounds.y() + 0 * bounds.height();
-  qInfo() << x << y;
+  qInfo() << x << y; // 0 0
   vertices[0].set(x, y);
-  x = bounds.x() + 1. * bounds.width();
-  y = bounds.y() + 1. * bounds.height();
-  qInfo() << x << y;
+  x = bounds.x() + .8 * bounds.width();
+  y = bounds.y() + .8 * bounds.height();
+  qInfo() << x << y; // 1280 800
   vertices[1].set(x, y);
   node->markDirty(QSGNode::DirtyGeometry);
 
