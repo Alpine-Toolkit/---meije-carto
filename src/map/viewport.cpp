@@ -135,7 +135,7 @@ QcTiledZoomLevel::set_zoom_level(unsigned int zoom_level)
   m_zoom_level = zoom_level;
   size_t mosaic_size = 1 << zoom_level;
   unsigned int map_size_px = m_tile_size * mosaic_size;
-  double zoom_factor = m_map_size / double(map_size_px);
+  double zoom_factor = m_map_size / double(map_size_px); // unit is m/px
   set_zoom_factor(zoom_factor);
   qInfo() << "set_zoom_level" << zoom_level << map_size_px;
 }
@@ -297,7 +297,7 @@ QcViewport::update_area()
   QcVectorDouble viewport_size = QcVectorDouble(m_viewport_size.width(), m_viewport_size.height());
   QcVectorDouble new_area_size = viewport_size * zoom_factor(); // [px] * [m/px]
   // Fixme: merctor vs web
-  QcVectorDouble center = normalised_mercator().vector() * EQUATORIAL_PERIMETER;
+  QcVectorDouble center = normalised_mercator().vector() * EQUATORIAL_PERIMETER; // Fixme: EQUATORIAL_PERIMETER not here !
   qInfo() << "viewport_size" << viewport_size;
   qInfo() << "zoom_factor" << zoom_factor();
   qInfo() << "new_area_size" << new_area_size;

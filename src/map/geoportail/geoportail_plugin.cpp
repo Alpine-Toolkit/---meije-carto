@@ -1,5 +1,3 @@
-// -*- mode: c++ -*-
-
 /***************************************************************************************************
 **
 ** $QTCARTO_BEGIN_LICENSE:GPL3$
@@ -28,68 +26,43 @@
 
 /**************************************************************************************************/
 
-#ifndef __GEOPORTAIL_LICENSE_H__
-#define __GEOPORTAIL_LICENSE_H__
+#include "geoportail_plugin.h"
 
 /**************************************************************************************************/
 
-#include <QString>
-#include <QJsonObject>
-
-#include "qtcarto_global.h"
-
-/**************************************************************************************************/
-
-// QC_BEGIN_NAMESPACE
-
-/**************************************************************************************************/
-
-class QC_EXPORT QcGeoPortailWmtsLicence
+QcWmtsPlugin::QcWmtsPlugin(const QString & name, size_t number_of_levels, size_t tile_size)
+  : m_name(name),
+    m_tile_matrix_set(name, number_of_levels, tile_size),
+    m_wmts_manager()
 {
- public:
-  QcGeoPortailWmtsLicence(const QString & json_path);
-  QcGeoPortailWmtsLicence(const QString & user, const QString & password, const QString & api_key,
-			  unsigned int offline_cache_limit);
-  QcGeoPortailWmtsLicence(const QcGeoPortailWmtsLicence & other);
+}
 
-  QcGeoPortailWmtsLicence & operator=(const QcGeoPortailWmtsLicence & other);
-
-  inline const QString & user() const {
-    return m_user;
-  }
-
-  inline const QString & password() const {
-    return m_password;
-  }
-
-  inline const QString & api_key() const {
-    return m_api_key;
-  }
-
-  inline unsigned int offline_cache_limit() const {
-    return m_offline_cache_limit;
-  }
-
-  bool operator==(const QcGeoPortailWmtsLicence & rhs) const;
-
- private:
-  void load_json(const QString & json_path);
-  void read_json(const QJsonObject & json);
-
- private:
-  QString m_user;
-  QString m_password;
-  QString m_api_key;
-  unsigned int m_offline_cache_limit;
-};
+QcWmtsPlugin::~QcWmtsPlugin()
+{}
 
 /**************************************************************************************************/
 
-// QC_END_NAMESPACE
+constexpr const char * PLUGIN_NAME = "geoportail";
+constexpr size_t NUMBER_OF_LEVELS = 20;
+constexpr size_t TILE_SIZE = 256;
+
+QcGeoportailPlugin::QcGeoportailPlugin(QcGeoPortailWmtsLicence & licence)
+  : QcWmtsPlugin(PLUGIN_NAME, NUMBER_OF_LEVELS, TILE_SIZE),
+    m_licence(licence),
+    m_tile_fetcher(m_licence)
+{
+  wmts_manager()->set_tile_fetcher(&m_tile_fetcher);
+  wmts_manager()->tile_cache(); // create a file tile cache
+
+  // wmts_manager()->tile_cache()->clear_all();
+}
+
+QcGeoportailPlugin::~QcGeoportailPlugin()
+{}
 
 /**************************************************************************************************/
 
-#endif /* __GEOPORTAIL_LICENSE_H__ */
+// #include "geoportail_plugin.moc"
 
 /***************************************************************************************************
  *

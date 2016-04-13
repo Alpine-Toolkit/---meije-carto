@@ -78,8 +78,8 @@ QcWmtsManager::QcWmtsManager()
   : QObject(),
     // m_tileVersion(-1),
     // cacheHint_(QcWmtsManager::AllCaches),
-    m_tile_cache(nullptr),
-    m_tile_fetcher(nullptr)
+    m_tile_cache(nullptr), // must call set_tile_fetcher() !!!
+    m_tile_fetcher(nullptr) // created by a call to tile_cache()
 {
 }
 

@@ -31,7 +31,7 @@
 
 /**************************************************************************************************/
 
-#include "map/geoportail/geoportail_wmts_tile_fetcher.h"
+#include "map/geoportail/geoportail_plugin.h"
 
 /***************************************************************************************************/
 
@@ -66,18 +66,19 @@ void TestQcGeoportailWmtsTileFetcher::constructor()
 {
   QString json_path("geoportail-license.json");
   QcGeoPortailWmtsLicence geoportail_license(json_path);
-  QcGeoportailWmtsTileFetcher tile_fetcher(geoportail_license);
+  QcGeoportailPlugin geoportail_plugin(geoportail_license);
+  QcGeoportailWmtsTileFetcher * tile_fetcher = geoportail_plugin.tile_fetcher(); // subclass QcGeoportailPlugin ???
 
   TileFetcherHelper tile_fetcher_helper;
   // connect(&tile_fetcher, SIGNAL(tile_finished()),
   // 	     &tile_fetcher_helper, SLOT(tile_finished()));
-  connect(&tile_fetcher, &QcGeoportailWmtsTileFetcher::tile_finished,
+  connect(tile_fetcher, &QcGeoportailWmtsTileFetcher::tile_finished,
   	  &tile_fetcher_helper, &TileFetcherHelper::tile_finished);
 
-  QcTileSpec tile_spec("geoportail", 1, 16, 33885, 23658);
+  QcTileSpec tile_spec = geoportail_plugin.create_tile_spec(1, 16, 33885, 23658);
   QSet<QcTileSpec> tiles_added = {tile_spec};
   QSet<QcTileSpec> tiles_removed;
-  tile_fetcher.update_tile_requests(tiles_added, tiles_removed);
+  tile_fetcher->update_tile_requests(tiles_added, tiles_removed);
   while (!tile_fetcher_helper.has_received(tile_spec))
     QTest::qWait(200);
 }

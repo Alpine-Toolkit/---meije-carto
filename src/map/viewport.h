@@ -47,6 +47,7 @@
 
 /**************************************************************************************************/
 
+// unit is m/px
 class QC_EXPORT QcZoomFactor
 {
  public:
@@ -77,11 +78,12 @@ class QC_EXPORT QcZoomFactor
 
 /**************************************************************************************************/
 
+// Tool to compute a zoom factor from a pyramid
 class QC_EXPORT QcTiledZoomLevel : public QcZoomFactor
 {
  public:
   QcTiledZoomLevel();
-  QcTiledZoomLevel(double map_size, unsigned int tile_size, unsigned int zoom_level = 0);
+  QcTiledZoomLevel(double map_size, unsigned int tile_size, unsigned int zoom_level = 0); // Fixme: tile_size depends of the map 256, 512 !!!
   QcTiledZoomLevel(const QcTiledZoomLevel & other);
   ~QcTiledZoomLevel();
 
@@ -124,6 +126,7 @@ class QC_EXPORT QcViewportState
 
  public:
   QcViewportState();
+  // Fixme: QcTiledZoomLevel or QcZoomFactor ???
   QcViewportState(const QcGeoCoordinateNormalisedMercator & coordinate, const QcTiledZoomLevel & tiled_zoom_level, double bearing);
   QcViewportState(const QcGeoCoordinateMercator & coordinate, const QcTiledZoomLevel & tiled_zoom_level, double bearing);
   QcViewportState(const QcGeoCoordinateWGS84 & coordinate, const QcTiledZoomLevel & tiled_zoom_level, double bearing);

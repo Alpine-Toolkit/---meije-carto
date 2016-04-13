@@ -51,22 +51,21 @@ void TestQcViewport::constructor()
 {
   size_t number_of_levels = 20;
   size_t tile_size = 256;
-  QcTileMatrixSet tile_matrix_set("wtms", number_of_levels, tile_size);
-
-  QcGeoCoordinateNormalisedMercator coordinate_origin(0, 0);
-  QcTiledZoomLevel tiled_zoom_level(EQUATORIAL_PERIMETER, tile_size, 0); // map can have different tile size !
-  QcViewportState viewport_state(coordinate_origin, tiled_zoom_level, 0);
-  QSize viewport_size(1000, 1000);
-  QcViewport viewport(viewport_state, viewport_size);
-  QcMosaicPainter mosaic_painter(viewport);
-
   size_t level = 16;
+  QcTileMatrixSet tile_matrix_set("wtms", number_of_levels, tile_size);
   double resolution = tile_matrix_set[level].resolution();
   double tile_length_m = tile_matrix_set[level].tile_length_m();
   std::cout << "Resolution " << resolution << std::endl;
   std::cout << "tile length m " << tile_length_m << std::endl;
 
-  viewport.zoom_at(QcGeoCoordinateWGS84(0, 0).mercator(), level);
+  QcGeoCoordinateNormalisedMercator coordinate_origin(0, 0); // Fixme: need to pass fake state
+  QcTiledZoomLevel tiled_zoom_level(EQUATORIAL_PERIMETER, tile_size, 0); // map can have different tile size !
+  QcViewportState viewport_state(coordinate_origin, tiled_zoom_level, 0);
+  QSize viewport_size(1000, 1000); // widget size
+  QcViewport viewport(viewport_state, viewport_size);
+  // QcMosaicPainter mosaic_painter(viewport); // unused
+
+  viewport.zoom_at(QcGeoCoordinateWGS84(0, 0).mercator(), level); // zoom_factor == tiled_matrix resolution
   QcGeoCoordinateWGS84 coordinate = viewport.wgs84();
   std::cout << "wgs84 " << coordinate.longitude() << " " << coordinate.latitude() << std::endl;
   QcGeoCoordinateMercator mercator_coordinate = viewport.mercator();

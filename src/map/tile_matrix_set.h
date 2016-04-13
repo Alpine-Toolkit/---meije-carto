@@ -95,10 +95,12 @@ class QC_EXPORT QcTileMatrixSet
     return m_number_of_levels;
   }
 
+  // unit [px]
   inline size_t tile_size() const {
     return m_tile_size;
   }
 
+  // unit [m/px]
   inline double root_resolution() const {
     return m_root_resolution;
   }
@@ -153,10 +155,12 @@ class QC_EXPORT QcTileMatrix
     return m_tile_matrix_set;
   }
 
+  // pyramid level
   inline const size_t level() const {
     return m_level;
   }
 
+  // Size of the mosaic, unit [tile]
   inline const size_t mosaic_size() const {
     return m_mosaic_size;
   }
@@ -169,6 +173,7 @@ class QC_EXPORT QcTileMatrix
     return m_tile_length_m;
   }
 
+  // unit [px]
   inline size_t tile_size() const {
     return m_tile_matrix_set.tile_size();
   }

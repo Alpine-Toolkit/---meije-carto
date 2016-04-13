@@ -28,68 +28,78 @@
 
 /**************************************************************************************************/
 
-#ifndef __GEOPORTAIL_LICENSE_H__
-#define __GEOPORTAIL_LICENSE_H__
+#ifndef __GEOPORTAIL_PLUGIN_H__
+#define __GEOPORTAIL_PLUGIN_H__
 
 /**************************************************************************************************/
 
+#include <QObject>
 #include <QString>
-#include <QJsonObject>
 
-#include "qtcarto_global.h"
+#include "geoportail_wmts_tile_fetcher.h"
+#include "map/tile_matrix_set.h"
+#include "map/wmts_manager.h"
+
+// #include "map/earth.h"
+// #include "map/viewport.h"
+// #include "map/mosaic_painter.h"
 
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
 
-/**************************************************************************************************/
-
-class QC_EXPORT QcGeoPortailWmtsLicence
+class QcWmtsPlugin : public QObject
 {
- public:
-  QcGeoPortailWmtsLicence(const QString & json_path);
-  QcGeoPortailWmtsLicence(const QString & user, const QString & password, const QString & api_key,
-			  unsigned int offline_cache_limit);
-  QcGeoPortailWmtsLicence(const QcGeoPortailWmtsLicence & other);
+  Q_OBJECT
 
-  QcGeoPortailWmtsLicence & operator=(const QcGeoPortailWmtsLicence & other);
+public:
+  QcWmtsPlugin(const QString & name, size_t number_of_levels, size_t tile_size);
+  ~QcWmtsPlugin();
 
-  inline const QString & user() const {
-    return m_user;
+  QcWmtsManager * wmts_manager() {
+    return &m_wmts_manager;
   }
 
-  inline const QString & password() const {
-    return m_password;
+  QcTileSpec create_tile_spec(int map_id, int level, int x, int y) const {
+    return QcTileSpec(m_name, 1, 16, 33885, 23658);
   }
 
-  inline const QString & api_key() const {
-    return m_api_key;
-  }
-
-  inline unsigned int offline_cache_limit() const {
-    return m_offline_cache_limit;
-  }
-
-  bool operator==(const QcGeoPortailWmtsLicence & rhs) const;
-
- private:
-  void load_json(const QString & json_path);
-  void read_json(const QJsonObject & json);
-
- private:
-  QString m_user;
-  QString m_password;
-  QString m_api_key;
-  unsigned int m_offline_cache_limit;
+private:
+  QString m_name;
+  QcTileMatrixSet m_tile_matrix_set;
+  QcWmtsManager m_wmts_manager;
 };
 
 /**************************************************************************************************/
+
+class QcGeoportailPlugin : public QcWmtsPlugin
+{
+  Q_OBJECT
+
+public:
+  QcGeoportailPlugin(QcGeoPortailWmtsLicence & licence);
+  ~QcGeoportailPlugin();
+
+  const QcGeoPortailWmtsLicence & licence() {
+    return m_licence;
+  }
+
+  QcGeoportailWmtsTileFetcher * tile_fetcher() {
+    return &m_tile_fetcher;
+  }
+
+  // off-line cache : load tiles from a polygon
+
+private:
+  QcGeoPortailWmtsLicence m_licence;
+  QcGeoportailWmtsTileFetcher m_tile_fetcher;
+};
 
 // QC_END_NAMESPACE
 
 /**************************************************************************************************/
 
-#endif /* __GEOPORTAIL_LICENSE_H__ */
+#endif /* __GEOPORTAIL_PLUGIN_H__ */
 
 /***************************************************************************************************
  *

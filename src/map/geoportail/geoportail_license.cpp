@@ -53,6 +53,33 @@ QcGeoPortailWmtsLicence::QcGeoPortailWmtsLicence(const QString & user, const QSt
   : m_user(user), m_password(password), m_api_key(api_key), m_offline_cache_limit(offline_cache_limit)
 {}
 
+QcGeoPortailWmtsLicence::QcGeoPortailWmtsLicence(const QcGeoPortailWmtsLicence & other)
+  : m_user(other.m_user), m_password(other.m_password), m_api_key(other.m_api_key), m_offline_cache_limit(other.m_offline_cache_limit)
+{}
+
+QcGeoPortailWmtsLicence &
+QcGeoPortailWmtsLicence::operator=(const QcGeoPortailWmtsLicence & other)
+{
+  if (this != &other) {
+    m_user = other.m_user;
+    m_password = other.m_password;
+    m_api_key = other.m_api_key;
+    m_offline_cache_limit = other.m_offline_cache_limit;
+  }
+
+  return *this;
+}
+
+bool
+QcGeoPortailWmtsLicence::operator==(const QcGeoPortailWmtsLicence & rhs) const
+{
+  return (m_user == rhs.m_user
+	  && m_password == rhs.m_password
+	  && m_api_key == rhs.m_api_key
+          && m_offline_cache_limit == rhs.m_offline_cache_limit
+          );
+}
+
 void
 QcGeoPortailWmtsLicence::read_json(const QJsonObject &json)
 {
