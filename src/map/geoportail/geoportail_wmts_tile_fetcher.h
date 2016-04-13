@@ -38,7 +38,7 @@
 #include <QNetworkReply>
 
 #include "geoportail_license.h"
-#include "wmts_tile_fetcher.h"
+#include "map/wmts_tile_fetcher.h"
 
 /**************************************************************************************************/
 

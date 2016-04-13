@@ -36,7 +36,7 @@
 #include <QNetworkReply>
 #include <QPointer>
 
-#include "wmts_reply.h"
+#include "map/wmts_reply.h"
 
 /**************************************************************************************************/
 

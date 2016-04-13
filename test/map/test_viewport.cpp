@@ -54,7 +54,7 @@ void TestQcViewport::constructor()
   QcTileMatrixSet tile_matrix_set("wtms", number_of_levels, tile_size);
 
   QcGeoCoordinateNormalisedMercator coordinate_origin(0, 0);
-  QcTiledZoomLevel tiled_zoom_level(EQUATORIAL_PERIMETER, 256, 0); // map can have different tile size !
+  QcTiledZoomLevel tiled_zoom_level(EQUATORIAL_PERIMETER, tile_size, 0); // map can have different tile size !
   QcViewportState viewport_state(coordinate_origin, tiled_zoom_level, 0);
   QSize viewport_size(1000, 1000);
   QcViewport viewport(viewport_state, viewport_size);

@@ -15,9 +15,9 @@
 set(qtcarto_files
   map/file_tile_cache.cpp
   map/geo_coordinate.cpp
-  map/geoportail_license.cpp
-  map/geoportail_wmts_reply.cpp
-  map/geoportail_wmts_tile_fetcher.cpp
+  map/geoportail/geoportail_license.cpp
+  map/geoportail/geoportail_wmts_reply.cpp
+  map/geoportail/geoportail_wmts_tile_fetcher.cpp
   map/map_view.cpp
   map/mosaic_painter.cpp
   map/tile_matrix_index.cpp

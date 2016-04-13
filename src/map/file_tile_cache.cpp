@@ -106,7 +106,7 @@ QCache3QTileEvictionPolicy::about_to_be_removed(const QcTileSpec & key, QSharedP
 {
   Q_UNUSED(key);
   // set the cache pointer to zero so we can't call evict_from_disk_cache
-  obj->cache = 0;
+  obj->cache = nullptr;
 }
 
 void
@@ -465,7 +465,7 @@ QcFileTileCache::evict_from_memory_cache(QcCachedTileMemory * /* tile_memory  */
 {}
 
 QSharedPointer<QcCachedTileDisk>
-QcFileTileCache::add_to_disk_cache(const QcTileSpec &tile_spec, const QString &filename)
+QcFileTileCache::add_to_disk_cache(const QcTileSpec & tile_spec, const QString  &filename)
 {
   QSharedPointer<QcCachedTileDisk> tile_directory(new QcCachedTileDisk);
   tile_directory->tile_spec = tile_spec;
