@@ -15,12 +15,42 @@ ApplicationWindow {
     height: 800
     title: "QtCarto"
 
+    Location {
+        id: location
+
+        coordinate {
+            latitude: 44.6900
+            longitude: 6.1639
+        }
+    }
+
     MapItem {
+        id: map
+
         anchors.fill: parent
         focus: true
+
+        center: location.coordinate
+        zoom_level: 16
+
         Keys.onPressed: {
             if (event.key == Qt.Key_Left) {
-                console.info("move left");
+                map.pan(-10, 0);
+                event.accepted = true;
+            } else if (event.key == Qt.Key_Right) {
+                map.pan(10, 0);
+                event.accepted = true;
+            } else if (event.key == Qt.Key_Up) {
+                map.pan(0, -10);
+                event.accepted = true;
+            } else if (event.key == Qt.Key_Down) {
+                map.pan(0, 100);
+                event.accepted = true;
+            } else if (event.key == Qt.Key_Plus) {
+                map.zoom_level += 1;
+                event.accepted = true;
+            } else if (event.key == Qt.Key_Minus) {
+                map.zoom_level -= 1;
                 event.accepted = true;
             }
         }
