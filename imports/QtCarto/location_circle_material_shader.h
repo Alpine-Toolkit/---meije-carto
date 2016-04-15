@@ -1,3 +1,5 @@
+// -*- mode: c++ -*-
+
 /***************************************************************************************************
  **
  ** $QTCARTO_BEGIN_LICENSE:GPL3$
@@ -26,57 +28,30 @@
 
 /**************************************************************************************************/
 
-#include <QtQml/QQmlExtensionPlugin>
-#include <QtQml/qqml.h>
+#include <QSGSimpleMaterialShader>
 
 /**************************************************************************************************/
-
-#include "declarative_map_item.h"
 
 // QC_BEGIN_NAMESPACE
 
 /**************************************************************************************************/
 
-class QtCartoDeclarativeModule : public QQmlExtensionPlugin
+struct QcLocationCircleMaterialShaderState
 {
-  Q_OBJECT
-  Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface/1.0"
-		    FILE "plugin.json")
-
- public:
-  void registerTypes(const char *uri)
-  {
-    // Q_ASSERT(uri == QLatin1String("QtCarto"));
-    if (QLatin1String(uri) == QLatin1String("QtCarto")) {
-
-      // @uri QtCarto
-      int major = 1;
-      int minor = 0;
-
-      // Register the 1.0 types
-
-      qmlRegisterType<MapItem>(uri, 1, 0, "MapItem");
-
-      // QDeclarativeGeoMap
-      // qmlRegisterType<MapItem>(uri, major, minor, "Map");
-
-      // qmlRegisterUncreatableType<QGeoMapPinchEvent >(uri, major, minor, "MapPinchEvent",
-      // 						     QStringLiteral("(Map)PinchEvent is not intended instantiable by developer."));
-      // qmlRegisterUncreatableType<QQuickGeoMapGestureArea>(uri, major, minor, "MapGestureArea",
-      // 							  QStringLiteral("(Map)GestureArea is not intended instantiable by developer."));
-      // qmlRegisterUncreatableType<QQuickGeoMapGestureArea, 1>(uri, major, minor, "MapGestureArea",
-      // 							     QStringLiteral("(Map)GestureArea is not intended instantiable by developer."));
-
-      // registrations below are version independent
-    } else {
-      qDebug() << "Unsupported URI given to load location QML plugin: " << QLatin1String(uri);
-    }
-  }
+    float r, g, b, a;
 };
 
-/**************************************************************************************************/
+class QcLocationCircleMaterialShader : public QSGSimpleMaterialShader<QcLocationCircleMaterialShaderState>
+{
+    QSG_DECLARE_SIMPLE_SHADER(QcLocationCircleMaterialShader, QcLocationCircleMaterialShaderState)
 
-#include "qtcarto.moc"
+public:
+  const char * vertexShader() const Q_DECL_OVERRIDE ;
+  const char * fragmentShader() const Q_DECL_OVERRIDE ;
+  QList<QByteArray> attributes() const Q_DECL_OVERRIDE ;
+  void updateState(const QcLocationCircleMaterialShaderState * color,
+                   const QcLocationCircleMaterialShaderState *) Q_DECL_OVERRIDE ;
+};
 
 // QC_END_NAMESPACE
 

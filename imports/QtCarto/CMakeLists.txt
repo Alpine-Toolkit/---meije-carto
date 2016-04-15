@@ -13,6 +13,7 @@
 #
 
 set(qtcarto_files
+  location_circle_material_shader.cpp
   declarative_map_item.cpp
   qtcarto.cpp
 )

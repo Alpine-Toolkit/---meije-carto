@@ -14,6 +14,7 @@ ApplicationWindow {
     width: 1280
     height: 800
     title: "QtCarto"
+    // color: "black"
 
     Location {
         id: location
@@ -29,6 +30,7 @@ ApplicationWindow {
 
         anchors.fill: parent
         focus: true
+        // opacity: 1.
 
         center: location.coordinate
         zoom_level: 16

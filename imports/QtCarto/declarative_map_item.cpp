@@ -39,6 +39,7 @@
 /**************************************************************************************************/
 
 #include "declarative_map_item.h"
+#include "location_circle_material_shader.h"
 #include "map/earth.h"
 #include "map/geo_coordinate.h"
 
@@ -168,6 +169,28 @@ public:
     setGeometry(&geometry);
     root->appendChildNode(tile_node);
     appendChildNode(root);
+
+    QSGGeometryNode * location_circle_node = new QSGGeometryNode();
+
+    QSGGeometry * location_circle_geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 1);
+    location_circle_geometry->setLineWidth(100); // point size
+    location_circle_geometry->setDrawingMode(GL_POINTS);
+    location_circle_node->setGeometry(location_circle_geometry);
+    location_circle_node->setFlag(QSGNode::OwnsGeometry);
+
+    // Fixme: black instead of white
+    QSGSimpleMaterial<QcLocationCircleMaterialShaderState> * location_circle_material = QcLocationCircleMaterialShader::createMaterial();
+    location_circle_material->state()->r = 0;
+    location_circle_material->state()->g = 0;
+    location_circle_material->state()->b = 1;
+    location_circle_material->state()->a = 0;
+    location_circle_node->setMaterial(location_circle_material);
+    location_circle_node->setFlag(QSGNode::OwnsMaterial);
+
+    QSGGeometry::Point2D * location_circle_vertices = location_circle_geometry->vertexDataAsPoint2D();
+    location_circle_vertices[0].set(0, 0);
+
+    root->appendChildNode(location_circle_node);
   }
 
   void set_clip_rect(const QRect & rect)
@@ -271,21 +294,21 @@ MapItem::updatePaintNode(QSGNode * old_node, UpdatePaintNodeData *)
   container_node->setMatrix(container_space_matrix);
   qInfo() << "container_space_matrix" << container_space_matrix;
 
-  QSGGeometryNode * geometry_node = new QSGGeometryNode();
+  QSGGeometryNode * grid_node = new QSGGeometryNode();
 
   const int vertex_count = 2*(number_of_horizontal_lines + number_of_vertical_lines) + 100;
-  QSGGeometry * geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), vertex_count);
-  geometry->setLineWidth(2);
-  geometry->setDrawingMode(GL_LINES);
-  geometry_node->setGeometry(geometry);
-  geometry_node->setFlag(QSGNode::OwnsGeometry);
+  QSGGeometry * grid_geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), vertex_count);
+  grid_geometry->setLineWidth(2);
+  grid_geometry->setDrawingMode(GL_LINES);
+  grid_node->setGeometry(grid_geometry);
+  grid_node->setFlag(QSGNode::OwnsGeometry);
 
-  QSGFlatColorMaterial * material = new QSGFlatColorMaterial;
-  material->setColor(QColor(255, 0, 0));
-  geometry_node->setMaterial(material);
-  geometry_node->setFlag(QSGNode::OwnsMaterial);
+  QSGFlatColorMaterial * grid_material = new QSGFlatColorMaterial;
+  grid_material->setColor(QColor(255, 0, 0));
+  grid_node->setMaterial(grid_material);
+  grid_node->setFlag(QSGNode::OwnsMaterial);
 
-  QSGGeometry::Point2D * vertices = geometry->vertexDataAsPoint2D();
+  QSGGeometry::Point2D * vertices = grid_geometry->vertexDataAsPoint2D();
   size_t vertex_index = 0;
   double x_inf_px = x_inf_m / resolution;
   double y_inf_px = y_inf_m / resolution;
@@ -310,8 +333,8 @@ MapItem::updatePaintNode(QSGNode * old_node, UpdatePaintNodeData *)
   // parasite lines at left and bottom ???
 
   container_node->removeAllChildNodes(); // delete
-  container_node->appendChildNode(geometry_node);
-  // geometry_node->markDirty(QSGNode::DirtyGeometry);
+  container_node->appendChildNode(grid_node);
+  // grid_node->markDirty(QSGNode::DirtyGeometry);
 
   return map_root_node;
 }
