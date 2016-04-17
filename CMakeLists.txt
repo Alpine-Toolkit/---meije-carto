@@ -100,6 +100,7 @@ find_package(Qt5Qml REQUIRED)
 find_package(Qt5Quick REQUIRED) # QtQuickWidgets
 find_package(Qt5Sensors REQUIRED)
 find_package(Qt5Test REQUIRED)
+# find_package(Qt5Xml REQUIRED)
 # find_package(Qt5WebView REQUIRED)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DQT_QML_DEBUG") # Fixme: right way to do?

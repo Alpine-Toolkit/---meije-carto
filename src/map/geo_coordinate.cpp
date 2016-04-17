@@ -47,7 +47,7 @@ QcGeoSexagesimalAngle::to_decimal(int degrees, int minutes, double seconds)
 }
 
 void
-QcGeoSexagesimalAngle::to_sexagesimal(double angle, int &degrees, int &minutes, double &seconds)
+QcGeoSexagesimalAngle::to_sexagesimal(double angle, int & degrees, int & minutes, double & seconds)
 {
   double _degrees, _minutes, f;
   f = modf(angle, &_degrees);
@@ -74,7 +74,7 @@ QcGeoSexagesimalAngle::QcGeoSexagesimalAngle(int degrees, int minutes, double se
   }
 }
 
-QcGeoSexagesimalAngle::QcGeoSexagesimalAngle(const QcGeoSexagesimalAngle &other)
+QcGeoSexagesimalAngle::QcGeoSexagesimalAngle(const QcGeoSexagesimalAngle & other)
 : m_degrees(other.m_degrees), m_minutes(other.m_minutes), m_seconds(other.m_seconds)
 {}
 
@@ -83,7 +83,7 @@ QcGeoSexagesimalAngle::~QcGeoSexagesimalAngle()
 
 // Fixme: default
 QcGeoSexagesimalAngle &
-QcGeoSexagesimalAngle::operator=(const QcGeoSexagesimalAngle &other)
+QcGeoSexagesimalAngle::operator=(const QcGeoSexagesimalAngle & other)
 {
   if (this != &other) {
     m_degrees = other.m_degrees;
@@ -95,7 +95,7 @@ QcGeoSexagesimalAngle::operator=(const QcGeoSexagesimalAngle &other)
 }
 
 bool
-QcGeoSexagesimalAngle::operator==(const QcGeoSexagesimalAngle &other) const
+QcGeoSexagesimalAngle::operator==(const QcGeoSexagesimalAngle & other) const
 {
   bool degrees_equal = m_minutes == other.m_degrees;
   bool minutes_equal = m_minutes == other.m_minutes;
@@ -136,7 +136,7 @@ QcProjection::~QcProjection()
 }
 
 void
-QcProjection::transform(QcProjection &proj2, double &x, double &y) const
+QcProjection::transform(QcProjection & proj2, double & x, double & y) const
 {
   // int pj_transform( projPJ src, projPJ dst, long point_count, int point_offset,
   //                 double *x, double *y, double *z );
@@ -188,11 +188,11 @@ QcGeoCoordinateWGS84::QcGeoCoordinateWGS84()
   : QcGeoCoordinateWGS84(.0, .0)
 {}
 
-QcGeoCoordinateWGS84::QcGeoCoordinateWGS84(QcGeoSexagesimalAngle &longitude, QcGeoSexagesimalAngle &latitude)
+QcGeoCoordinateWGS84::QcGeoCoordinateWGS84(QcGeoSexagesimalAngle & longitude, QcGeoSexagesimalAngle & latitude)
   : QcGeoCoordinateWGS84(longitude.decimal(), latitude.decimal())
 {}
 
-QcGeoCoordinateWGS84::QcGeoCoordinateWGS84(const QcGeoCoordinateWGS84 &other)
+QcGeoCoordinateWGS84::QcGeoCoordinateWGS84(const QcGeoCoordinateWGS84 & other)
   : m_longitude(other.m_longitude), m_latitude(other.m_latitude)
 {}
 
@@ -201,7 +201,7 @@ QcGeoCoordinateWGS84::~QcGeoCoordinateWGS84()
 
 // Fixme: default
 QcGeoCoordinateWGS84 &
-QcGeoCoordinateWGS84::operator=(const QcGeoCoordinateWGS84 &other)
+QcGeoCoordinateWGS84::operator=(const QcGeoCoordinateWGS84 & other)
 {
   if (this != &other) {
     m_longitude = other.m_longitude;
@@ -212,7 +212,7 @@ QcGeoCoordinateWGS84::operator=(const QcGeoCoordinateWGS84 &other)
 }
 
 bool
-QcGeoCoordinateWGS84::operator==(const QcGeoCoordinateWGS84 &other) const
+QcGeoCoordinateWGS84::operator==(const QcGeoCoordinateWGS84 & other) const
 {
   bool longitude_equal = ((qIsNaN(m_longitude) && qIsNaN(other.m_longitude))
 			  || qFuzzyCompare(m_longitude, other.m_longitude));
@@ -268,7 +268,7 @@ QcGeoCoordinateWGS84::normalised_mercator() const
   Returns 0 if the type of this coordinate or the type of \a other is
   QcGeoCoordinateWGS84::InvalidCoordinate.
 */
-double QcGeoCoordinateWGS84::distance_to(const QcGeoCoordinateWGS84 &other) const
+double QcGeoCoordinateWGS84::distance_to(const QcGeoCoordinateWGS84 & other) const
 {
   /*
   if (type() == QcGeoCoordinateWGS84::InvalidCoordinate || other.type() == QcGeoCoordinateWGS84::InvalidCoordinate) {
@@ -303,7 +303,7 @@ double QcGeoCoordinateWGS84::distance_to(const QcGeoCoordinateWGS84 &other) cons
   QcGeoCoordinateWGS84::InvalidCoordinate.
 */
 double
-QcGeoCoordinateWGS84::azimuth_to(const QcGeoCoordinateWGS84 &other) const
+QcGeoCoordinateWGS84::azimuth_to(const QcGeoCoordinateWGS84 & other) const
 {
   /*
   if (type() == QcGeoCoordinateWGS84::InvalidCoordinate || other.type() == QcGeoCoordinateWGS84::InvalidCoordinate) {
@@ -379,7 +379,7 @@ QcGeoCoordinateWGS84::at_distance_and_azimuth(double distance, double _azimuth) 
 
 
 #ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug debug, const QcGeoCoordinateWGS84 &coordinate)
+QDebug operator<<(QDebug debug, const QcGeoCoordinateWGS84 & coordinate)
 {
     QDebugStateSaver saver(debug);
     double longitude = coordinate.longitude();
@@ -402,7 +402,7 @@ QDebug operator<<(QDebug debug, const QcGeoCoordinateWGS84 &coordinate)
 #endif
 
 #ifndef QT_NO_DATASTREAM
-QDataStream &operator<<(QDataStream &stream, const QcGeoCoordinateWGS84 &coordinate)
+QDataStream &operator<<(QDataStream & stream, const QcGeoCoordinateWGS84 & coordinate)
 {
     stream << coordinate.longitude();
     stream << coordinate.latitude();
@@ -411,7 +411,7 @@ QDataStream &operator<<(QDataStream &stream, const QcGeoCoordinateWGS84 &coordin
 #endif
 
 #ifndef QT_NO_DATASTREAM
-QDataStream &operator>>(QDataStream &stream, QcGeoCoordinateWGS84 &coordinate)
+QDataStream &operator>>(QDataStream & stream, QcGeoCoordinateWGS84 & coordinate)
 {
     double value;
     stream >> value;
@@ -437,7 +437,7 @@ QcGeoCoordinateMercator::QcGeoCoordinateMercator()
   : QcGeoCoordinateMercator(.0, .0)
 {}
 
-QcGeoCoordinateMercator::QcGeoCoordinateMercator(const QcGeoCoordinateMercator &other)
+QcGeoCoordinateMercator::QcGeoCoordinateMercator(const QcGeoCoordinateMercator & other)
   : m_x(other.m_x), m_y(other.m_y)
 {}
 
@@ -445,7 +445,7 @@ QcGeoCoordinateMercator::~QcGeoCoordinateMercator()
 {}
 
 QcGeoCoordinateMercator &
-QcGeoCoordinateMercator::operator=(const QcGeoCoordinateMercator &other)
+QcGeoCoordinateMercator::operator=(const QcGeoCoordinateMercator & other)
 {
   if (this != &other) {
     m_x = other.m_x;
@@ -456,7 +456,7 @@ QcGeoCoordinateMercator::operator=(const QcGeoCoordinateMercator &other)
 }
 
 bool
-QcGeoCoordinateMercator::operator==(const QcGeoCoordinateMercator &other) const
+QcGeoCoordinateMercator::operator==(const QcGeoCoordinateMercator & other) const
 {
   bool x_equal = qFuzzyCompare(m_x, other.m_x);
   bool y_equal = qFuzzyCompare(m_y, other.m_y);
@@ -484,7 +484,7 @@ QcGeoCoordinateMercator::normalised_mercator() const
 }
 
 #ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug debug, const QcGeoCoordinateMercator &coordinate)
+QDebug operator<<(QDebug debug, const QcGeoCoordinateMercator & coordinate)
 {
     QDebugStateSaver saver(debug); // Fixme: ???
     double x = coordinate.x();
@@ -507,7 +507,7 @@ QDebug operator<<(QDebug debug, const QcGeoCoordinateMercator &coordinate)
 #endif
 
 #ifndef QT_NO_DATASTREAM
-QDataStream &operator<<(QDataStream &stream, const QcGeoCoordinateMercator &coordinate)
+QDataStream &operator<<(QDataStream & stream, const QcGeoCoordinateMercator & coordinate)
 {
     stream << coordinate.x();
     stream << coordinate.y();
@@ -516,7 +516,7 @@ QDataStream &operator<<(QDataStream &stream, const QcGeoCoordinateMercator &coor
 #endif
 
 #ifndef QT_NO_DATASTREAM
-QDataStream &operator>>(QDataStream &stream, QcGeoCoordinateMercator &coordinate)
+QDataStream &operator>>(QDataStream & stream, QcGeoCoordinateMercator & coordinate)
 {
     double value;
     stream >> value;
@@ -542,7 +542,7 @@ QcGeoCoordinateNormalisedMercator::QcGeoCoordinateNormalisedMercator()
   : m_x(0), m_y(0)
 {}
 
-QcGeoCoordinateNormalisedMercator::QcGeoCoordinateNormalisedMercator(const QcGeoCoordinateNormalisedMercator &other)
+QcGeoCoordinateNormalisedMercator::QcGeoCoordinateNormalisedMercator(const QcGeoCoordinateNormalisedMercator & other)
   : m_x(other.m_x), m_y(other.m_y)
 {}
 
@@ -550,7 +550,7 @@ QcGeoCoordinateNormalisedMercator::~QcGeoCoordinateNormalisedMercator()
 {}
 
 QcGeoCoordinateNormalisedMercator &
-QcGeoCoordinateNormalisedMercator::operator=(const QcGeoCoordinateNormalisedMercator &other)
+QcGeoCoordinateNormalisedMercator::operator=(const QcGeoCoordinateNormalisedMercator & other)
 {
   if (this != &other) {
     m_x = other.m_x;
@@ -561,7 +561,7 @@ QcGeoCoordinateNormalisedMercator::operator=(const QcGeoCoordinateNormalisedMerc
 }
 
 bool
-QcGeoCoordinateNormalisedMercator::operator==(const QcGeoCoordinateNormalisedMercator &other) const
+QcGeoCoordinateNormalisedMercator::operator==(const QcGeoCoordinateNormalisedMercator & other) const
 {
   bool x_equal = qFuzzyCompare(m_x, other.m_x);
   bool y_equal = qFuzzyCompare(m_y, other.m_y);
@@ -588,7 +588,7 @@ QcGeoCoordinateNormalisedMercator::wgs84() const
 }
 
 #ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug debug, const QcGeoCoordinateNormalisedMercator &coordinate)
+QDebug operator<<(QDebug debug, const QcGeoCoordinateNormalisedMercator & coordinate)
 {
     QDebugStateSaver saver(debug); // Fixme: ???
     double x = coordinate.x();
@@ -611,7 +611,7 @@ QDebug operator<<(QDebug debug, const QcGeoCoordinateNormalisedMercator &coordin
 #endif
 
 #ifndef QT_NO_DATASTREAM
-QDataStream &operator<<(QDataStream &stream, const QcGeoCoordinateNormalisedMercator &coordinate)
+QDataStream &operator<<(QDataStream & stream, const QcGeoCoordinateNormalisedMercator & coordinate)
 {
     stream << coordinate.x();
     stream << coordinate.y();
@@ -620,13 +620,104 @@ QDataStream &operator<<(QDataStream &stream, const QcGeoCoordinateNormalisedMerc
 #endif
 
 #ifndef QT_NO_DATASTREAM
-QDataStream &operator>>(QDataStream &stream, QcGeoCoordinateNormalisedMercator &coordinate)
+QDataStream &operator>>(QDataStream & stream, QcGeoCoordinateNormalisedMercator & coordinate)
 {
     double value;
     stream >> value;
     coordinate.set_x(value);
     stream >> value;
     coordinate.set_y(value);
+    return stream;
+}
+#endif
+
+/**************************************************************************************************/
+
+QcGeoElevationCoordinateWGS84::QcGeoElevationCoordinateWGS84(double longitude, double latitude, double elevation)
+  : QcGeoCoordinateWGS84(longitude, latitude),
+    QcElevation(elevation)
+{
+}
+
+QcGeoElevationCoordinateWGS84::QcGeoElevationCoordinateWGS84()
+  : QcGeoCoordinateWGS84(),
+    QcElevation()
+{}
+
+QcGeoElevationCoordinateWGS84::QcGeoElevationCoordinateWGS84(QcGeoSexagesimalAngle & longitude, QcGeoSexagesimalAngle & latitude, double elevation)
+  : QcGeoCoordinateWGS84(longitude.decimal(), latitude.decimal()),
+    QcElevation(elevation)
+{}
+
+QcGeoElevationCoordinateWGS84::QcGeoElevationCoordinateWGS84(const QcGeoElevationCoordinateWGS84 & other)
+  : QcGeoCoordinateWGS84(other.longitude(), other.latitude()),
+    QcElevation(other.elevation())
+{}
+
+QcGeoElevationCoordinateWGS84::~QcGeoElevationCoordinateWGS84()
+{}
+
+// Fixme: default
+QcGeoElevationCoordinateWGS84 &
+QcGeoElevationCoordinateWGS84::operator=(const QcGeoElevationCoordinateWGS84 & other)
+{
+  if (this != &other) {
+    QcGeoCoordinateWGS84::operator=(other);
+    QcElevation::operator=(other);
+  }
+
+  return *this;
+}
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug debug, const QcGeoElevationCoordinateWGS84 & coordinate)
+{
+    QDebugStateSaver saver(debug);
+    double longitude = coordinate.longitude();
+    double latitude = coordinate.latitude();
+    double elevation = coordinate.elevation();
+
+    debug.nospace() << "QcGeoElevationCoordinateWGS84(";
+    if (qIsNaN(longitude))
+        debug << '?';
+    else
+        debug << longitude;
+    debug << ", ";
+    if (qIsNaN(latitude))
+        debug << '?';
+    else
+        debug << latitude;
+    debug << ", ";
+    if (qIsNaN(elevation))
+        debug << '?';
+    else
+        debug << elevation;
+    debug << ')';
+
+    return debug;
+}
+#endif
+
+#ifndef QT_NO_DATASTREAM
+QDataStream &operator<<(QDataStream & stream, const QcGeoElevationCoordinateWGS84 & coordinate)
+{
+    stream << coordinate.longitude();
+    stream << coordinate.latitude();
+    stream << coordinate.elevation();
+    return stream;
+}
+#endif
+
+#ifndef QT_NO_DATASTREAM
+QDataStream &operator>>(QDataStream & stream, QcGeoElevationCoordinateWGS84 & coordinate)
+{
+    double value;
+    stream >> value;
+    coordinate.set_longitude(value);
+    stream >> value;
+    coordinate.set_latitude(value);
+    stream >> value;
+    coordinate.set_elevation(value);
     return stream;
 }
 #endif

@@ -82,7 +82,7 @@ class QC_EXPORT QcGeoSexagesimalAngle
   QcGeoSexagesimalAngle(const QcGeoSexagesimalAngle & other);
   ~QcGeoSexagesimalAngle();
 
-  QcGeoSexagesimalAngle &operator=(const QcGeoSexagesimalAngle & other);
+  QcGeoSexagesimalAngle & operator=(const QcGeoSexagesimalAngle & other);
 
   bool operator==(const QcGeoSexagesimalAngle & other) const;
   inline bool operator!=(const QcGeoSexagesimalAngle & other) const {
@@ -252,7 +252,7 @@ class QC_EXPORT QcGeoCoordinateWGS84 : public QcGeoCoordinate
   QcGeoCoordinateWGS84(const QcGeoCoordinateWGS84 & other);
   ~QcGeoCoordinateWGS84();
 
-  QcGeoCoordinateWGS84 &operator=(const QcGeoCoordinateWGS84 & other);
+  QcGeoCoordinateWGS84 & operator=(const QcGeoCoordinateWGS84 & other);
 
   bool operator==(const QcGeoCoordinateWGS84 & other) const;
   inline bool operator!=(const QcGeoCoordinateWGS84 & other) const {
@@ -381,7 +381,7 @@ class QC_EXPORT QcGeoCoordinateMercator : public QcGeoCoordinate
   QcGeoCoordinateMercator(const QcGeoCoordinateMercator & other);
   ~QcGeoCoordinateMercator();
 
-  QcGeoCoordinateMercator &operator=(const QcGeoCoordinateMercator & other);
+  QcGeoCoordinateMercator & operator=(const QcGeoCoordinateMercator & other);
 
   bool operator==(const QcGeoCoordinateMercator & other) const;
   inline bool operator!=(const QcGeoCoordinateMercator & other) const {
@@ -483,7 +483,7 @@ class QC_EXPORT QcGeoCoordinateNormalisedMercator : public QcGeoCoordinate
   QcGeoCoordinateNormalisedMercator(const QcGeoCoordinateNormalisedMercator & other);
   ~QcGeoCoordinateNormalisedMercator();
 
-  QcGeoCoordinateNormalisedMercator &operator=(const QcGeoCoordinateNormalisedMercator & other);
+  QcGeoCoordinateNormalisedMercator & operator=(const QcGeoCoordinateNormalisedMercator & other);
 
   bool operator==(const QcGeoCoordinateNormalisedMercator & other) const;
   inline bool operator!=(const QcGeoCoordinateNormalisedMercator & other) const {
@@ -540,6 +540,71 @@ QC_EXPORT QDebug operator<<(QDebug debug, const QcGeoCoordinateNormalisedMercato
 QC_EXPORT QDataStream &operator<<(QDataStream & stream, const QcGeoCoordinateNormalisedMercator & coordinate);
 QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcGeoCoordinateNormalisedMercator & coordinate);
 #endif
+
+/**************************************************************************************************/
+
+class QC_EXPORT QcElevation
+{
+ public:
+  QcElevation() : m_elevation(.0) {}
+  QcElevation(double elevation) : m_elevation(elevation) {}
+  QcElevation(const QcElevation & other) : m_elevation(other.m_elevation) {}
+
+  QcElevation & operator=(const QcElevation & other) {
+    m_elevation = other.m_elevation;
+    return *this;
+  }
+
+  bool operator==(const QcElevation & other) const {
+    return qFuzzyCompare(m_elevation, other.m_elevation);
+  }
+
+  double elevation() const {
+    return m_elevation;
+  }
+  void set_elevation(double elevation) {
+    m_elevation = elevation;
+  }
+
+ private:
+  double m_elevation;
+};
+
+/**************************************************************************************************/
+
+class QC_EXPORT QcGeoElevationCoordinateWGS84 : public QcGeoCoordinateWGS84, public QcElevation
+{
+  Q_GADGET;
+
+  Q_PROPERTY(double longitude READ longitude WRITE set_longitude)
+  Q_PROPERTY(double latitude READ latitude WRITE set_latitude)
+  Q_PROPERTY(double elevation READ elevation WRITE set_elevation)
+  /* Q_PROPERTY(bool isValid READ isValid) */
+
+ public:
+  QcGeoElevationCoordinateWGS84();
+  QcGeoElevationCoordinateWGS84(double longitude, double latitude, double elevation);
+  QcGeoElevationCoordinateWGS84(QcGeoSexagesimalAngle & longitude, QcGeoSexagesimalAngle & latitude, double elevation);
+  QcGeoElevationCoordinateWGS84(const QcGeoElevationCoordinateWGS84 & other);
+  ~QcGeoElevationCoordinateWGS84();
+
+  QcGeoElevationCoordinateWGS84 & operator=(const QcGeoElevationCoordinateWGS84 & other);
+
+  bool operator==(const QcGeoElevationCoordinateWGS84 & other) const;
+};
+
+// Q_DECLARE_TYPEINFO(QcGeoElevationCoordinateWGS84, Q_MOVABLE_TYPE);
+
+#ifndef QT_NO_DEBUG_STREAM
+QC_EXPORT QDebug operator<<(QDebug, const QcGeoElevationCoordinateWGS84 &);
+#endif
+
+#ifndef QT_NO_DATASTREAM
+QC_EXPORT QDataStream &operator<<(QDataStream & stream, const QcGeoElevationCoordinateWGS84 & coordinate);
+QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcGeoElevationCoordinateWGS84 & coordinate);
+#endif
+
+/**************************************************************************************************/
 
 // QT_END_NAMESPACE
 

@@ -13,6 +13,10 @@
 #
 
 set(qtcarto_files
+  geo_data_format/gpx.cpp
+  geo_data_format/route.cpp
+  geo_data_format/waypoint.cpp
+  geo_data_format/xml_reader.cpp
   map/file_tile_cache.cpp
   map/geo_coordinate.cpp
   map/geoportail/geoportail_license.cpp
