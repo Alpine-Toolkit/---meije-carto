@@ -196,6 +196,24 @@ QcGpx::set_bounds(const QcInterval2DDouble & bounds)
   m_bounds = bounds;
 }
 
+const QcWayPointList &
+QcGpx::waypoints() const
+{
+  return m_waypoints;
+}
+
+const QList<QcRoute> &
+QcGpx::routes() const
+{
+  return m_routes;
+}
+
+const QList<QcTrack> &
+QcGpx::tracks() const
+{
+  return m_tracks;
+}
+
 void
 QcGpx::add_waypoint(const QcWayPoint & waypoint)
 {
@@ -226,8 +244,20 @@ const QString TRACK_ELEMENT = "trk";
 const QString TRACK_SEGMENT_ELEMENT = "trkseg";
 const QString TRACK_POINT_ELEMENT = "trkpt";
 
+const QString CREATOR_ATTRIBUTE = "creator";
+const QString LATITUDE_ATTRIBUTE = "latitude";
+const QString LONGITUDE_ATTRIBUTE = "longitude";
+const QString MAX_LATITUDE_ATTRIBUTE = "maxlat";
+const QString MAX_LONGITUDE_ATTRIBUTE = "maxlon";
+const QString MIN_LATITUDE_ATTRIBUTE = "minlat";
+const QString MIN_LONGITUDE_ATTRIBUTE = "minlon";
+const QString VERSION_ATTRIBUTE = "version";
+
 const QString AGE_OF_DGPS_DATA_ELEMENT = "ageofdgpsdata";
+const QString AUTHOR_ELEMENT = "author";
+const QString BOUNDS_ELEMENT = "bounds";
 const QString COMMENT_ELEMENT = "cmt";
+const QString COPYRIGHT_ELEMENT = "copyright";
 const QString DESCRIPTION_ELEMENT = "desc";
 const QString DGPS_ID_ELEMENT = "dgpsid";
 const QString ELEVATION_ELEMENT = "ele";
@@ -235,6 +265,7 @@ const QString EXTENSIONS_ELEMENT = "extensions";
 const QString FIX_ELEMENT = "fix";
 const QString GEOID_HEIGHT_ELEMENT = "geoidheight";
 const QString HDOP_ELEMENT = "hdop";
+const QString KEYWORDS_ELEMENT = "keywords";
 const QString LINK_ELEMENT = "link";
 const QString MAGNETIC_VARIATION_ELEMENT = "magvar";
 const QString NAME_ELEMENT = "name";
@@ -247,7 +278,7 @@ const QString TIME_ELEMENT = "time";
 const QString TYPE_ELEMENT = "type";
 const QString VDOP_ELEMENT = "vdop";
 
-const QString _ELEMENT = "";
+/**************************************************************************************************/
 
 QcGpxReader::QcGpxReader()
   : m_reader()
@@ -274,8 +305,8 @@ QcGpxReader::read(const QString & gpx_path)
     goto parse_error;
   if (! m_reader.read_match_start_element(GPX_ELEMENT))
     goto parse_error;
-  gpx.set_creator(m_reader.get_attribute(QLatin1String("creator")));
-  gpx.set_version(m_reader.get_attribute(QLatin1String("version")));
+  gpx.set_creator(m_reader.get_attribute(CREATOR_ATTRIBUTE));
+  gpx.set_version(m_reader.get_attribute(VERSION_ATTRIBUTE));
 
   while (! m_reader.read_match_end_element(GPX_ELEMENT))
     if (m_reader.isStartElement()) {
@@ -310,17 +341,17 @@ QcGpxReader::read_metadata(QcGpx & gpx)
         gpx.set_name(m_reader.readElementText());
       else if (ename == DESCRIPTION_ELEMENT)
         gpx.set_description(m_reader.readElementText());
-      else if (ename == QLatin1String("author"))
+      else if (ename == AUTHOR_ELEMENT)
         ;
-      else if (ename == QLatin1String("copyright"))
+      else if (ename == COPYRIGHT_ELEMENT)
         ;
       else if (ename == LINK_ELEMENT)
         ;
       else if (ename == TIME_ELEMENT)
         gpx.set_time(m_reader.read_date());
-      else if (ename == QLatin1String("keywords"))
+      else if (ename == KEYWORDS_ELEMENT)
         gpx.set_keywords(m_reader.readElementText());
-      else if (ename == QLatin1String("bounds"))
+      else if (ename == BOUNDS_ELEMENT)
         read_bounds(gpx);
       else if (ename == EXTENSIONS_ELEMENT)
         ;
@@ -333,10 +364,10 @@ void
 QcGpxReader::read_bounds(QcGpx & gpx)
 {
   qInfo() << "QcGpxReader::read_bounds";
-  double latitude_inf = m_reader.get_double_attribute(QLatin1String("minlat"));
-  double longitude_inf = m_reader.get_double_attribute(QLatin1String("minlon"));
-  double latitude_sup = m_reader.get_double_attribute(QLatin1String("maxlat"));
-  double longitude_sup = m_reader.get_double_attribute(QLatin1String("maxlon"));
+  double latitude_inf = m_reader.get_double_attribute(MIN_LATITUDE_ATTRIBUTE);
+  double longitude_inf = m_reader.get_double_attribute(MIN_LONGITUDE_ATTRIBUTE);
+  double latitude_sup = m_reader.get_double_attribute(MAX_LATITUDE_ATTRIBUTE);
+  double longitude_sup = m_reader.get_double_attribute(MAX_LONGITUDE_ATTRIBUTE);
   gpx.set_bounds(QcInterval2DDouble(longitude_inf, longitude_sup, latitude_inf, latitude_sup));
 }
 
@@ -347,8 +378,8 @@ QcGpxReader::read_waypoint(const QString & element)
 
   QcWayPoint waypoint;
 
-  double latitude = m_reader.get_double_attribute(QLatin1String("latitude"));
-  double longitude = m_reader.get_double_attribute(QLatin1String("longitude"));
+  double latitude = m_reader.get_double_attribute(LATITUDE_ATTRIBUTE);
+  double longitude = m_reader.get_double_attribute(LONGITUDE_ATTRIBUTE);
   QcGeoElevationCoordinateWGS84 coordinate(longitude, latitude, .0);
 
   while (! m_reader.read_match_end_element(element))
@@ -439,7 +470,7 @@ QcGpxReader::read_route()
       QStringRef ename = m_reader.name();
       if (! read_route_metadata(route, ename)) {
         if (ename == ROUTE_POINT_ELEMENT)
-          route.add_point(read_waypoint(ROUTE_POINT_ELEMENT));
+          route.add_waypoint(read_waypoint(ROUTE_POINT_ELEMENT));
       }
     }
 
@@ -483,6 +514,143 @@ QcGpxReader::read_track_segment()
 
   return segment;
 }
+
+/**************************************************************************************************/
+
+QcGpxWriter::QcGpxWriter()
+  : m_writer()
+{}
+
+QcGpxWriter::~QcGpxWriter()
+{}
+
+void
+QcGpxWriter::write(const QcGpx & gpx, const QString & gpx_path)
+{
+  qInfo() << "QcGpxWriter::read";
+
+  QFile file(gpx_path);
+  if (!file.open(QIODevice::WriteOnly))
+    return; // Fixme:
+
+  m_writer.setDevice(&file);
+
+  m_writer.setAutoFormatting(true);
+
+  m_writer.writeStartDocument();
+  m_writer.writeStartElement(GPX_ELEMENT);
+  m_writer.writeAttribute(QLatin1Literal("xsi:schemaLocation"), QLatin1Literal("http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd"));
+  m_writer.writeAttribute(QLatin1Literal("xmlns:xsi"), QLatin1Literal("http://www.w3.org/2001/XMLSchema-instance"));
+  m_writer.writeAttribute(QLatin1Literal("xmlns"), QLatin1Literal("http://www.topografix.com/GPX/1/1"));
+  m_writer.writeAttribute(CREATOR_ATTRIBUTE, QLatin1Literal("Alpine ToolKit")); // gpx.creator()
+  m_writer.writeAttribute(VERSION_ATTRIBUTE, QLatin1Literal("1.1")); // gpx.version()
+
+  write_metadata(gpx);
+
+  for (const QcWayPoint & waypoint : gpx.waypoints())
+    write_waypoint(waypoint);
+  for (const QcRoute & route : gpx.routes())
+    write_route(route);
+  for (const QcTrack & track : gpx.tracks())
+    write_track(track);
+
+  // EXTENSIONS_ELEMENT
+
+  m_writer.writeEndElement(); // GPX_ELEMENT
+  m_writer.writeEndDocument();
+}
+
+void
+QcGpxWriter::write_metadata(const QcGpx & gpx)
+{
+  m_writer.writeStartElement(METADATA_ELEMENT);
+  m_writer.writeTextElement(NAME_ELEMENT, gpx.name());
+  m_writer.writeTextElement(DESCRIPTION_ELEMENT, gpx.description());
+  // AUTHOR_ELEMENT
+  // COPYRIGHT_ELEMENT
+  // LINK_ELEMENT
+  m_writer.writeTextElement(TIME_ELEMENT, gpx.time().toString(Qt::ISODate));
+  m_writer.writeTextElement(KEYWORDS_ELEMENT, gpx.keywords());
+  m_writer.writeStartElement(BOUNDS_ELEMENT);
+  const QcInterval2DDouble & bounds = gpx.bounds();
+  m_writer.writeAttribute(MIN_LATITUDE_ATTRIBUTE, QString::number(bounds.y().inf()));
+  m_writer.writeAttribute(MIN_LONGITUDE_ATTRIBUTE, QString::number(bounds.x().inf()));
+  m_writer.writeAttribute(MAX_LATITUDE_ATTRIBUTE, QString::number(bounds.y().sup()));
+  m_writer.writeAttribute(MAX_LONGITUDE_ATTRIBUTE, QString::number(bounds.x().sup()));
+  m_writer.writeEndElement(); // BOUNDS_ELEMENT
+  m_writer.writeEndElement(); // METADATA_ELEMENT
+}
+
+void
+QcGpxWriter::write_waypoint(const QcWayPoint & waypoint)
+{
+  const QcGeoElevationCoordinateWGS84 & coordinate = waypoint.coordinate();
+  m_writer.writeAttribute(LATITUDE_ATTRIBUTE, QString::number(coordinate.latitude()));
+  m_writer.writeAttribute(LONGITUDE_ATTRIBUTE, QString::number(coordinate.longitude()));
+  m_writer.writeTextElement(ELEVATION_ELEMENT, QString::number(coordinate.elevation()));
+  m_writer.writeTextElement(TIME_ELEMENT, waypoint.time().toString(Qt::ISODate));
+  m_writer.writeTextElement(MAGNETIC_VARIATION_ELEMENT, QString::number(waypoint.magnetic_variation()));
+  m_writer.writeTextElement(GEOID_HEIGHT_ELEMENT, QString::number(waypoint.geoid_height()));
+  m_writer.writeTextElement(NAME_ELEMENT, waypoint.name());
+  m_writer.writeTextElement(COMMENT_ELEMENT, waypoint.comment());
+  m_writer.writeTextElement(DESCRIPTION_ELEMENT, waypoint.description());
+  m_writer.writeTextElement(SOURCE_ELEMENT, waypoint.source());
+  // LINK_ELEMENT
+  m_writer.writeTextElement(SYMBOL_ELEMENT, waypoint.symbol());
+  m_writer.writeTextElement(TYPE_ELEMENT, waypoint.type());
+  m_writer.writeTextElement(FIX_ELEMENT, waypoint.fix_type());
+  m_writer.writeTextElement(SATELLITE_ELEMENT, QString::number(waypoint.number_of_satellites()));
+  m_writer.writeTextElement(HDOP_ELEMENT, QString::number(waypoint.hdop()));
+  m_writer.writeTextElement(VDOP_ELEMENT, QString::number(waypoint.vdop()));
+  m_writer.writeTextElement(PDOP_ELEMENT, QString::number(waypoint.pdop()));
+  m_writer.writeTextElement(AGE_OF_DGPS_DATA_ELEMENT, QString::number(waypoint.age_of_dgps_data()));
+  m_writer.writeTextElement(DGPS_ID_ELEMENT, QString::number(waypoint.dgps_id()));
+  // EXTENSIONS_ELEMENT
+}
+
+void
+QcGpxWriter::write_route_metadata(const QcRouteMetaData & metadata)
+{
+  m_writer.writeTextElement(NAME_ELEMENT, metadata.name());
+  m_writer.writeTextElement(COMMENT_ELEMENT, metadata.comment());
+  m_writer.writeTextElement(DESCRIPTION_ELEMENT, metadata.description());
+  m_writer.writeTextElement(SOURCE_ELEMENT, metadata.source());
+  // LINK_ELEMENT
+  m_writer.writeTextElement(NUMBER_ELEMENT, QString::number(metadata.number()));
+  m_writer.writeTextElement(TYPE_ELEMENT, metadata.type());
+  // EXTENSIONS_ELEMENT
+}
+
+void
+QcGpxWriter::write_route(const QcRoute & route)
+{
+  m_writer.writeStartElement(ROUTE_ELEMENT);
+  write_route_metadata(route);
+  for (const QcWayPoint & waypoint : route.waypoints()) {
+    m_writer.writeStartElement(ROUTE_POINT_ELEMENT);
+    write_waypoint(waypoint);
+    m_writer.writeEndElement(); // ROUTE_POINT_ELEMENT
+  }
+  m_writer.writeEndElement(); // ROUTE_ELEMENT
+}
+
+void
+QcGpxWriter::write_track(const QcTrack & track)
+{
+  m_writer.writeStartElement(TRACK_ELEMENT);
+  write_route_metadata(track);
+  for (const QcWayPointList & segment : track.segments()) {
+    m_writer.writeStartElement(TRACK_SEGMENT_ELEMENT);
+    for (const QcWayPoint & waypoint : segment) {
+      m_writer.writeStartElement(TRACK_POINT_ELEMENT);
+      write_waypoint(waypoint);
+      m_writer.writeEndElement(); // TRACK_POINT_ELEMENT
+    }
+    m_writer.writeEndElement(); // TRACK_SEGMENT_ELEMENT
+  }
+  m_writer.writeEndElement(); // TRACK_ELEMENT
+}
+
 
 /**************************************************************************************************/
 

@@ -36,6 +36,7 @@
 #include <QDateTime>
 #include <QList>
 #include <QString>
+#include <QXmlStreamWriter>
 
 #include "math/interval.h"
 #include "route.h"
@@ -43,6 +44,8 @@
 #include "xml_reader.h"
 
 /**************************************************************************************************/
+
+// http://www.topografix.com/GPX/1/1
 
 /*
  * <gpx
@@ -121,6 +124,10 @@ public:
   QcInterval2DDouble bounds() const;
   void set_bounds(const QcInterval2DDouble & bounds);
 
+  const QcWayPointList & waypoints() const;
+  const QList<QcRoute> & routes() const;
+  const QList<QcTrack> & tracks() const;
+
   void add_waypoint(const QcWayPoint & waypoint);
   void add_route(const QcRoute & route);
   void add_track(const QcTrack & track);
@@ -135,7 +142,7 @@ private:
   QDateTime m_time;
   QString m_keywords;
   QcInterval2DDouble m_bounds;
-  QList<QcWayPoint> m_waypoints;
+  QcWayPointList m_waypoints;
   QList<QcRoute> m_routes;
   QList<QcTrack> m_tracks;
 };
@@ -161,6 +168,27 @@ private:
 
 private:
   QcXmlStreamReader m_reader;
+};
+
+/**************************************************************************************************/
+
+class QcGpxWriter
+{
+public:
+  QcGpxWriter();
+  ~QcGpxWriter();
+
+  void write(const QcGpx & gpx, const QString & gpx_path);
+
+private:
+  void write_metadata(const QcGpx & gpx);
+  void write_waypoint(const QcWayPoint & waypoint);
+  void write_route_metadata(const QcRouteMetaData & metadata);
+  void write_route(const QcRoute & route);
+  void write_track(const QcTrack & track);
+
+private:
+  QXmlStreamWriter m_writer;
 };
 
 // QC_END_NAMESPACE

@@ -125,11 +125,11 @@ public:
 
   QcRoute & operator=(const QcRoute & other);
 
-  const QcWayPointList & points() const;
-  void add_point(const QcWayPoint & point);
+  const QcWayPointList & waypoints() const;
+  void add_waypoint(const QcWayPoint & waypoint);
 
 private:
-  QcWayPointList m_points;
+  QcWayPointList m_waypoints;
 };
 
 /**************************************************************************************************/
@@ -143,7 +143,7 @@ public:
 
   QcTrack & operator=(const QcTrack & other);
 
-  // const QList<QcWayPointList> & segments() const;
+  const QList<QcWayPointList> & segments() const;
   void add_segment(const QcWayPointList & segment);
 
 private:

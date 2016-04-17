@@ -157,12 +157,12 @@ QcRouteMetaData::set_type(const QString & type)
 
 QcRoute::QcRoute()
   : QcRouteMetaData(),
-    m_points()
+    m_waypoints()
 {}
 
 QcRoute::QcRoute(const QcRoute & other)
   : QcRouteMetaData(other),
-    m_points(other.m_points)
+    m_waypoints(other.m_waypoints)
 {}
 
 QcRoute::~QcRoute()
@@ -173,22 +173,22 @@ QcRoute::operator=(const QcRoute & other)
 {
   if (this != &other) {
     QcRouteMetaData::operator=(other);
-    m_points = other.m_points;
+    m_waypoints = other.m_waypoints;
   }
 
   return *this;
 }
 
 const QcWayPointList &
-QcRoute::points() const
+QcRoute::waypoints() const
 {
-  return m_points;
+  return m_waypoints;
 }
 
 void
-QcRoute::add_point(const QcWayPoint & point)
+QcRoute::add_waypoint(const QcWayPoint & waypoint)
 {
-  m_points.append(point);
+  m_waypoints.append(waypoint);
 }
 
 /**************************************************************************************************/
@@ -217,11 +217,11 @@ QcTrack::operator=(const QcTrack & other)
   return *this;
 }
 
-// const QList<QcWayPoint>
-// QcTrack::segments() const
-// {
-//   return m_segments;
-// }
+const QList<QcWayPointList> &
+QcTrack::segments() const
+{
+  return m_segments;
+}
 
 void
 QcTrack::add_segment(const QcWayPointList & segment)

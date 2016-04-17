@@ -28,6 +28,8 @@
 
 #include "geo_data_format/xml_reader.h"
 
+#include <QtDebug>
+
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
@@ -101,7 +103,8 @@ QcXmlStreamReader::read_until_empty()
 QDateTime
 QcXmlStreamReader::read_date()
 {
-  return QDateTime::fromString(readElementText());
+  QString s = readElementText();
+  return QDateTime::fromString(s, Qt::ISODate);
 }
 
 int

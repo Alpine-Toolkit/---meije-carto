@@ -49,6 +49,10 @@ void TestQcGpx::constructor()
    // QString gpx_path = "/home/fabrice/qtcarto-application/ressources/gpx/route2.gpx";
   QcGpx gpx = gpx_reader.read(gpx_path);
 
+  QcGpxWriter gpx_writer;
+  QString gpx_output_path = "out.gpx";
+  gpx_writer.write(gpx, gpx_output_path);
+
   // QVERIFY();
 }
 
