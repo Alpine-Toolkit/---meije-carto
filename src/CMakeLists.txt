@@ -38,6 +38,7 @@ set(qtcarto_files
   math/qc_math.cpp
   math/rational.cpp
   math/vector.cpp
+  rrd/rrd.cpp
 )
 add_library(qtcarto SHARED ${qtcarto_files})
 target_link_libraries(qtcarto Qt5::Core Qt5::Gui Qt5::Network ${PROJ4_LIBRARIES})

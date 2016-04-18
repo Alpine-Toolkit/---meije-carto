@@ -8,6 +8,7 @@
 add_subdirectory(math)
 add_subdirectory(map)
 add_subdirectory(geo_data_format)
+add_subdirectory(rrd)
 
 ####################################################################################################
 #
