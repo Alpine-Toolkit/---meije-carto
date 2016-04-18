@@ -53,7 +53,7 @@ public:
     : QcRoundRobinDatabase(path)
   {}
   MyRoundRobinDatabase(const QString & path, size_t number_of_slots)
-    : QcRoundRobinDatabase(path, number_of_slots, QLatin1Literal("qdd"))
+    : QcRoundRobinDatabase(path, QLatin1Literal("qdd"), number_of_slots)
   {}
 
   void write (const MyRoundRobinDatabaseSlot & data) {
@@ -87,9 +87,9 @@ void TestQcRrd::constructor()
 {
   QString path("test.rrd");
 
-  size_t number_of_slots = 100;
+  size_t number_of_slots = 10;
   MyRoundRobinDatabase output_rrd(path, number_of_slots);
-  size_t number_of_iterations = 10; // number_of_slots + 10;
+  size_t number_of_iterations = 15; // number_of_slots + 10;
   for (size_t i = 0; i < number_of_iterations; i++) {
     MyRoundRobinDatabaseSlot slot = { .index = i, .x = 1.1 * i, .y = 2.2 * i};
     output_rrd.write(slot);
@@ -102,6 +102,10 @@ void TestQcRrd::constructor()
     output_rrd.read(i, slot);
     qInfo() << "@" << i << slot.index << slot.x << slot.y;
   }
+
+  qInfo() << "Oldest to latest:" << input_rrd.oldest_position() << input_rrd.latest_position();
+  for (size_t position : input_rrd)
+    qInfo() << position;
 }
 
 /***************************************************************************************************/

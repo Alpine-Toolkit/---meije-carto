@@ -36,7 +36,7 @@
 
 constexpr quint8 VERSION = 1;
 constexpr size_t POSITION_SEEK = 1;
-QLatin1Literal HEADER_FORMAT("BH?HHHB");
+QLatin1Literal HEADER_FORMAT("BHHHHHB");
 
 size_t
 QcRoundRobinDatabase::compute_slot_size(const QString & slot_format)
@@ -77,14 +77,14 @@ QcRoundRobinDatabase::compute_slot_size(const QString & slot_format)
 QcRoundRobinDatabase::QcRoundRobinDatabase(const QString & path)
   : m_file(path),
     m_buffer(),
-    m_created(),
+    m_slot_format(),
+    m_created(false),
     m_version(),
     m_position(),
+    m_number_of_reserved_slots(),
+    m_number_of_used_slots(),
     m_header_size(),
-    m_number_of_slots(),
-    m_slot_size(),
-    m_empty(),
-    m_slot_format()
+    m_slot_size()
 {
   open();
   if (!m_created) {
@@ -95,31 +95,32 @@ QcRoundRobinDatabase::QcRoundRobinDatabase(const QString & path)
   }
 }
 
-QcRoundRobinDatabase::QcRoundRobinDatabase(const QString & path, size_t number_of_slots, const QString & slot_format)
+QcRoundRobinDatabase::QcRoundRobinDatabase(const QString & path, const QString & slot_format, size_t number_of_reserved_slots)
   : m_file(path),
     m_buffer(),
-    m_created(),
-    m_version(),
-    m_position(),
-    m_header_size(),
-    m_number_of_slots(),
-    m_slot_size(),
-    m_empty(),
-    m_slot_format()
+    m_slot_format(slot_format),
+    m_created(true),
+    m_version(VERSION),
+    m_position(0),
+    m_number_of_reserved_slots(number_of_reserved_slots),
+    m_number_of_used_slots(0),
+    m_header_size(0), // computed later
+    m_slot_size(compute_slot_size(slot_format))
 {
-  if (number_of_slots >= 1<<16)
+  if (m_number_of_reserved_slots >= 1<<16)
     qCritical() << "QcRoundRobinDatabase" << "Wrong number of slots";
   // Fixme:
 
   open();
+  // Fixme:
   if (m_created) {
-    init(number_of_slots, slot_format, true);
+    init(true);
   } else {
-    init(number_of_slots, slot_format, true);
+    init(true);
     // ...
     // read_header();
-    // if (number_of_slots != m_number_of_slots || slot_size != m_slot_size) {
-    //   init(number_of_slots, slot_size, true)
+    // if (number_of_reserved_slots != m_number_of_reserved_slots || slot_size != m_slot_size) {
+    //   init(number_of_reserved_slots, slot_size, true)
   }
 }
 
@@ -136,50 +137,37 @@ QcRoundRobinDatabase::open()
 }
 
 void
-QcRoundRobinDatabase::init(size_t number_of_slots, const QString & slot_format, bool allocate)
+QcRoundRobinDatabase::init(bool allocate)
 {
-  size_t header_size = compute_slot_size(HEADER_FORMAT) + slot_format.length();
+  size_t header_size = compute_slot_size(HEADER_FORMAT) + m_slot_format.length();
   // Round size to 8-byte
   m_header_size = (header_size/8)*8;
   if (m_header_size < header_size)
     m_header_size += 8;
-  qInfo() << "QcRoundRobinDatabase::init" << header_size << m_header_size;
 
-  m_number_of_slots = number_of_slots;
-  m_slot_size = compute_slot_size(slot_format);
-  m_position = 0;
-  m_empty = true;
-  m_slot_format = slot_format;
-
-  size_t slot_format_length = slot_format.length();
+  size_t slot_format_length = m_slot_format.length();
   m_buffer << static_cast<quint8>(VERSION)
            << static_cast<quint16>(m_position)
-           << static_cast<quint8>(m_empty)
+           << static_cast<quint16>(m_number_of_used_slots)
            << static_cast<quint16>(m_header_size)
-           << static_cast<quint16>(m_number_of_slots)
+           << static_cast<quint16>(m_number_of_reserved_slots)
            << static_cast<quint16>(m_slot_size)
            << static_cast<quint8>(slot_format_length);
-  m_buffer.writeRawData(slot_format.toStdString().c_str(), slot_format_length); // don't include terminal \0
+  m_buffer.writeRawData(m_slot_format.toStdString().c_str(), slot_format_length); // don't include terminal \0
   // clear padding
   for (size_t i = 0; i < (m_header_size - header_size); i++)
     m_buffer << static_cast<quint8>(0);
 
-  // if (allocate)
-  //   set_length();
-  clear();
-
-  // seek_to(0);
-  // m_buffer << static_cast<quint8>('Z');
-  // seek_to(1);
-  // m_buffer << static_cast<quint8>('a') << static_cast<quint8>('b');
-  // seek_to(2);
-  // m_buffer << static_cast<quint8>('e') << static_cast<quint8>('f');
+  if (allocate)
+    set_length();
 }
 
 void
 QcRoundRobinDatabase::set_length()
 {
-  if (! m_file.resize(m_header_size + m_number_of_slots * m_slot_size))
+  if (m_file.resize(m_header_size + m_number_of_reserved_slots * m_slot_size))
+    clear();
+  else
     ; // Fixme
 }
 
@@ -187,21 +175,21 @@ void
 QcRoundRobinDatabase::clear()
 {
   seek_to(0);
-  for (size_t i = 0; i < m_number_of_slots * m_slot_size; i++)
+  for (size_t i = 0; i < m_number_of_reserved_slots * m_slot_size; i++)
     m_buffer << static_cast<quint8>(0);
 }
 
 void
 QcRoundRobinDatabase::read_header()
 {
-  quint8 version, empty, slot_format_length;
-  quint16 position, header_size, number_of_slots, slot_size;
+  quint8 version, slot_format_length;
+  quint16 position, number_of_used_slots, header_size, number_of_reserved_slots, slot_size;
   m_file.seek(0);
   m_buffer >> version
            >> position
-           >> empty
+           >> number_of_used_slots
            >> header_size
-           >> number_of_slots
+           >> number_of_reserved_slots
            >> slot_size
            >> slot_format_length;
   char slot_format[slot_format_length +1];
@@ -209,22 +197,65 @@ QcRoundRobinDatabase::read_header()
   m_buffer.readRawData(slot_format, slot_format_length);
   m_version = version;
   m_position = position;
-  m_empty = empty;
-  if (m_empty)
-    m_position = 0; // implicit
+  m_number_of_used_slots = number_of_used_slots;
   m_header_size = header_size;
-  m_number_of_slots = number_of_slots;
+  m_number_of_reserved_slots = number_of_reserved_slots;
   m_slot_size = slot_size;
   m_slot_format = slot_format;
   qInfo() << "QcRoundRobinDatabase::read_header"
-          << QStringLiteral("Header: v%1 %2/%3 @%4").arg(m_version).arg(m_number_of_slots).arg(m_slot_size).arg(m_position) << slot_format_length << m_slot_format;
+          << QStringLiteral("Header: v%1 %2/%3 @%4/%5").arg(m_version).arg(m_number_of_reserved_slots).arg(m_slot_size).arg(m_position).arg(m_number_of_used_slots)
+          << m_slot_format;
+}
+
+size_t
+QcRoundRobinDatabase::oldest_position() const
+{
+  if (is_empty())
+    return 0; // Fixme:
+
+  return is_full() ? m_position : 0;
+}
+
+size_t
+QcRoundRobinDatabase::latest_position() const
+{
+  if (is_empty())
+    return 0;
+
+  return ((is_round_robin() && m_position == 0) ? m_number_of_reserved_slots : m_position) -1;
+}
+
+size_t
+QcRoundRobinDatabase::position_to_linear_position(size_t position) const
+{
+  // Fixme: check bound
+  if (is_round_robin()) {
+    size_t _oldest_position = oldest_position();
+    if (position >= _oldest_position)
+      return position - _oldest_position;
+    else
+      return position + m_number_of_reserved_slots - _oldest_position; // Fixme: overflow
+  } else
+    return position;
+}
+
+size_t
+QcRoundRobinDatabase::linear_position_to_position(size_t linear_position) const
+{
+  if (is_round_robin()) {
+    size_t position = oldest_position() + linear_position; // overflow
+    if (position >= m_number_of_reserved_slots)
+      position -= m_number_of_reserved_slots;
+    return position;
+  } else
+    return linear_position;
 }
 
 void
 QcRoundRobinDatabase::seek_to(size_t position)
 {
   size_t device_position = m_header_size + position * m_slot_size;
-  qInfo() << "QcRoundRobinDatabase::seek_to" << device_position;
+  // qInfo() << "QcRoundRobinDatabase::seek_to" << device_position;
   if (! m_file.seek(device_position))
     ; // Fixme:
 }
@@ -236,9 +267,10 @@ QcRoundRobinDatabase::write(const QByteArray & data)
     seek_to(m_position);
     qInfo() << "QcRoundRobinDatabase::write @" << m_position; // << data;
      m_buffer.writeRawData(data.data(), m_slot_size);
-    m_empty = false;
+     if (is_unlimited() || m_number_of_used_slots != m_number_of_reserved_slots)
+       m_number_of_used_slots++;
     m_position++;
-    if (m_position == m_number_of_slots)
+    if (is_round_robin() && m_position == m_number_of_reserved_slots)
       m_position = 0; // loop
     update_position();
   }
@@ -260,7 +292,7 @@ void
 QcRoundRobinDatabase::update_position()
 {
   m_file.seek(POSITION_SEEK);
-  m_buffer << static_cast<quint16>(m_position) << static_cast<quint8>(m_empty);
+  m_buffer << static_cast<quint16>(m_position) << static_cast<quint16>(m_number_of_used_slots);
   // seek_to(m_position);
 }
 
