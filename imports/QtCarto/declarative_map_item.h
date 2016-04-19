@@ -28,6 +28,11 @@
 
 /**************************************************************************************************/
 
+#ifndef DECLARATIVE_MAP_ITEM_H
+#define DECLARATIVE_MAP_ITEM_H
+
+/**************************************************************************************************/
+
 #include <QGeoCoordinate>
 #include <QQuickItem>
 
@@ -35,12 +40,13 @@
 
 #include "map/geoportail/geoportail_plugin.h"
 #include "map/viewport.h"
+#include "map_gesture_area.h"
 
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
 
-class MapItem : public QQuickItem
+class QcMapItem : public QQuickItem
 {
   Q_OBJECT
 
@@ -51,8 +57,8 @@ class MapItem : public QQuickItem
   // Q_INTERFACES(QQmlParserStatus)
 
 public:
-  MapItem(QQuickItem *parent = 0);
-  ~MapItem();
+  QcMapItem(QQuickItem *parent = 0);
+  ~QcMapItem();
 
   void set_zoom_level(int zoom_level);
   int zoom_level() const;
@@ -60,10 +66,16 @@ public:
   void set_center(const QGeoCoordinate & center);
   QGeoCoordinate center() const;
 
-  /* Q_INVOKABLE QGeoCoordinate toCoordinate(const QPointF &position, bool clipToViewPort = true) const; */
-  /* Q_INVOKABLE QPointF fromCoordinate(const QGeoCoordinate &coordinate, bool clipToViewPort = true) const; */
+  Q_INVOKABLE QGeoCoordinate to_coordinate(const QPointF & position, bool clip_to_view_port = true) const;
+  Q_INVOKABLE QPointF from_coordinate(const QGeoCoordinate & coordinate, bool clip_to_view_port = true) const;
 
-  /* QQuickGeoMapGestureArea *gesture(); */
+  // QDoubleVector2D / QVector2D use float ...
+  QGeoCoordinate item_position_to_coordinate(const QVector2D & pos, bool clip_to_viewport = true) const;
+  QVector2D coordinate_to_item_position(const QGeoCoordinate & coordinate, bool clip_to_viewport = true) const;
+
+  Q_INVOKABLE void prefetch_data(); // optional hint for prefetch
+
+  QcMapGestureArea * gesture();
 
   Q_INVOKABLE void pan(int dx, int dy);
 
@@ -72,27 +84,35 @@ signals:
   void centerChanged(const QGeoCoordinate & coordinate);
 
 protected:
-  /* void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE ; */
-  /* void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE ; */
-  /* void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE ; */
-  /* void mouseUngrabEvent() Q_DECL_OVERRIDE ; */
-  /* void touchUngrabEvent() Q_DECL_OVERRIDE; */
-  /* void touchEvent(QTouchEvent *event) Q_DECL_OVERRIDE ; */
-  /* void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE ; */
+  void mousePressEvent(QMouseEvent * event) Q_DECL_OVERRIDE ;
+  void mouseMoveEvent(QMouseEvent * event) Q_DECL_OVERRIDE ;
+  void mouseReleaseEvent(QMouseEvent * event) Q_DECL_OVERRIDE ;
+  void mouseUngrabEvent() Q_DECL_OVERRIDE ;
+  void touchUngrabEvent() Q_DECL_OVERRIDE;
+  void touchEvent(QTouchEvent * event) Q_DECL_OVERRIDE ;
+  void wheelEvent(QWheelEvent * event) Q_DECL_OVERRIDE ;
 
   /* bool sendMouseEvent(QMouseEvent *event); */
   /* bool sendTouchEvent(QTouchEvent *event); */
 
-  /* void componentComplete() Q_DECL_OVERRIDE; */
+  void componentComplete() Q_DECL_OVERRIDE;
   QSGNode * updatePaintNode(QSGNode *, UpdatePaintNodeData *);
   void geometryChanged(const QRectF & new_geometry, const QRectF & old_geometry);
 
 private:
+    bool is_interactive();
+
+private:
   QcWmtsPlugin * m_plugin;
   QcViewport * m_viewport;
+  QcMapGestureArea * m_gesture_area;
 };
 
 // QC_END_NAMESPACE
+
+/**************************************************************************************************/
+
+#endif // DECLARATIVE_MAP_ITEM_H
 
 /***************************************************************************************************
  *

@@ -32,6 +32,7 @@
 /**************************************************************************************************/
 
 #include "declarative_map_item.h"
+#include "map_gesture_area.h"
 
 // QC_BEGIN_NAMESPACE
 
@@ -55,17 +56,15 @@ class QtCartoDeclarativeModule : public QQmlExtensionPlugin
 
       // Register the 1.0 types
 
-      qmlRegisterType<MapItem>(uri, 1, 0, "MapItem");
-
       // QDeclarativeGeoMap
-      // qmlRegisterType<MapItem>(uri, major, minor, "Map");
+      qmlRegisterType<QcMapItem>(uri, major, minor, "QcMapItem");
 
-      // qmlRegisterUncreatableType<QGeoMapPinchEvent >(uri, major, minor, "MapPinchEvent",
-      // 						     QStringLiteral("(Map)PinchEvent is not intended instantiable by developer."));
-      // qmlRegisterUncreatableType<QQuickGeoMapGestureArea>(uri, major, minor, "MapGestureArea",
-      // 							  QStringLiteral("(Map)GestureArea is not intended instantiable by developer."));
-      // qmlRegisterUncreatableType<QQuickGeoMapGestureArea, 1>(uri, major, minor, "MapGestureArea",
-      // 							     QStringLiteral("(Map)GestureArea is not intended instantiable by developer."));
+      qmlRegisterUncreatableType<QcMapPinchEvent >(uri, major, minor, "MapPinchEvent",
+                                                   QStringLiteral("(Map)PinchEvent is not intended instantiable by developer."));
+      qmlRegisterUncreatableType<QcMapGestureArea>(uri, major, minor, "MapGestureArea",
+                                                   QStringLiteral("(Map)GestureArea is not intended instantiable by developer."));
+      qmlRegisterUncreatableType<QcMapGestureArea, 1>(uri, major, minor, "MapGestureArea",
+                                                      QStringLiteral("(Map)GestureArea is not intended instantiable by developer."));
 
       // registrations below are version independent
     } else {

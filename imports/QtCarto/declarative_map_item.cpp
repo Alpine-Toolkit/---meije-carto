@@ -49,12 +49,17 @@
 
 /**************************************************************************************************/
 
-MapItem::MapItem(QQuickItem *parent)
+QcMapItem::QcMapItem(QQuickItem * parent)
   : QQuickItem(parent),
     m_plugin(nullptr),
-    m_viewport(nullptr)
+    m_viewport(nullptr),
+    m_gesture_area(new QcMapGestureArea(this))
 {
-  setFlag(ItemHasContents, true);
+  qInfo() << "QcMapItem::QcMapItem";
+  setAcceptHoverEvents(false);
+  setAcceptedMouseButtons(Qt::LeftButton);
+  setFlags(QQuickItem::ItemHasContents | QQuickItem::ItemClipsChildrenToShape);
+  // setFlag(ItemHasContents, true);
 
   QString json_path("geoportail-license.json");
   QcGeoPortailWmtsLicence geoportail_license(json_path);
@@ -76,15 +81,286 @@ MapItem::MapItem(QQuickItem *parent)
   m_viewport->zoom_at(coordinate.mercator(), level);
 }
 
-MapItem::~MapItem()
+QcMapItem::~QcMapItem()
 {
+  qInfo() << "QcMapItem::~QcMapItem";
   // delete m_plugin, m_viewport
 }
 
 void
-MapItem::set_zoom_level(int zoom_level)
+QcMapItem::componentComplete()
 {
-  qInfo() << "MapItem::set_zoom_level " << zoom_level;
+  qInfo() << "QcMapItem::componentComplete";
+  // m_component_completed = true;
+  m_gesture_area->set_map(this); // Fixme
+  QQuickItem::componentComplete();
+}
+
+bool
+QcMapItem::is_interactive()
+{
+  return (m_gesture_area->enabled() && m_gesture_area->accepted_gestures()) || m_gesture_area->is_active();
+}
+
+void
+QcMapItem::mousePressEvent(QMouseEvent *event)
+{
+  qInfo() << "QcMapItem::mousePressEvent";
+  if (is_interactive())
+    m_gesture_area->handle_mouse_press_event(event);
+  else
+    QQuickItem::mousePressEvent(event);
+}
+
+void QcMapItem::mouseMoveEvent(QMouseEvent *event)
+{
+  qInfo() << "QcMapItem::mouseMoveEvent";
+  if (is_interactive())
+    m_gesture_area->handle_mouse_move_event(event);
+  else
+    QQuickItem::mouseMoveEvent(event);
+}
+
+void QcMapItem::mouseReleaseEvent(QMouseEvent *event)
+{
+  qInfo() << "QcMapItem::mouseReleaseEvent";
+  if (is_interactive()) {
+    m_gesture_area->handle_mouse_release_event(event);
+    ungrabMouse();
+  } else {
+    QQuickItem::mouseReleaseEvent(event);
+  }
+}
+
+void QcMapItem::mouseUngrabEvent()
+{
+  qInfo() << "QcMapItem::mouseUngrabEvent";
+  if (is_interactive())
+    m_gesture_area->handle_mouse_ungrab_event();
+  else
+    QQuickItem::mouseUngrabEvent();
+}
+
+void QcMapItem::touchUngrabEvent()
+{
+  qInfo() << "QcMapItem::touchUngrabEvent";
+  if (is_interactive())
+    m_gesture_area->handle_touch_ungrab_event();
+  else
+    QQuickItem::touchUngrabEvent();
+}
+
+void
+QcMapItem::touchEvent(QTouchEvent * event)
+{
+  qInfo() << "QcMapItem::touchEvent";
+  if (is_interactive()) {
+    m_gesture_area->handle_touch_event(event);
+    if (event->type() == QEvent::TouchEnd ||
+        event->type() == QEvent::TouchCancel) {
+      ungrabTouchPoints();
+    }
+  } else {
+    //ignore event so sythesized event is generated;
+    QQuickItem::touchEvent(event);
+  }
+}
+
+void
+QcMapItem::wheelEvent(QWheelEvent * event)
+{
+  qInfo() << "QcMapItem::wheelEvent";
+  if (is_interactive())
+    m_gesture_area->handle_wheel_event(event);
+  else
+    QQuickItem::wheelEvent(event);
+}
+
+/*!
+  \qmlproperty MapGestureArea QtLocation::Map::gesture
+
+  Contains the MapGestureArea created with the Map. This covers pan, flick and pinch gestures.
+  Use \c{gesture.enabled: true} to enable basic gestures, or see \l{MapGestureArea} for
+  further details.
+*/
+QcMapGestureArea *
+QcMapItem::gesture()
+{
+  return m_gesture_area;
+}
+
+/*!
+    \qmlmethod coordinate QtLocation::Map::toCoordinate(QPointF position, bool clipToViewPort)
+
+    Returns the coordinate which corresponds to the \a position relative to the map item.
+
+    If \a cliptoViewPort is \c true, or not supplied then returns an invalid coordinate if
+    \a position is not within the current viewport.
+*/
+QGeoCoordinate
+QcMapItem::to_coordinate(const QPointF & position, bool clip_to_view_port) const
+{
+  qInfo() << "QcMapItem::to_coordinate";
+  // if (m_map)
+  //   return m_map->itemPositionToCoordinate(QDoubleVector2D(position), clipToViewPort);
+  // else
+  return QGeoCoordinate();
+}
+
+/*!
+    \qmlmethod point QtLocation::Map::fromCoordinate(coordinate coordinate, bool clipToViewPort)
+
+    Returns the position relative to the map item which corresponds to the \a coordinate.
+
+    If \a cliptoViewPort is \c true, or not supplied then returns an invalid QPointF if
+    \a coordinate is not within the current viewport.
+*/
+QPointF
+QcMapItem::from_coordinate(const QGeoCoordinate & coordinate, bool clip_to_view_port) const
+{
+  qInfo() << "QcMapItem::from_coordinate";
+  // if (m_map)
+  //   return m_map->coordinateToItemPosition(coordinate, clipToViewPort).toPointF();
+  // else
+  return QPointF(qQNaN(), qQNaN());
+}
+
+// QDoubleVector2D / QVector2D use float ...
+QGeoCoordinate
+QcMapItem::item_position_to_coordinate(const QVector2D & pos, bool clip_to_viewport) const
+{
+  qInfo() << "QcMapItem::item_position_to_coordinate" << pos << clip_to_viewport;
+
+  if (clip_to_viewport) {
+    int w = width();
+    int h = height();
+
+    if ((pos.x() < 0) || (w < pos.x()) || (pos.y() < 0) || (h < pos.y()))
+      return QGeoCoordinate();
+  }
+
+  QcTileMatrixSet & tile_matrix_set = m_plugin->tile_matrix_set();
+  const QcTileMatrix & tile_matrix = tile_matrix_set[m_viewport->zoom_level()];
+  double resolution = tile_matrix.resolution(); // [m/px]
+  const QcPolygon & polygon = m_viewport->polygon();
+  const QcInterval2DDouble & interval = polygon.interval();
+  double x_inf_m = interval.x().inf();
+  double y_inf_m = interval.y().inf();
+  double x = (x_inf_m + pos.x() * resolution) / EQUATORIAL_PERIMETER; // -> normalised_mercator
+  double y = (y_inf_m + pos.y() * resolution) / EQUATORIAL_PERIMETER;
+  QcGeoCoordinateWGS84 coordinate = QcGeoCoordinateNormalisedMercator(x, y).wgs84();
+
+  QGeoCoordinate _coordinate(coordinate.latitude(), coordinate.longitude()); // QGeoProjection::mercatorToCoord(m_mapScene->itemPositionToMercator(pos));;
+  qInfo() << "QcMapItem::item_position_to_coordinate" << _coordinate;
+  return _coordinate;
+}
+
+QVector2D
+QcMapItem::coordinate_to_item_position(const QGeoCoordinate & coordinate, bool clip_to_viewport) const
+{
+  qInfo() << "QcMapItem::coordinate_to_item_position" << coordinate << clip_to_viewport;
+
+  QcGeoCoordinateNormalisedMercator normalised_mercator = QcGeoCoordinateWGS84(coordinate.longitude(), coordinate.latitude()).normalised_mercator();
+
+  QcTileMatrixSet & tile_matrix_set = m_plugin->tile_matrix_set();
+  const QcTileMatrix & tile_matrix = tile_matrix_set[m_viewport->zoom_level()];
+  double resolution = tile_matrix.resolution(); // [m/px]
+  const QcPolygon & polygon = m_viewport->polygon();
+  const QcInterval2DDouble & interval = polygon.interval();
+  double x_inf_m = interval.x().inf();
+  double y_inf_m = interval.y().inf();
+  double x = (normalised_mercator.x()*EQUATORIAL_PERIMETER - x_inf_m)/resolution;
+  double y = (normalised_mercator.y()*EQUATORIAL_PERIMETER - y_inf_m)/resolution;
+  QVector2D pos(x, y); //  = m_mapScene->mercatorToItemPosition(QGeoProjection::coordToMercator(coordinate));;
+
+  if (clip_to_viewport) {
+    int w = width();
+    int h = height();
+    double x = pos.x();
+    double y = pos.y();
+    if ((x < 0.0) || (x > w) || (y < 0) || (y > h) || qIsNaN(x) || qIsNaN(y))
+      return QVector2D(qQNaN(), qQNaN());
+  }
+
+  qInfo() << "QcMapItem::coordinate_to_item_position" << pos;
+  return pos;
+}
+
+/*
+QVector2D
+QcMapItem::item_position_to_mercator(const QVector2D & pos) const
+{
+  double x = m_mercator_width * (((pos.x() - m_screen_offset_x) / m_screen_width) - 0.5);
+  x += m_mercator_center_x;
+
+  if (x > 1.0 * m_side_length)
+    x -= 1.0 * m_side_length;
+  if (x < 0.0)
+    x += 1.0 * m_side_length;
+
+  x /= 1.0 * m_side_length;
+
+  double y = m_mercator_height * (((pos.y() - m_screen_offset_y) / m_screen_height) - 0.5);
+  y += m_mercator_center_y;
+  y /= 1.0 * m_side_length;
+
+  return QDoubleVector2D(x, y);
+}
+
+QVector2D
+QcMapItem::mercator_to_item_position(const QVector2D & mercator) const
+{
+  double mx = m_side_length * mercator.x();
+
+  double lb = m_mercator_center_x - m_mercator_width / 2.0;
+  if (lb < 0.0)
+    lb += m_side_length;
+  double ub = m_mercator_center_x + m_mercator_width / 2.0;
+  if (m_side_length < ub)
+    ub -= m_side_length;
+
+  double m = (mx - m_mercator_center_x) / m_mercator_width;
+
+  double mWrapLower = (mx - m_mercator_center_x - m_side_length) / m_mercator_width;
+  double mWrapUpper = (mx - m_mercator_center_x + m_side_length) / m_mercator_width;
+
+  // correct for crossing dateline
+  if (qFuzzyCompare(ub - lb + 1.0, 1.0) || (ub < lb) ) {
+    if (m_mercator_center_x < ub) {
+      if (lb < mx) {
+        m = m_wrap_lower;
+      }
+    } else if (lb < m_mercator_center_x) {
+      if (mx <= ub) {
+        m = m_wrap_upper;
+      }
+    }
+  }
+
+  // apply wrapping if necessary so we don't return unreasonably large pos/neg screen positions
+  // also allows map items to be drawn properly if some of their coords are out of the screen
+  if ( qAbs(m_wrap_lower) < qAbs(m) )
+    m = mWrapLower;
+  if ( qAbs(m_wrap_upper) < qAbs(m) )
+    m = mWrapUpper;
+
+  double x = m_screen_width * (0.5 + m);
+  double y = m_screen_height * (0.5 + (m_sideLength * mercator.y() - m_mercator_center_y) / m_mercator_height);
+
+  return QDoubleVector2D(x + m_screen_offset_x, y + m_screen_offset_y);
+}
+*/
+
+void
+QcMapItem::prefetch_data()
+{
+  qInfo() << "QcMapItem::prefetch_data";
+}
+
+void
+QcMapItem::set_zoom_level(int zoom_level)
+{
+  qInfo() << "QcMapItem::set_zoom_level " << zoom_level;
 
   if (zoom_level == m_viewport->zoom_level())
     return;
@@ -99,15 +375,15 @@ MapItem::set_zoom_level(int zoom_level)
 }
 
 int
-MapItem::zoom_level() const
+QcMapItem::zoom_level() const
 {
   return m_viewport->zoom_level();
 }
 
 void
-MapItem::set_center(const QGeoCoordinate & center)
+QcMapItem::set_center(const QGeoCoordinate & center)
 {
-  qInfo() << "MapItem::set_center WGS84 " << center;
+  qInfo() << "QcMapItem::set_center WGS84 " << center;
 
   QcGeoCoordinateWGS84 coordinate(center.longitude(), center.latitude());
   if (coordinate == m_viewport->wgs84())
@@ -128,24 +404,24 @@ MapItem::set_center(const QGeoCoordinate & center)
 }
 
 QGeoCoordinate
-MapItem::center() const
+QcMapItem::center() const
 {
   QcGeoCoordinateWGS84 center = m_viewport->wgs84();
   return QGeoCoordinate(center.latitude(), center.longitude());
 }
 
 void
-MapItem::pan(int dx, int dy)
+QcMapItem::pan(int dx, int dy)
 {
-  qInfo() << "MapItem::pan" << dx << dy;
+  qInfo() << "QcMapItem::pan" << dx << dy;
   m_viewport->pan(dx, dy); // Fixme: unit is m
   update(); // Fixme: signal
 }
 
 void
-MapItem::geometryChanged(const QRectF & new_geometry, const QRectF & old_geometry)
+QcMapItem::geometryChanged(const QRectF & new_geometry, const QRectF & old_geometry)
 {
-  qInfo() << "MapItem::geometryChanged" << old_geometry << "->" << new_geometry;
+  qInfo() << "QcMapItem::geometryChanged" << old_geometry << "->" << new_geometry;
   QQuickItem::geometryChanged(new_geometry, old_geometry);
   QSize viewport_size(new_geometry.width(), new_geometry.height()); // Fixme: QSizeF size()
   m_viewport->set_viewport_size(viewport_size);
@@ -211,9 +487,9 @@ public:
 };
 
 QSGNode *
-MapItem::updatePaintNode(QSGNode * old_node, UpdatePaintNodeData *)
+QcMapItem::updatePaintNode(QSGNode * old_node, UpdatePaintNodeData *)
 {
-  qInfo() << "MapItem::updatePaintNode" << old_node;
+  qInfo() << "QcMapItem::updatePaintNode" << old_node;
 
   QRectF bounds = boundingRect(); // m_ ???
   qInfo() << "rect" << bounds;

@@ -25,7 +25,7 @@ ApplicationWindow {
         }
     }
 
-    MapItem {
+    QcMapItem {
         id: map
 
         anchors.fill: parent
