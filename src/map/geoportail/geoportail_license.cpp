@@ -1,5 +1,3 @@
-// -*- mode: c++ -*-
-
 /***************************************************************************************************
 **
 ** $QTCARTO_BEGIN_LICENSE:GPL3$
@@ -94,8 +92,10 @@ QcGeoPortailWmtsLicence::load_json(const QString & json_path)
 {
   QFile json_file(json_path);
 
-  if (!json_file.open(QIODevice::ReadOnly))
-    throw std::invalid_argument("Couldn't open file.");
+  if (!json_file.open(QIODevice::ReadOnly)) {
+    QString message =  QStringLiteral("Couldn't open file ") + json_path;
+    throw std::invalid_argument(message.toStdString().c_str());
+  }
 
   QByteArray json_data = json_file.readAll();
   QJsonDocument json_document(QJsonDocument::fromJson(json_data));
