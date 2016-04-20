@@ -148,6 +148,10 @@ class QC_EXPORT QcViewportState
     return m_coordinate.web_mercator();
   }
 
+  inline QcGeoCoordinatePseudoWebMercator pseudo_web_mercator() const {
+    return m_coordinate.pseudo_web_mercator();
+  }
+
   inline QcGeoCoordinateWGS84 wgs84() const {
     return m_coordinate.wgs84();
   }
@@ -183,7 +187,7 @@ class QC_EXPORT QcViewportState
   }
 
  private:
-  QcGeoCoordinateNormalisedWebMercator m_coordinate;
+  QcGeoCoordinateNormalisedWebMercator m_coordinate; // Fixme: -> QcGeoCoordinatePseudoWebMercator ? precision ?
   QcTiledZoomLevel m_tiled_zoom_level;
   double m_bearing;
 };
@@ -206,6 +210,10 @@ class QC_EXPORT QcViewport : public QObject
 
   inline const QcGeoCoordinateNormalisedWebMercator & normalised_web_mercator() const {
     return m_state.normalised_web_mercator();
+  }
+
+  inline const QcGeoCoordinatePseudoWebMercator pseudo_web_mercator() const {
+    return m_state.pseudo_web_mercator();
   }
 
   inline QcGeoCoordinateWebMercator web_mercator() const {

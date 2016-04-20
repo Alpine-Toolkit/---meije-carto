@@ -297,11 +297,11 @@ QcViewport::update_area()
   QcVectorDouble viewport_size = QcVectorDouble(m_viewport_size.width(), m_viewport_size.height());
   QcVectorDouble new_area_size = viewport_size * zoom_factor(); // [px] * [m/px]
   // mercator is centered
-  QcVectorDouble center = normalised_web_mercator().vector() * EQUATORIAL_PERIMETER;
+  QcVectorDouble center = pseudo_web_mercator().vector();
   qInfo() << "viewport_size" << viewport_size;
   qInfo() << "zoom_factor" << zoom_factor() << "m/px";
   qInfo() << "new_area_size" << new_area_size << "m";
-  qInfo() << "center" << (int) center.x() << (int) center.y();
+  qInfo() << "center as pseudo mercator" << (int) center.x() << (int) center.y();
 
   // QcInterval2DDouble new_area = interval_from_center_and_size(center, new_area_size);
 

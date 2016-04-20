@@ -27,6 +27,7 @@
 ***************************************************************************************************/
 
 // Fixme: qreal ???
+// Fixme: duplicated code !
 
 /**************************************************************************************************/
 
@@ -57,6 +58,7 @@ class QDebug;
 class QDataStream;
 
 class QcGeoCoordinateWebMercator;
+class QcGeoCoordinatePseudoWebMercator;
 class QcGeoCoordinateNormalisedWebMercator;
 
 /**************************************************************************************************/
@@ -271,6 +273,7 @@ class QC_EXPORT QcGeoCoordinateWGS84 : public QcGeoCoordinate
   }
 
   QcGeoCoordinateWebMercator web_mercator() const;
+  QcGeoCoordinatePseudoWebMercator pseudo_web_mercator() const;
   QcGeoCoordinateNormalisedWebMercator normalised_web_mercator() const;
 
   Q_INVOKABLE double distance_to(const QcGeoCoordinateWGS84 & other) const;
@@ -374,6 +377,7 @@ class QC_EXPORT QcGeoCoordinateWebMercator : public QcGeoCoordinate
   inline double y() const { return m_y; }
 
   QcGeoCoordinateWGS84 wgs84() const;
+  QcGeoCoordinatePseudoWebMercator pseudo_web_mercator() const;
   QcGeoCoordinateNormalisedWebMercator normalised_web_mercator() const;
 
   inline QcVectorDouble vector() const {
@@ -394,6 +398,84 @@ QC_EXPORT QDebug operator<<(QDebug debug, const QcGeoCoordinateWebMercator & coo
 #ifndef QT_NO_DATASTREAM
 QC_EXPORT QDataStream &operator<<(QDataStream & stream, const QcGeoCoordinateWebMercator & coordinate);
 QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcGeoCoordinateWebMercator & coordinate);
+#endif
+
+/**************************************************************************************************/
+
+class QC_EXPORT QcGeoCoordinatePseudoWebMercator : public QcGeoCoordinate
+{
+  Q_GADGET;
+
+  Q_PROPERTY(double x READ x WRITE set_x)
+  Q_PROPERTY(double y READ y WRITE set_y)
+  /* Q_PROPERTY(bool isValid READ isValid) */
+
+ public:
+  inline const char *srid() { return ""; };
+
+  static inline QcIntervalDouble x_interval() {
+    return QcIntervalDouble(0, EQUATORIAL_PERIMETER);
+  }
+
+  static inline QcIntervalDouble y_interval() {
+    return QcIntervalDouble(0, EQUATORIAL_PERIMETER);
+  }
+
+  static inline QcInterval2DDouble domain() {
+    return QcInterval2DDouble(x_interval(), y_interval());
+  }
+
+  inline static bool is_valid_x(double x) {
+    return 0 <= x && x <= EQUATORIAL_PERIMETER;
+  }
+
+ public:
+  QcGeoCoordinatePseudoWebMercator();
+  QcGeoCoordinatePseudoWebMercator(double x, double y);
+  QcGeoCoordinatePseudoWebMercator(const QcGeoCoordinatePseudoWebMercator & other);
+  ~QcGeoCoordinatePseudoWebMercator();
+
+  QcGeoCoordinatePseudoWebMercator & operator=(const QcGeoCoordinatePseudoWebMercator & other);
+
+  bool operator==(const QcGeoCoordinatePseudoWebMercator & other) const;
+  inline bool operator!=(const QcGeoCoordinatePseudoWebMercator & other) const {
+    return !operator==(other);
+  }
+
+  inline double coordinate1() const { return m_x; }
+  inline void set_coordinate1(double value) { m_x = value; }
+
+  inline double coordinate2() const { return m_y; }
+  inline void set_coordinate2(double value) { m_y = value; }
+
+  inline void set_x(double x) { m_x = x; }
+  inline double x() const { return m_x; }
+
+  inline void set_y(double y) { m_y = y; }
+  inline double y() const { return m_y; }
+
+  QcGeoCoordinateWGS84 wgs84() const;
+  QcGeoCoordinateWebMercator web_mercator() const;
+  QcGeoCoordinateNormalisedWebMercator normalised_web_mercator() const;
+
+  inline QcVectorDouble vector() const {
+    return QcVectorDouble(m_x, m_y);
+  }
+
+ private:
+  double m_x;
+  double m_y;
+};
+
+// Q_DECLARE_TYPEINFO(QcGeoCoordinatePseudoWebMercator, Q_MOVABLE_TYPE);
+
+#ifndef QT_NO_DEBUG_STREAM
+QC_EXPORT QDebug operator<<(QDebug debug, const QcGeoCoordinatePseudoWebMercator & coordinate);
+#endif
+
+#ifndef QT_NO_DATASTREAM
+QC_EXPORT QDataStream &operator<<(QDataStream & stream, const QcGeoCoordinatePseudoWebMercator & coordinate);
+QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcGeoCoordinatePseudoWebMercator & coordinate);
 #endif
 
 /**************************************************************************************************/
@@ -457,8 +539,9 @@ class QC_EXPORT QcGeoCoordinateNormalisedWebMercator : public QcGeoCoordinate
   inline void set_y(double y) { m_y = y; }
   inline double y() const { return m_y; }
 
-  QcGeoCoordinateWebMercator web_mercator() const;
   QcGeoCoordinateWGS84 wgs84() const;
+  QcGeoCoordinateWebMercator web_mercator() const;
+  QcGeoCoordinatePseudoWebMercator pseudo_web_mercator() const;
 
   inline QcVectorDouble vector() const {
     return QcVectorDouble(m_x, m_y);
