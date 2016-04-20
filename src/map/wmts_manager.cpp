@@ -76,7 +76,6 @@
 
 QcWmtsManager::QcWmtsManager()
   : QObject(),
-    // m_tileVersion(-1),
     // cacheHint_(QcWmtsManager::AllCaches),
     m_tile_cache(nullptr), // must call set_tile_fetcher() !!!
     m_tile_fetcher(nullptr) // created by a call to tile_cache()
@@ -101,10 +100,10 @@ QcWmtsManager::set_tile_fetcher(QcWmtsTileFetcher * tile_fetcher)
 
   // Connect tile fetcher signals
   connect(m_tile_fetcher, SIGNAL(tile_finished(QcTileSpec, QByteArray, QString)),
-	  this, SLOT(engine_tile_finished(QcTileSpec, QByteArray, QString)),
+	  this, SLOT(fetcher_tile_finished(QcTileSpec, QByteArray, QString)),
 	  Qt::QueuedConnection);
   connect(m_tile_fetcher, SIGNAL(tile_error(QcTileSpec, QString)),
-	  this, SLOT(engine_tile_error(QcTileSpec, QString)),
+	  this, SLOT(fetcher_tile_error(QcTileSpec, QString)),
 	  Qt::QueuedConnection);
 
   // engine_initialized();
@@ -154,12 +153,6 @@ QcWmtsManager::remove_tile_spec(const QcTileSpec & tile_spec)
   }
 
   m_tile_hash.remove(tile_spec);
-}
-
-QcMapView *
-QcWmtsManager::create_map()
-{
-  return nullptr;
 }
 
 void
@@ -241,9 +234,9 @@ QcWmtsManager::update_tile_requests(QcMapView * map_view,
 
 // Fixme: name
 void
-QcWmtsManager::engine_tile_finished(const QcTileSpec & tile_spec, const QByteArray & bytes, const QString & format)
+QcWmtsManager::fetcher_tile_finished(const QcTileSpec & tile_spec, const QByteArray & bytes, const QString & format)
 {
-  qInfo() << "QcWmtsManager::engine_tile_finished";
+  qInfo() << "QcWmtsManager::fetcher_tile_finished";
   QcMapViewPointerSet map_views = m_tile_hash.value(tile_spec);
   remove_tile_spec(tile_spec);
   tile_cache()->insert(tile_spec, bytes, format); // , m_cache_hint
@@ -253,9 +246,9 @@ QcWmtsManager::engine_tile_finished(const QcTileSpec & tile_spec, const QByteArr
 }
 
 void
-QcWmtsManager::engine_tile_error(const QcTileSpec & tile_spec, const QString & error_string)
+QcWmtsManager::fetcher_tile_error(const QcTileSpec & tile_spec, const QString & error_string)
 {
-  qInfo() << "QcWmtsManager::engine_tile_finished";
+  qInfo() << "QcWmtsManager::fetcher_tile_finished";
   QcMapViewPointerSet map_views = m_tile_hash.value(tile_spec);
   remove_tile_spec(tile_spec);
 
@@ -288,23 +281,10 @@ QcWmtsManager::dump() const
   m_tile_size = tile_size;
   }
 
-  void QcWmtsManager::set_tile_version(int version)
-  {
-  if (m_tile_version != version) {
-  m_tile_version = version;
-  emit tile_version_changed();
-  }
-  }
-
   QSize
   QcWmtsManager::tile_size() const
   {
   return m_tile_size;
-  }
-
-  int QcWmtsManager::tile_version() const
-  {
-  return m_tile_version;
   }
 
   QcWmtsManager::CacheAreas

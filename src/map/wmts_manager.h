@@ -89,6 +89,13 @@ typedef QSet<QcMapView *> QcMapViewPointerSet;
 
 /**************************************************************************************************/
 
+/*! This class implements a WMTS Manager for a WTMS provide.
+ *
+ * It manages requests from several concurrent map views and dispatch
+ * them to the WTMS Tile Fetcher and store tile images in a cache.
+ *
+ * It notify the WTMS Request Manager when a tile is fetched or failed.
+ */
 class QC_EXPORT QcWmtsManager : public QObject
 {
   Q_OBJECT
@@ -105,7 +112,6 @@ class QC_EXPORT QcWmtsManager : public QObject
   explicit QcWmtsManager();
   virtual ~QcWmtsManager();
 
-  QcMapView * create_map();
   void release_map(QcMapView * map_view);
 
   QcWmtsTileFetcher * tile_fetcher();
@@ -120,12 +126,12 @@ class QC_EXPORT QcWmtsManager : public QObject
   void dump() const;
 
   // QSize tileSize() const;
-  // int tileVersion() const;
   // QcWmtsManager::CacheAreas cache_hint() const;
 
  private slots:
-  void engine_tile_finished(const QcTileSpec & tile_spec, const QByteArray & bytes, const QString & format);
-  void engine_tile_error(const QcTileSpec & tile_spec, const QString & error_string);
+  // Fixme: name
+  void fetcher_tile_finished(const QcTileSpec & tile_spec, const QByteArray & bytes, const QString & format);
+  void fetcher_tile_error(const QcTileSpec & tile_spec, const QString & error_string);
 
  signals:
   void tile_error(const QcTileSpec & tile_spec, const QString & error_string);
@@ -136,7 +142,6 @@ class QC_EXPORT QcWmtsManager : public QObject
   void set_tile_fetcher(QcWmtsTileFetcher * tile_fetcher);
   void set_tile_cache(QcFileTileCache * cache);
   // void set_tile_size(const QSize &tileSize);
-  // void set_tile_version(int version);
   // void set_cache_hint(QcWmtsManager::CacheAreas cacheHint);
 
  private:
@@ -148,7 +153,6 @@ class QC_EXPORT QcWmtsManager : public QObject
   QcFileTileCache * m_tile_cache;
   QcWmtsTileFetcher * m_tile_fetcher;
   // QSize m_tile_size;
-  // int m_tile_version;
   // QcWmtsManager::CacheAreas m_cache_hint;
 
   Q_DISABLE_COPY(QcWmtsManager);

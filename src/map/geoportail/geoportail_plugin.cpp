@@ -30,18 +30,6 @@
 
 /**************************************************************************************************/
 
-QcWmtsPlugin::QcWmtsPlugin(const QString & name, size_t number_of_levels, size_t tile_size)
-  : m_name(name),
-    m_tile_matrix_set(name, number_of_levels, tile_size),
-    m_wmts_manager()
-{
-}
-
-QcWmtsPlugin::~QcWmtsPlugin()
-{}
-
-/**************************************************************************************************/
-
 constexpr const char * PLUGIN_NAME = "geoportail";
 constexpr size_t NUMBER_OF_LEVELS = 20;
 constexpr size_t TILE_SIZE = 256;

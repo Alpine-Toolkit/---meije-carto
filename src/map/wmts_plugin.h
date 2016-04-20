@@ -28,31 +28,49 @@
 
 /**************************************************************************************************/
 
-#include <QDebug>
-
-#include "map/mosaic_painter.h"
-
-/**************************************************************************************************/
-
-QcMosaicPainter::QcMosaicPainter(const QcViewport & viewport)
-  : m_viewport(viewport)
-{
-  QObject::connect(&viewport, &QcViewport::viewport_changed,
-		   this, &QcMosaicPainter::viewport_changed);
-}
-
-QcMosaicPainter::~QcMosaicPainter()
-{}
-
-void
-QcMosaicPainter::viewport_changed()
-{
-  qInfo() << "QcMosaicPainter:.viewport_changed";
-}
+#ifndef __WMTS_PLUGIN_H__
+#define __WMTS_PLUGIN_H__
 
 /**************************************************************************************************/
 
-// #include "mosaic_painter.moc"
+#include <QObject>
+#include <QString>
+
+#include "map/tile_matrix_set.h"
+#include "map/wmts_manager.h"
+
+/**************************************************************************************************/
+
+// QC_BEGIN_NAMESPACE
+
+class QcWmtsPlugin : public QObject
+{
+  Q_OBJECT
+
+public:
+  QcWmtsPlugin(const QString & name, size_t number_of_levels, size_t tile_size);
+  ~QcWmtsPlugin();
+
+  QcTileMatrixSet & tile_matrix_set() { return m_tile_matrix_set; }
+
+  // Fixme: & or *
+  QcWmtsManager * wmts_manager() { return &m_wmts_manager; }
+
+  QcTileSpec create_tile_spec(int map_id, int level, int x, int y) const {
+    return QcTileSpec(m_name, map_id, level, x, y);
+  }
+
+private:
+  QString m_name;
+  QcTileMatrixSet m_tile_matrix_set;
+  QcWmtsManager m_wmts_manager;
+};
+
+// QC_END_NAMESPACE
+
+/**************************************************************************************************/
+
+#endif /* __WMTS_PLUGIN_H__ */
 
 /***************************************************************************************************
  *

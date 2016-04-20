@@ -37,45 +37,11 @@
 #include <QString>
 
 #include "geoportail_wmts_tile_fetcher.h"
-#include "map/tile_matrix_set.h"
-#include "map/wmts_manager.h"
-
-// #include "map/earth.h"
-// #include "map/viewport.h"
-// #include "map/mosaic_painter.h"
+#include "map/wmts_plugin.h"
 
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
-
-class QcWmtsPlugin : public QObject
-{
-  Q_OBJECT
-
-public:
-  QcWmtsPlugin(const QString & name, size_t number_of_levels, size_t tile_size);
-  ~QcWmtsPlugin();
-
-  QcTileMatrixSet & tile_matrix_set() {
-    return m_tile_matrix_set;
-  }
-
-  // Fixme: & or *
-  QcWmtsManager * wmts_manager() {
-    return &m_wmts_manager;
-  }
-
-  QcTileSpec create_tile_spec(int map_id, int level, int x, int y) const {
-    return QcTileSpec(m_name, 1, 16, 33885, 23658);
-  }
-
-private:
-  QString m_name;
-  QcTileMatrixSet m_tile_matrix_set;
-  QcWmtsManager m_wmts_manager;
-};
-
-/**************************************************************************************************/
 
 class QcGeoportailPlugin : public QcWmtsPlugin
 {

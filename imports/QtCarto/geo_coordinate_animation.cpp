@@ -94,8 +94,8 @@ coordinate_interpolator(const QGeoCoordinate & from, const QGeoCoordinate & to, 
 QVariant
 coordinate_shortest_interpolator(const QGeoCoordinate & _from, const QGeoCoordinate & _to, qreal progress)
 {
-  QcGeoCoordinateNormalisedMercator from = QcGeoCoordinateWGS84(_from.longitude(), _from.latitude()).normalised_mercator();
-  QcGeoCoordinateNormalisedMercator to = QcGeoCoordinateWGS84(_to.longitude(), _to.latitude()).normalised_mercator();
+  QcGeoCoordinateNormalisedWebMercator from = QcGeoCoordinateWGS84(_from.longitude(), _from.latitude()).normalised_web_mercator();
+  QcGeoCoordinateNormalisedWebMercator to = QcGeoCoordinateWGS84(_to.longitude(), _to.latitude()).normalised_web_mercator();
 
   double to_x = to.x();
   double to_y = to.y();
@@ -121,7 +121,7 @@ coordinate_shortest_interpolator(const QGeoCoordinate & _from, const QGeoCoordin
 
   double y = from_y + (to_y - from_y) * progress;
 
-  QcGeoCoordinateNormalisedMercator normalised(x, y);
+  QcGeoCoordinateNormalisedWebMercator normalised(x, y);
   QcGeoCoordinateWGS84 wgs84 = normalised.wgs84();
   QGeoCoordinate coordinate(wgs84.latitude(), wgs84.longitude());
   return QVariant::fromValue(coordinate);
@@ -130,8 +130,8 @@ coordinate_shortest_interpolator(const QGeoCoordinate & _from, const QGeoCoordin
 QVariant
 coordinate_west_interpolator(const QGeoCoordinate & _from, const QGeoCoordinate & _to, qreal progress)
 {
-  QcGeoCoordinateNormalisedMercator from = QcGeoCoordinateWGS84(_from.longitude(), _from.latitude()).normalised_mercator();
-  QcGeoCoordinateNormalisedMercator to = QcGeoCoordinateWGS84(_to.longitude(), _to.latitude()).normalised_mercator();
+  QcGeoCoordinateNormalisedWebMercator from = QcGeoCoordinateWGS84(_from.longitude(), _from.latitude()).normalised_web_mercator();
+  QcGeoCoordinateNormalisedWebMercator to = QcGeoCoordinateWGS84(_to.longitude(), _to.latitude()).normalised_web_mercator();
 
   double to_x = to.x();
   double to_y = to.y();
@@ -150,7 +150,7 @@ coordinate_west_interpolator(const QGeoCoordinate & _from, const QGeoCoordinate 
   while (x > 1.0)
     x -= 1.0;
 
-  QcGeoCoordinateNormalisedMercator normalised(x, y);
+  QcGeoCoordinateNormalisedWebMercator normalised(x, y);
   QcGeoCoordinateWGS84 wgs84 = normalised.wgs84();
   QGeoCoordinate coordinate(wgs84.latitude(), wgs84.longitude());
   return QVariant::fromValue(coordinate);
@@ -159,8 +159,8 @@ coordinate_west_interpolator(const QGeoCoordinate & _from, const QGeoCoordinate 
 QVariant
 coordinate_east_interpolator(const QGeoCoordinate & _from, const QGeoCoordinate & _to, qreal progress)
 {
-  QcGeoCoordinateNormalisedMercator from = QcGeoCoordinateWGS84(_from.longitude(), _from.latitude()).normalised_mercator();
-  QcGeoCoordinateNormalisedMercator to = QcGeoCoordinateWGS84(_to.longitude(), _to.latitude()).normalised_mercator();
+  QcGeoCoordinateNormalisedWebMercator from = QcGeoCoordinateWGS84(_from.longitude(), _from.latitude()).normalised_web_mercator();
+  QcGeoCoordinateNormalisedWebMercator to = QcGeoCoordinateWGS84(_to.longitude(), _to.latitude()).normalised_web_mercator();
 
   double to_x = to.x();
   double to_y = to.y();
@@ -179,7 +179,7 @@ coordinate_east_interpolator(const QGeoCoordinate & _from, const QGeoCoordinate 
   while (x < 0.0)
     x += 1.0;
 
-  QcGeoCoordinateNormalisedMercator normalised(x, y);
+  QcGeoCoordinateNormalisedWebMercator normalised(x, y);
   QcGeoCoordinateWGS84 wgs84 = normalised.wgs84();
   QGeoCoordinate coordinate(wgs84.latitude(), wgs84.longitude());
   return QVariant::fromValue(coordinate);

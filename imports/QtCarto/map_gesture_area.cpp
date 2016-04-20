@@ -669,12 +669,12 @@ QcMapGestureArea::handle_wheel_event(QWheelEvent * event)
   if (!m_map)
     return;
 
-  QGeoCoordinate wheel_geo_pos = m_map->item_position_to_coordinate(QVector2D(event->posF()), false);
-  QPointF pre_zoom_point = m_map->coordinate_to_item_position(wheel_geo_pos, false).toPointF();
+  QGeoCoordinate wheel_geo_pos = m_map->to_coordinate(QVector2D(event->posF()), false);
+  QPointF pre_zoom_point = m_map->from_coordinate(wheel_geo_pos, false).toPointF();
 
   double zoom_level_delta = event->angleDelta().y() * qreal(0.001);
   m_declarative_map->set_zoom_level(m_declarative_map->zoom_level() + zoom_level_delta);
-  QPointF post_zoom_point = m_map->coordinate_to_item_position(wheel_geo_pos, false).toPointF();
+  QPointF post_zoom_point = m_map->from_coordinate(wheel_geo_pos, false).toPointF();
 
   if (pre_zoom_point != post_zoom_point)
     {
@@ -682,7 +682,7 @@ QcMapGestureArea::handle_wheel_event(QWheelEvent * event)
       qreal dy = post_zoom_point.y() - pre_zoom_point.y();
       QPointF map_center_point(m_map->width() / 2.0 + dx, m_map->height() / 2.0  + dy);
 
-      QGeoCoordinate map_center_coordinate = m_map->item_position_to_coordinate(QVector2D(map_center_point), false);
+      QGeoCoordinate map_center_coordinate = m_map->to_coordinate(QVector2D(map_center_point), false);
       m_declarative_map->set_center(map_center_coordinate);
     }
   event->accept();
@@ -780,7 +780,7 @@ QcMapGestureArea::touch_point_state_machine()
     if (m_all_points.count() == 0) {
       m_touch_point_state = TouchPoints0;
     } else if (m_all_points.count() == 2) {
-      m_touch_center_coord = m_map->item_position_to_coordinate(QVector2D(m_scene_center), false);
+      m_touch_center_coord = m_map->to_coordinate(QVector2D(m_scene_center), false);
       start_two_touch_points();
       m_touch_point_state = TouchPoints2;
     }
@@ -789,7 +789,7 @@ QcMapGestureArea::touch_point_state_machine()
     if (m_all_points.count() == 0) {
       m_touch_point_state = TouchPoints0;
     } else if (m_all_points.count() == 1) {
-      m_touch_center_coord = m_map->item_position_to_coordinate(QVector2D(m_scene_center), false);
+      m_touch_center_coord = m_map->to_coordinate(QVector2D(m_scene_center), false);
       start_one_touch_point();
       m_touch_point_state = TouchPoints1;
     }
@@ -816,7 +816,7 @@ QcMapGestureArea::start_one_touch_point()
   m_scene_start_point1 = mapFromScene(m_all_points.at(0).scenePos());
   m_last_pos = m_scene_start_point1;
   m_last_pos_time.start();
-  QGeoCoordinate start_coord = m_map->item_position_to_coordinate(QVector2D(m_scene_start_point1), false);
+  QGeoCoordinate start_coord = m_map->to_coordinate(QVector2D(m_scene_start_point1), false);
   // ensures a smooth transition for panning
   m_start_coord.setLongitude(m_start_coord.longitude() + start_coord.longitude() -
                              m_touch_center_coord.longitude());
@@ -841,7 +841,7 @@ QcMapGestureArea::start_two_touch_points()
   QPointF start_pos = (m_scene_start_point1 + m_scene_start_point2) * 0.5;
   m_last_pos = start_pos;
   m_last_pos_time.start();
-  QGeoCoordinate start_coord = m_map->item_position_to_coordinate(QVector2D(start_pos), false);
+  QGeoCoordinate start_coord = m_map->to_coordinate(QVector2D(start_pos), false);
   m_start_coord.setLongitude(m_start_coord.longitude() + start_coord.longitude() -
                              m_touch_center_coord.longitude());
   m_start_coord.setLatitude(m_start_coord.latitude() + start_coord.latitude() -
@@ -1033,7 +1033,7 @@ QcMapGestureArea::pan_state_machine()
   case FlickInactive:
     if (can_start_pan()) {
       // Update startCoord_ to ensure smooth start for panning when going over startDragDistance
-      QGeoCoordinate new_start_coord = m_map->item_position_to_coordinate(QVector2D(m_scene_center), false);
+      QGeoCoordinate new_start_coord = m_map->to_coordinate(QVector2D(m_scene_center), false);
       m_start_coord.setLongitude(new_start_coord.longitude());
       m_start_coord.setLatitude(new_start_coord.latitude());
       m_declarative_map->setKeepMouseGrab(true);
@@ -1107,13 +1107,13 @@ void
 QcMapGestureArea::update_pan()
 {
   qInfo() << "QcMapGestureArea::update_pan";
-  QPointF start_point = m_map->coordinate_to_item_position(m_start_coord, false).toPointF();
+  QPointF start_point = m_map->from_coordinate(m_start_coord, false).toPointF();
   int dx = static_cast<int>(m_scene_center.x() - start_point.x());
   int dy = static_cast<int>(m_scene_center.y() - start_point.y());
   QPointF map_center_point;
   map_center_point.setY(m_map->height() / 2.0  - dy);
   map_center_point.setX(m_map->width() / 2.0 - dx);
-  QGeoCoordinate animation_start_coordinate = m_map->item_position_to_coordinate(QVector2D(map_center_point), false);
+  QGeoCoordinate animation_start_coordinate = m_map->to_coordinate(QVector2D(map_center_point), false);
   m_declarative_map->set_center(animation_start_coordinate);
 }
 

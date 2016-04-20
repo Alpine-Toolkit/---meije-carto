@@ -87,6 +87,14 @@
 
 // QC_BEGIN_NAMESPACE
 
+/*! This class implements a WMTS Tile Fetcher abstract class for WMTS
+ *  providers. It must be subclassed for each provider in order to
+ *  provide an implementation for the get_tile_image method.
+ *
+ * It manages a request queue, schedule requests and
+ * emit a signal when a request finishes or failes.
+ *
+ */
 class QC_EXPORT QcWmtsTileFetcher : public QObject
 {
   Q_OBJECT

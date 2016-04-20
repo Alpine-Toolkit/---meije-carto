@@ -15,10 +15,9 @@ include_directories(${Qt5Quick_PRIVATE_INCLUDE_DIRS})
 #
 
 set(qtcarto_files
+  declarative_map_item.cpp
   geo_coordinate_animation.cpp
   map_gesture_area.cpp
-  location_circle_material_shader.cpp
-  declarative_map_item.cpp
   qtcarto.cpp
 )
 add_library(qmlqtcartoplugin SHARED ${qtcarto_files})

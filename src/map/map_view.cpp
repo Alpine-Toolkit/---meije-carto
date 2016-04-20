@@ -34,24 +34,30 @@
 
 // QC_BEGIN_NAMESPACE
 
-QcMapView::QcMapView(QcWmtsManager * wmts_manager)
+QcMapView::QcMapView(QcWmtsPlugin * wmts_plugin)
   : QObject(),
-    m_wmts_manager(wmts_manager),
-    m_request_manager(nullptr)
+    m_plugin(wmts_plugin),
+    m_wmts_manager(wmts_plugin->wmts_manager()),
+    m_request_manager(nullptr), // initialised in ctor
+    m_viewport(nullptr), // initialised in ctor
+    m_map_scene(nullptr) // initialised in ctor
 {
-  m_request_manager = new QcWmtsRequestManager(this, wmts_manager);
+  m_request_manager = new QcWmtsRequestManager(this, m_wmts_manager);
+
+  // Fixme: need to pass fake state
+  QcGeoCoordinateNormalisedWebMercator coordinate_origin(0, 0);
+  QcTiledZoomLevel tiled_zoom_level(EQUATORIAL_PERIMETER, m_plugin->tile_matrix_set().tile_size(), 0); // map can have different tile size !
+  QcViewportState viewport_state(coordinate_origin, tiled_zoom_level, 0);
+  QSize viewport_size(0, 0);
+  m_viewport = new QcViewport(viewport_state, viewport_size);
+
+  m_map_scene = new QcMapScene(m_viewport, m_plugin->tile_matrix_set()); // parent
 }
 
 QcMapView::~QcMapView()
 {
   if (m_request_manager)
     delete m_request_manager;
-}
-
-QcWmtsRequestManager *
-QcMapView::request_manager()
-{
-  return m_request_manager;
 }
 
 void

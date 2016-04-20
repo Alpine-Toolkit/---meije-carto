@@ -1,5 +1,3 @@
-// -*- mode: c++ -*-
-
 /***************************************************************************************************
 **
 ** $QTCARTO_BEGIN_LICENSE:GPL3$
@@ -28,40 +26,23 @@
 
 /**************************************************************************************************/
 
-#ifndef __MOSAIC_PAINTER_H__
-#define __MOSAIC_PAINTER_H__
+#include "wmts_plugin.h"
 
 /**************************************************************************************************/
 
-#include <QObject>
-
-#include "qtcarto_global.h"
-#include "map/viewport.h"
-
-/**************************************************************************************************/
-
-// QC_BEGIN_NAMESPACE
-
-/**************************************************************************************************/
-
-class QC_EXPORT QcMosaicPainter : public QObject
+QcWmtsPlugin::QcWmtsPlugin(const QString & name, size_t number_of_levels, size_t tile_size)
+  : m_name(name),
+    m_tile_matrix_set(name, number_of_levels, tile_size),
+    m_wmts_manager()
 {
-  Q_OBJECT
+}
 
- public:
-  QcMosaicPainter(const QcViewport & viewport);
-  ~QcMosaicPainter();
-
- public slots:
-  void viewport_changed();
-
- private:
-  const QcViewport & m_viewport;
-};
+QcWmtsPlugin::~QcWmtsPlugin()
+{}
 
 /**************************************************************************************************/
 
-#endif /* __MOSAIC_PAINTER_H__ */
+// #include "wmts_plugin.moc"
 
 /***************************************************************************************************
  *

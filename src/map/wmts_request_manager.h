@@ -87,15 +87,13 @@
 
 /**************************************************************************************************/
 
-// class RetryFuture;
-
 // Represents a tile that needs to be retried after a certain period of time
-class RetryFuture : public QObject
+class QcRetryFuture : public QObject
 {
   Q_OBJECT
 
  public:
-  RetryFuture(const QcTileSpec & tile_spec, QcMapView * map_view, QcWmtsManager * wmts_manager);
+  QcRetryFuture(const QcTileSpec & tile_spec, QcMapView * map_view, QcWmtsManager * wmts_manager);
 
  public slots:
   void retry();
@@ -106,6 +104,11 @@ class RetryFuture : public QObject
   QPointer<QcWmtsManager> m_wmts_manager;
 };
 
+/*! This class implements a WMTS Request Manager for a map view.
+ *
+ * It works as a proxy between the map view and WTMS Request Manager.
+ *
+ */
 class QcWmtsRequestManager : public QObject
 {
   Q_OBJECT
@@ -125,7 +128,7 @@ class QcWmtsRequestManager : public QObject
   QcMapView * m_map_view;
   QPointer<QcWmtsManager> m_wmts_manager;
   QHash<QcTileSpec, int> m_retries;
-  QHash<QcTileSpec, QSharedPointer<RetryFuture> > m_futures;
+  QHash<QcTileSpec, QSharedPointer<QcRetryFuture> > m_futures;
   QcTileSpecSet m_requested;
 
   Q_DISABLE_COPY(QcWmtsRequestManager)

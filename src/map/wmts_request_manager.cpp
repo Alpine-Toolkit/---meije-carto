@@ -69,13 +69,15 @@
 
 /**************************************************************************************************/
 
-RetryFuture::RetryFuture(const QcTileSpec & tile_spec, QcMapView * map_view, QcWmtsManager * wmts_manager)
+QcRetryFuture::QcRetryFuture(const QcTileSpec & tile_spec, QcMapView * map_view, QcWmtsManager * wmts_manager)
   : QObject(),
-    m_tile_spec(tile_spec), m_map_view(map_view), m_wmts_manager(wmts_manager)
+    m_tile_spec(tile_spec),
+    m_map_view(map_view),
+    m_wmts_manager(wmts_manager)
 {}
 
 void
-RetryFuture::retry()
+QcRetryFuture::retry()
 {
   if (!m_wmts_manager.isNull()) {
     QcTileSpecSet request_tiles = {m_tile_spec};
@@ -94,6 +96,15 @@ QcWmtsRequestManager::QcWmtsRequestManager(QcMapView * map_view, QcWmtsManager *
 QcWmtsRequestManager::~QcWmtsRequestManager()
 {}
 
+/*! Request a new tile sets.
+ *
+ *  It performs 3 actions:
+ *   - compute the canceled tiles sets
+ *   - ask the WMTS Manager for cached tiles
+ *   - update the tile request to the WTMS Manager
+ *
+ *  It returns cached tile textures.
+ */
 QList<QSharedPointer<QcTileTexture> >
 QcWmtsRequestManager::request_tiles(const QcTileSpecSet & tile_specs)
 {
@@ -137,6 +148,9 @@ QcWmtsRequestManager::request_tiles(const QcTileSpecSet & tile_specs)
   return cached_textures;
 }
 
+/*! Notify the map view that a tile is fetched.
+ *
+ */
 void
 QcWmtsRequestManager::tile_fetched(const QcTileSpec & tile_spec)
 {
@@ -147,6 +161,9 @@ QcWmtsRequestManager::tile_fetched(const QcTileSpec & tile_spec)
   m_futures.remove(tile_spec);
 }
 
+/*! Retry to fetch an errored tile request.
+ *
+ */
 void
 QcWmtsRequestManager::tile_error(const QcTileSpec & tile_spec, const QString & error_string)
 {
@@ -166,7 +183,7 @@ QcWmtsRequestManager::tile_error(const QcTileSpec & tile_spec, const QString & e
       qDebug() << "Retry x" << count << tile_spec;
       // Exponential time backoff when retrying
       int delay = (1 << count) * 500;
-      QSharedPointer<RetryFuture> future(new RetryFuture(tile_spec, m_map_view, m_wmts_manager));
+      QSharedPointer<QcRetryFuture> future(new QcRetryFuture(tile_spec, m_map_view, m_wmts_manager));
       m_futures.insert(tile_spec, future);
       QTimer::singleShot(delay, future.data(), SLOT(retry()));
       // Passing .data() to singleShot is ok -- Qt will clean up the connection if the target qobject is deleted
@@ -174,6 +191,9 @@ QcWmtsRequestManager::tile_error(const QcTileSpec & tile_spec, const QString & e
   }
 }
 
+/*! Get the tile texture from the WTMS Manager cache.
+ *
+ */
 QSharedPointer<QcTileTexture>
 QcWmtsRequestManager::tile_texture(const QcTileSpec & tile_spec)
 {

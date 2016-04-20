@@ -32,7 +32,7 @@
 /**************************************************************************************************/
 
 #include "map/map_view.h"
-#include "map/wmts_request_manager.h"
+#include "map/wmts_plugin.h"
 
 /***************************************************************************************************/
 
@@ -87,12 +87,13 @@ class FakeWmtsTileFetcher : public QcWmtsTileFetcher
 
 void TestQcWmtsRequestManager::constructor()
 {
-  QcWmtsManager wmts_manager;
+  QcWmtsPlugin wmts_plugin("foo", 20, 256);
+  QcWmtsManager * wmts_manager = wmts_plugin.wmts_manager();
   FakeWmtsTileFetcher tile_fetcher;
-  wmts_manager.set_tile_fetcher(&tile_fetcher);
-  wmts_manager.tile_cache()->clear_all();
+  wmts_manager->set_tile_fetcher(&tile_fetcher);
+  wmts_manager->tile_cache()->clear_all();
 
-  QcMapView map_view(&wmts_manager);
+  QcMapView map_view(&wmts_plugin);
   QcWmtsRequestManager * request_manager = map_view.request_manager();
 
   QSet<QcTileSpec> tile_specs;
@@ -100,19 +101,19 @@ void TestQcWmtsRequestManager::constructor()
   QcTileSpec tile_spec1("geoportail", 1, 16, 1, 1);
   tile_specs = {tile_spec1};
   request_manager->request_tiles(tile_specs);
-  wmts_manager.dump();
+  wmts_manager->dump();
   QTest::qWait(1);
 
   QcTileSpec tile_spec2("geoportail", 1, 16, 2, 2);
   tile_specs = {tile_spec1, tile_spec2};
   request_manager->request_tiles(tile_specs);
-  wmts_manager.dump();
+  wmts_manager->dump();
   QTest::qWait(1);
 
   QcTileSpec tile_spec3("geoportail", 1, 16, 3, 3);
   tile_specs = {tile_spec2, tile_spec3};
   request_manager->request_tiles(tile_specs);
-  wmts_manager.dump();
+  wmts_manager->dump();
   QTest::qWait(1);
 }
 

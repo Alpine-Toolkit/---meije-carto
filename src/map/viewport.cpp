@@ -296,7 +296,7 @@ QcViewport::update_area()
   // cache them ?
   QcVectorDouble viewport_size = QcVectorDouble(m_viewport_size.width(), m_viewport_size.height());
   QcVectorDouble new_area_size = viewport_size * zoom_factor(); // [px] * [m/px]
-  // mercator is centered
+  // Use pseudo mercator to match the origin to the top-left corner
   QcVectorDouble center = pseudo_web_mercator().vector();
   qInfo() << "viewport_size" << viewport_size;
   qInfo() << "zoom_factor" << zoom_factor() << "m/px";

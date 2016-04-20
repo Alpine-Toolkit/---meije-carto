@@ -33,12 +33,14 @@
 
 /**************************************************************************************************/
 
+#include <QColor>
 #include <QGeoCoordinate>
 #include <QQuickItem>
 
 /**************************************************************************************************/
 
 #include "map/geoportail/geoportail_plugin.h"
+#include "map/map_view.h"
 #include "map/viewport.h"
 #include "map_gesture_area.h"
 
@@ -49,16 +51,20 @@
 class QcMapItem : public QQuickItem
 {
   Q_OBJECT
-
+  Q_INTERFACES(QQmlParserStatus)
   Q_PROPERTY(int zoom_level READ zoom_level WRITE set_zoom_level NOTIFY zoom_levelChanged)
   Q_PROPERTY(QGeoCoordinate center READ center WRITE set_center NOTIFY centerChanged)
-
-  // Q_PROPERTY(QcMapGestureArea * gesture READ gesture CONSTANT)
-  // Q_INTERFACES(QQmlParserStatus)
+  Q_PROPERTY(QcMapGestureArea * gesture READ gesture CONSTANT)
+  Q_PROPERTY(QColor color READ color WRITE set_color NOTIFY colorChanged)
 
 public:
   QcMapItem(QQuickItem *parent = 0);
   ~QcMapItem();
+
+  QcMapGestureArea * gesture();
+
+  void set_color(const QColor & color);
+  QColor color() const;
 
   void set_zoom_level(int zoom_level);
   int zoom_level() const;
@@ -66,46 +72,44 @@ public:
   void set_center(const QGeoCoordinate & center);
   QGeoCoordinate center() const;
 
-  Q_INVOKABLE QGeoCoordinate to_coordinate(const QPointF & position, bool clip_to_view_port = true) const;
-  Q_INVOKABLE QPointF from_coordinate(const QGeoCoordinate & coordinate, bool clip_to_view_port = true) const;
-
   // QDoubleVector2D / QVector2D use float ...
-  QGeoCoordinate item_position_to_coordinate(const QVector2D & pos, bool clip_to_viewport = true) const;
-  QVector2D coordinate_to_item_position(const QGeoCoordinate & coordinate, bool clip_to_viewport = true) const;
-
-  Q_INVOKABLE void prefetch_data(); // optional hint for prefetch
-
-  QcMapGestureArea * gesture();
+  Q_INVOKABLE QGeoCoordinate to_coordinate(const QVector2D & position, bool clip_to_viewport = true) const;
+  Q_INVOKABLE QVector2D from_coordinate(const QGeoCoordinate & coordinate, bool clip_to_viewport = true) const;
 
   Q_INVOKABLE void pan(int dx, int dy);
+
+  Q_INVOKABLE void prefetch_data(); // optional hint for prefetch
 
 signals:
   void zoom_levelChanged(int zoom_level);
   void centerChanged(const QGeoCoordinate & coordinate);
+  void colorChanged(const QColor & color);
 
 protected:
-  void mousePressEvent(QMouseEvent * event) Q_DECL_OVERRIDE ;
   void mouseMoveEvent(QMouseEvent * event) Q_DECL_OVERRIDE ;
+  void mousePressEvent(QMouseEvent * event) Q_DECL_OVERRIDE ;
   void mouseReleaseEvent(QMouseEvent * event) Q_DECL_OVERRIDE ;
   void mouseUngrabEvent() Q_DECL_OVERRIDE ;
-  void touchUngrabEvent() Q_DECL_OVERRIDE;
   void touchEvent(QTouchEvent * event) Q_DECL_OVERRIDE ;
+  void touchUngrabEvent() Q_DECL_OVERRIDE;
   void wheelEvent(QWheelEvent * event) Q_DECL_OVERRIDE ;
 
   /* bool sendMouseEvent(QMouseEvent *event); */
   /* bool sendTouchEvent(QTouchEvent *event); */
 
-  void componentComplete() Q_DECL_OVERRIDE;
-  QSGNode * updatePaintNode(QSGNode *, UpdatePaintNodeData *);
-  void geometryChanged(const QRectF & new_geometry, const QRectF & old_geometry);
+  void componentComplete() Q_DECL_OVERRIDE ;
+  void geometryChanged(const QRectF & new_geometry, const QRectF & old_geometry) Q_DECL_OVERRIDE ;
+  QSGNode * updatePaintNode(QSGNode * old_node, UpdatePaintNodeData *) Q_DECL_OVERRIDE ;
 
 private:
     bool is_interactive();
 
 private:
-  QcWmtsPlugin * m_plugin;
-  QcViewport * m_viewport;
+  QColor m_color;
   QcMapGestureArea * m_gesture_area;
+  QcWmtsPlugin * m_plugin;
+  QcMapView * m_map_view;
+  QcViewport * m_viewport; // ???
 };
 
 // QC_END_NAMESPACE
