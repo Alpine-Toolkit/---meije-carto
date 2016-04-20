@@ -89,29 +89,21 @@ class QC_EXPORT QcGeoSexagesimalAngle
     return !operator==(other);
   }
 
-  inline int degrees() const {
-    return m_degrees;
-  }
+  inline int degrees() const { return m_degrees; }
   inline void set_degrees(int degrees) {
     if (is_valid_degrees(degrees))
       m_degrees = degrees;
   }
   void set_degrees(double degrees);
 
-  inline int minutes() const {
-      return m_degrees;
-  }
+  inline int minutes() const { return m_degrees; }
   inline void set_minutes(int minutes) {
     if (is_valid_minutes(minutes))
       m_minutes = minutes;
   }
 
-  inline double seconds() const {
-    return m_degrees;
-  }
-  inline void set_seconds(double seconds) {
-    m_seconds = seconds;
-  }
+  inline double seconds() const { return m_degrees; }
+  inline void set_seconds(double seconds) { m_seconds = seconds; }
 
   double decimal() const;
 
@@ -217,7 +209,6 @@ class QC_EXPORT QcGeoCoordinateWGS84 : public QcGeoCoordinate
   };
   */
 
-
   static constexpr double westward_longitude = -180.;
   static constexpr double eastward_longitude =  180.;
 
@@ -261,36 +252,20 @@ class QC_EXPORT QcGeoCoordinateWGS84 : public QcGeoCoordinate
 
   /* bool isValid() const; */
 
-  inline double coordinate1() const {
-    return m_longitude;
-  }
-  inline void set_coordinate1(double value) {
-    m_longitude = value;
-  }
+  inline double coordinate1() const { return m_longitude; }
+  inline void set_coordinate1(double value) { m_longitude = value; }
 
-  inline double coordinate2() const {
-    return m_latitude;
-  }
-  inline void set_coordinate2(double value) {
-    m_latitude = value;
-  }
+  inline double coordinate2() const { return m_latitude; }
+  inline void set_coordinate2(double value) { m_latitude = value; }
 
-  inline void set_longitude(double longitude) {
-    m_longitude = longitude;
-  }
-  inline double longitude() const {
-    return m_longitude;
-  }
+  inline void set_longitude(double longitude) { m_longitude = longitude; }
+  inline double longitude() const { return m_longitude; }
   inline QcGeoSexagesimalAngle sexagesimal_longitude() const {
     return QcGeoSexagesimalAngle(m_longitude);
   }
 
-  inline void set_latitude(double latitude) {
-    m_latitude = latitude;
-  }
-  inline double latitude() const {
-    return m_latitude;
-  }
+  inline void set_latitude(double latitude) { m_latitude = latitude; }
+  inline double latitude() const { return m_latitude; }
   inline QcGeoSexagesimalAngle sexagesimal_latitude() const {
     return QcGeoSexagesimalAngle(m_latitude);
   }
@@ -332,7 +307,6 @@ class QC_EXPORT QcGeoCoordinateWebMercator : public QcGeoCoordinate
   /* Q_PROPERTY(bool isValid READ isValid) */
 
  public:
-
   inline const char *srid() {
     return "epsg:3857";
   };
@@ -375,7 +349,6 @@ class QC_EXPORT QcGeoCoordinateWebMercator : public QcGeoCoordinate
   }
 
  public:
-
   QcGeoCoordinateWebMercator();
   QcGeoCoordinateWebMercator(double x, double y);
   QcGeoCoordinateWebMercator(const QcGeoCoordinateWebMercator & other);
@@ -388,33 +361,17 @@ class QC_EXPORT QcGeoCoordinateWebMercator : public QcGeoCoordinate
     return !operator==(other);
   }
 
-  inline double coordinate1() const {
-    return m_x;
-  }
-  inline void set_coordinate1(double value) {
-    m_x = value;
-  }
+  inline double coordinate1() const { return m_x; }
+  inline void set_coordinate1(double value) { m_x = value; }
 
-  inline double coordinate2() const {
-    return m_y;
-  }
-  inline void set_coordinate2(double value) {
-    m_y = value;
-  }
+  inline double coordinate2() const { return m_y; }
+  inline void set_coordinate2(double value) { m_y = value; }
 
-  inline void set_x(double x) {
-    m_x = x;
-  }
-  inline double x() const {
-    return m_x;
-  }
+  inline void set_x(double x) { m_x = x; }
+  inline double x() const { return m_x; }
 
-  inline void set_y(double y) {
-    m_y = y;
-  }
-  inline double y() const {
-    return m_y;
-  }
+  inline void set_y(double y) { m_y = y; }
+  inline double y() const { return m_y; }
 
   QcGeoCoordinateWGS84 wgs84() const;
   QcGeoCoordinateNormalisedWebMercator normalised_web_mercator() const;
@@ -455,7 +412,6 @@ class QC_EXPORT QcGeoCoordinateNormalisedWebMercator : public QcGeoCoordinate
   /* Q_PROPERTY(bool isValid READ isValid) */
 
  public:
-
   inline const char *srid() {
     return "epsg:none";
   };
@@ -477,7 +433,6 @@ class QC_EXPORT QcGeoCoordinateNormalisedWebMercator : public QcGeoCoordinate
   }
 
  public:
-
   QcGeoCoordinateNormalisedWebMercator();
   QcGeoCoordinateNormalisedWebMercator(double x, double y);
   QcGeoCoordinateNormalisedWebMercator(const QcGeoCoordinateNormalisedWebMercator & other);
@@ -490,33 +445,17 @@ class QC_EXPORT QcGeoCoordinateNormalisedWebMercator : public QcGeoCoordinate
     return !operator==(other);
   }
 
-  inline double coordinate1() const {
-    return m_x;
-  }
-  inline void set_coordinate1(double value) {
-    m_x = value;
-  }
+  inline double coordinate1() const { return m_x; }
+  inline void set_coordinate1(double value) { m_x = value; }
 
-  inline double coordinate2() const {
-    return m_y;
-  }
-  inline void set_coordinate2(double value) {
-    m_y = value;
-  }
+  inline double coordinate2() const { return m_y; }
+  inline void set_coordinate2(double value) { m_y = value; }
 
-  inline void set_x(double x) {
-    m_x = x;
-  }
-  inline double x() const {
-    return m_x;
-  }
+  inline void set_x(double x) { m_x = x; }
+  inline double x() const { return m_x; }
 
-  inline void set_y(double y) {
-    m_y = y;
-  }
-  inline double y() const {
-    return m_y;
-  }
+  inline void set_y(double y) { m_y = y; }
+  inline double y() const { return m_y; }
 
   QcGeoCoordinateWebMercator web_mercator() const;
   QcGeoCoordinateWGS84 wgs84() const;
@@ -559,12 +498,8 @@ class QC_EXPORT QcElevation
     return qFuzzyCompare(m_elevation, other.m_elevation);
   }
 
-  double elevation() const {
-    return m_elevation;
-  }
-  void set_elevation(double elevation) {
-    m_elevation = elevation;
-  }
+  double elevation() const { return m_elevation; }
+  void set_elevation(double elevation) { m_elevation = elevation; }
 
  private:
   double m_elevation;
