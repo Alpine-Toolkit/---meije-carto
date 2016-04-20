@@ -164,15 +164,15 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
 
   const QcPolygon & polygon = m_viewport->polygon();
   const QcInterval2DDouble & interval = polygon.interval();
-  qInfo() << "Normalised Mercator polygon interval [m]"
-          << "[" << (int) interval.x().inf() << ", " << (int) interval.x().sup() << "]"
-          << "x"
-          << "[" << (int) interval.y().inf() << ", " << (int) interval.y().sup() << "]";
-  QcTiledPolygon tiled_polygon = polygon.intersec_with_grid(tile_length_m);
-  for (const QcTiledPolygonRun & run:  tiled_polygon.runs()) {
-    const QcIntervalInt & run_interval = run.interval();
-    qInfo() << "Run " << run.y() << " [" << run_interval.inf() << ", " << run_interval.sup() << "]";
-  }
+  // qInfo() << "Normalised Mercator polygon interval [m]"
+  //         << "[" << (int) interval.x().inf() << ", " << (int) interval.x().sup() << "]"
+  //         << "x"
+  //         << "[" << (int) interval.y().inf() << ", " << (int) interval.y().sup() << "]";
+  // QcTiledPolygon tiled_polygon = polygon.intersec_with_grid(tile_length_m);
+  // for (const QcTiledPolygonRun & run:  tiled_polygon.runs()) {
+  //   const QcIntervalInt & run_interval = run.interval();
+  //   qInfo() << "Run " << run.y() << " [" << run_interval.inf() << ", " << run_interval.sup() << "]";
+  // }
 
   QcGeoCoordinateWebMercator mercator_coordinate = m_viewport->web_mercator();
   QcGeoCoordinateNormalisedWebMercator normalised_mercator_coordinate = m_viewport->normalised_web_mercator();

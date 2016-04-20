@@ -65,12 +65,14 @@ class QC_EXPORT QcMapView : public QObject
 
   void update_tile(const QcTileSpec & tile_spec);
 
+  QcMapScene * map_scene() { return m_map_scene; };
   QSGNode * update_scene_graph(QSGNode *old_node, QQuickWindow *window)
   {
     return m_map_scene->update_scene_graph(old_node, window);
   }
 
-  QcMapScene * map_scene() { return m_map_scene; };
+ public slots:
+  void update_scene();
 
  private:
   QcWmtsPlugin * m_plugin; // could use several plugins !
