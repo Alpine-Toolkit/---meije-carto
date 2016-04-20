@@ -66,29 +66,29 @@ void TestQcGeoCoordinateWGS84::constructor()
   QVERIFY(wgs84_coordinate2.longitude() == longitude);
   QVERIFY(wgs84_coordinate2.latitude() == latitude);
 
-  QcGeoCoordinateMercator mercator_coordinate1 = wgs84_coordinate1.mercator();
-  QVERIFY(abs(mercator_coordinate1.x() - x) < 1e-1);
-  QVERIFY(abs(mercator_coordinate1.y() - y) < 1e-1);
-  QVERIFY(mercator_coordinate1.wgs84() == wgs84_coordinate1);
+  QcGeoCoordinateWebMercator web_mercator_coordinate1 = wgs84_coordinate1.web_mercator();
+  QVERIFY(abs(web_mercator_coordinate1.x() - x) < 1e-1);
+  QVERIFY(abs(web_mercator_coordinate1.y() - y) < 1e-1);
+  QVERIFY(web_mercator_coordinate1.wgs84() == wgs84_coordinate1);
   // qInfo() << wgs84_coordinate1;
-  // qInfo() << mercator_coordinate1;
+  // qInfo() << web_mercator_coordinate1;
   // std::cout.precision(10);
-  // std::cout << mercator_coordinate1.x() << " " << mercator_coordinate1.y() << std::endl;
-  // QVERIFY(qFuzzyCompare(mercator_coordinate1.x(), x));
-  // QVERIFY(qFuzzyCompare(mercator_coordinate1.y(), y));
+  // std::cout << web_mercator_coordinate1.x() << " " << web_mercator_coordinate1.y() << std::endl;
+  // QVERIFY(qFuzzyCompare(web_mercator_coordinate1.x(), x));
+  // QVERIFY(qFuzzyCompare(web_mercator_coordinate1.y(), y));
 
-  QcGeoCoordinateMercator mercator_coordinate2;
-  wgs84_coordinate1.transform(mercator_coordinate2);
-  QVERIFY(mercator_coordinate1 == mercator_coordinate2);
-  // std::cout << mercator_coordinate2.x() << " " << mercator_coordinate2.y() << std::endl;
-  // QVERIFY(qFuzzyCompare(mercator_coordinate1.x(), mercator_coordinate2.x()));
-  // QVERIFY(qFuzzyCompare(mercator_coordinate1.y(), mercator_coordinate2.y()));
+  QcGeoCoordinateWebMercator web_mercator_coordinate2;
+  wgs84_coordinate1.transform(web_mercator_coordinate2);
+  QVERIFY(web_mercator_coordinate1 == web_mercator_coordinate2);
+  // std::cout << web_mercator_coordinate2.x() << " " << web_mercator_coordinate2.y() << std::endl;
+  // QVERIFY(qFuzzyCompare(web_mercator_coordinate1.x(), web_mercator_coordinate2.x()));
+  // QVERIFY(qFuzzyCompare(web_mercator_coordinate1.y(), web_mercator_coordinate2.y()));
 
-  QcGeoCoordinateNormalisedMercator normalised_coordinate1 = wgs84_coordinate1.normalised_mercator();
-  QcGeoCoordinateNormalisedMercator normalised_coordinate2 = mercator_coordinate1.normalised_mercator();
+  QcGeoCoordinateNormalisedWebMercator normalised_coordinate1 = wgs84_coordinate1.normalised_web_mercator();
+  QcGeoCoordinateNormalisedWebMercator normalised_coordinate2 = web_mercator_coordinate1.normalised_web_mercator();
   QVERIFY(normalised_coordinate1 == normalised_coordinate2);
   QVERIFY(normalised_coordinate2.wgs84() == wgs84_coordinate1);
-  QVERIFY(normalised_coordinate2.mercator() == mercator_coordinate1);
+  QVERIFY(normalised_coordinate2.web_mercator() == web_mercator_coordinate1);
   // std::cout << normalised_coordinate1.x() << " " << normalised_coordinate1.y() << std::endl;
   // std::cout << normalised_coordinate2.x() << " " << normalised_coordinate2.y() << std::endl;
 }

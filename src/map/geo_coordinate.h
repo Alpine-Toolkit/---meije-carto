@@ -56,8 +56,8 @@
 class QDebug;
 class QDataStream;
 
-class QcGeoCoordinateMercator;
-class QcGeoCoordinateNormalisedMercator;
+class QcGeoCoordinateWebMercator;
+class QcGeoCoordinateNormalisedWebMercator;
 
 /**************************************************************************************************/
 
@@ -295,8 +295,8 @@ class QC_EXPORT QcGeoCoordinateWGS84 : public QcGeoCoordinate
     return QcGeoSexagesimalAngle(m_latitude);
   }
 
-  QcGeoCoordinateMercator mercator() const;
-  QcGeoCoordinateNormalisedMercator normalised_mercator() const;
+  QcGeoCoordinateWebMercator web_mercator() const;
+  QcGeoCoordinateNormalisedWebMercator normalised_web_mercator() const;
 
   Q_INVOKABLE double distance_to(const QcGeoCoordinateWGS84 & other) const;
   Q_INVOKABLE double azimuth_to(const QcGeoCoordinateWGS84 & other) const;
@@ -323,7 +323,7 @@ QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcGeoCoordinateWGS84 & c
 
 /**************************************************************************************************/
 
-class QC_EXPORT QcGeoCoordinateMercator : public QcGeoCoordinate
+class QC_EXPORT QcGeoCoordinateWebMercator : public QcGeoCoordinate
 {
   Q_GADGET;
 
@@ -376,15 +376,15 @@ class QC_EXPORT QcGeoCoordinateMercator : public QcGeoCoordinate
 
  public:
 
-  QcGeoCoordinateMercator();
-  QcGeoCoordinateMercator(double x, double y);
-  QcGeoCoordinateMercator(const QcGeoCoordinateMercator & other);
-  ~QcGeoCoordinateMercator();
+  QcGeoCoordinateWebMercator();
+  QcGeoCoordinateWebMercator(double x, double y);
+  QcGeoCoordinateWebMercator(const QcGeoCoordinateWebMercator & other);
+  ~QcGeoCoordinateWebMercator();
 
-  QcGeoCoordinateMercator & operator=(const QcGeoCoordinateMercator & other);
+  QcGeoCoordinateWebMercator & operator=(const QcGeoCoordinateWebMercator & other);
 
-  bool operator==(const QcGeoCoordinateMercator & other) const;
-  inline bool operator!=(const QcGeoCoordinateMercator & other) const {
+  bool operator==(const QcGeoCoordinateWebMercator & other) const;
+  inline bool operator!=(const QcGeoCoordinateWebMercator & other) const {
     return !operator==(other);
   }
 
@@ -417,7 +417,7 @@ class QC_EXPORT QcGeoCoordinateMercator : public QcGeoCoordinate
   }
 
   QcGeoCoordinateWGS84 wgs84() const;
-  QcGeoCoordinateNormalisedMercator normalised_mercator() const;
+  QcGeoCoordinateNormalisedWebMercator normalised_web_mercator() const;
 
   inline QcVectorDouble vector() const {
     return QcVectorDouble(m_x, m_y);
@@ -428,25 +428,25 @@ class QC_EXPORT QcGeoCoordinateMercator : public QcGeoCoordinate
   double m_y;
 };
 
-// Q_DECLARE_TYPEINFO(QcGeoCoordinateMercator, Q_MOVABLE_TYPE);
+// Q_DECLARE_TYPEINFO(QcGeoCoordinateWebMercator, Q_MOVABLE_TYPE);
 
 #ifndef QT_NO_DEBUG_STREAM
-QC_EXPORT QDebug operator<<(QDebug debug, const QcGeoCoordinateMercator & coordinate);
+QC_EXPORT QDebug operator<<(QDebug debug, const QcGeoCoordinateWebMercator & coordinate);
 #endif
 
 #ifndef QT_NO_DATASTREAM
-QC_EXPORT QDataStream &operator<<(QDataStream & stream, const QcGeoCoordinateMercator & coordinate);
-QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcGeoCoordinateMercator & coordinate);
+QC_EXPORT QDataStream &operator<<(QDataStream & stream, const QcGeoCoordinateWebMercator & coordinate);
+QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcGeoCoordinateWebMercator & coordinate);
 #endif
 
 /**************************************************************************************************/
 
 /*
- * Normalised Mercator coordinate lies in [0, 1] interval in the web mercator rest frame.
+ * Normalised WebMercator coordinate lies in [0, 1] interval in the web mercator rest frame.
  * This normalised coordinate can be converted to a matrix index by multiplying by 2^level.
  *
  */
-class QC_EXPORT QcGeoCoordinateNormalisedMercator : public QcGeoCoordinate
+class QC_EXPORT QcGeoCoordinateNormalisedWebMercator : public QcGeoCoordinate
 {
   Q_GADGET;
 
@@ -478,15 +478,15 @@ class QC_EXPORT QcGeoCoordinateNormalisedMercator : public QcGeoCoordinate
 
  public:
 
-  QcGeoCoordinateNormalisedMercator();
-  QcGeoCoordinateNormalisedMercator(double x, double y);
-  QcGeoCoordinateNormalisedMercator(const QcGeoCoordinateNormalisedMercator & other);
-  ~QcGeoCoordinateNormalisedMercator();
+  QcGeoCoordinateNormalisedWebMercator();
+  QcGeoCoordinateNormalisedWebMercator(double x, double y);
+  QcGeoCoordinateNormalisedWebMercator(const QcGeoCoordinateNormalisedWebMercator & other);
+  ~QcGeoCoordinateNormalisedWebMercator();
 
-  QcGeoCoordinateNormalisedMercator & operator=(const QcGeoCoordinateNormalisedMercator & other);
+  QcGeoCoordinateNormalisedWebMercator & operator=(const QcGeoCoordinateNormalisedWebMercator & other);
 
-  bool operator==(const QcGeoCoordinateNormalisedMercator & other) const;
-  inline bool operator!=(const QcGeoCoordinateNormalisedMercator & other) const {
+  bool operator==(const QcGeoCoordinateNormalisedWebMercator & other) const;
+  inline bool operator!=(const QcGeoCoordinateNormalisedWebMercator & other) const {
     return !operator==(other);
   }
 
@@ -518,7 +518,7 @@ class QC_EXPORT QcGeoCoordinateNormalisedMercator : public QcGeoCoordinate
     return m_y;
   }
 
-  QcGeoCoordinateMercator mercator() const;
+  QcGeoCoordinateWebMercator web_mercator() const;
   QcGeoCoordinateWGS84 wgs84() const;
 
   inline QcVectorDouble vector() const {
@@ -530,15 +530,15 @@ class QC_EXPORT QcGeoCoordinateNormalisedMercator : public QcGeoCoordinate
   double m_y;
 };
 
-// Q_DECLARE_TYPEINFO(QcGeoCoordinateNormalisedMercator, Q_MOVABLE_TYPE);
+// Q_DECLARE_TYPEINFO(QcGeoCoordinateNormalisedWebMercator, Q_MOVABLE_TYPE);
 
 #ifndef QT_NO_DEBUG_STREAM
-QC_EXPORT QDebug operator<<(QDebug debug, const QcGeoCoordinateNormalisedMercator & coordinate);
+QC_EXPORT QDebug operator<<(QDebug debug, const QcGeoCoordinateNormalisedWebMercator & coordinate);
 #endif
 
 #ifndef QT_NO_DATASTREAM
-QC_EXPORT QDataStream &operator<<(QDataStream & stream, const QcGeoCoordinateNormalisedMercator & coordinate);
-QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcGeoCoordinateNormalisedMercator & coordinate);
+QC_EXPORT QDataStream &operator<<(QDataStream & stream, const QcGeoCoordinateNormalisedWebMercator & coordinate);
+QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcGeoCoordinateNormalisedWebMercator & coordinate);
 #endif
 
 /**************************************************************************************************/
@@ -609,7 +609,7 @@ QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcGeoElevationCoordinate
 // QT_END_NAMESPACE
 
 // Q_DECLARE_METATYPE(QcGeoCoordinateWGS84)
-// Q_DECLARE_METATYPE(QcGeoCoordinateNormalisedMercator)
+// Q_DECLARE_METATYPE(QcGeoCoordinateNormalisedWebMercator)
 
 /**************************************************************************************************/
 

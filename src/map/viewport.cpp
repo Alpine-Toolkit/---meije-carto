@@ -156,21 +156,21 @@ QcViewportState::QcViewportState()
   : m_coordinate(), m_tiled_zoom_level(), m_bearing(0)
 {}
 
-QcViewportState::QcViewportState(const QcGeoCoordinateNormalisedMercator & coordinate, const QcTiledZoomLevel & tiled_zoom_level, double bearing)
+QcViewportState::QcViewportState(const QcGeoCoordinateNormalisedWebMercator & coordinate, const QcTiledZoomLevel & tiled_zoom_level, double bearing)
   : m_coordinate(coordinate), m_tiled_zoom_level(tiled_zoom_level), m_bearing(0)
 {
   set_bearing(bearing);
 }
 
-QcViewportState::QcViewportState(const QcGeoCoordinateMercator & coordinate, const QcTiledZoomLevel & tiled_zoom_level, double bearing)
-  : QcViewportState(coordinate.normalised_mercator(), tiled_zoom_level, bearing)
-    // : m_coordinate(coordinate.normalised_mercator()), m_bearing(0), m_tiled_zoom_level(tiled_zoom_level)
+QcViewportState::QcViewportState(const QcGeoCoordinateWebMercator & coordinate, const QcTiledZoomLevel & tiled_zoom_level, double bearing)
+  : QcViewportState(coordinate.normalised_web_mercator(), tiled_zoom_level, bearing)
+    // : m_coordinate(coordinate.normalised_web_mercator()), m_bearing(0), m_tiled_zoom_level(tiled_zoom_level)
 {
   set_bearing(bearing);
 }
 
 QcViewportState::QcViewportState(const QcGeoCoordinateWGS84 & coordinate, const QcTiledZoomLevel & tiled_zoom_level, double bearing)
-  : m_coordinate(coordinate.normalised_mercator()), m_tiled_zoom_level(tiled_zoom_level), m_bearing(0)
+  : m_coordinate(coordinate.normalised_web_mercator()), m_tiled_zoom_level(tiled_zoom_level), m_bearing(0)
 {
   set_bearing(bearing);
 }
@@ -225,28 +225,28 @@ QcViewport::set_viewport_size(const QSize & size)
 }
 
 void
-QcViewport::set_coordinate(const QcGeoCoordinateMercator & coordinate)
+QcViewport::set_coordinate(const QcGeoCoordinateWebMercator & coordinate)
 {
-  const QcInterval2DDouble & domain = QcGeoCoordinateMercator::domain();
+  const QcInterval2DDouble & domain = QcGeoCoordinateWebMercator::domain();
   double x = domain.x().wrap(coordinate.x());
   double y = domain.y().truncate(coordinate.y());
-  QcGeoCoordinateMercator new_coordinate(x, y);
-  if (new_coordinate != m_state.mercator()) {
+  QcGeoCoordinateWebMercator new_coordinate(x, y);
+  if (new_coordinate != m_state.web_mercator()) {
     m_state.set_coordinate(coordinate);
     update_area(); // move polygon
   }
 }
 
 void
-QcViewport::set_coordinate(const QcGeoCoordinateNormalisedMercator & coordinate)
+QcViewport::set_coordinate(const QcGeoCoordinateNormalisedWebMercator & coordinate)
 {
-  set_coordinate(coordinate.mercator());
+  set_coordinate(coordinate.web_mercator());
 }
 
 void
 QcViewport::set_coordinate(const QcGeoCoordinateWGS84 & coordinate)
 {
-  set_coordinate(coordinate.mercator());
+  set_coordinate(coordinate.web_mercator());
 }
 
 void
@@ -274,7 +274,7 @@ QcViewport::set_zoom_factor(double zoom_factor)
 }
 
 void
-QcViewport::zoom_at(const QcGeoCoordinateMercator & coordinate, unsigned int zoom_level)
+QcViewport::zoom_at(const QcGeoCoordinateWebMercator & coordinate, unsigned int zoom_level)
 {
   qInfo() << "zoom_at" << coordinate << zoom_level;
   if (zoom_level != m_state.zoom_level())
@@ -285,8 +285,8 @@ QcViewport::zoom_at(const QcGeoCoordinateMercator & coordinate, unsigned int zoo
 void
 QcViewport::pan(double x, double y)
 {
-  const QcGeoCoordinateMercator & old_coordinate = mercator();
-  QcGeoCoordinateMercator new_coordinate(old_coordinate.x() + x, old_coordinate.y() + y); // could use vector api
+  const QcGeoCoordinateWebMercator & old_coordinate = web_mercator();
+  QcGeoCoordinateWebMercator new_coordinate(old_coordinate.x() + x, old_coordinate.y() + y); // could use vector api
   set_coordinate(new_coordinate);
 }
 
@@ -297,7 +297,7 @@ QcViewport::update_area()
   QcVectorDouble viewport_size = QcVectorDouble(m_viewport_size.width(), m_viewport_size.height());
   QcVectorDouble new_area_size = viewport_size * zoom_factor(); // [px] * [m/px]
   // mercator is centered
-  QcVectorDouble center = normalised_mercator().vector() * EQUATORIAL_PERIMETER;
+  QcVectorDouble center = normalised_web_mercator().vector() * EQUATORIAL_PERIMETER;
   qInfo() << "viewport_size" << viewport_size;
   qInfo() << "zoom_factor" << zoom_factor() << "m/px";
   qInfo() << "new_area_size" << new_area_size << "m";
@@ -320,7 +320,7 @@ QcViewport::update_area()
     m_polygon = polygon.rotate_counter_clockwise(_bearing);
   else
     m_polygon = polygon;
-  m_cross_datum = m_polygon.interval().is_included_in(QcGeoCoordinateMercator::domain());
+  m_cross_datum = m_polygon.interval().is_included_in(QcGeoCoordinateWebMercator::domain());
 
   emit viewport_changed();
 }

@@ -127,8 +127,8 @@ class QC_EXPORT QcViewportState
  public:
   QcViewportState();
   // Fixme: QcTiledZoomLevel or QcZoomFactor ???
-  QcViewportState(const QcGeoCoordinateNormalisedMercator & coordinate, const QcTiledZoomLevel & tiled_zoom_level, double bearing);
-  QcViewportState(const QcGeoCoordinateMercator & coordinate, const QcTiledZoomLevel & tiled_zoom_level, double bearing);
+  QcViewportState(const QcGeoCoordinateNormalisedWebMercator & coordinate, const QcTiledZoomLevel & tiled_zoom_level, double bearing);
+  QcViewportState(const QcGeoCoordinateWebMercator & coordinate, const QcTiledZoomLevel & tiled_zoom_level, double bearing);
   QcViewportState(const QcGeoCoordinateWGS84 & coordinate, const QcTiledZoomLevel & tiled_zoom_level, double bearing);
   QcViewportState(const QcViewportState & other);
   ~QcViewportState();
@@ -140,28 +140,28 @@ class QC_EXPORT QcViewportState
     return !operator==(other);
   }
 
-  inline const QcGeoCoordinateNormalisedMercator & normalised_mercator() const {
+  inline const QcGeoCoordinateNormalisedWebMercator & normalised_web_mercator() const {
     return m_coordinate;
   }
 
-  inline QcGeoCoordinateMercator mercator() const {
-    return m_coordinate.mercator();
+  inline QcGeoCoordinateWebMercator web_mercator() const {
+    return m_coordinate.web_mercator();
   }
 
   inline QcGeoCoordinateWGS84 wgs84() const {
     return m_coordinate.wgs84();
   }
 
-  inline void set_coordinate(const QcGeoCoordinateNormalisedMercator & coordinate) {
+  inline void set_coordinate(const QcGeoCoordinateNormalisedWebMercator & coordinate) {
     m_coordinate = coordinate;
   }
 
-  inline void set_coordinate(const QcGeoCoordinateMercator & coordinate) {
-    m_coordinate = coordinate.normalised_mercator();
+  inline void set_coordinate(const QcGeoCoordinateWebMercator & coordinate) {
+    m_coordinate = coordinate.normalised_web_mercator();
   }
 
   inline void set_coordinate(const QcGeoCoordinateWGS84 & coordinate) {
-    m_coordinate = coordinate.normalised_mercator();
+    m_coordinate = coordinate.normalised_web_mercator();
   }
 
   inline double bearing() const {
@@ -183,7 +183,7 @@ class QC_EXPORT QcViewportState
   }
 
  private:
-  QcGeoCoordinateNormalisedMercator m_coordinate;
+  QcGeoCoordinateNormalisedWebMercator m_coordinate;
   QcTiledZoomLevel m_tiled_zoom_level;
   double m_bearing;
 };
@@ -204,12 +204,12 @@ class QC_EXPORT QcViewport : public QObject
     return m_state;
   }
 
-  inline const QcGeoCoordinateNormalisedMercator & normalised_mercator() const {
-    return m_state.normalised_mercator();
+  inline const QcGeoCoordinateNormalisedWebMercator & normalised_web_mercator() const {
+    return m_state.normalised_web_mercator();
   }
 
-  inline QcGeoCoordinateMercator mercator() const {
-    return m_state.mercator();
+  inline QcGeoCoordinateWebMercator web_mercator() const {
+    return m_state.web_mercator();
   }
 
   inline QcGeoCoordinateWGS84 wgs84() const {
@@ -234,8 +234,8 @@ class QC_EXPORT QcViewport : public QObject
 
   void set_viewport_size(const QSize & size);
 
-  void set_coordinate(const QcGeoCoordinateMercator & coordinate);
-  void set_coordinate(const QcGeoCoordinateNormalisedMercator & coordinate);
+  void set_coordinate(const QcGeoCoordinateWebMercator & coordinate);
+  void set_coordinate(const QcGeoCoordinateNormalisedWebMercator & coordinate);
   void set_coordinate(const QcGeoCoordinateWGS84 & coordinate);
 
   void set_zoom_level(unsigned int zoom_level);
@@ -243,7 +243,7 @@ class QC_EXPORT QcViewport : public QObject
 
   void set_bearing(double bearing);
 
-  void zoom_at(const QcGeoCoordinateMercator & coordinate, unsigned int zoom_level);
+  void zoom_at(const QcGeoCoordinateWebMercator & coordinate, unsigned int zoom_level);
   void pan(double x, double y);
 
   bool cross_datum() const {

@@ -178,8 +178,8 @@ class QC_EXPORT QcTileMatrix
     return m_tile_matrix_set.tile_size();
   }
 
-  QcTileMatrixIndex mercator_to_matrix_index(const QcGeoCoordinateMercator & coordinate) const;
-  QcTileMatrixIndex mercator_to_matrix_index(const QcGeoCoordinateNormalisedMercator & coordinate) const;
+  QcTileMatrixIndex mercator_to_matrix_index(const QcGeoCoordinateWebMercator & coordinate) const;
+  QcTileMatrixIndex mercator_to_matrix_index(const QcGeoCoordinateNormalisedWebMercator & coordinate) const;
 
  private:
   QcTileMatrixSet & m_tile_matrix_set;

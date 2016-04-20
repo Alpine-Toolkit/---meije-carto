@@ -72,7 +72,7 @@ QcTileMatrix::QcTileMatrix(QcTileMatrixSet & tile_matrix_set, size_t level)
 }
 
 QcTileMatrixIndex
-QcTileMatrix::mercator_to_matrix_index(const QcGeoCoordinateMercator & coordinate) const
+QcTileMatrix::mercator_to_matrix_index(const QcGeoCoordinateWebMercator & coordinate) const
 {
   // return mercator_to_matrix_index(coordinate.normalised_mercator());
 
@@ -89,7 +89,7 @@ QcTileMatrix::mercator_to_matrix_index(const QcGeoCoordinateMercator & coordinat
 }
 
 QcTileMatrixIndex
-QcTileMatrix::mercator_to_matrix_index(const QcGeoCoordinateNormalisedMercator & coordinate) const
+QcTileMatrix::mercator_to_matrix_index(const QcGeoCoordinateNormalisedWebMercator & coordinate) const
 {
   size_t x = int(coordinate.x() * m_mosaic_size);
   size_t y = int(coordinate.x() * m_mosaic_size);

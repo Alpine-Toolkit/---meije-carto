@@ -58,20 +58,20 @@ void TestQcViewport::constructor()
   std::cout << "Resolution " << resolution << std::endl;
   std::cout << "tile length m " << tile_length_m << std::endl;
 
-  QcGeoCoordinateNormalisedMercator coordinate_origin(0, 0); // Fixme: need to pass fake state
+  QcGeoCoordinateNormalisedWebMercator coordinate_origin(0, 0); // Fixme: need to pass fake state
   QcTiledZoomLevel tiled_zoom_level(EQUATORIAL_PERIMETER, tile_size, 0); // map can have different tile size !
   QcViewportState viewport_state(coordinate_origin, tiled_zoom_level, 0);
   QSize viewport_size(1000, 1000); // widget size
   QcViewport viewport(viewport_state, viewport_size);
   // QcMosaicPainter mosaic_painter(viewport); // unused
 
-  viewport.zoom_at(QcGeoCoordinateWGS84(0, 0).mercator(), level); // zoom_factor == tiled_matrix resolution
+  viewport.zoom_at(QcGeoCoordinateWGS84(0, 0).web_mercator(), level); // zoom_factor == tiled_matrix resolution
   QcGeoCoordinateWGS84 coordinate = viewport.wgs84();
   std::cout << "wgs84 " << coordinate.longitude() << " " << coordinate.latitude() << std::endl;
-  QcGeoCoordinateMercator mercator_coordinate = viewport.mercator();
-  std::cout << "mercator " << mercator_coordinate.x() << " " << mercator_coordinate.y() << std::endl;
-  QcGeoCoordinateNormalisedMercator normalised_mercator_coordinate = viewport.normalised_mercator();
-  std::cout << "normalised mercator " << normalised_mercator_coordinate.x() << " " << normalised_mercator_coordinate.y() << std::endl;
+  QcGeoCoordinateWebMercator web_mercator_coordinate = viewport.web_mercator();
+  std::cout << "mercator " << web_mercator_coordinate.x() << " " << web_mercator_coordinate.y() << std::endl;
+  QcGeoCoordinateNormalisedWebMercator normalised_web_mercator_coordinate = viewport.normalised_web_mercator();
+  std::cout << "normalised mercator " << normalised_web_mercator_coordinate.x() << " " << normalised_web_mercator_coordinate.y() << std::endl;
 
   const QcPolygon & polygon1 = viewport.polygon();
   // const QcVectorDouble & vertex = polygon.vertexes()[0];
@@ -89,8 +89,8 @@ void TestQcViewport::constructor()
   }
 
   viewport.pan(700, 700);
-  mercator_coordinate = viewport.mercator();
-  std::cout << "mercator " << mercator_coordinate.x() << " " << mercator_coordinate.y() << std::endl;
+  web_mercator_coordinate = viewport.web_mercator();
+  std::cout << "mercator " << web_mercator_coordinate.x() << " " << web_mercator_coordinate.y() << std::endl;
   const QcPolygon & polygon2 = viewport.polygon();
   QcTiledPolygon tiled_polygon2 = polygon2.intersec_with_grid(tile_length_m);
   for (const QcTiledPolygonRun & run:  tiled_polygon2.runs()) {
