@@ -43,14 +43,14 @@
 
 /**************************************************************************************************/
 
-#ifndef GEO_COORDINATE_ANIMATION_H
-#define GEO_COORDINATE_ANIMATION_H
+#ifndef __GEO_COORDINATE_ANIMATION_H__
+#define __GEO_COORDINATE_ANIMATION_H__
 
 /**************************************************************************************************/
 
 #include <QGeoCoordinate>
 
-// Use QtQuick Private API !!!
+// Fixme: Use QtQuick Private API !!!
 #include <private/qquickanimation_p.h>
 #include <private/qquickanimation_p_p.h>
 
@@ -107,7 +107,7 @@ public:
 
 QML_DECLARE_TYPE(QcGeoCoordinateAnimation)
 
-#endif // GEO_COORDINATE_ANIMATION_H
+#endif // __GEO_COORDINATE_ANIMATION_H__
 
 /***************************************************************************************************
  *

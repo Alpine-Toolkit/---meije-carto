@@ -91,97 +91,100 @@ coordinate_interpolator(const QGeoCoordinate & from, const QGeoCoordinate & to, 
 
 /**************************************************************************************************/
 
+// Fixme: qt -> wgs84 -> normalised_web_mercator -> qt
+// use Qc implementation and cache normalised_web_mercator in wgs84
+// or use normalised_web_mercator
+
 QVariant
 coordinate_shortest_interpolator(const QGeoCoordinate & _from, const QGeoCoordinate & _to, qreal progress)
 {
-  QcGeoCoordinateNormalisedWebMercator from = QcGeoCoordinateWGS84(_from.longitude(), _from.latitude()).normalised_web_mercator();
-  QcGeoCoordinateNormalisedWebMercator to = QcGeoCoordinateWGS84(_to.longitude(), _to.latitude()).normalised_web_mercator();
+  QcGeoCoordinateNormalisedWebMercator from = QcGeoCoordinateWGS84(_from).normalised_web_mercator();
+  QcGeoCoordinateNormalisedWebMercator to = QcGeoCoordinateWGS84(_to).normalised_web_mercator();
 
   double to_x = to.x();
   double to_y = to.y();
   double from_x = from.x();
   double from_y = from.y();
   double delta_x = to_x - from_x;
+  double delta_y = to_y - from_y;
+
+  /*
+   * a) Two cases : |f - t| <= 1/2 or > 1/2
+   * if > 1/2 then it is shorter to cross the date line
+   *   b) Two cases
+   *    |--f   t<-| (3)
+   *    |->t   f--| (4)
+   */
 
   double x;
-  if (0.5 < qAbs(delta_x)) {
-    // handle dateline crossing
-    double ex = to_x; // ex and sx unused ???
-    double sx = from_x;
-    if (ex < sx)
-      sx -= 1.0;
-    else if (sx < ex)
-      ex -= 1.0;
+  double delta_x_abs = qAbs(delta_x);
+  if (delta_x_abs > 0.5) { // case b
+    double dx = 1 - delta_x_abs;
+    if (from_x < to_x) { // case 3 <-|-
+      x = from_x - dx * progress;
+      if (x < 0.0) // we crossed date line
+        x += 1.0;
+    } else { // case 4 -|->
+      x = from_x + dx * progress;
+      if (x > 1.0) // we crossed date line
+        x -= 1.0;
+    }
+  } else
     x = from_x + delta_x * progress;
-    if (x < 0.0)
-      x += 1.0;
-  } else {
-    x = from_x + delta_x * progress;
-  }
 
-  double y = from_y + (to_y - from_y) * progress;
+  double y = from_y + delta_y * progress;
 
-  QcGeoCoordinateNormalisedWebMercator normalised(x, y);
-  QcGeoCoordinateWGS84 wgs84 = normalised.wgs84();
-  QGeoCoordinate coordinate(wgs84.latitude(), wgs84.longitude());
+  QGeoCoordinate coordinate = QcGeoCoordinateNormalisedWebMercator(x, y).wgs84().to_qt();
   return QVariant::fromValue(coordinate);
 }
 
 QVariant
 coordinate_west_interpolator(const QGeoCoordinate & _from, const QGeoCoordinate & _to, qreal progress)
 {
-  QcGeoCoordinateNormalisedWebMercator from = QcGeoCoordinateWGS84(_from.longitude(), _from.latitude()).normalised_web_mercator();
-  QcGeoCoordinateNormalisedWebMercator to = QcGeoCoordinateWGS84(_to.longitude(), _to.latitude()).normalised_web_mercator();
+  QcGeoCoordinateNormalisedWebMercator from = QcGeoCoordinateWGS84(_from).normalised_web_mercator();
+  QcGeoCoordinateNormalisedWebMercator to = QcGeoCoordinateWGS84(_to).normalised_web_mercator();
 
   double to_x = to.x();
   double to_y = to.y();
   double from_x = from.x();
   double from_y = from.y();
   double delta_x = to_x - from_x;
+  double delta_y = to_y - from_y;
 
-  while (delta_x < 0.0) {
-    to_x += 1.0;
-    delta_x += 1.0;
-  }
+  // <-|-
+  double delta_x_abs = qAbs(delta_x);
+  double x = from_x - delta_x_abs * progress;
+  if (x < 0.0) // we crossed date line
+    x += 1.0;
 
-  double x = from_x + delta_x * progress;
-  double y = from_y + (to_y - from_y) * progress;
+  double y = from_y + delta_y * progress;
 
-  while (x > 1.0)
-    x -= 1.0;
-
-  QcGeoCoordinateNormalisedWebMercator normalised(x, y);
-  QcGeoCoordinateWGS84 wgs84 = normalised.wgs84();
-  QGeoCoordinate coordinate(wgs84.latitude(), wgs84.longitude());
+  QGeoCoordinate coordinate = QcGeoCoordinateNormalisedWebMercator(x, y).wgs84().to_qt();
   return QVariant::fromValue(coordinate);
 }
 
 QVariant
 coordinate_east_interpolator(const QGeoCoordinate & _from, const QGeoCoordinate & _to, qreal progress)
 {
-  QcGeoCoordinateNormalisedWebMercator from = QcGeoCoordinateWGS84(_from.longitude(), _from.latitude()).normalised_web_mercator();
-  QcGeoCoordinateNormalisedWebMercator to = QcGeoCoordinateWGS84(_to.longitude(), _to.latitude()).normalised_web_mercator();
+  QcGeoCoordinateNormalisedWebMercator from = QcGeoCoordinateWGS84(_from).normalised_web_mercator();
+  QcGeoCoordinateNormalisedWebMercator to = QcGeoCoordinateWGS84(_to).normalised_web_mercator();
 
   double to_x = to.x();
   double to_y = to.y();
   double from_x = from.x();
   double from_y = from.y();
   double delta_x = to_x - from_x;
+  double delta_y = to_y - from_y;
 
-  while (delta_x > 0.0) {
-    to_x -= 1.0;
-    delta_x -= 1.0;
-  }
+  // -|->
+  double delta_x_abs = qAbs(delta_x);
+  double x = from_x + delta_x_abs * progress;
+  if (x > 1.0) // we crossed date line
+    x -= 1.0;
 
-  double x = from_x + delta_x * progress;
-  double y = from_y + (to_y - from_y) * progress;
+  double y = from_y + delta_y * progress;
 
-  while (x < 0.0)
-    x += 1.0;
-
-  QcGeoCoordinateNormalisedWebMercator normalised(x, y);
-  QcGeoCoordinateWGS84 wgs84 = normalised.wgs84();
-  QGeoCoordinate coordinate(wgs84.latitude(), wgs84.longitude());
+  QGeoCoordinate coordinate = QcGeoCoordinateNormalisedWebMercator(x, y).wgs84().to_qt();
   return QVariant::fromValue(coordinate);
 }
 
@@ -204,8 +207,7 @@ QcGeoCoordinateAnimation::QcGeoCoordinateAnimation(QObject * parent)
 }
 
 QcGeoCoordinateAnimation::~QcGeoCoordinateAnimation()
-{
-}
+{}
 
 /*!
   \qmlproperty coordinate CoordinateAnimation::from
