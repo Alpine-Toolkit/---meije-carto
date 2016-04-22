@@ -124,6 +124,7 @@ class QcCache3Q : public EvictionPolicy
 private:
   class Queue;
 
+  // Fixme: inlined data structure
   class Node
   {
   public:

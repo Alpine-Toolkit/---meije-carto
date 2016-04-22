@@ -118,8 +118,7 @@ class QcCachedTileDisk
 
 /**************************************************************************************************/
 
-// Custom eviction policy for the disk cache, to avoid deleting all
-// the files when the application closes
+// Custom eviction policy for the disk cache, to avoid deleting all the files when the application closes
 class QCache3QTileEvictionPolicy : public QcCache3QDefaultEvictionPolicy<QcTileSpec, QcCachedTileDisk>
 {
  protected:

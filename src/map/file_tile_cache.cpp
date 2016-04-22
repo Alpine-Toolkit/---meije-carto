@@ -87,8 +87,7 @@ QcTileTexture::~QcTileTexture()
 class QcCachedTileMemory
 {
 public:
-  ~QcCachedTileMemory()
-  {
+  ~QcCachedTileMemory() {
     if (cache)
       cache->evict_from_memory_cache(this);
   }
@@ -127,6 +126,16 @@ QcCachedTileDisk::~QcCachedTileDisk()
 
 /**************************************************************************************************/
 
+// Fixme: export
+constexpr int KILO = 1000;
+constexpr int KILO2 = 1024;
+constexpr int MEGA = KILO * KILO;
+constexpr int MEGA2 = KILO2 * KILO2;
+
+constexpr int MAX_DISK_USAGE = 20 * MEGA2;
+constexpr int MAX_MEMORY_USAGE = 3 * MEGA2;
+constexpr int EXTRA_TEXTURE_USAGE = 6 * MEGA2;
+
 constexpr int NUMBER_OF_QUEUES = 4;
 
 QcFileTileCache::QcFileTileCache(const QString & directory)
@@ -155,16 +164,16 @@ QcFileTileCache::QcFileTileCache(const QString & directory)
   QDir::root().mkpath(m_directory);
 
   // default values
-  set_max_disk_usage(20 * 1024 * 1024);
-  set_max_memory_usage(3 * 1024 * 1024);
-  set_extra_texture_usage(6 * 1024 * 1024);
+  set_max_disk_usage(MAX_DISK_USAGE);
+  set_max_memory_usage(MAX_MEMORY_USAGE);
+  set_extra_texture_usage(EXTRA_TEXTURE_USAGE);
 
   load_tiles();
 }
 
 QcFileTileCache::~QcFileTileCache()
 {
-  // write disk cache queues to disk
+  // For each disk cache queue write the list of filenames to a file
   QDir directory(m_directory);
   for (int i = 1; i <= NUMBER_OF_QUEUES; i++) {
     QString filename = queue_filename(i);
@@ -176,11 +185,12 @@ QcFileTileCache::~QcFileTileCache()
 
     QList<QSharedPointer<QcCachedTileDisk> > queue;
     m_disk_cache.serialize_queue(i, queue);
-    for(const QSharedPointer<QcCachedTileDisk> & tile : queue)
+    for(const auto & tile : queue)
       if (!tile.isNull()) {
 	// we just want the filename here, not the full path
-	int index = tile->filename.lastIndexOf(QLatin1Char('/'));
-	QByteArray filename = tile->filename.mid(index + 1).toLatin1() + '\n';
+        const QString & tile_filename = tile->filename;
+	int index = tile_filename.lastIndexOf(QLatin1Char('/'));
+	QByteArray filename = tile_filename.mid(index + 1).toLatin1() + '\n';
 	file.write(filename);
       }
 
@@ -191,27 +201,27 @@ QcFileTileCache::~QcFileTileCache()
 QString
 QcFileTileCache::base_cache_directory()
 {
-  QString directory;
-
   // Try the shared cache first and use a specific directory. (e.g. ~/.cache/QtLocation)
   // If this is not supported by the platform, use the application-specific cache location.
   // (e.g. ~/.cache/<app_name>/QtLocation)
-  directory = QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation);
+
+  QString directory = QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation);
   qInfo() << "base_cache_directory" << directory;
 
+  // Check we can write on the cache directory
   if (!directory.isEmpty()) {
     // The shared cache may not be writable when application isolation is enforced.
-    static bool writable = false; // Fixme: static ?
-    static bool writable_checked = false;
-    if (!writable_checked) {
-      writable_checked = true;
+    static bool cache_directory_writable = false; // static for later use
+    static bool cache_directory_writable_checked = false;
+    if (!cache_directory_writable_checked) {
+      cache_directory_writable_checked = true;
       QDir::root().mkpath(directory);
-      QFile write_test_file(QDir(directory).filePath(QStringLiteral("qt_cache_check")));
-      writable = write_test_file.open(QIODevice::WriteOnly);
-      if (writable)
+      QFile write_test_file(QDir(directory).filePath(QLatin1Literal("qt_cache_check")));
+      cache_directory_writable = write_test_file.open(QIODevice::WriteOnly);
+      if (cache_directory_writable)
 	write_test_file.remove();
     }
-    if (!writable)
+    if (!cache_directory_writable)
       directory = QString();
   }
 
@@ -221,11 +231,14 @@ QcFileTileCache::base_cache_directory()
   if (!directory.endsWith(QLatin1Char('/')))
     directory += QLatin1Char('/');
   directory += QLatin1String("QtCarto/");
-  qInfo() << "base_cache_directory" << directory;
 
+  qInfo() << "base_cache_directory" << directory;
   return directory;
 }
 
+/*! Clear the cache and remove cached files on disk
+ *
+ */
 void
 QcFileTileCache::clear_all()
 {
@@ -234,7 +247,7 @@ QcFileTileCache::clear_all()
   m_disk_cache.clear();
 
   QStringList string_list;
-  string_list << QLatin1String("*-*-*-*.*");
+  string_list << QLatin1String("*-*-*-*.*"); // tile pattern
   string_list << QLatin1String("queue?");
   QDir directory(m_directory);
   directory.setNameFilters(string_list);
@@ -246,8 +259,8 @@ QcFileTileCache::clear_all()
 QString
 QcFileTileCache::queue_filename(int i) const
 {
-  QDir directory(m_directory);
-  return directory.filePath(QString::fromLatin1("queue") + QString::number(i));
+  // queue%u
+  return QDir(m_directory).filePath(QLatin1Literal("queue") + QString::number(i));
 }
 
 void
@@ -275,31 +288,29 @@ QcFileTileCache::load_tiles()
 	files.removeOne(filename);
 	QcTileSpec tile_spec = filename_to_tile_spec(filename);
 	qInfo() << "Load" << tile_spec;
-	if (tile_spec.level() == -1)
+	if (tile_spec.level() == -1) // Fixme: when ?
 	  continue;
 	QSharedPointer<QcCachedTileDisk> tile_disk(new QcCachedTileDisk);
 	tile_disk->filename = directory.filePath(filename);
 	tile_disk->cache = this;
 	tile_disk->tile_spec = tile_spec;
-	QFileInfo file_info(tile_disk->filename);
 	tile_specs.append(tile_spec);
 	queue.append(tile_disk);
-	costs.append(file_info.size());
+	costs.append(QFileInfo(filename).size());
       }
     }
-
-    m_disk_cache.deserialize_queue(i, tile_specs, queue, costs);
     file.close();
+    m_disk_cache.deserialize_queue(i, tile_specs, queue, costs);
   }
 
   // 2. remaining tiles that aren't registered in a queue get pushed into cache here
   // this is a backup, in case the queue manifest files get deleted or out of sync due to
   // the application not closing down properly
-  for (int i = 0; i < files.size(); ++i) {
-    QcTileSpec tile_spec = filename_to_tile_spec(files.at(i)); // Fixme: at vs []
+  for (const auto & relative_filename : files) {
+    QcTileSpec tile_spec = filename_to_tile_spec(relative_filename);
     if (tile_spec.level() == -1)
       continue;
-    QString filename = directory.filePath(files.at(i));
+    QString filename = directory.filePath(relative_filename);
     add_to_disk_cache(tile_spec, filename);
   }
 }
@@ -389,10 +400,13 @@ QcFileTileCache::texture_usage() const
 QSharedPointer<QcTileTexture>
 QcFileTileCache::get(const QcTileSpec & tile_spec)
 {
+  // Try texture cache
   QSharedPointer<QcTileTexture> tile_texture = m_texture_cache.object(tile_spec);
   if (tile_texture)
     return tile_texture;
 
+  // Try memory cache
+  // Fixme: purpose of texture cache versus memory cache ???
   QSharedPointer<QcCachedTileMemory> tile_memory = m_memory_cache.object(tile_spec);
   if (tile_memory) {
     QImage image;
@@ -405,8 +419,10 @@ QcFileTileCache::get(const QcTileSpec & tile_spec)
       return tile_texture;
   }
 
+  // Try disk cache
   QSharedPointer<QcCachedTileDisk> tile_directory = m_disk_cache.object(tile_spec);
   if (tile_directory) {
+    // Fixme: to func
     const QString format = QFileInfo(tile_directory->filename).suffix();
     QFile file(tile_directory->filename);
     file.open(QIODevice::ReadOnly);
@@ -425,6 +441,7 @@ QcFileTileCache::get(const QcTileSpec & tile_spec)
       return tile_texture;
   }
 
+  // else
   return QSharedPointer<QcTileTexture>();
 }
 
@@ -432,12 +449,14 @@ void
 QcFileTileCache::insert(const QcTileSpec & tile_spec,
 			const QByteArray & bytes,
 			const QString & format)
+// Fixme:
 // QcTiledMappingManagerEngine::CacheAreas areas
 {
   if (bytes.isEmpty())
     return;
 
   // if (areas & QcTiledMappingManagerEngine::DiskCache) {
+  // Fixme: to func
   QString filename = tile_spec_to_filename(tile_spec, format, m_directory);
   QFile file(filename);
   file.open(QIODevice::WriteOnly);
@@ -450,9 +469,10 @@ QcFileTileCache::insert(const QcTileSpec & tile_spec,
   add_to_memory_cache(tile_spec, bytes, format);
   // }
 
-  /* inserts do not hit the texture cache -- this actually reduces overall
+  /* Inserts do not hit the texture cache -- this actually reduces overall
    * cache hit rates because many tiles come too late to be useful
-   * and act as a poison */
+   * and act as a poison
+   */
 }
 
 void QcFileTileCache::evict_from_disk_cache(QcCachedTileDisk * tile_directory)
@@ -509,7 +529,7 @@ QcFileTileCache::add_to_texture_cache(const QcTileSpec & tile_spec, const QImage
 QString
 QcFileTileCache::tile_spec_to_filename(const QcTileSpec & tile_spec, const QString & format, const QString & directory_)
 {
-  QString filename = tile_spec.plugin();
+  QString filename = tile_spec.plugin(); // Fixme: litteral, arg
   filename += QLatin1String("-");
   filename += QString::number(tile_spec.map_id());
   filename += QLatin1String("-");
@@ -521,9 +541,7 @@ QcFileTileCache::tile_spec_to_filename(const QcTileSpec & tile_spec, const QStri
   filename += QLatin1String(".");
   filename += format;
 
-  QDir directory = QDir(directory_);
-
-  return directory.filePath(filename);
+  return QDir(directory_).filePath(filename);
 }
 
 QcTileSpec
