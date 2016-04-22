@@ -35,7 +35,7 @@
 
 /***************************************************************************************************/
 
-class TestQcGeoPortailWmtsLicence: public QObject
+class TestQcGeoportailWmtsLicence: public QObject
 {
   Q_OBJECT
 
@@ -43,10 +43,10 @@ private slots:
   void constructor();
 };
 
-void TestQcGeoPortailWmtsLicence::constructor()
+void TestQcGeoportailWmtsLicence::constructor()
 {
   QString json_path("geoportail-license.json");
-  QcGeoPortailWmtsLicence geoportail_license(json_path);
+  QcGeoportailWmtsLicence geoportail_license(json_path);
   qInfo() << geoportail_license.user()
 	  << geoportail_license.password()
 	  << geoportail_license.api_key()
@@ -55,7 +55,7 @@ void TestQcGeoPortailWmtsLicence::constructor()
 
 /***************************************************************************************************/
 
-QTEST_MAIN(TestQcGeoPortailWmtsLicence)
+QTEST_MAIN(TestQcGeoportailWmtsLicence)
 #include "test_geoportail_license.moc"
 
 /***************************************************************************************************

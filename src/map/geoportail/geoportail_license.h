@@ -44,33 +44,22 @@
 
 /**************************************************************************************************/
 
-class QC_EXPORT QcGeoPortailWmtsLicence
+class QC_EXPORT QcGeoportailWmtsLicence
 {
  public:
-  QcGeoPortailWmtsLicence(const QString & json_path);
-  QcGeoPortailWmtsLicence(const QString & user, const QString & password, const QString & api_key,
+  QcGeoportailWmtsLicence(const QString & json_path);
+  QcGeoportailWmtsLicence(const QString & user, const QString & password, const QString & api_key,
 			  unsigned int offline_cache_limit);
-  QcGeoPortailWmtsLicence(const QcGeoPortailWmtsLicence & other);
+  QcGeoportailWmtsLicence(const QcGeoportailWmtsLicence & other);
 
-  QcGeoPortailWmtsLicence & operator=(const QcGeoPortailWmtsLicence & other);
+  QcGeoportailWmtsLicence & operator=(const QcGeoportailWmtsLicence & other);
 
-  inline const QString & user() const {
-    return m_user;
-  }
+  inline const QString & user() const { return m_user; }
+  inline const QString & password() const { return m_password; }
+  inline const QString & api_key() const { return m_api_key; }
+  inline unsigned int offline_cache_limit() const { return m_offline_cache_limit; }
 
-  inline const QString & password() const {
-    return m_password;
-  }
-
-  inline const QString & api_key() const {
-    return m_api_key;
-  }
-
-  inline unsigned int offline_cache_limit() const {
-    return m_offline_cache_limit;
-  }
-
-  bool operator==(const QcGeoPortailWmtsLicence & rhs) const;
+  bool operator==(const QcGeoportailWmtsLicence & rhs) const;
 
  private:
   void load_json(const QString & json_path);

@@ -40,23 +40,23 @@
 
 /**************************************************************************************************/
 
-QcGeoPortailWmtsLicence::QcGeoPortailWmtsLicence(const QString & json_path)
+QcGeoportailWmtsLicence::QcGeoportailWmtsLicence(const QString & json_path)
   : m_user(), m_password(), m_api_key(), m_offline_cache_limit()
 {
   load_json(json_path);
 }
 
-QcGeoPortailWmtsLicence::QcGeoPortailWmtsLicence(const QString & user, const QString & password, const QString & api_key,
+QcGeoportailWmtsLicence::QcGeoportailWmtsLicence(const QString & user, const QString & password, const QString & api_key,
 						 unsigned int offline_cache_limit)
   : m_user(user), m_password(password), m_api_key(api_key), m_offline_cache_limit(offline_cache_limit)
 {}
 
-QcGeoPortailWmtsLicence::QcGeoPortailWmtsLicence(const QcGeoPortailWmtsLicence & other)
+QcGeoportailWmtsLicence::QcGeoportailWmtsLicence(const QcGeoportailWmtsLicence & other)
   : m_user(other.m_user), m_password(other.m_password), m_api_key(other.m_api_key), m_offline_cache_limit(other.m_offline_cache_limit)
 {}
 
-QcGeoPortailWmtsLicence &
-QcGeoPortailWmtsLicence::operator=(const QcGeoPortailWmtsLicence & other)
+QcGeoportailWmtsLicence &
+QcGeoportailWmtsLicence::operator=(const QcGeoportailWmtsLicence & other)
 {
   if (this != &other) {
     m_user = other.m_user;
@@ -69,7 +69,7 @@ QcGeoPortailWmtsLicence::operator=(const QcGeoPortailWmtsLicence & other)
 }
 
 bool
-QcGeoPortailWmtsLicence::operator==(const QcGeoPortailWmtsLicence & rhs) const
+QcGeoportailWmtsLicence::operator==(const QcGeoportailWmtsLicence & rhs) const
 {
   return (m_user == rhs.m_user
 	  && m_password == rhs.m_password
@@ -79,7 +79,7 @@ QcGeoPortailWmtsLicence::operator==(const QcGeoPortailWmtsLicence & rhs) const
 }
 
 void
-QcGeoPortailWmtsLicence::read_json(const QJsonObject &json)
+QcGeoportailWmtsLicence::read_json(const QJsonObject &json)
 {
   m_user = json["user"].toString();
   m_password = json["password"].toString();
@@ -88,7 +88,7 @@ QcGeoPortailWmtsLicence::read_json(const QJsonObject &json)
 }
 
 void
-QcGeoPortailWmtsLicence::load_json(const QString & json_path)
+QcGeoportailWmtsLicence::load_json(const QString & json_path)
 {
   QFile json_file(json_path);
 

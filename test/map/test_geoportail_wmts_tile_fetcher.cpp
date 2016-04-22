@@ -65,7 +65,7 @@ class TileFetcherHelper : public QObject
 void TestQcGeoportailWmtsTileFetcher::constructor()
 {
   QString json_path("geoportail-license.json");
-  QcGeoPortailWmtsLicence geoportail_license(json_path);
+  QcGeoportailWmtsLicence geoportail_license(json_path);
   QcGeoportailPlugin geoportail_plugin(geoportail_license);
   QcGeoportailWmtsTileFetcher * tile_fetcher = geoportail_plugin.tile_fetcher(); // subclass QcGeoportailPlugin ???
 

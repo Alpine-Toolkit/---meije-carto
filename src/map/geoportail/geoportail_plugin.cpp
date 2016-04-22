@@ -34,7 +34,7 @@ constexpr const char * PLUGIN_NAME = "geoportail";
 constexpr size_t NUMBER_OF_LEVELS = 20;
 constexpr size_t TILE_SIZE = 256;
 
-QcGeoportailPlugin::QcGeoportailPlugin(QcGeoPortailWmtsLicence & licence)
+QcGeoportailPlugin::QcGeoportailPlugin(QcGeoportailWmtsLicence & licence)
   : QcWmtsPlugin(PLUGIN_NAME, NUMBER_OF_LEVELS, TILE_SIZE),
     m_licence(licence),
     m_tile_fetcher(m_licence)

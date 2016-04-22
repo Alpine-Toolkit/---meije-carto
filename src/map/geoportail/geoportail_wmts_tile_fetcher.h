@@ -49,15 +49,11 @@ class QcGeoportailWmtsTileFetcher : public QcWmtsTileFetcher
   Q_OBJECT
 
 public:
-  QcGeoportailWmtsTileFetcher(const QcGeoPortailWmtsLicence & license);
+  QcGeoportailWmtsTileFetcher(const QcGeoportailWmtsLicence & license);
 
-  const QcGeoPortailWmtsLicence & license() const {
-    return m_licence;
-  }
+  const QcGeoportailWmtsLicence & license() const { return m_licence; }
 
-  void set_user_agent(const QByteArray & user_agent) {
-    m_user_agent = user_agent;
-  }
+  void set_user_agent(const QByteArray & user_agent) { m_user_agent = user_agent; }
 
 private Q_SLOTS:
   void on_authentication_request_slot(QNetworkReply * reply, QAuthenticator * authenticator);
@@ -67,7 +63,7 @@ private:
 
 private:
   QNetworkAccessManager * m_network_manager;
-  const QcGeoPortailWmtsLicence & m_licence;
+  const QcGeoportailWmtsLicence & m_licence;
   QByteArray m_user_agent;
   QString m_reply_format;
 };

@@ -48,21 +48,17 @@ class QcGeoportailPlugin : public QcWmtsPlugin
   Q_OBJECT
 
 public:
-  QcGeoportailPlugin(QcGeoPortailWmtsLicence & licence);
+  QcGeoportailPlugin(QcGeoportailWmtsLicence & licence);
   ~QcGeoportailPlugin();
 
-  const QcGeoPortailWmtsLicence & licence() {
-    return m_licence;
-  }
+  const QcGeoportailWmtsLicence & licence() { return m_licence; }
 
-  QcGeoportailWmtsTileFetcher * tile_fetcher() {
-    return &m_tile_fetcher;
-  }
+  QcGeoportailWmtsTileFetcher * tile_fetcher() { return &m_tile_fetcher; }
 
   // off-line cache : load tiles from a polygon
 
 private:
-  QcGeoPortailWmtsLicence m_licence;
+  QcGeoportailWmtsLicence m_licence;
   QcGeoportailWmtsTileFetcher m_tile_fetcher;
 };
 

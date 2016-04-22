@@ -37,7 +37,7 @@
 
 /**************************************************************************************************/
 
-QcGeoportailWmtsTileFetcher::QcGeoportailWmtsTileFetcher(const QcGeoPortailWmtsLicence & license)
+QcGeoportailWmtsTileFetcher::QcGeoportailWmtsTileFetcher(const QcGeoportailWmtsLicence & license)
   : QcWmtsTileFetcher(),
     m_network_manager(new QNetworkAccessManager(this)),
     m_licence(license),
@@ -71,26 +71,26 @@ QcGeoportailWmtsTileFetcher::setAccessToken(const QString &accessToken)
 QcWmtsReply *
 QcGeoportailWmtsTileFetcher::get_tile_image(const QcTileSpec & tile_spec)
 {
-    QUrl url = QUrl(QStringLiteral("https://wxs.ign.fr/")
-		    + m_licence.api_key() + "/geoportail/wmts" +
-		    "?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&" +
-		    "LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS" +
-		    "&STYLE=normal&FORMAT=image/jpeg&TILEMATRIXSET=PM" +
-		    "&TILEMATRIX=" + QString::number(tile_spec.level()) +
-		    "&TILEROW=" + QString::number(tile_spec.y()) +
-		    "&TILECOL=" + QString::number(tile_spec.x()) +
-		    QLatin1Char('&'));
-    qInfo() << url;
+  QUrl url(QStringLiteral("https://wxs.ign.fr/")
+           + m_licence.api_key() + "/geoportail/wmts" +
+           "?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&" +
+           "LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS" +
+           "&STYLE=normal&FORMAT=image/jpeg&TILEMATRIXSET=PM" +
+           "&TILEMATRIX=" + QString::number(tile_spec.level()) +
+           "&TILEROW=" + QString::number(tile_spec.y()) +
+           "&TILECOL=" + QString::number(tile_spec.x()) +
+           QLatin1Char('&'));
+  qInfo() << url;
 
-    QNetworkRequest request;
-    request.setRawHeader("User-Agent", m_user_agent);
-    request.setUrl(url);
+  QNetworkRequest request;
+  request.setRawHeader("User-Agent", m_user_agent);
+  request.setUrl(url);
 
-    QNetworkReply *reply = m_network_manager->get(request);
-    if (reply->error() != QNetworkReply::NoError)
-      qWarning() << __FUNCTION__ << reply->errorString();
+  QNetworkReply *reply = m_network_manager->get(request);
+  if (reply->error() != QNetworkReply::NoError)
+    qWarning() << __FUNCTION__ << reply->errorString();
 
-    return new QcGeoportailWmtsReply(reply, tile_spec, m_reply_format);
+  return new QcGeoportailWmtsReply(reply, tile_spec, m_reply_format);
 }
 
 void

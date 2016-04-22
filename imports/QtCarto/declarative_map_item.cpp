@@ -60,7 +60,7 @@ QcMapItem::QcMapItem(QQuickItem * parent)
 
   // Fixme: init plugin where ???
   QString json_path("geoportail-license.json");
-  QcGeoPortailWmtsLicence geoportail_license(json_path);
+  QcGeoportailWmtsLicence geoportail_license(json_path);
   m_plugin = new QcGeoportailPlugin(geoportail_license);
 
   m_map_view = new QcMapView(m_plugin);
