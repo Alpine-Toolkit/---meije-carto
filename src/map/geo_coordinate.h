@@ -36,8 +36,9 @@
 
 /**************************************************************************************************/
 
-#include <QtCore/QMetaType>
+#include <QGeoCoordinate>
 #include <QString>
+#include <QtCore/QMetaType>
 
 #include "qtcarto_global.h"
 #include "map/earth.h"
@@ -244,6 +245,10 @@ class QC_EXPORT QcGeoCoordinateWGS84 : public QcGeoCoordinate
   QcGeoCoordinateWGS84(QcGeoSexagesimalAngle & longitude, QcGeoSexagesimalAngle & latitude);
   QcGeoCoordinateWGS84(const QcGeoCoordinateWGS84 & other);
   ~QcGeoCoordinateWGS84();
+
+  QcGeoCoordinateWGS84(const QGeoCoordinate & coordinate)
+    : m_longitude(coordinate.longitude()), m_latitude(coordinate.latitude()) {}
+  QGeoCoordinate to_qt() const { return QGeoCoordinate(m_latitude, m_longitude); }
 
   QcGeoCoordinateWGS84 & operator=(const QcGeoCoordinateWGS84 & other);
 

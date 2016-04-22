@@ -42,7 +42,7 @@ set(qtcarto_files
   math/vector.cpp
 )
 add_library(qtcarto SHARED ${qtcarto_files})
-target_link_libraries(qtcarto Qt5::Core Qt5::Quick Qt5::Gui Qt5::Network ${PROJ4_LIBRARIES})
+target_link_libraries(qtcarto Qt5::Core Qt5::Quick Qt5::Gui Qt5::Network Qt5::Positioning ${PROJ4_LIBRARIES})
 
 ####################################################################################################
 #
