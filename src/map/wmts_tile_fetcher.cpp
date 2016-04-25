@@ -86,7 +86,7 @@ void
 QcWmtsTileFetcher::update_tile_requests(const QcTileSpecSet & tiles_added,
 					const QcTileSpecSet & tiles_removed)
 {
-  qInfo() << "QcWmtsTileFetcher::update_tile_requests";
+  qInfo();
   // qInfo() << tiles_added;
   // qInfo() << tiles_removed;
 
@@ -121,7 +121,7 @@ QcWmtsTileFetcher::cancel_tile_requests(const QcTileSpecSet & tiles)
 void
 QcWmtsTileFetcher::request_next_tile()
 {
-  // qInfo() << "QcWmtsTileFetcher::request_next_tile";
+  // qInfo();
 
   QMutexLocker mutex_locker(&m_queue_mutex);
 
@@ -130,7 +130,7 @@ QcWmtsTileFetcher::request_next_tile()
 
   QcTileSpec tile_spec = m_queue.takeFirst();
 
-  qInfo() << "QcWmtsTileFetcher::request_next_tile" << tile_spec;
+  qInfo() << tile_spec;
   QcWmtsReply *wmts_reply = get_tile_image(tile_spec);
 
   // If the request is already finished then handle it
@@ -151,7 +151,7 @@ QcWmtsTileFetcher::request_next_tile()
 void
 QcWmtsTileFetcher::finished()
 {
-  qInfo() << "QcWmtsTileFetcher::finished";
+  qInfo();
 
   QMutexLocker mutex_locker(&m_queue_mutex);
 
@@ -174,7 +174,7 @@ QcWmtsTileFetcher::finished()
 void
 QcWmtsTileFetcher::timerEvent(QTimerEvent * event)
 {
-  qInfo() << "QcWmtsTileFetcher::timerEvent";
+  qInfo();
   if (event->timerId() != m_timer.timerId()) { // Fixme: when ?
     QObject::timerEvent(event);
     return;
@@ -188,7 +188,7 @@ QcWmtsTileFetcher::timerEvent(QTimerEvent * event)
 void
 QcWmtsTileFetcher::handle_reply(QcWmtsReply * wmts_reply, const QcTileSpec & tile_spec)
 {
-  qInfo() << "QcWmtsTileFetcher::handle_reply";
+  qInfo();
 
   if (!m_enabled) {
     wmts_reply->deleteLater();
@@ -197,10 +197,10 @@ QcWmtsTileFetcher::handle_reply(QcWmtsReply * wmts_reply, const QcTileSpec & til
 
   // emit signal according to the reply status
   if (wmts_reply->error() == QcWmtsReply::NoError) {
-    qInfo() << "QcWmtsTileFetcher::handle_reply emit tile_finished";
+    qInfo() << "emit tile_finished";
     emit tile_finished(tile_spec, wmts_reply->map_image_data(), wmts_reply->map_image_format());
   } else {
-    qInfo() << "QcWmtsTileFetcher::handle_reply emit tile_error";
+    qInfo() << "emit tile_error";
     emit tile_error(tile_spec, wmts_reply->error_string());
   }
 

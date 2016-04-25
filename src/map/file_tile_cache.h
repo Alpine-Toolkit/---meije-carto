@@ -96,6 +96,7 @@ class QC_EXPORT QcTileTexture
   QcTileTexture();
   ~QcTileTexture();
 
+ public:
   QcTileSpec tile_spec;
   QImage image;
   bool texture_bound;
@@ -181,9 +182,9 @@ class QC_EXPORT QcFileTileCache : public QObject
   static QcTileSpec filename_to_tile_spec(const QString & filename);
 
  private:
-  QcCache3Q<QcTileSpec, QcCachedTileDisk, QCache3QTileEvictionPolicy > m_disk_cache;
-  QcCache3Q<QcTileSpec, QcCachedTileMemory > m_memory_cache;
-  QcCache3Q<QcTileSpec, QcTileTexture > m_texture_cache;
+  QcCache3Q<QcTileSpec, QcCachedTileDisk, QCache3QTileEvictionPolicy > m_disk_cache; // Store image on disk
+  QcCache3Q<QcTileSpec, QcCachedTileMemory > m_memory_cache; // Store encoded images on memory : PNG, JPEG
+  QcCache3Q<QcTileSpec, QcTileTexture > m_texture_cache; // Store decoded images
   QString m_directory;
   int m_min_texture_usage;
   int m_extra_texture_usage;

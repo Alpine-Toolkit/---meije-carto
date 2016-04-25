@@ -156,12 +156,17 @@ qHash(const QcTileSpec & tile_spec)
 QDebug
 operator<<(QDebug debug, const QcTileSpec & tile_spec)
 {
-  // Fixme: "geoportail"-1-16-33885-23658
-  debug << tile_spec.plugin()
-	<< "-" << tile_spec.map_id()
-	<< "-" << tile_spec.level()
-	<< "-" << tile_spec.x()
-	<< "-" << tile_spec.y();
+  // Fixme: litteral, arg OR s <<
+  QString s = tile_spec.plugin();
+  s += QLatin1Literal("-");
+  s += QString::number(tile_spec.map_id());
+  s += QLatin1Literal("-");
+  s += QString::number(tile_spec.level());
+  s += QLatin1Literal("-");
+  s += QString::number(tile_spec.x());
+  s += QLatin1Literal("-");
+  s += QString::number(tile_spec.y());
+  debug << s;
   return debug;
 }
 

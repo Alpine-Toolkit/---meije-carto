@@ -230,7 +230,7 @@ QcFileTileCache::base_cache_directory()
 
   if (!directory.endsWith(QLatin1Char('/')))
     directory += QLatin1Char('/');
-  directory += QLatin1String("QtCarto/");
+  directory += QLatin1Literal("QtCarto/");
 
   qInfo() << "base_cache_directory" << directory;
   return directory;
@@ -247,8 +247,8 @@ QcFileTileCache::clear_all()
   m_disk_cache.clear();
 
   QStringList string_list;
-  string_list << QLatin1String("*-*-*-*.*"); // tile pattern
-  string_list << QLatin1String("queue?");
+  string_list << QLatin1Literal("*-*-*-*.*"); // tile pattern
+  string_list << QLatin1Literal("queue?");
   QDir directory(m_directory);
   directory.setNameFilters(string_list);
   directory.setFilter(QDir::Files);
@@ -267,7 +267,7 @@ void
 QcFileTileCache::load_tiles()
 {
   QStringList formats;
-  formats << QLatin1String("*.*");
+  formats << QLatin1Literal("*.*");
 
   QDir directory(m_directory);
   QStringList files = directory.entryList(formats, QDir::Files);
@@ -406,12 +406,11 @@ QcFileTileCache::get(const QcTileSpec & tile_spec)
     return tile_texture;
 
   // Try memory cache
-  // Fixme: purpose of texture cache versus memory cache ???
   QSharedPointer<QcCachedTileMemory> tile_memory = m_memory_cache.object(tile_spec);
   if (tile_memory) {
     QImage image;
-    if (!image.loadFromData(tile_memory->bytes)) {
-      handle_error(tile_spec, QLatin1String("Problem with tile image"));
+    if (!image.loadFromData(tile_memory->bytes)) { // Load PNG, JPEG
+      handle_error(tile_spec, QLatin1Literal("Problem with tile image"));
       return QSharedPointer<QcTileTexture>(0);
     }
     QSharedPointer<QcTileTexture> tile_texture = add_to_texture_cache(tile_spec, image);
@@ -431,7 +430,7 @@ QcFileTileCache::get(const QcTileSpec & tile_spec)
 
     QImage image;
     if (!image.loadFromData(bytes)) {
-      handle_error(tile_spec, QLatin1String("Problem with tile image"));
+      handle_error(tile_spec, QLatin1Literal("Problem with tile image"));
       return QSharedPointer<QcTileTexture>(0);
     }
 
@@ -530,15 +529,15 @@ QString
 QcFileTileCache::tile_spec_to_filename(const QcTileSpec & tile_spec, const QString & format, const QString & directory_)
 {
   QString filename = tile_spec.plugin(); // Fixme: litteral, arg
-  filename += QLatin1String("-");
+  filename += QLatin1Literal("-");
   filename += QString::number(tile_spec.map_id());
-  filename += QLatin1String("-");
+  filename += QLatin1Literal("-");
   filename += QString::number(tile_spec.level());
-  filename += QLatin1String("-");
+  filename += QLatin1Literal("-");
   filename += QString::number(tile_spec.x());
-  filename += QLatin1String("-");
+  filename += QLatin1Literal("-");
   filename += QString::number(tile_spec.y());
-  filename += QLatin1String(".");
+  filename += QLatin1Literal(".");
   filename += format;
 
   return QDir(directory_).filePath(filename);

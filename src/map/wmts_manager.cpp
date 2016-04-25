@@ -229,14 +229,14 @@ QcWmtsManager::update_tile_requests(QcMapView * map_view,
   			    // Qt::QueuedConnection,
   			    Q_ARG(QSet<QcTileSpec>, requested_tiles), // QcTileSpecSet
   			    Q_ARG(QSet<QcTileSpec>, canceled_tiles));
-  qInfo() << "end of QcWmtsManager::update_tile_requests";
+  qInfo() << "end of";
 }
 
 // Fixme: name
 void
 QcWmtsManager::fetcher_tile_finished(const QcTileSpec & tile_spec, const QByteArray & bytes, const QString & format)
 {
-  qInfo() << "QcWmtsManager::fetcher_tile_finished";
+  qInfo();
   QcMapViewPointerSet map_views = m_tile_hash.value(tile_spec);
   remove_tile_spec(tile_spec);
   tile_cache()->insert(tile_spec, bytes, format); // , m_cache_hint
@@ -248,7 +248,7 @@ QcWmtsManager::fetcher_tile_finished(const QcTileSpec & tile_spec, const QByteAr
 void
 QcWmtsManager::fetcher_tile_error(const QcTileSpec & tile_spec, const QString & error_string)
 {
-  qInfo() << "QcWmtsManager::fetcher_tile_finished";
+  qInfo();
   QcMapViewPointerSet map_views = m_tile_hash.value(tile_spec);
   remove_tile_spec(tile_spec);
 
@@ -267,7 +267,7 @@ QcWmtsManager::get_tile_texture(const QcTileSpec & tile_spec)
 void
 QcWmtsManager::dump() const
 {
-  qInfo() << "Dump QcWmtsManager";
+  qInfo() << "Dump";
   for (auto & tile_spec : m_tile_hash.keys())
     qInfo() << tile_spec << "--->" << m_tile_hash[tile_spec];
   for (auto & map_view : m_map_view_hash.keys())
