@@ -26,6 +26,9 @@ set(qtcarto_files
   map/location_circle_material_shader.cpp
   map/map_scene.cpp
   map/map_view.cpp
+  map/osm/osm_plugin.cpp
+  map/osm/osm_wmts_reply.cpp
+  map/osm/osm_wmts_tile_fetcher.cpp
   map/tile_matrix_index.cpp
   map/tile_matrix_set.cpp
   map/tile_spec.cpp
