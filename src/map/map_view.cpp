@@ -68,18 +68,25 @@ QcMapView::~QcMapView()
 void
 QcMapView::update_tile(const QcTileSpec & tile_spec)
 {
-  QSharedPointer<QcTileTexture> texture = m_request_manager->tile_texture(tile_spec);
-  if (!texture.isNull()) {
-    qInfo() << "QcMapView::update_tile" << tile_spec;
+  qInfo() << tile_spec;
+  // Only promote the texture up to GPU if it is visible
+  if (m_visible_tiles.contains(tile_spec)) {
+    QSharedPointer<QcTileTexture> texture = m_request_manager->tile_texture(tile_spec);
+    if (!texture.isNull()) {
+      m_map_scene->add_tile(tile_spec, texture);
+      emit scene_graph_changed();
+    }
   }
 }
 
 void
 QcMapView::update_scene()
 {
-  qInfo() << "QcMapView::update_scene";
+  qInfo();
 
-  // Done in map scene !!!
+  // Compute visible tile set in viewport
+
+  // Fixme: Done in map scene !!!
   QcTileMatrixSet tile_matrix_set = m_plugin->tile_matrix_set();
   int zoom_level = m_viewport->zoom_level();
   const QcTileMatrix & tile_matrix = tile_matrix_set[zoom_level];
@@ -87,20 +94,47 @@ QcMapView::update_scene()
 
   const QcPolygon & polygon = m_viewport->polygon();
   const QcInterval2DDouble & interval = polygon.interval();
-  qInfo() << "Normalised Mercator polygon interval [m]"
-          << "[" << (int) interval.x().inf() << ", " << (int) interval.x().sup() << "]"
-          << "x"
-          << "[" << (int) interval.y().inf() << ", " << (int) interval.y().sup() << "]";
-  QcTiledPolygon tiled_polygon = polygon.intersec_with_grid(tile_length_m);
-  QcTileSpecSet tile_specs;
-  for (const QcTiledPolygonRun & run:  tiled_polygon.runs()) {
-    const QcIntervalInt & run_interval = run.interval();
-    size_t y = run.y();
-    qInfo() << "Run " << run.y() << " [" << run_interval.inf() << ", " << run_interval.sup() << "]";
-    for (size_t x = run_interval.inf(); x <= run_interval.sup(); x++)
-      tile_specs.insert(m_plugin->create_tile_spec(0, zoom_level, x, y));
+  if (interval.x().is_empty() or interval.y().is_empty()) {
+    m_visible_tiles.clear();
+    m_map_scene->set_visible_tiles(m_visible_tiles);
+  } else {
+    qInfo() << "Normalised Mercator polygon interval [m]"
+            << "[" << (int) interval.x().inf() << ", " << (int) interval.x().sup() << "]"
+            << "x"
+            << "[" << (int) interval.y().inf() << ", " << (int) interval.y().sup() << "]";
+    QcTiledPolygon tiled_polygon = polygon.intersec_with_grid(tile_length_m);
+    QcTileSpecSet visible_tiles;
+    for (const QcTiledPolygonRun & run:  tiled_polygon.runs()) {
+      const QcIntervalInt & run_interval = run.interval();
+      size_t y = run.y();
+      qInfo() << "Run " << run.y() << " [" << run_interval.inf() << ", " << run_interval.sup() << "]";
+      for (int x = run_interval.inf(); x <= run_interval.sup(); x++)
+        visible_tiles.insert(m_plugin->create_tile_spec(0, zoom_level, x, y));
+    }
+    qInfo() << "visible tiles: " << visible_tiles;
+    qInfo() << "new visible tiles: " << visible_tiles - m_visible_tiles;
+
+    // bool new_tiles_introduced = !m_visible_tiles.contains(visible_tiles);
+    m_visible_tiles = visible_tiles;
+
+    // emit scene_graph_changed();
+    // return;
+
+    m_map_scene->set_visible_tiles(visible_tiles);
+
+    // don't request tiles that are already built and textured
+    QcTileSpecSet tile_to_request = m_visible_tiles - m_map_scene->textured_tiles();
+    if (!tile_to_request.isEmpty()) {
+        QList<QSharedPointer<QcTileTexture> > cached_tiles = m_request_manager->request_tiles(tile_to_request);
+        for (const auto & texture : cached_tiles)
+          m_map_scene->add_tile(texture->tile_spec, texture);
+        if (!cached_tiles.isEmpty())
+          emit scene_graph_changed();
+    }
   }
-  m_request_manager->request_tiles(tile_specs);
+
+  // Fixme: viewport_changed -> scene_graph_changed
+  emit scene_graph_changed();
 }
 
 /**************************************************************************************************/

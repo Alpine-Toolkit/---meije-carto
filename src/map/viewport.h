@@ -199,7 +199,7 @@ class QC_EXPORT QcViewport : public QObject
   Q_OBJECT
 
  public:
-  QcInterval2DDouble interval_from_center_and_size(const QcVectorDouble & center, const QcVectorDouble & size);
+  static QcInterval2DDouble interval_from_center_and_size(const QcVectorDouble & center, const QcVectorDouble & size);
 
  public:
   QcViewport(const QcViewportState & viewport_state, const QSize & viewport_size); // Fixme : tiled_zoom_level has parameters

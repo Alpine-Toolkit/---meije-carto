@@ -285,14 +285,24 @@ QcViewport::zoom_at(const QcGeoCoordinateWebMercator & coordinate, unsigned int 
 void
 QcViewport::pan(double x, double y)
 {
+  // Fixme: x are px
+  double x_m = x * zoom_factor(); // zoom_factor is m/px
+  double y_m = y * zoom_factor();
+  qInfo() << x << "px" << x_m << "m";
   const QcGeoCoordinateWebMercator & old_coordinate = web_mercator();
-  QcGeoCoordinateWebMercator new_coordinate(old_coordinate.x() + x, old_coordinate.y() + y); // could use vector api
+  QcGeoCoordinateWebMercator new_coordinate(old_coordinate.x() + x_m, old_coordinate.y() + y_m); // could use vector api
   set_coordinate(new_coordinate);
 }
 
 void
 QcViewport::update_area()
 {
+  const QcInterval2DDouble & interval1 = m_polygon.interval();
+  qInfo() << "Actual Normalised Mercator polygon interval [m]"
+          << "[" << (int) interval1.x().inf() << ", " << (int) interval1.x().sup() << "]"
+          << "x"
+          << "[" << (int) interval1.y().inf() << ", " << (int) interval1.y().sup() << "]";
+
   // cache them ?
   QcVectorDouble viewport_size = QcVectorDouble(m_viewport_size.width(), m_viewport_size.height());
   QcVectorDouble new_area_size = viewport_size * zoom_factor(); // [px] * [m/px]
@@ -321,6 +331,12 @@ QcViewport::update_area()
   else
     m_polygon = polygon;
   m_cross_datum = m_polygon.interval().is_included_in(QcGeoCoordinateWebMercator::domain());
+
+  const QcInterval2DDouble & interval2 = m_polygon.interval();
+  qInfo() << "Updated Normalised Mercator polygon interval [m]"
+          << "[" << (int) interval2.x().inf() << ", " << (int) interval2.x().sup() << "]"
+          << "x"
+          << "[" << (int) interval2.y().inf() << ", " << (int) interval2.y().sup() << "]";
 
   emit viewport_changed();
 }

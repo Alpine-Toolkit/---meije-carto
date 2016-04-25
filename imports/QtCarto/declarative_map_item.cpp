@@ -52,7 +52,7 @@ QcMapItem::QcMapItem(QQuickItem * parent)
     m_map_view(nullptr),
     m_viewport(nullptr)
 {
-  qInfo() << "QcMapItem::QcMapItem";
+  qInfo();
   setAcceptHoverEvents(false);
   setAcceptedMouseButtons(Qt::LeftButton);
   setFlags(QQuickItem::ItemHasContents | QQuickItem::ItemClipsChildrenToShape);
@@ -66,9 +66,11 @@ QcMapItem::QcMapItem(QQuickItem * parent)
   m_map_view = new QcMapView(m_plugin);
   m_viewport = m_map_view->viewport();
 
+  connect(m_map_view, &QcMapView::scene_graph_changed, this, &QQuickItem::update);
+
   // Fixme: remove
   // Set default viewport center and zoom level
-  size_t level = 16;
+  size_t level = 10;
   double longitude =  2.3491; // Paris Notre-Dame
   double latitude  = 48.8533;
   QcGeoCoordinateWGS84 coordinate(longitude, latitude);
@@ -77,14 +79,14 @@ QcMapItem::QcMapItem(QQuickItem * parent)
 
 QcMapItem::~QcMapItem()
 {
-  qInfo() << "QcMapItem::~QcMapItem";
+  qInfo();
   // delete m_plugin, m_viewport
 }
 
 void
 QcMapItem::componentComplete()
 {
-  qInfo() << "QcMapItem::componentComplete";
+  qInfo();
   // m_component_completed = true;
   m_gesture_area->set_map(this); // Fixme
   QQuickItem::componentComplete();
@@ -128,7 +130,7 @@ QcMapItem::is_interactive()
 void
 QcMapItem::mousePressEvent(QMouseEvent *event)
 {
-  qInfo() << "QcMapItem::mousePressEvent";
+  qInfo();
   if (is_interactive())
     m_gesture_area->handle_mouse_press_event(event);
   else
@@ -137,7 +139,7 @@ QcMapItem::mousePressEvent(QMouseEvent *event)
 
 void QcMapItem::mouseMoveEvent(QMouseEvent *event)
 {
-  qInfo() << "QcMapItem::mouseMoveEvent";
+  qInfo();
   if (is_interactive())
     m_gesture_area->handle_mouse_move_event(event);
   else
@@ -146,7 +148,7 @@ void QcMapItem::mouseMoveEvent(QMouseEvent *event)
 
 void QcMapItem::mouseReleaseEvent(QMouseEvent *event)
 {
-  qInfo() << "QcMapItem::mouseReleaseEvent";
+  qInfo();
   if (is_interactive()) {
     m_gesture_area->handle_mouse_release_event(event);
     ungrabMouse();
@@ -157,7 +159,7 @@ void QcMapItem::mouseReleaseEvent(QMouseEvent *event)
 
 void QcMapItem::mouseUngrabEvent()
 {
-  qInfo() << "QcMapItem::mouseUngrabEvent";
+  qInfo();
   if (is_interactive())
     m_gesture_area->handle_mouse_ungrab_event();
   else
@@ -166,7 +168,7 @@ void QcMapItem::mouseUngrabEvent()
 
 void QcMapItem::touchUngrabEvent()
 {
-  qInfo() << "QcMapItem::touchUngrabEvent";
+  qInfo();
   if (is_interactive())
     m_gesture_area->handle_touch_ungrab_event();
   else
@@ -176,7 +178,7 @@ void QcMapItem::touchUngrabEvent()
 void
 QcMapItem::touchEvent(QTouchEvent * event)
 {
-  qInfo() << "QcMapItem::touchEvent";
+  qInfo();
   if (is_interactive()) {
     m_gesture_area->handle_touch_event(event);
     if (event->type() == QEvent::TouchEnd ||
@@ -192,7 +194,7 @@ QcMapItem::touchEvent(QTouchEvent * event)
 void
 QcMapItem::wheelEvent(QWheelEvent * event)
 {
-  qInfo() << "QcMapItem::wheelEvent";
+  qInfo();
   if (is_interactive())
     m_gesture_area->handle_wheel_event(event);
   else
@@ -210,7 +212,7 @@ QcMapItem::wheelEvent(QWheelEvent * event)
 QGeoCoordinate
 QcMapItem::to_coordinate(const QVector2D & pos, bool clip_to_viewport) const
 {
-  qInfo() << "QcMapItem::item_position_to_coordinate" << pos << clip_to_viewport;
+  qInfo() << pos << clip_to_viewport;
 
   if (clip_to_viewport) {
     int w = width();
@@ -232,7 +234,7 @@ QcMapItem::to_coordinate(const QVector2D & pos, bool clip_to_viewport) const
   QcGeoCoordinateWGS84 coordinate = QcGeoCoordinateNormalisedWebMercator(x, y).wgs84();
 
   QGeoCoordinate _coordinate(coordinate.latitude(), coordinate.longitude()); // QGeoProjection::mercatorToCoord(m_mapScene->itemPositionToMercator(pos));;
-  qInfo() << "QcMapItem::item_position_to_coordinate" << _coordinate;
+  qInfo() << _coordinate;
   // return QGeoCoordinate();
   return _coordinate;
 }
@@ -248,7 +250,7 @@ QcMapItem::to_coordinate(const QVector2D & pos, bool clip_to_viewport) const
 QVector2D
 QcMapItem::from_coordinate(const QGeoCoordinate & coordinate, bool clip_to_viewport) const
 {
-  qInfo() << "QcMapItem::coordinate_to_item_position" << coordinate << clip_to_viewport;
+  qInfo() << coordinate << clip_to_viewport;
 
   QcGeoCoordinateNormalisedWebMercator normalised_mercator = QcGeoCoordinateWGS84(coordinate.longitude(), coordinate.latitude()).normalised_web_mercator();
 
@@ -272,7 +274,7 @@ QcMapItem::from_coordinate(const QGeoCoordinate & coordinate, bool clip_to_viewp
       return QVector2D(qQNaN(), qQNaN());
   }
 
-  qInfo() << "QcMapItem::coordinate_to_item_position" << pos;
+  qInfo() << pos;
   // return QPointF(qQNaN(), qQNaN());
   return pos;
 }
@@ -280,13 +282,13 @@ QcMapItem::from_coordinate(const QGeoCoordinate & coordinate, bool clip_to_viewp
 void
 QcMapItem::prefetch_data()
 {
-  qInfo() << "QcMapItem::prefetch_data";
+  qInfo();
 }
 
 void
 QcMapItem::set_zoom_level(int zoom_level)
 {
-  qInfo() << "QcMapItem::set_zoom_level " << zoom_level;
+  qInfo() << zoom_level;
 
   if (zoom_level == m_viewport->zoom_level())
     return;
@@ -296,7 +298,7 @@ QcMapItem::set_zoom_level(int zoom_level)
     return;
 
   m_viewport->set_zoom_level(zoom_level);
-  update(); // Fixme: signal
+  // update(); // Fixme: signal
   emit zoom_levelChanged(zoom_level);
 }
 
@@ -309,7 +311,7 @@ QcMapItem::zoom_level() const
 void
 QcMapItem::set_center(const QGeoCoordinate & center)
 {
-  qInfo() << "QcMapItem::set_center WGS84 " << center;
+  qInfo() << "WGS84 " << center;
 
   QcGeoCoordinateWGS84 coordinate(center.longitude(), center.latitude());
   if (coordinate == m_viewport->wgs84())
@@ -320,7 +322,7 @@ QcMapItem::set_center(const QGeoCoordinate & center)
   // coordinate.setLatitude(qBound(-m_maximumViewportLatitude, center.latitude(), m_maximumViewportLatitude));
 
   m_viewport->set_coordinate(coordinate);
-  update(); // Fixme: signal
+  // update(); // Fixme: signal
   emit centerChanged(center);
 
   // QcGeoCoordinateMercator mercator_coordinate = m_viewport->mercator();
@@ -339,7 +341,7 @@ QcMapItem::center() const
 void
 QcMapItem::pan(int dx, int dy)
 {
-  qInfo() << "QcMapItem::pan" << dx << dy;
+  qInfo() << dx << dy;
   m_viewport->pan(dx, dy); // Fixme: unit is m
   update(); // Fixme: signal
 }
@@ -347,7 +349,7 @@ QcMapItem::pan(int dx, int dy)
 void
 QcMapItem::geometryChanged(const QRectF & new_geometry, const QRectF & old_geometry)
 {
-  qInfo() << "QcMapItem::geometryChanged" << old_geometry << "->" << new_geometry;
+  qInfo() << old_geometry << "->" << new_geometry;
   QQuickItem::geometryChanged(new_geometry, old_geometry);
   QSize viewport_size(new_geometry.width(), new_geometry.height()); // Fixme: QSizeF size()
   m_viewport->set_viewport_size(viewport_size);
@@ -357,7 +359,7 @@ QcMapItem::geometryChanged(const QRectF & new_geometry, const QRectF & old_geome
 QSGNode *
 QcMapItem::updatePaintNode(QSGNode * old_node, UpdatePaintNodeData *)
 {
-  qInfo() << "QcMapItem::updatePaintNode" << old_node;
+  qInfo() << old_node;
 
   // if (!m_map) {
   //   delete old_node;

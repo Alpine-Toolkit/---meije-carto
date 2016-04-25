@@ -33,17 +33,17 @@ ApplicationWindow {
         // opacity: 1.
 
         center: location.coordinate
-        zoom_level: 16
+        zoom_level: 10 // 16
 
         Keys.onPressed: {
             if (event.key == Qt.Key_Left) {
-                map.pan(-10, 0);
+                map.pan(-100, 0);
                 event.accepted = true;
             } else if (event.key == Qt.Key_Right) {
-                map.pan(10, 0);
+                map.pan(100, 0);
                 event.accepted = true;
             } else if (event.key == Qt.Key_Up) {
-                map.pan(0, -10);
+                map.pan(0, -100);
                 event.accepted = true;
             } else if (event.key == Qt.Key_Down) {
                 map.pan(0, 100);

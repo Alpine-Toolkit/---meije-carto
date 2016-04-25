@@ -71,6 +71,9 @@ class QC_EXPORT QcMapView : public QObject
     return m_map_scene->update_scene_graph(old_node, window);
   }
 
+ signals:
+  void scene_graph_changed();
+
  public slots:
   void update_scene();
 
@@ -80,6 +83,7 @@ class QC_EXPORT QcMapView : public QObject
   QcWmtsRequestManager * m_request_manager;
   QcViewport * m_viewport;
   QcMapScene * m_map_scene;
+  QcTileSpecSet m_visible_tiles;
 };
 
 typedef QSet<QcMapView *> QcMapViewPointerSet;

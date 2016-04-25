@@ -33,13 +33,16 @@
 
 /**************************************************************************************************/
 
+#include <QHash>
 #include <QObject>
 #include <QQuickWindow>
 #include <QSGNode>
 
 /**************************************************************************************************/
 
+#include "map/file_tile_cache.h"
 #include "map/tile_matrix_set.h"
+#include "map/tile_spec.h"
 #include "map/viewport.h"
 
 /**************************************************************************************************/
@@ -54,12 +57,27 @@ public:
 
   void set_item_size (const QSize & size) { m_item_size = size; };
 
+  void add_tile(const QcTileSpec & tile_spec, QSharedPointer<QcTileTexture> texture);
+
+  void set_visible_tiles(const QcTileSpecSet & tile_specs);
+  const QcTileSpecSet & visible_tiles() const { return m_visible_tiles; };
+  QcTileSpecSet textured_tiles() const;
+
   QSGNode * update_scene_graph(QSGNode * old_node, QQuickWindow * window);
+
+  bool build_geometry(const QcTileSpec & tile_spec, QSGGeometry::TexturedPoint2D * vertices);
+
+private:
+  void remove_tiles(const QcTileSpecSet & old_tiles);
+
+public:
+  QHash<QcTileSpec, QSharedPointer<QcTileTexture> > m_tile_textures;
 
 private:
   QSize m_item_size; // in pixels
   QcViewport * m_viewport;
   QcTileMatrixSet & m_tile_matrix_set;
+  QcTileSpecSet m_visible_tiles;
 };
 
 // QC_END_NAMESPACE
