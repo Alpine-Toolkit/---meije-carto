@@ -301,17 +301,17 @@ QcMapScene::build_geometry(const QcTileSpec & tile_spec, QSGGeometry::TexturedPo
 
   int tile_size = m_tile_matrix_set.tile_size();
   const QcTileMatrix & tile_matrix = m_tile_matrix_set[m_viewport->zoom_level()];
-  double tile_length_m = tile_matrix.tile_length_m();
+  //double tile_length_m = tile_matrix.tile_length_m();
   double resolution = tile_matrix.resolution(); // [m/px]
 
   const QcPolygon & polygon = m_viewport->polygon();
   const QcInterval2DDouble & interval = polygon.interval();
   double x_inf_m = interval.x().inf();
   double y_inf_m = interval.y().inf();
-  double y_sup_m = interval.y().sup();
+  // double y_sup_m = interval.y().sup();
   double x_inf_px = x_inf_m / resolution;
   double y_inf_px = y_inf_m / resolution;
-  double y_sup_px = y_sup_m / resolution;
+  //double y_sup_px = y_sup_m / resolution;
 
   double x = tile_spec.x() * tile_size;
   double y = tile_spec.y() * tile_size;
@@ -385,8 +385,8 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
   // qInfo() << "center mercator" << mercator_coordinate << normalised_mercator_coordinate << center;
   double x_inf_m = interval.x().inf();
   double y_inf_m = interval.y().inf();
-  double x_center_px = (center.x() - x_inf_m) / resolution; // vector
-  double y_center_px = (center.y() - y_inf_m) / resolution;
+  //double x_center_px = (center.x() - x_inf_m) / resolution; // vector
+  //double y_center_px = (center.y() - y_inf_m) / resolution;
   // qInfo() << "xy center px" << x_center_px << y_center_px; // == width/2 height/2
   // qInfo() << (int)center.x() << (int)x_inf_m << resolution;
 
@@ -481,7 +481,7 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
 
 /**************************************************************************************************/
 
-#include "map_scene.moc"
+// #include "map_scene.moc"
 
 // QC_END_NAMESPACE
 

@@ -326,7 +326,7 @@ QcFileTileCache::print_stats()
 void
 QcFileTileCache::handle_error(const QcTileSpec & tile_spec, const QString & error)
 {
-  qWarning() << "tile request error " << error;
+  qWarning() << "tile request error " << tile_spec << error;
 }
 
 void

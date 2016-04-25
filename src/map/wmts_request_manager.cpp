@@ -175,7 +175,7 @@ QcWmtsRequestManager::tile_error(const QcTileSpec & tile_spec, const QString & e
     if (count >= 5) {
       qWarning("QcWmtsRequestManager: Failed to fetch tile (%d,%d,%d) 5 times, giving up. "
 	       "Last error message was: '%s'",
-	       tile_spec.x(), tile_spec.y(), tile_spec.level(), qPrintable(error_string));
+           tile_spec.x(), tile_spec.y(), tile_spec.level(), qPrintable(error_string)); // Fixme: size_t int
       m_requested.remove(tile_spec);
       m_retries.remove(tile_spec);
       m_futures.remove(tile_spec);

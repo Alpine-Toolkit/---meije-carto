@@ -353,8 +353,8 @@ QcGpxReader::read_metadata(QcGpx & gpx)
         gpx.set_keywords(m_reader.readElementText());
       else if (ename == BOUNDS_ELEMENT)
         read_bounds(gpx);
-      else if (ename == EXTENSIONS_ELEMENT)
-        ;
+      else if (ename == EXTENSIONS_ELEMENT) {
+      }
       // else
       //   goto parse_error;
     }
@@ -421,8 +421,8 @@ QcGpxReader::read_waypoint(const QString & element)
         waypoint.set_age_of_dgps_data(m_reader.read_double());
       else if (ename == DGPS_ID_ELEMENT)
         waypoint.set_dgps_id(m_reader.read_double());
-      else if (ename == EXTENSIONS_ELEMENT)
-        ;
+      else if (ename == EXTENSIONS_ELEMENT) {
+      }
     }
 
   waypoint.set_coordinate(coordinate);
@@ -508,8 +508,8 @@ QcGpxReader::read_track_segment()
       QStringRef ename = m_reader.name();
       if (ename == TRACK_POINT_ELEMENT)
           segment.append(read_waypoint(TRACK_POINT_ELEMENT));
-      else if (ename == EXTENSIONS_ELEMENT)
-        ;
+      else if (ename == EXTENSIONS_ELEMENT) {
+      }
       }
 
   return segment;

@@ -156,12 +156,12 @@ class QC_EXPORT QcTileMatrix
   }
 
   // pyramid level
-  inline const size_t level() const {
+  inline size_t level() const {
     return m_level;
   }
 
   // Size of the mosaic, unit [tile]
-  inline const size_t mosaic_size() const {
+  inline size_t mosaic_size() const {
     return m_mosaic_size;
   }
 

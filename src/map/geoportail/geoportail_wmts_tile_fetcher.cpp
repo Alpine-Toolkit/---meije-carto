@@ -97,6 +97,7 @@ void
 QcGeoportailWmtsTileFetcher::on_authentication_request_slot(QNetworkReply *reply,
 							    QAuthenticator *authenticator)
 {
+  Q_UNUSED(reply);
   qInfo() << "on_authentication_request_slot";
   authenticator->setUser(m_licence.user());
   authenticator->setPassword(m_licence.password());
