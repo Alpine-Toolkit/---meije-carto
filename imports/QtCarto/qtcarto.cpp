@@ -41,14 +41,15 @@
 class QtCartoDeclarativeModule : public QQmlExtensionPlugin
 {
   Q_OBJECT
-  Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface/1.0"
-		    FILE "plugin.json")
+  Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface")
+  // Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface/1.0"
+  //                   FILE "plugin.json")
 
  public:
   void registerTypes(const char *uri)
   {
-    // Q_ASSERT(uri == QLatin1String("QtCarto"));
-    if (QLatin1String(uri) == QLatin1String("QtCarto")) {
+    // Q_ASSERT(uri == QLatin1String("fr.alpine_toolkit.QtCarto"));
+    if (QLatin1String(uri) == QLatin1String("fr.alpine_toolkit.QtCarto")) {
 
       // @uri QtCarto
       int major = 1;

@@ -1,12 +1,24 @@
+####################################################################################################
+
 TEMPLATE = app
 TARGET = mapviewer
 
-CONFIG += debug console qml_debug
+! include( ../common.pri ) {
+  error( "Couldn't find the common.pri file!" )
+}
 
-QT += qml quick
+CONFIG += qml_debug
 
-# HEADERS += \
+QT += core gui qml quick
 
 SOURCES += main.cpp
 
 RESOURCES += mapviewer.qrc
+
+#? QML_IMPORT_PATH = ../imports
+
+####################################################################################################
+#
+# End
+#
+####################################################################################################

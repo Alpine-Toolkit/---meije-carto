@@ -7,6 +7,12 @@ CONFIG += c++14
 
 CONFIG += debug console # qml_debug
 
+# QT += core network
+# QT += qml quick quickcontrols
+# QT += positioning
+
+INCLUDEPATH += src
+
 ####################################################################################################
 #
 # End

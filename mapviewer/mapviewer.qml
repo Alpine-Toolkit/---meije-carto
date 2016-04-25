@@ -6,7 +6,7 @@ import QtQuick.Layouts 1.1
 // import QtLocation 5.6
 import QtPositioning 5.5
 
-import QtCarto 1.0
+import fr.alpine_toolkit.QtCarto 1.0
 
 ApplicationWindow {
     id: application_window

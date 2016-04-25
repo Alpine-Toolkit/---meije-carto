@@ -389,7 +389,7 @@ QcMapItem::updatePaintNode(QSGNode * old_node, UpdatePaintNodeData *)
 
 /**************************************************************************************************/
 
-#include "declarative_map_item.moc"
+// #include "declarative_map_item.moc"
 
 // QC_END_NAMESPACE
 
