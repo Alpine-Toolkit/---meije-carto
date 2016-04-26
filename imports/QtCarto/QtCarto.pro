@@ -13,8 +13,6 @@ QT += qml quick positioning
 
 TARGET = $$qtLibraryTarget($$TARGET)
 
-INCLUDEPATH += ../../src
-
 # Fixme : Private QT API
 INCLUDEPATH += /opt/Qt-dev-5.7.0/include/QtQuick/5.7.0/QtQuick
 INCLUDEPATH += /opt/Qt-dev-5.7.0/include/QtQml/5.7.0/QtQml
@@ -32,10 +30,90 @@ HEADERS += \
   geo_coordinate_animation.h \
   map_gesture_area.h
 
-unix:!macx: LIBS += -L$$OUT_PWD/../../src/ -lqtcarto
+############
+# libqtcarto
 
-INCLUDEPATH += $$PWD/../src
-DEPENDPATH += $$PWD/../src
+QT *= core quick gui network positioning
+
+DEFINES += QTCARTO_LIBRARY
+
+SOURCES += \
+  ../../src/geo_data_format/gpx.cpp \
+  ../../src/geo_data_format/route.cpp \
+  ../../src/geo_data_format/waypoint.cpp \
+  ../../src/geo_data_format/xml_reader.cpp \
+  ../../src/map/file_tile_cache.cpp \
+  ../../src/map/geo_coordinate.cpp \
+  ../../src/map/geoportail/geoportail_license.cpp \
+  ../../src/map/geoportail/geoportail_plugin.cpp \
+  ../../src/map/geoportail/geoportail_wmts_reply.cpp \
+  ../../src/map/geoportail/geoportail_wmts_tile_fetcher.cpp \
+  ../../src/map/location_circle_material_shader.cpp \
+  ../../src/map/map_scene.cpp \
+  ../../src/map/map_view.cpp \
+  ../../src/map/osm/osm_plugin.cpp \
+  ../../src/map/osm/osm_wmts_reply.cpp \
+  ../../src/map/osm/osm_wmts_tile_fetcher.cpp \
+  ../../src/map/tile_matrix_index.cpp \
+  ../../src/map/tile_matrix_set.cpp \
+  ../../src/map/tile_spec.cpp \
+  ../../src/map/viewport.cpp \
+  ../../src/map/wmts_manager.cpp \
+  ../../src/map/wmts_plugin.cpp \
+  ../../src/map/wmts_reply.cpp \
+  ../../src/map/wmts_request_manager.cpp \
+  ../../src/map/wmts_tile_fetcher.cpp \
+  ../../src/math/interval.cpp \
+  ../../src/math/polygon.cpp \
+  ../../src/math/qc_math.cpp \
+  ../../src/math/rational.cpp \
+  ../../src/math/vector.cpp
+
+HEADERS += \
+  ../../src/geo_data_format/gpx.h \
+  ../../src/geo_data_format/route.h \
+  ../../src/geo_data_format/waypoint.h \
+  ../../src/geo_data_format/xml_reader.h \
+  ../../src/map/cache3q.h \
+  ../../src/map/earth.h \
+  ../../src/map/file_tile_cache.h \
+  ../../src/map/geo_coordinate.h \
+  ../../src/map/geoportail/geoportail_license.h \
+  ../../src/map/geoportail/geoportail_plugin.h \
+  ../../src/map/geoportail/geoportail_wmts_reply.h \
+  ../../src/map/geoportail/geoportail_wmts_tile_fetcher.h \
+  ../../src/map/location_circle_material_shader.h \
+  ../../src/map/map_scene.h \
+  ../../src/map/map_view.h \
+  ../../src/map/osm/osm_plugin.h \
+  ../../src/map/osm/osm_wmts_reply.h \
+  ../../src/map/osm/osm_wmts_tile_fetcher.h \
+  ../../src/map/tile_matrix_index.h \
+  ../../src/map/tile_matrix_set.h \
+  ../../src/map/tile_spec.h \
+  ../../src/map/viewport.h \
+  ../../src/map/wmts_manager.h \
+  ../../src/map/wmts_plugin.h \
+  ../../src/map/wmts_reply.h \
+  ../../src/map/wmts_request_manager.h \
+  ../../src/map/wmts_tile_fetcher.h \
+  ../../src/math/interval.h \
+  ../../src/math/line.h \
+  ../../src/math/polygon.h \
+  ../../src/math/qc_math.h \
+  ../../src/math/rational.h \
+  ../../src/math/segment.h \
+  ../../src/math/vector.h \
+  ../../src/qtcarto_global.h \
+  ../../src/qtcarto.h
+
+# libqtcarto
+############
+
+# unix:!macx: LIBS += -L$$OUT_PWD/../..src/ -lqtcarto
+
+INCLUDEPATH += $$PWD/../../src
+DEPENDPATH += $$PWD/../../src
 
 # Install to /home/opt/Qt-dev-5.7.0/qml/fr/alpine_toolkit/QtCarto
 #  libqmlqtcartoplugin.so

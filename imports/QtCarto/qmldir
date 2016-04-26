@@ -1,3 +1,3 @@
-module fr.alpine_toolkit.QtCarto
+module QtCarto
 plugin qmlqtcartoplugin
 classname QtCartoDeclarativeModule
