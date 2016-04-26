@@ -37,15 +37,11 @@
 #include <QSGTransformNode>
 #include <QtDebug>
 
-// #include <QtQuick/qsgflatcolormaterial.h>
-// #include <QtQuick/qsgnode.h>
-
 /**************************************************************************************************/
 
 #include "map_scene.h"
 #include "location_circle_material_shader.h"
 
-// #include "map/earth.h"
 #include "map/geo_coordinate.h"
 #include "map/tile_spec.h"
 
@@ -100,6 +96,7 @@ QcMapRootNode::QcMapRootNode()
   root->appendChildNode(map_container_node);
   appendChildNode(root);
 
+#ifndef ANDROID
   QSGGeometryNode * location_circle_node = new QSGGeometryNode();
 
   QSGGeometry * location_circle_geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 1);
@@ -121,6 +118,7 @@ QcMapRootNode::QcMapRootNode()
   location_circle_vertices[0].set(0, 0);
 
   root->appendChildNode(location_circle_node);
+#endif
 }
 
 QcMapRootNode::~QcMapRootNode()
