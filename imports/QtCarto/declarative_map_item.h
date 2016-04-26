@@ -80,6 +80,8 @@ public:
 
   Q_INVOKABLE void prefetch_data(); // optional hint for prefetch
 
+  bool childMouseEventFilter(QQuickItem * item, QEvent * event) Q_DECL_OVERRIDE ;
+
 signals:
   void zoom_levelChanged(int zoom_level);
   void centerChanged(const QGeoCoordinate & coordinate);
@@ -102,7 +104,9 @@ protected:
   QSGNode * updatePaintNode(QSGNode * old_node, UpdatePaintNodeData *) Q_DECL_OVERRIDE ;
 
 private:
-    bool is_interactive();
+  bool is_interactive();
+  bool send_touch_event(QTouchEvent * event);
+  bool send_mouse_event(QMouseEvent * event);
 
 private:
   QColor m_color;

@@ -669,26 +669,30 @@ QcMapGestureArea::handle_touch_event(QTouchEvent * event)
 void
 QcMapGestureArea::handle_wheel_event(QWheelEvent * event)
 {
-  qInfo();
+  qInfo() << event;
   if (!m_map)
     return;
 
-  QGeoCoordinate wheel_geo_pos = m_map->to_coordinate(QVector2D(event->posF()), false);
-  QPointF pre_zoom_point = m_map->from_coordinate(wheel_geo_pos, false).toPointF();
+  // Fixme: event position == pre_zoom_point ???
+  QGeoCoordinate wheel_geo_position = m_map->to_coordinate(QVector2D(event->posF()), false);
+  QPointF pre_zoom_point = m_map->from_coordinate(wheel_geo_position, false).toPointF();
 
-  double zoom_level_delta = event->angleDelta().y() * qreal(0.001);
-  m_declarative_map->set_zoom_level(m_declarative_map->zoom_level() + zoom_level_delta);
-  QPointF post_zoom_point = m_map->from_coordinate(wheel_geo_pos, false).toPointF();
+  int zoom_increment = event->angleDelta().y() > 0 ? 1 : -1;
+  // double zoom_level_delta = event->angleDelta().y() * qreal(0.001);
+  m_declarative_map->set_zoom_level(m_declarative_map->zoom_level() + zoom_increment);
 
-  if (pre_zoom_point != post_zoom_point)
-    {
-      qreal dx = post_zoom_point.x() - pre_zoom_point.x();
-      qreal dy = post_zoom_point.y() - pre_zoom_point.y();
-      QPointF map_center_point(m_map->width() / 2.0 + dx, m_map->height() / 2.0  + dy);
+  QPointF post_zoom_point = m_map->from_coordinate(wheel_geo_position, false).toPointF();
 
-      QGeoCoordinate map_center_coordinate = m_map->to_coordinate(QVector2D(map_center_point), false);
-      m_declarative_map->set_center(map_center_coordinate);
-    }
+  // qInfo() << event->posF() << pre_zoom_point << "\n" << post_zoom_point;
+  if (pre_zoom_point != post_zoom_point) {
+    // Keep location under pointer
+    qreal dx = post_zoom_point.x() - pre_zoom_point.x(); // Fixme: vector
+    qreal dy = post_zoom_point.y() - pre_zoom_point.y();
+    QPointF map_center_point(m_map->width() / 2.0 + dx, m_map->height() / 2.0  + dy);
+    QGeoCoordinate map_center_coordinate = m_map->to_coordinate(QVector2D(map_center_point), false);
+    m_declarative_map->set_center(map_center_coordinate);
+  }
+
   event->accept();
 }
 

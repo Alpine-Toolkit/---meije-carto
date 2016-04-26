@@ -114,10 +114,11 @@ QcMapItem {
             } else if (mouse.button === Qt.RightButton) {
                 map.zoom_level--;
             }
-            var post_zoom_point = map.fromCoordinate(mouse_geo_position, false);
+            var post_zoom_point = map.from_coordinate(mouse_geo_position, false);
+            // console.info("Ondoubleclicked", mouse_geo_position, pre_zoom_point, post_zoom_point)
             var dx = post_zoom_point.x - pre_zoom_point.x;
             var dy = post_zoom_point.y - pre_zoom_point.y;
-            // Fixme: ???
+            // Keep location under pointer
             var map_center_point = Qt.point(map.width / 2.0 + dx, map.height / 2.0 + dy);
             map.center = map.to_coordinate(map_center_point);
 
