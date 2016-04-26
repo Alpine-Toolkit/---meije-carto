@@ -29,31 +29,122 @@ ApplicationWindow {
         id: map
 
         anchors.fill: parent
+
+        property bool followme: false
+
+        property int press_x : -1
+        property int press_y : -1
+        property int last_x : -1
+        property int last_y : -1
+        property int jitter_threshold : 30
+
+        // Enable pan, flick, and pinch gestures to zoom in and out
+        gesture.accepted_gestures: MapGestureArea.PanGesture | MapGestureArea.FlickGesture | MapGestureArea.PinchGesture
+        gesture.flick_deceleration: 3000
+        gesture.enabled: true
         focus: true
+
         // opacity: 1.
 
         center: location.coordinate
+        // zoomLevel: (maximum_zoom_level - minimum_zoom_level) / 2
         zoom_level: 10 // 16
+
+        // PositionSource{
+        //     id: position_source
+        //     active: follow_me
+
+        //     onPositionChanged: {
+        //         map.center = position_source.position.coordinate
+        //     }
+        // }
+
+        // onCenterChanged:{
+        //     if (map.follow_me) {
+        //         if (map.center != position_source.position.coordinate) {
+        //             map.follow_me = false
+        //         }
+        //     }
+        // }
+
+        // onZoomLevelChanged:{
+        //     if (map.followme) {
+        //         map.center = position_source.position.coordinate
+        //     }
+        // }
 
         Keys.onPressed: {
             if (event.key == Qt.Key_Left) {
-                map.pan(-100, 0);
-                event.accepted = true;
+                map.pan(-100, 0) // map.width / 4
+                event.accepted = true // ?
             } else if (event.key == Qt.Key_Right) {
-                map.pan(100, 0);
-                event.accepted = true;
+                map.pan(100, 0)
+                event.accepted = true
             } else if (event.key == Qt.Key_Up) {
-                map.pan(0, -100);
-                event.accepted = true;
+                map.pan(0, -100) // map.height / 4
+                event.accepted = true
             } else if (event.key == Qt.Key_Down) {
-                map.pan(0, 100);
-                event.accepted = true;
+                map.pan(0, 100)
+                event.accepted = true
             } else if (event.key == Qt.Key_Plus) {
-                map.zoom_level += 1;
-                event.accepted = true;
+                map.zoom_level++
+                event.accepted = true
             } else if (event.key == Qt.Key_Minus) {
-                map.zoom_level -= 1;
-                event.accepted = true;
+                map.zoom_level--
+                event.accepted = true
+            }
+        }
+
+        MouseArea {
+            id: mouse_area
+            anchors.fill: parent
+
+            property variant last_coordinate
+
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+
+            onPressed : {
+                map.press_x = mouse.x
+                map.press_y = mouse.y
+                map.last_x = mouse.x
+                map.last_y = mouse.y
+                last_coordinate = map.to_coordinate(Qt.point(mouse.x, mouse.y))
+                console.info("onPressed", last_coordinate)
+            }
+
+            onPositionChanged: {
+                if (mouse.button == Qt.LeftButton) {
+                    map.last_x = mouse.x
+                    map.last_y = mouse.y
+                }
+            }
+
+            onDoubleClicked: {
+                console.info("onDoubleClicked")
+                var mouse_geo_position = map.to_coordinate(Qt.point(mouse.x, mouse.y));
+                var pre_zoom_point = map.from_coordinate(mouse_geo_position, false);
+                if (mouse.button === Qt.LeftButton) {
+                    map.zoom_level++;
+                } else if (mouse.button === Qt.RightButton) {
+                    map.zoom_level--;
+                }
+                var post_zoom_point = map.fromCoordinate(mouse_geo_position, false);
+                var dx = post_zoom_point.x - pre_zoom_point.x;
+                var dy = post_zoom_point.y - pre_zoom_point.y;
+                // Fixme: ???
+                var map_center_point = Qt.point(map.width / 2.0 + dx, map.height / 2.0 + dy);
+                map.center = map.to_coordinate(map_center_point);
+
+                last_x = -1;
+                last_y = -1;
+            }
+
+            onPressAndHold:{
+                // Check move distance is small enough
+                if (Math.abs(map.press_x - mouse.x ) < map.jitter_threshold
+                &&  Math.abs(map.press_y - mouse.y ) < map.jitter_threshold) {
+                    console.info("onPressAndHold", last_coordinate)
+                }
             }
         }
     }
