@@ -12,7 +12,6 @@ CONFIG += plugin
 QT += qml quick positioning
 
 TARGET = $$qtLibraryTarget($$TARGET)
-uri = fr.alpine_toolkit.QtCarto
 
 INCLUDEPATH += ../../src
 
@@ -44,6 +43,7 @@ DEPENDPATH += $$PWD/../src
 
 DISTFILES = qmldir
 
+# Copies the qmldir file to the build directory
 !equals(_PRO_FILE_PWD_, $$OUT_PWD) {
     copy_qmldir.target = $$OUT_PWD/qmldir
     copy_qmldir.depends = $$_PRO_FILE_PWD_/qmldir
@@ -52,11 +52,14 @@ DISTFILES = qmldir
     PRE_TARGETDEPS += $$copy_qmldir.target
 }
 
+# Copies the qmldir file and the built plugin .so to the QT_INSTALL_QML directory
+# uri = fr.alpine_toolkit.QtCarto
+uri = QtCarto
 qmldir.files = qmldir
 unix {
-    installPath = $$[QT_INSTALL_QML]/$$replace(uri, \\., /)
-    qmldir.path = $$installPath
-    target.path = $$installPath
+    install_path = $$[QT_INSTALL_QML]/$$replace(uri, \\., /)
+    qmldir.path = $$install_path
+    target.path = $$install_path
     INSTALLS += target qmldir
 }
 

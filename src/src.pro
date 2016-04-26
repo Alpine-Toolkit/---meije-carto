@@ -7,11 +7,16 @@ TEMPLATE = lib
   error( "Couldn't find the common.pri file!" )
 }
 
+CONFIG += dll
+
 QT += core quick gui network positioning
 
-DEFINES += QTCARTO_LIBRARY
+TARGET = $$qtLibraryTarget($$TARGET)
 
-LIBS += -lproj
+DEFINES += QTCARTO_LIBRARY
+# DEFINES -= WITH_PROJ4
+
+# LIBS += -lproj
 
 SOURCES += \
   geo_data_format/gpx.cpp \
@@ -85,9 +90,10 @@ HEADERS += \
   qtcarto_global.h \
   qtcarto.h
 
-unix {
-    target.path = /usr/lib
-    INSTALLS += target
+unix|android {
+  target.path = $$[QT_INSTALL_LIBS] # Fixme doesn't work ???
+  message(Install to $$target.path)
+  INSTALLS += target
 }
 
 ####################################################################################################

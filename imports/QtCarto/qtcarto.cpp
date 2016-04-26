@@ -49,7 +49,7 @@ class QtCartoDeclarativeModule : public QQmlExtensionPlugin
   void registerTypes(const char *uri)
   {
     // Q_ASSERT(uri == QLatin1String("fr.alpine_toolkit.QtCarto"));
-    if (QLatin1String(uri) == QLatin1String("fr.alpine_toolkit.QtCarto")) {
+    if (QLatin1String(uri) == QLatin1String("QtCarto")) { // fr.alpine_toolkit.
 
       // @uri QtCarto
       int major = 1;

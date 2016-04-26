@@ -2,10 +2,14 @@
 
 ####################################################################################################
 
-# CONFIG += c++11
-CONFIG += c++14
+CONFIG += c++11
+# CONFIG += c++14
 
-CONFIG += debug console # qml_debug
+CONFIG += debug # qml_debug
+
+debug {
+ CONFIG += console
+}
 
 # QT += core network
 # QT += qml quick quickcontrols

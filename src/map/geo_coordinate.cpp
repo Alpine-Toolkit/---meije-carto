@@ -117,7 +117,7 @@ QcGeoSexagesimalAngle::decimal() const {
 
 /**************************************************************************************************/
 
-//#ifdef WITH_PROJ4
+#ifdef WITH_PROJ4
 QcProjection::QcProjection(const QString & definition, projCtx context)
   : m_projection(nullptr)
 {
@@ -153,10 +153,11 @@ bool
 QcProjection::is_latlong() const {
   return pj_is_latlong(m_projection);
 }
-//#endif WITH_PROJ4
+#endif
 
 /**************************************************************************************************/
 
+#ifdef WITH_PROJ4
 void
 QcGeoCoordinate::transform(QcGeoCoordinate & other)
 {
@@ -170,6 +171,7 @@ QcGeoCoordinate::transform(QcGeoCoordinate & other)
   other.set_coordinate1(_coordinate1);
   other.set_coordinate2(_coordinate2);
 }
+#endif
 
 /**************************************************************************************************/
 

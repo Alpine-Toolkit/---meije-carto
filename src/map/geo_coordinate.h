@@ -49,9 +49,9 @@
 
 // QC_BEGIN_NAMESPACE
 
-//#ifdef PROJ4
-# include "proj_api.h"
-//#endif
+#ifdef WITH_PROJ4
+#include "proj_api.h"
+#endif
 
 /**************************************************************************************************/
 
@@ -118,7 +118,7 @@ class QC_EXPORT QcGeoSexagesimalAngle
 
 /**************************************************************************************************/
 
-//#ifdef WITH_PROJ4
+#ifdef WITH_PROJ4
 class QC_EXPORT QcProjection
 {
  public:
@@ -132,7 +132,7 @@ class QC_EXPORT QcProjection
  private:
   projPJ m_projection;
 };
-//#endif WITH_PROJ4
+#endif
 
 /**************************************************************************************************/
 
@@ -150,7 +150,7 @@ class QC_EXPORT QcGeoCoordinate
   virtual double coordinate2() const = 0;
   virtual void set_coordinate2(double value) = 0;
 
-//#ifdef WITH_PROJ4
+#ifdef WITH_PROJ4
  private:
   QcProjection *m_projection = nullptr;
 
@@ -162,7 +162,7 @@ class QC_EXPORT QcGeoCoordinate
     return *m_projection;
   }
   void transform(QcGeoCoordinate & other);
-//#endif WITH_PROJ4
+#endif
 };
 
 /**************************************************************************************************/
