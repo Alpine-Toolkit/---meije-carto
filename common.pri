@@ -5,7 +5,7 @@
 CONFIG += c++11
 # CONFIG += c++14
 
-CONFIG += debug # qml_debug
+CONFIG += debug
 
 debug {
  CONFIG += console
