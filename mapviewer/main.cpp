@@ -107,9 +107,15 @@ print_to_stderr(const QString & message_type, const QMessageLogContext & context
 
   QString date = QDateTime::currentDateTime().toString(QLatin1Literal("yyyy-MM-dd HH:mm:ss.zzz")); // Qt::ISODate
   QString full_message = QString("%1   %2   %3\n")
+#ifndef ANDROID
     .arg(ANSI_BOLD + ANSI_RED + message_type + ANSI_RESET)
     .arg(ANSI_BOLD + ANSI_BLUE + date + ANSI_RESET)
     .arg(ANSI_BOLD + ANSI_MAGENTA + context.function + ANSI_RESET);
+#else
+    .arg(message_type)
+    .arg(date)
+    .arg(context.function);
+#endif
   // .arg(context.file)
   // .arg(context.line)
 
@@ -149,7 +155,9 @@ message_handler(QtMsgType type, const QMessageLogContext & context, const QStrin
 int
 main(int argc, char *argv[])
 {
+#ifndef ANDROID
   qInstallMessageHandler(message_handler);
+#endif
   QGuiApplication application(argc, argv);
   QGuiApplication::setApplicationDisplayName(QCoreApplication::translate("main", "QtCarto"));
 
