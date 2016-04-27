@@ -273,30 +273,6 @@ QcMapScene::textured_tiles() const
 bool
 QcMapScene::build_geometry(const QcTileSpec & tile_spec, QSGGeometry::TexturedPoint2D * vertices)
 {
-  // if (x < m_tileXWrapsBelow)
-  //     x += m_sideLength;
-
-  // if ((x < m_minTileX)
-  //         || (m_maxTileX < x)
-  //         || (spec.y() < m_minTileY)
-  //         || (m_maxTileY < spec.y())
-  //         || (spec.zoom() != m_intZoomLevel)) {
-  //     return false;
-  // }
-
-  // double edge = m_scaleFactor * m_tileSize;
-
-  // double x1 = (x - m_minTileX);
-  // double x2 = x1 + 1.0;
-
-  // double y1 = (m_minTileY - spec.y());
-  // double y2 = y1 - 1.0;
-
-  // x1 *= edge;
-  // x2 *= edge;
-  // y1 *= edge;
-  // y2 *= edge;
-
   int tile_size = m_tile_matrix_set.tile_size();
   const QcTileMatrix & tile_matrix = m_tile_matrix_set[m_viewport->zoom_level()];
   //double tile_length_m = tile_matrix.tile_length_m();
@@ -367,7 +343,7 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
 
   const QcPolygon & polygon = m_viewport->polygon();
   const QcInterval2DDouble & interval = polygon.interval();
-  // qInfo() << "Normalised Mercator polygon interval [m]"
+  // qInfo() << "Pseudo Mercator polygon interval [m]"
   //         << "[" << (int) interval.x().inf() << ", " << (int) interval.x().sup() << "]"
   //         << "x"
   //         << "[" << (int) interval.y().inf() << ", " << (int) interval.y().sup() << "]";
@@ -377,9 +353,7 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
   //   qInfo() << "Run " << run.y() << " [" << run_interval.inf() << ", " << run_interval.sup() << "]";
   // }
 
-  QcGeoCoordinateWebMercator mercator_coordinate = m_viewport->web_mercator();
-  QcGeoCoordinateNormalisedWebMercator normalised_mercator_coordinate = m_viewport->normalised_web_mercator();
-  QcVectorDouble center = normalised_mercator_coordinate.vector() * EQUATORIAL_PERIMETER;
+  // QcVectorDouble center = m_viewport->pseudo_web_mercator().vector();
   // qInfo() << "center mercator" << mercator_coordinate << normalised_mercator_coordinate << center;
   double x_inf_m = interval.x().inf();
   double y_inf_m = interval.y().inf();

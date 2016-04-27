@@ -46,7 +46,7 @@ QcMapView::QcMapView(QcWmtsPlugin * wmts_plugin)
   m_request_manager = new QcWmtsRequestManager(this, m_wmts_manager);
 
   // Fixme: need to pass fake state
-  QcGeoCoordinateNormalisedWebMercator coordinate_origin(0, 0);
+  QcGeoCoordinatePseudoWebMercator coordinate_origin(0, 0);
   QcTiledZoomLevel tiled_zoom_level(EQUATORIAL_PERIMETER, m_plugin->tile_matrix_set().tile_size(), 0); // map can have different tile size !
   QcViewportState viewport_state(coordinate_origin, tiled_zoom_level, 0);
   QSize viewport_size(0, 0);
