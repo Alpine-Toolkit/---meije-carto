@@ -69,13 +69,9 @@ class QC_EXPORT QcPolygon
 
   void add_vertex(const QcVectorDouble & vertex);
 
-  inline const QList<QcVectorDouble> & vertexes() const {
-    return m_vertexes;
-  }
+  inline const QList<QcVectorDouble> & vertexes() const { return m_vertexes; }
 
-  inline const QcInterval2DDouble & interval() const {
-    return m_interval;
-  }
+  inline const QcInterval2DDouble & interval() const { return m_interval; }
 
   bool contains(const QcVectorDouble & point) const;
 
@@ -94,13 +90,9 @@ class QC_EXPORT QcTiledPolygonRun
  public:
   QcTiledPolygonRun(int y, const QcIntervalInt & interval);
 
-  inline int y() const {
-    return m_y;
-  }
+  inline int y() const { return m_y; }
 
-  inline const QcIntervalInt & interval() const {
-    return m_interval;
-  }
+  inline const QcIntervalInt & interval() const { return m_interval; }
 
   bool operator==(const QcTiledPolygonRun & other) const;
 
@@ -124,17 +116,11 @@ class QC_EXPORT QcTiledPolygon
  public:
   QcTiledPolygon(const QcPolygon & polygon, double grid_step);
 
-  inline const QcPolygon & polygon() const {
-    return m_polygon;
-  }
+  inline const QcPolygon & polygon() const { return m_polygon; }
 
-  inline double grid_step() const {
-    return m_grid_step;
-  }
+  inline double grid_step() const { return m_grid_step; }
 
-  inline const QList<QcTiledPolygonRun> runs() const {
-    return m_runs;
-  }
+  inline const QList<QcTiledPolygonRun> runs() const { return m_runs; }
 
   QcTiledPolygonDiff diff(const QcTiledPolygon & polygon);
 
@@ -147,17 +133,9 @@ class QC_EXPORT QcTiledPolygon
 class QC_EXPORT QcTiledPolygonDiff
 {
  public:
-  inline const QcTiledPolygonRunList & new_area() const {
-    return m_new_area;
-  }
-
-  inline const QcTiledPolygonRunList & old_area() const {
-    return m_old_area;
-  }
-
-  inline const QcTiledPolygonRunList & same_area() const {
-    return m_same_area;
-  }
+  inline const QcTiledPolygonRunList & new_area() const { return m_new_area; }
+  inline const QcTiledPolygonRunList & old_area() const { return m_old_area; }
+  inline const QcTiledPolygonRunList & same_area() const { return m_same_area; }
 
   void add_new_area(const QcTiledPolygonRun & run) {
     m_new_area.push_back(run);
