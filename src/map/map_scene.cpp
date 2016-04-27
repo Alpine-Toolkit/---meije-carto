@@ -127,7 +127,6 @@ QcGridNode::update()
     vertices[vertex_index +1].set(width, y);
     vertex_index += 2;
   }
-  // parasite lines at left and bottom ???
 
   setGeometry(grid_geometry); // delete old one
 }
@@ -189,6 +188,8 @@ QcMapRootNode::QcMapRootNode(const QcTileMatrixSet & tile_matrix_set, const QcVi
   appendChildNode(root);
 
 #ifndef ANDROID
+  QSGOpacityNode * node = new QSGOpacityNode();
+  node->setOpacity(.9); // 1. black
   QSGGeometryNode * location_circle_node = new QSGGeometryNode();
 
   QSGGeometry * location_circle_geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 1);
@@ -202,14 +203,16 @@ QcMapRootNode::QcMapRootNode(const QcTileMatrixSet & tile_matrix_set, const QcVi
   location_circle_material->state()->r = 0;
   location_circle_material->state()->g = 0;
   location_circle_material->state()->b = 1;
-  location_circle_material->state()->a = 0;
+  location_circle_material->state()->a = 1.;
   location_circle_node->setMaterial(location_circle_material);
   location_circle_node->setFlag(QSGNode::OwnsMaterial);
 
   QSGGeometry::Point2D * location_circle_vertices = location_circle_geometry->vertexDataAsPoint2D();
   location_circle_vertices[0].set(0, 0);
 
-  root->appendChildNode(location_circle_node);
+  node->appendChildNode(location_circle_node);
+  // root->appendChildNode(location_circle_node);
+  root->appendChildNode(node);
 #endif
 }
 
@@ -281,10 +284,6 @@ QcMapRootNode::update_tiles(QcMapContainerNode * map_container_node, QcMapScene 
     }
 
     if (ok) {
-      // if (isTextureLinear != map_scene->m_linearScaling) {
-      //   texture_node->setFiltering(map_scene->m_linearScaling ? QSGTexture::Linear : QSGTexture::Nearest);
-      //   dirty_bits |= QSGNode::DirtyMaterial;
-      // }
       if (dirty_bits != 0)
         texture_node->markDirty(dirty_bits);
       it++;
@@ -303,12 +302,8 @@ QcMapRootNode::update_tiles(QcMapContainerNode * map_container_node, QcMapScene 
       QSGSimpleTextureNode * tile_node = new QSGSimpleTextureNode();
       // note: setTexture will update coordinates so do it here, before we buildGeometry
       tile_node->setTexture(textures.value(tile_spec));
-      // Q_ASSERT(tileNode->geometry());
-      // Q_ASSERT(tileNode->geometry()->attributes() == QSGGeometry::defaultAttributes_TexturedPoint2D().attributes);
-      // Q_ASSERT(tileNode->geometry()->vertexCount() == 4);
       if (map_scene->build_geometry(tile_spec, tile_node->geometry()->vertexDataAsTexturedPoint2D())) {
         // && qgeotiledmapscene_isTileInViewport(tileNode->geometry()->vertexDataAsTexturedPoint2D(), map_container_node->matrix())
-        // map_scene->m_linearScaling ? QSGTexture::Linear : QSGTexture::Nearest
         tile_node->setFiltering(QSGTexture::Linear);
         map_container_node->add_child(tile_spec, tile_node);
       } else
@@ -371,7 +366,7 @@ QcMapScene::build_geometry(const QcTileSpec & tile_spec, QSGGeometry::TexturedPo
 {
   int tile_size = m_tile_matrix_set.tile_size();
   const QcTileMatrix & tile_matrix = m_tile_matrix_set[m_viewport->zoom_level()];
-  //double tile_length_m = tile_matrix.tile_length_m();
+  // double tile_length_m = tile_matrix.tile_length_m();
   double resolution = tile_matrix.resolution(); // [m/px]
 
   const QcPolygon & polygon = m_viewport->polygon();
@@ -427,7 +422,6 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
   map_root_node->update_clip_rect();
 
   // Setup model matrix
-  // Fixme: DirtyMatrix ???
   QMatrix4x4 item_space_matrix;
   item_space_matrix.scale(width/2, height/2);
   item_space_matrix.translate(1, 1);
@@ -462,7 +456,7 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
     }
   }
 
-  // map_root_node->update_tiles(map_root_node->map_container_node, this);
+   map_root_node->update_tiles(map_root_node->map_container_node, this);
 
   return map_root_node;
 }

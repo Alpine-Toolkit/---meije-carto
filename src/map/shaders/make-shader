@@ -1,0 +1,41 @@
+#! /usr/bin/env python3
+
+####################################################################################################
+
+import argparse
+
+####################################################################################################
+
+argument_parser = argparse.ArgumentParser(description='Make shader.')
+
+argument_parser.add_argument('shader_prefix', metavar='ShaderPrefix',
+                             help='shader prefix')
+
+args = argument_parser.parse_args()
+
+####################################################################################################
+
+def format_shader_for_c_string(shader_source):
+    lines = shader_source.split('\n');
+    for i, line in enumerate(lines):
+        lines[i] = '" ' + line + '   \\n" // @{}'.format(i)
+    return '\n'.join(lines)
+
+####################################################################################################
+
+with open(args.shader_prefix + '_vertex_shader.glsl', 'r') as f:
+    vertex_shader_source = f.read()
+
+with open(args.shader_prefix + '_fragment_shader.glsl', 'r') as f:
+    fragment_shader_source = f.read()
+
+with open(args.shader_prefix + '_shader.cpp', 'w') as f:
+    f.write('const char * vertex_shader =\n' + format_shader_for_c_string(vertex_shader_source) + '\n;\n')
+    f.write('\n')
+    f.write('const char * fragment_shader =\n' + format_shader_for_c_string(fragment_shader_source) + '\n;\n')
+
+####################################################################################################
+#
+# End
+#
+####################################################################################################
