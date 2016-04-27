@@ -51,6 +51,89 @@
 
 /**************************************************************************************************/
 
+class QcGridNode : public QSGGeometryNode
+{
+public:
+  QcGridNode(const QcTileMatrixSet & tile_matrix_set, const QcViewport * viewport);
+
+  void update();
+
+private:
+  const QcTileMatrixSet & m_tile_matrix_set;
+  const QcViewport * m_viewport;
+};
+
+QcGridNode::QcGridNode(const QcTileMatrixSet & tile_matrix_set, const QcViewport * viewport)
+  : QSGGeometryNode(),
+    m_tile_matrix_set(tile_matrix_set),
+    m_viewport(viewport)
+{
+  // A geometry node must have both geometry and a normal material before it is added to the scene graph.
+
+  setGeometry(new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 0));
+  setFlag(QSGNode::OwnsGeometry); // The node is owned by its parent and will be deleted when the parent is deleted.
+
+  QSGFlatColorMaterial * grid_material = new QSGFlatColorMaterial;
+  grid_material->setColor(QColor(255, 0, 0));
+  setMaterial(grid_material);
+  setFlag(QSGNode::OwnsMaterial);
+}
+
+void
+QcGridNode::update()
+{
+  int tile_size = m_tile_matrix_set.tile_size();
+  const QcTileMatrix & tile_matrix = m_tile_matrix_set[m_viewport->zoom_level()];
+  double tile_length_m = tile_matrix.tile_length_m();
+  double resolution = tile_matrix.resolution(); // [m/px]
+  qInfo() << "tile_matrix" << m_viewport->zoom_level() << tile_length_m << resolution;
+
+  const QcPolygon & polygon = m_viewport->polygon();
+  const QcInterval2DDouble & interval = polygon.interval();
+
+  double x_inf_m = interval.x().inf();
+  double y_inf_m = interval.y().inf();
+
+  // Use QcInterval2D ???
+  int x_grid_inf = ceil(x_inf_m / tile_length_m);
+  int y_grid_inf = ceil(y_inf_m / tile_length_m);
+  int x_grid_sup = ceil(interval.x().sup() / tile_length_m);
+  int y_grid_sup = ceil(interval.y().sup() / tile_length_m);
+  size_t number_of_vertical_lines = x_grid_sup - x_grid_inf +1;
+  size_t number_of_horizontal_lines = y_grid_sup - y_grid_inf +1;
+
+  const int vertex_count = 2*(number_of_horizontal_lines + number_of_vertical_lines);
+  QSGGeometry * grid_geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), vertex_count);
+  grid_geometry->setLineWidth(2);
+  grid_geometry->setDrawingMode(GL_LINES);
+
+  QSGGeometry::Point2D * vertices = grid_geometry->vertexDataAsPoint2D();
+  double x_inf_px = x_inf_m / resolution;
+  double y_inf_px = y_inf_m / resolution;
+  double x_offset = x_grid_inf * tile_size - x_inf_px;
+  double y_offset = y_grid_inf * tile_size - y_inf_px;
+  int width = m_viewport->width();
+  int height = m_viewport->height();
+  size_t vertex_index = 0;
+  for (size_t i = 0; i < number_of_vertical_lines; i++) {
+    float x = i * tile_size + x_offset;
+    vertices[vertex_index].set(x, 0);
+    vertices[vertex_index +1].set(x, height);
+    vertex_index += 2;
+  }
+  for (size_t i = 0; i < number_of_horizontal_lines; i++) {
+    float y = i * tile_size + y_offset;
+    vertices[vertex_index].set(0, y);
+    vertices[vertex_index +1].set(width, y);
+    vertex_index += 2;
+  }
+  // parasite lines at left and bottom ???
+
+  setGeometry(grid_geometry); // delete old one
+}
+
+/**************************************************************************************************/
+
 class QcMapContainerNode : public QSGTransformNode
 {
 public:
@@ -71,28 +154,37 @@ QcMapContainerNode::add_child(const QcTileSpec & tile_spec, QSGSimpleTextureNode
 class QcMapRootNode : public QSGClipNode
 {
 public:
-  QcMapRootNode();
+  QcMapRootNode(const QcTileMatrixSet & tile_matrix_set, const QcViewport * viewport);
   ~QcMapRootNode();
 
-  void set_clip_rect(const QRect & rect);
+  void update_clip_rect();
   void update_tiles(QcMapContainerNode * root, QcMapScene * map_scene);
+
+private:
+  const QcTileMatrixSet & m_tile_matrix_set;
+  const QcViewport * m_viewport;
+  QRect m_clip_rect;
 
 public:
   QSGGeometry geometry;
-  QRect m_clip_rect;
   QSGTransformNode * root;
+  QcGridNode * grid_node;
   QcMapContainerNode * map_container_node;
   QHash<QcTileSpec, QSGTexture *> textures;
 };
 
-QcMapRootNode::QcMapRootNode()
-  : geometry(QSGGeometry::defaultAttributes_Point2D(), 4),
+QcMapRootNode::QcMapRootNode(const QcTileMatrixSet & tile_matrix_set, const QcViewport * viewport)
+  : m_tile_matrix_set(tile_matrix_set),
+    m_viewport(viewport),
+    geometry(QSGGeometry::defaultAttributes_Point2D(), 4),
     root(new QSGTransformNode()),
+    grid_node(new QcGridNode(tile_matrix_set, viewport)),
     map_container_node(new QcMapContainerNode())
 {
   qInfo();
   setIsRectangular(true);
   setGeometry(&geometry);
+  map_container_node->appendChildNode(grid_node); // Fixme map_container_node due to matrix
   root->appendChildNode(map_container_node);
   appendChildNode(root);
 
@@ -123,12 +215,16 @@ QcMapRootNode::QcMapRootNode()
 
 QcMapRootNode::~QcMapRootNode()
 {
+
   qDeleteAll(textures);
 }
 
 void
-QcMapRootNode::set_clip_rect(const QRect & rect)
+QcMapRootNode::update_clip_rect()
 {
+  int width = m_viewport->width();
+  int height = m_viewport->height();
+  QRect rect = QRect(0, 0, width, height);
   qInfo() << rect;
   if (rect != m_clip_rect) {
     QSGGeometry::updateRectGeometry(&geometry, rect);
@@ -223,7 +319,7 @@ QcMapRootNode::update_tiles(QcMapContainerNode * map_container_node, QcMapScene 
 
 /**************************************************************************************************/
 
-QcMapScene::QcMapScene(QcViewport * viewport, QcTileMatrixSet & tile_matrix_set, QObject * parent)
+QcMapScene::QcMapScene(const QcViewport * viewport, const QcTileMatrixSet & tile_matrix_set, QObject * parent)
   : QObject(parent),
     m_viewport(viewport),
     m_tile_matrix_set(tile_matrix_set)
@@ -311,9 +407,11 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
 {
   qInfo() << old_node;
 
-  qInfo() << "item size" << m_item_size;
-  float width = m_item_size.width();
-  float height = m_item_size.height();
+  QSize viewport_size = m_viewport->viewport_size();
+  float width = m_viewport->width();
+  float height = m_viewport->height();
+  qInfo() << "viewport size" << viewport_size;
+  // Check viewport has a rectangular shape
   if (width <= 0 || height <= 0) {
     delete old_node;
     return nullptr;
@@ -322,12 +420,14 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
   QcMapRootNode * map_root_node = static_cast<QcMapRootNode *>(old_node);
   if (!map_root_node) {
     qInfo() << "map_root_node is null";
-    map_root_node = new QcMapRootNode();
+    map_root_node = new QcMapRootNode(m_tile_matrix_set, m_viewport);
   }
 
-  QRect rect = QRect(0, 0, width, height);
-  map_root_node->set_clip_rect(rect);
+  // Fixme: ok ?
+  map_root_node->update_clip_rect();
 
+  // Setup model matrix
+  // Fixme: DirtyMatrix ???
   QMatrix4x4 item_space_matrix;
   item_space_matrix.scale(width/2, height/2);
   item_space_matrix.translate(1, 1);
@@ -335,98 +435,14 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
   map_root_node->root->setMatrix(item_space_matrix);
   qInfo() << "item_space_matrix" << item_space_matrix;
 
-  int tile_size = m_tile_matrix_set.tile_size();
-  const QcTileMatrix & tile_matrix = m_tile_matrix_set[m_viewport->zoom_level()];
-  double tile_length_m = tile_matrix.tile_length_m();
-  double resolution = tile_matrix.resolution(); // [m/px]
-  qInfo() << "tile_matrix" << m_viewport->zoom_level() << tile_length_m << resolution;
-
-  const QcPolygon & polygon = m_viewport->polygon();
-  const QcInterval2DDouble & interval = polygon.interval();
-  // qInfo() << "Pseudo Mercator polygon interval [m]"
-  //         << "[" << (int) interval.x().inf() << ", " << (int) interval.x().sup() << "]"
-  //         << "x"
-  //         << "[" << (int) interval.y().inf() << ", " << (int) interval.y().sup() << "]";
-  // QcTiledPolygon tiled_polygon = polygon.intersec_with_grid(tile_length_m);
-  // for (const QcTiledPolygonRun & run:  tiled_polygon.runs()) {
-  //   const QcIntervalInt & run_interval = run.interval();
-  //   qInfo() << "Run " << run.y() << " [" << run_interval.inf() << ", " << run_interval.sup() << "]";
-  // }
-
-  // QcVectorDouble center = m_viewport->pseudo_web_mercator().vector();
-  // qInfo() << "center mercator" << mercator_coordinate << normalised_mercator_coordinate << center;
-  double x_inf_m = interval.x().inf();
-  double y_inf_m = interval.y().inf();
-  //double x_center_px = (center.x() - x_inf_m) / resolution; // vector
-  //double y_center_px = (center.y() - y_inf_m) / resolution;
-  // qInfo() << "xy center px" << x_center_px << y_center_px; // == width/2 height/2
-  // qInfo() << (int)center.x() << (int)x_inf_m << resolution;
-
-  // Use QcInterval2D ???
-  int x_grid_inf = ceil(interval.x().inf() / tile_length_m); // duplicate
-  int x_grid_sup = ceil(interval.x().sup() / tile_length_m);
-  int y_grid_inf = ceil(interval.y().inf() / tile_length_m);
-  int y_grid_sup = ceil(interval.y().sup() / tile_length_m);
-  size_t number_of_vertical_lines = x_grid_sup - x_grid_inf +1;
-  size_t number_of_horizontal_lines = y_grid_sup - y_grid_inf +1;
-  // qInfo() << "x grid" << x_grid_inf << x_grid_sup << number_of_vertical_lines;
-  // qInfo() << "y grid" << y_grid_inf << y_grid_sup << number_of_horizontal_lines;
-
   QcMapContainerNode * container_node = map_root_node->map_container_node;
-  // QSGNode * node = container_node->firstChild();
-  // container_node->removeAllChildNodes();
-  // if (node) {
-  //   qInfo() << "Delete node";
-  //   // delete node;
-  // }
-
   QMatrix4x4 container_space_matrix;
   container_space_matrix.scale(2/width, 2/height);
   container_space_matrix.translate(-width/2, -height/2);
   container_node->setMatrix(container_space_matrix);
   qInfo() << "container_space_matrix" << container_space_matrix;
 
-  QSGGeometryNode * grid_node = new QSGGeometryNode();
-
-  const int vertex_count = 2*(number_of_horizontal_lines + number_of_vertical_lines) + 100;
-  QSGGeometry * grid_geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), vertex_count);
-  grid_geometry->setLineWidth(2);
-  grid_geometry->setDrawingMode(GL_LINES);
-  grid_node->setGeometry(grid_geometry);
-  grid_node->setFlag(QSGNode::OwnsGeometry);
-
-  QSGFlatColorMaterial * grid_material = new QSGFlatColorMaterial;
-  grid_material->setColor(QColor(255, 0, 0));
-  grid_node->setMaterial(grid_material);
-  grid_node->setFlag(QSGNode::OwnsMaterial);
-
-  QSGGeometry::Point2D * vertices = grid_geometry->vertexDataAsPoint2D();
-  size_t vertex_index = 0;
-  double x_inf_px = x_inf_m / resolution;
-  double y_inf_px = y_inf_m / resolution;
-  // qInfo() << "inf px" << x_inf_px << y_inf_px;
-  double x_offset = x_grid_inf * tile_size - x_inf_px;
-  double y_offset = y_grid_inf * tile_size - y_inf_px;
-  // qInfo() << "offset px" << x_offset << y_offset;
-  for (size_t i = 0; i <= number_of_vertical_lines; i++) {
-    float x = i * tile_size + x_offset;
-    // qInfo() << i << x;
-    vertices[vertex_index].set(x, 0);
-    vertices[vertex_index +1].set(x, height);
-    vertex_index += 2;
-  }
-  for (size_t i = 0; i <= number_of_horizontal_lines; i++) {
-    float y = i * tile_size + y_offset;
-    // qInfo() << i << y;
-    vertices[vertex_index].set(0, y);
-    vertices[vertex_index +1].set(width, y);
-    vertex_index += 2;
-  }
-  // parasite lines at left and bottom ???
-
-  container_node->removeAllChildNodes(); // delete
-  container_node->appendChildNode(grid_node);
-  // grid_node->markDirty(QSGNode::DirtyGeometry);
+  map_root_node->grid_node->update();
 
   // Fixme: duplicated code?
   QcTileSpecSet textures_in_scene = QcTileSpecSet::fromList(map_root_node->textures.keys()); // cf. textured_tiles
@@ -446,7 +462,7 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
     }
   }
 
-  map_root_node->update_tiles(map_root_node->map_container_node, this);
+  // map_root_node->update_tiles(map_root_node->map_container_node, this);
 
   return map_root_node;
 }

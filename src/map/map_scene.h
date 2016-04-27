@@ -52,10 +52,8 @@
 class QcMapScene : public QObject
 {
 public:
-  QcMapScene(QcViewport * viewport, QcTileMatrixSet & tile_matrix_set, QObject * parent = nullptr);
+  QcMapScene(const QcViewport * viewport, const QcTileMatrixSet & tile_matrix_set, QObject * parent = nullptr);
   ~QcMapScene();
-
-  void set_item_size (const QSize & size) { m_item_size = size; };
 
   void add_tile(const QcTileSpec & tile_spec, QSharedPointer<QcTileTexture> texture);
 
@@ -74,9 +72,8 @@ public:
   QHash<QcTileSpec, QSharedPointer<QcTileTexture> > m_tile_textures;
 
 private:
-  QSize m_item_size; // in pixels
-  QcViewport * m_viewport;
-  QcTileMatrixSet & m_tile_matrix_set;
+  const QcViewport * m_viewport; // Fixme: &
+  const QcTileMatrixSet & m_tile_matrix_set;
   QcTileSpecSet m_visible_tiles;
 };
 

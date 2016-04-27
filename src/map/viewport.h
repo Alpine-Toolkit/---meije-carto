@@ -190,7 +190,9 @@ class QC_EXPORT QcViewport : public QObject
 
   inline double bearing() const { return m_state.bearing(); }
 
-  inline const QSize viewport_size() const { return m_viewport_size; }
+  inline QSize viewport_size() const { return m_viewport_size; }
+  inline int width() const  { return m_viewport_size.width(); }
+  inline int height() const  { return m_viewport_size.height(); }
   void set_viewport_size(const QSize & size);
 
   void set_coordinate(const QcGeoCoordinatePseudoWebMercator & coordinate);

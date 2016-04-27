@@ -366,7 +366,6 @@ QcMapItem::geometryChanged(const QRectF & new_geometry, const QRectF & old_geome
   QQuickItem::geometryChanged(new_geometry, old_geometry);
   QSize viewport_size(new_geometry.width(), new_geometry.height()); // Fixme: QSizeF size()
   m_viewport->set_viewport_size(viewport_size);
-  m_map_view->map_scene()->set_item_size(viewport_size); // Fixme: cf. supra
 }
 
 QSGNode *
