@@ -34,15 +34,13 @@
 /**************************************************************************************************/
 
 #include <cmath>
-#include "math/qc_math.h"
 
-// #include <QtCore/QMetaType>
 #include <QVector>
 #include <QList>
 
 #include "qtcarto_global.h"
-#include "math/interval.h"
-#include "math/vector.h"
+#include "math/path.h"
+#include "math/qc_math.h"
 #include "map/tile_matrix_set.h"
 
 /**************************************************************************************************/
@@ -57,33 +55,21 @@ class QcTiledPolygonDiff;
 
 typedef QList<QcTiledPolygonRun> QcTiledPolygonRunList;
 
-class QC_EXPORT QcPolygon
+class QC_EXPORT QcPolygon : public QcPath
 {
  public:
   QcPolygon();
   // QcPolygon(size_t number_of_vertexes);
-  QcPolygon(const QList<QcVectorDouble> & vertexes);
-  QcPolygon(const QVector<double> & coordinates);
+  QcPolygon(const VertexListType & vertexes);
+  QcPolygon(const QVector<Type> & coordinates);
   QcPolygon(const QcPolygon & polygon);
   ~QcPolygon();
-
-  void clear();
-  void add_vertex(const QcVectorDouble & vertex);
-
-  inline const QList<QcVectorDouble> & vertexes() const { return m_vertexes; }
-
-  inline const QcInterval2DDouble & interval() const { return m_interval; } // Fixme: any vertexes
 
   bool contains(const QcVectorDouble & point) const;
 
   QcTiledPolygon intersec_with_grid(double grid_step) const;
 
   QcPolygon rotate_counter_clockwise(double angle) const;
-
- private:
-  // Fixme: QVector
-  QList<QcVectorDouble> m_vertexes;
-  QcInterval2DDouble m_interval;
 };
 
 class QC_EXPORT QcTiledPolygonRun

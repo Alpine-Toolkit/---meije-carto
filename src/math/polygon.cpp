@@ -39,7 +39,7 @@
 /**************************************************************************************************/
 
 QcPolygon::QcPolygon()
-  : m_vertexes()
+  : QcPath()
 {
 }
 
@@ -52,55 +52,20 @@ QcPolygon::QcPolygon(size_t number_of_vertexes)
 }
 */
 
-QcPolygon::QcPolygon(const QList<QcVectorDouble> & vertexes)
-  : m_vertexes(vertexes)
-{
-  size_t number_of_vertexes = m_vertexes.size();
+QcPolygon::QcPolygon(const VertexListType & vertexes)
+  : QcPath(vertexes, true)
+{}
 
-  if (number_of_vertexes) {
-    m_interval = m_vertexes[0].to_interval();
-    for (size_t i = 1; i < number_of_vertexes; i++)
-      m_interval |= m_vertexes[i].to_interval();
-  }
-}
-
-QcPolygon::QcPolygon(const QVector<double> & coordinates)
-{
-  size_t number_of_coordinates = coordinates.size();
-  if (number_of_coordinates % 2 == 1)
-    throw std::invalid_argument("Odd number of coordinates");
-
-  for (size_t i = 0; i < number_of_coordinates; i += 2) {
-    add_vertex(QcVectorDouble(coordinates[i], coordinates[i+1]));
-  }
-}
+QcPolygon::QcPolygon(const QVector<Type> & coordinates)
+  : QcPath(coordinates, true)
+{}
 
 QcPolygon::QcPolygon(const QcPolygon & polygon)
-  : QcPolygon(polygon.m_vertexes)
+  : QcPolygon(polygon.vertexes())
 {}
 
 QcPolygon::~QcPolygon()
 {}
-
-void
-QcPolygon::clear()
-{
-  m_vertexes.clear();
-  m_interval = QcInterval2DDouble();
-}
-
-void
-QcPolygon::add_vertex(const QcVectorDouble & vertex)
-{
-  // qinfo() << "add_vertex" << vertex;
-  QcInterval2DDouble vertex_interval = vertex.to_interval();
-  size_t number_of_vertexes = m_vertexes.size();
-  if (! number_of_vertexes)
-    m_interval = vertex_interval;
-  else
-    m_interval |= vertex_interval;
-  m_vertexes.push_back(vertex);
-}
 
 /*
   @return next valid index (current + 1 or start index)
@@ -120,32 +85,32 @@ get_next_index(size_t number_of_items, size_t current)
 //   A correct even-odd algorithm for the point-in-polygon problem for complex polygons
 //   Michael Galetzka, Patrick O. Glauner
 bool
-QcPolygon::contains(const QcVectorDouble & test_point) const
+QcPolygon::contains(const VertexType & test_point) const
 {
-  size_t number_of_vertexes = m_vertexes.size();
+  size_t _number_of_vertexes = number_of_vertexes();
 
   // Initial start point
-  const QcVectorDouble origin(0, 0);
-  QcVectorDouble start_point;
-  QcVectorDouble end_point;
+  const VertexType origin(0, 0);
+  VertexType start_point;
+  VertexType end_point;
 
   // Create axes
-  QcSegmentDouble x_axis(origin, origin);
-  QcSegmentDouble x_axis_positive(origin, origin);
+  EdgeType x_axis(origin, origin);
+  EdgeType x_axis_positive(origin, origin);
 
   int start_node_position = -1;
 
   // Is test_point on a node?
   // Move polygon to 0|0
   // Enlarge axes
-  QList<QcVectorDouble> vertexes;
-  for (size_t i = 0; i < number_of_vertexes; i++) {
-    const QcVectorDouble & vertex = m_vertexes[i];
+  VertexListType vertexes;
+  for (size_t i = 0; i < _number_of_vertexes; i++) {
+    const VertexType & vertex = vertex_at(i); // [i]
     if (test_point == vertex)
       return true;
 
     // Translate polygon to 0|0
-    QcVectorDouble translated_vertex = vertex - test_point;
+    VertexType translated_vertex = vertex - test_point;
     vertexes.push_back(translated_vertex);
 
     // Find start point which is not on the x axis
@@ -155,7 +120,7 @@ QcPolygon::contains(const QcVectorDouble & test_point) const
     }
 
     // Enlarge axes
-    double x = translated_vertex.x();
+    Type x = translated_vertex.x();
     if (x > x_axis.p2().x()) {
       x_axis.p2().set_x(x);
       x_axis_positive.p2().set_x(x);
@@ -166,14 +131,14 @@ QcPolygon::contains(const QcVectorDouble & test_point) const
   }
 
   // Move test_point to 0|0
-  QcSegmentDouble test_point_line(origin, origin);
-  QcSegmentDouble edge;
+  EdgeType test_point_line(origin, origin);
+  EdgeType edge;
 
   // Is test_point on an edge?
-  for (size_t i = 0; i < number_of_vertexes; i++) {
+  for (size_t i = 0; i < _number_of_vertexes; i++) {
     edge.set_p1(vertexes[i]);
     // Get correct index of successor edge
-    edge.set_p2(vertexes[get_next_index(number_of_vertexes, i)]);
+    edge.set_p2(vertexes[get_next_index(_number_of_vertexes, i)]);
     if (test_point_line.intersect(edge) == 1) {
 	return true;
     }
@@ -190,14 +155,14 @@ QcPolygon::contains(const QcVectorDouble & test_point) const
   size_t i = start_node_position;
 
   // Consider all edges
-  while (seen_points < number_of_vertexes) {
+  while (seen_points < _number_of_vertexes) {
 
-    size_t saved_index = get_next_index(number_of_vertexes, i);
+    size_t saved_index = get_next_index(_number_of_vertexes, i);
     int saved_x = vertexes[saved_index].x();
 
     // Move to next point which is not on the x-axis
     do {
-      i = get_next_index(number_of_vertexes, i);
+      i = get_next_index(_number_of_vertexes, i);
       seen_points++;
     } while (vertexes[i].y() == 0);
     // Found end point
@@ -277,11 +242,11 @@ QcPolygon::intersec_with_grid(double grid_step) const {
 QcPolygon
 QcPolygon::rotate_counter_clockwise(double angle) const
 {
-  QList<QcVectorDouble> vertexes(m_vertexes);
-  for (QcVectorDouble & vertex: vertexes)
+  VertexListType _vertexes(vertexes());
+  for (VertexType & vertex: _vertexes)
     vertex.rotate_counter_clockwise(angle);
 
-  return QcPolygon(vertexes);
+  return QcPolygon(_vertexes);
 }
 
 /**************************************************************************************************/
@@ -326,8 +291,8 @@ QcTiledPolygonRun::tile_indexes() const
 QcTiledPolygon::QcTiledPolygon(const QcPolygon & polygon, double grid_step)
   : m_polygon(polygon), m_grid_step(grid_step)
 {
-  const QcInterval2DDouble & polygon_interval = polygon.interval();
-  const QList<QcVectorDouble> & vertexes = polygon.vertexes();
+  const QcPolygon::IntervalType & polygon_interval = polygon.interval();
+  const QcPolygon::VertexListType & vertexes = polygon.vertexes();
 
   QcInterval2DInt interval_on_grid(to_grid(polygon_interval.x().inf(), grid_step),
 				   to_grid(polygon_interval.x().sup(), grid_step),
@@ -340,11 +305,11 @@ QcTiledPolygon::QcTiledPolygon(const QcPolygon & polygon, double grid_step)
 
   size_t number_of_vertexes = vertexes.size();
   for (size_t i = 0; i < number_of_vertexes; i++) {
-    const QcVectorDouble & p0 = vertexes[i];
+    const QcPolygon::VertexType & p0 = vertexes[i];
     size_t ii = i + 1;
     if (ii == number_of_vertexes)
       ii = 0;
-    const QcVectorDouble & p1 = vertexes[ii];
+    const QcPolygon::VertexType & p1 = vertexes[ii];
 
     double X0 = to_grid(p0.x(), grid_step);
     double Y0 = to_grid(p0.y(), grid_step);

@@ -53,6 +53,7 @@
 
 class QC_EXPORT QcPath
 {
+ public:
   typedef double Type;
   typedef QcVector<Type> VertexType;
   typedef QList<VertexType> VertexListType;
@@ -77,6 +78,9 @@ class QC_EXPORT QcPath
 
   void clear();
   void add_vertex(const VertexType & vertex);
+
+  inline const VertexType & vertex_at(int i) const { return m_vertexes[i]; }
+  // inline const EdgeType & edge(int i) const { return m_edges[i]; }
 
   inline int number_of_vertexes() const { return m_vertexes.size(); }
   inline const VertexListType & vertexes() const { return m_vertexes; }
