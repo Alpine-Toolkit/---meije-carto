@@ -39,6 +39,8 @@ set(qtcarto_files
   map/wmts_request_manager.cpp
   map/wmts_tile_fetcher.cpp
   math/interval.cpp
+  math/line.cpp
+  math/path.cpp
   math/polygon.cpp
   math/qc_math.cpp
   math/rational.cpp

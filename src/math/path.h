@@ -28,18 +28,21 @@
 
 /**************************************************************************************************/
 
-#ifndef __SEGMENT_H__
-#define __SEGMENT_H__
+#ifndef __PATH_H__
+#define __PATH_H__
 
 /**************************************************************************************************/
 
 #include <cmath>
 
 // #include <QtCore/QMetaType>
-#include <QDebug>
+#include <QVector>
+#include <QList>
 
 #include "qtcarto_global.h"
+#include "math/interval.h"
 #include "math/qc_math.h"
+#include "math/segment.h"
 #include "math/vector.h"
 
 /**************************************************************************************************/
@@ -48,83 +51,59 @@
 
 /**************************************************************************************************/
 
-template <typename T>
-class QC_EXPORT QcSegment
+class QC_EXPORT QcPath
 {
- public:
-  static int triangle_orientation(const QcVector<T> & p0, const QcVector<T> & p1, const QcVector<T> & p2);
+  typedef double Type;
+  typedef QcVector<Type> VertexType;
+  typedef QList<VertexType> VertexListType;
+  typedef QcSegment<Type> EdgeType;
+  typedef QList<EdgeType> EdgeListType;
+  typedef QcInterval2D<Type> IntervalType;
 
  public:
-  typedef QcVector<T> Point;
-  typedef QcSegment<T> Segment;
+  QcPath();
+  // QcPath(size_t number_of_vertexes);
+  QcPath(const VertexListType & vertexes, bool closed = false);
+  QcPath(const QVector<Type> & coordinates, bool closed = false);
+  QcPath(const QcPath & path);
+  ~QcPath();
 
-  QcSegment()
-    : m_p1(), m_p2()
-    {}
+  QcPath & operator=(const QcPath & other);
 
-  QcSegment(const Point & p1, const Point & p2)
-    : m_p1(p1), m_p2(p2)
-    {}
-
-  QcSegment(const Segment & other)
-    : m_p1(other.m_p1), m_p2(other.m_p2)
-    {}
-
-  ~QcSegment()
-    {}
-
-  Segment & operator=(const Segment & other)
-    {
-      if (this != &other) {
-	m_p1 = other.m_p1;
-	m_p2 = other.m_p2;
-      }
-
-      return *this;
-    }
-
-  bool operator==(const QcSegment<T> & other) const {
-    // Fixme: test this != &other
-    return m_p1 == other.m_p1() && m_p2 == other.m_p2();
-  }
-  inline bool operator!=(const QcSegment<T> & other) const {
+  bool operator==(const QcPath & other) const;
+  inline bool operator!=(const QcPath & other) const {
     return !operator==(other);
   }
 
-  inline Point & p1() { return m_p1; }
-  inline Point & p2() { return m_p2; }
+  void clear();
+  void add_vertex(const VertexType & vertex);
 
-  inline const Point & p1() const { return m_p1; }
-  inline const Point & p2() const { return m_p2; }
+  inline const VertexListType & vertexes() const { return m_vertexes; }
+  inline const IntervalType & interval() const { return m_interval; } // Fixme: any vertexes
 
-  inline void set_p1(const Point & point) { m_p1 = point; }
-  inline void set_p2(const Point & point) { m_p2 = point; }
+  inline bool closed() const { return m_closed; };
+  inline void set_closed(bool value) { m_closed = value; };
 
-  unsigned int intersect(const QcSegment<T> & line2);
+  Type length() const;
 
-  T length() const { return (m_p2 - m_p1).magnitude(); }
+  EdgeType edge(int start_index) const;
+
+  // bool is_self_intersecting() const;
 
  private:
-  Point m_p1;
-  Point m_p2;
+  // Fixme: QVector
+  VertexListType m_vertexes;
+  IntervalType m_interval;
+  bool m_closed;
 };
-
-typedef QcSegment<double> QcSegmentDouble;
 
 /**************************************************************************************************/
 
 // QC_END_NAMESPACE
 
-
 /**************************************************************************************************/
 
-#ifndef QC_MANUAL_INSTANTIATION
-#include "segment.hxx"
-#endif
-
-/**************************************************************************************************/
-
-#endif /* __SEGMENT_H__ */
+#endif /* __PATH_H__ */
 
 /***************************************************************************************************
  *

@@ -15,6 +15,7 @@
 foreach(name
     interval
     line
+    path
     polygon
     vector
     )

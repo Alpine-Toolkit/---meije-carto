@@ -76,11 +76,18 @@ QcPolygon::QcPolygon(const QVector<double> & coordinates)
 }
 
 QcPolygon::QcPolygon(const QcPolygon & polygon)
-  : m_vertexes(polygon.m_vertexes)
+  : QcPolygon(polygon.m_vertexes)
 {}
 
 QcPolygon::~QcPolygon()
 {}
+
+void
+QcPolygon::clear()
+{
+  m_vertexes.clear();
+  m_interval = QcInterval2DDouble();
+}
 
 void
 QcPolygon::add_vertex(const QcVectorDouble & vertex)
@@ -93,66 +100,6 @@ QcPolygon::add_vertex(const QcVectorDouble & vertex)
   else
     m_interval |= vertex_interval;
   m_vertexes.push_back(vertex);
-}
-
-/*
-  Travelling from p0 to p1 to p2.
-  @return -1 for counter-clockwise or if p0 is on the line segment between p1 and p2
-           1 for clockwise or if p1 is on the line segment between p0 and p2
-           0 if p2 in on the line segment between p0 and p1
-*/
-int
-triangle_orientation(const QcVectorDouble & p0, const QcVectorDouble & p1, const QcVectorDouble & p2)
-{
-  double dx1 = p1.x() - p0.x();
-  double dy1 = p1.y() - p0.y();
-  double dx2 = p2.x() - p0.x();
-  double dy2 = p2.y() - p0.y();
-
-  // second slope is greater than the first one --> counter-clockwise
-  if (dx1 * dy2 > dx2 * dy1) {
-    return 1;
-  }
-  // first slope is greater than the second one --> clockwise
-  else if (dx1 * dy2 < dx2 * dy1) {
-    return -1;
-  }
-  // both slopes are equal --> collinear line segments
-  else {
-    // p0 is between p1 and p2
-    if (dx1 * dx2 < 0 || dy1 * dy2 < 0) {
-      return -1;
-    }
-    // p2 is between p0 and p1, as the length is compared
-    // square roots are avoided to increase performance
-    else if (dx1 * dx1 + dy1 * dy1 >= dx2 * dx2 + dy2 * dy2) {
-      return 0;
-    }
-    // p1 is between p0 and p2
-    else {
-      return 1;
-    }
-  }
-}
-
-/*
-  Checks if the line segments intersect.
-  @return 1 if there is an intersection
-          0 otherwise
-*/
-unsigned int
-intersect(const QcSegmentDouble & line1, const QcSegmentDouble & line2)
-{
-  // triangle_orientation returns 0 if two points are identical, except from the situation
-  // when p0 and p1 are identical and different from p2
-  int ccw11 = triangle_orientation(line1.p1(), line1.p2(), line2.p1());
-  int ccw12 = triangle_orientation(line1.p1(), line1.p2(), line2.p2());
-  int ccw21 = triangle_orientation(line2.p1(), line2.p2(), line1.p1());
-  int ccw22 = triangle_orientation(line2.p1(), line2.p2(), line1.p2());
-
-  return (((ccw11 * ccw12 < 0) && (ccw21 * ccw22 < 0))
-	  // one ccw value is zero to detect an intersection
-	  || (ccw11 * ccw12 * ccw21 * ccw22 == 0)) ? 1 : 0;
 }
 
 /*
@@ -227,7 +174,7 @@ QcPolygon::contains(const QcVectorDouble & test_point) const
     edge.set_p1(vertexes[i]);
     // Get correct index of successor edge
     edge.set_p2(vertexes[get_next_index(number_of_vertexes, i)]);
-    if (intersect(test_point_line, edge) == 1) {
+    if (test_point_line.intersect(edge) == 1) {
 	return true;
     }
   }
@@ -264,13 +211,13 @@ QcPolygon::contains(const QcVectorDouble & test_point) const
       // No nodes have been skipped
       // and the successor node has been chosen as the end point
       if (i == saved_index) {
-	count += intersect(edge, x_axis_positive);
+	count += edge.intersect(x_axis_positive);
       }
       // If at least one node on the right side has been skipped,
       // the original edge would have been intersected
       // --> intersect with full x-axis
       else if (saved_x > 0) {
-	count += intersect(edge, x_axis);
+	count += edge.intersect(x_axis);
       }
     }
 

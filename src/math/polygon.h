@@ -67,11 +67,12 @@ class QC_EXPORT QcPolygon
   QcPolygon(const QcPolygon & polygon);
   ~QcPolygon();
 
+  void clear();
   void add_vertex(const QcVectorDouble & vertex);
 
   inline const QList<QcVectorDouble> & vertexes() const { return m_vertexes; }
 
-  inline const QcInterval2DDouble & interval() const { return m_interval; }
+  inline const QcInterval2DDouble & interval() const { return m_interval; } // Fixme: any vertexes
 
   bool contains(const QcVectorDouble & point) const;
 

@@ -206,18 +206,7 @@ typedef QcLine<int> QcLineInt;
 typedef QcLine<double> QcLineDouble;
 
 #ifndef QT_NO_DEBUG_STREAM
-QC_EXPORT QDebug operator<<(QDebug debug, const QcLineDouble & line)
-{
-  QDebugStateSaver saver(debug); // Fixme: ???
-
-  debug.nospace() << "QcLineDouble(";
-  debug << line.point();
-  debug << ", ";
-  debug << line.vector();
-  debug << ')';
-
-  return debug;
-}
+QC_EXPORT QDebug operator<<(QDebug debug, const QcLineDouble & line);
 #endif
 
 // #ifndef QT_NO_DATASTREAM
@@ -227,7 +216,7 @@ QC_EXPORT QDebug operator<<(QDebug debug, const QcLineDouble & line)
 
 /**************************************************************************************************/
 
-// QT_END_NAMESPACE
+// QC_END_NAMESPACE
 
 /**************************************************************************************************/
 
