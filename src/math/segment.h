@@ -35,7 +35,6 @@
 
 #include <cmath>
 
-// #include <QtCore/QMetaType>
 #include <QDebug>
 
 #include "qtcarto_global.h"
@@ -49,11 +48,11 @@
 /**************************************************************************************************/
 
 template <typename T>
+int triangle_orientation(const QcVector<T> & p0, const QcVector<T> & p1, const QcVector<T> & p2);
+
+template <typename T>
 class QC_EXPORT QcSegment
 {
- public:
-  static int triangle_orientation(const QcVector<T> & p0, const QcVector<T> & p1, const QcVector<T> & p2);
-
  public:
   typedef QcVector<T> Point;
   typedef QcSegment<T> Segment;
@@ -100,7 +99,9 @@ class QC_EXPORT QcSegment
   inline void set_p1(const Point & point) { m_p1 = point; }
   inline void set_p2(const Point & point) { m_p2 = point; }
 
-  unsigned int intersect(const QcSegment<T> & line2);
+  Point vector() const { return Point(m_p2 - m_p1); }
+
+  unsigned int intersect(const Segment & line2);
 
   T length() const { return (m_p2 - m_p1).magnitude(); }
 
@@ -109,6 +110,7 @@ class QC_EXPORT QcSegment
   Point m_p2;
 };
 
+typedef QcSegment<int> QcSegmentInt;
 typedef QcSegment<double> QcSegmentDouble;
 
 /**************************************************************************************************/

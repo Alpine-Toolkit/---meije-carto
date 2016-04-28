@@ -78,6 +78,7 @@ class QC_EXPORT QcPath
   void clear();
   void add_vertex(const VertexType & vertex);
 
+  inline int number_of_vertexes() const { return m_vertexes.size(); }
   inline const VertexListType & vertexes() const { return m_vertexes; }
   inline const IntervalType & interval() const { return m_interval; } // Fixme: any vertexes
 
@@ -86,13 +87,21 @@ class QC_EXPORT QcPath
 
   Type length() const;
 
-  EdgeType edge(int start_index) const;
+  int number_of_edges() const;
+  // EdgeType edge(int start_index) const;
+  EdgeListType edges() const;
+  EdgeType closing_edge() const { return EdgeType(m_vertexes.constLast(), m_vertexes.constFirst()); }
+
+  VertexType barycenter() const;
+  VertexType nearest_vertex(const VertexType & point, Type & distance) const;
+  EdgeType nearest_edge(const VertexType & point, Type & distance, Type & abscissa) const;
 
   // bool is_self_intersecting() const;
 
  private:
   // Fixme: QVector
   VertexListType m_vertexes;
+  EdgeListType m_edges;
   IntervalType m_interval;
   bool m_closed;
 };

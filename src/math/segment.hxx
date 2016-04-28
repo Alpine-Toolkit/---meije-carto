@@ -45,7 +45,7 @@
 */
 template <typename T>
 int
-QcSegment<T>::triangle_orientation(const QcVector<T> & p0, const QcVector<T> & p1, const QcVector<T> & p2)
+triangle_orientation(const QcVector<T> & p0, const QcVector<T> & p1, const QcVector<T> & p2)
 {
   T dx1 = p1.x() - p0.x();
   T dy1 = p1.y() - p0.y();
@@ -85,9 +85,9 @@ QcSegment<T>::triangle_orientation(const QcVector<T> & p0, const QcVector<T> & p
 */
 template <typename T>
 unsigned int
-QcSegment<T>::intersect(const QcSegment<T> & line2)
+QcSegment<T>::intersect(const Segment & line2)
 {
-  const QcSegment<T> & line1 = *this;
+  const Segment & line1 = *this;
 
   // triangle_orientation returns 0 if two points are identical, except from the situation
   // when p0 and p1 are identical and different from p2

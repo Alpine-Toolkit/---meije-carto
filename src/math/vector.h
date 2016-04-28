@@ -138,7 +138,7 @@ class QC_EXPORT QcVector
   T m_y;
 };
 
-typedef QcVector<int> QcVectorInt;
+typedef QcVector<int> QcVectorInt; // Fixme: double computation ???
 typedef QcVector<double> QcVectorDouble;
 
 #ifndef QT_NO_DEBUG_STREAM

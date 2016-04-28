@@ -36,7 +36,6 @@
 #include <algorithm>
 #include <stdexcept>
 
-// #include <QtCore/QMetaType>
 #include <QDebug>
 
 #include "qtcarto_global.h"
@@ -64,24 +63,14 @@ class QC_EXPORT QcInterval
 
   QcInterval<T> &operator=(const QcInterval<T> & other);
 
-  inline T inf() const {
-    return m_inf;
-  }
-
-  inline T sup() const {
-    return m_sup;
-  }
-
-  inline bool is_empty() const {
-    return m_empty;
-  }
-
-  inline bool is_not_empty() const {
-    return !m_empty;
-  }
+  inline T inf() const { return m_inf; }
+  inline T sup() const { return m_sup; }
 
   void set_inf(T value);
   void set_sup(T value);
+
+  inline bool is_empty() const { return m_empty; }
+  inline bool is_not_empty() const { return !m_empty; }
 
   T length() const;
   T center() const;
