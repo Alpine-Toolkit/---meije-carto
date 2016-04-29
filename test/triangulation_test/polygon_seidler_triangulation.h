@@ -131,7 +131,6 @@ private:
   int monotonate_trapezoids(int n);
   int triangulate_single_polygon(int posmax, int side, int op[][3]);
   void triangulate_monotone_polygons(int nmonpoly, int op[][3]);
-  int initialise(int nseg);
 
 private:
   int m_number_of_segments;

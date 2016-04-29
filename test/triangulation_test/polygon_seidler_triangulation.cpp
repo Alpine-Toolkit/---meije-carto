@@ -97,59 +97,11 @@ constexpr int TRI_RHS = 2;
 
 /**************************************************************************************************/
 
-/* Generate a random permutation of the segments 1..n
- */
-int
-QcSeidlerPolygonTriangulation::generate_random_ordering(int n)
-{
-  register int i;
-  int m, st[SEGSIZE], *p;
-
-  m_choose_index = 1;
-
-  for (i = 0; i <= n; i++)
-    st[i] = i;
-
-  p = st;
-  for (i = 1; i <= n; i++, p++) {
-    m = lrand48() % (n + 1 - i) + 1;
-    m_permute[i] = p[m];
-    if (m != 1)
-      p[m] = p[1];
-  }
-  return 0;
-}
-
-/* Return the next segment in the generated random ordering of all the segments in S */
-int
-QcSeidlerPolygonTriangulation::choose_segment()
-{
-#ifdef DEBUG
-  fprintf(stderr, "choose_segment: %d\n", m_permute[m_choose_index]);
-#endif
-
-  return m_permute[m_choose_index++];
-}
-
-int
-QcSeidlerPolygonTriangulation::inserted(int segment_number, int whichpt)
-{
-  int n1, n2;
-
-  n1 = segment_number % m_number_of_segments + 1; /* next seg. */
-  n2 = (segment_number - 1 + m_number_of_segments - 1) % m_number_of_segments + 1; /* prev. */
-
-  if (whichpt == FIRSTPT)
-    return m_segment[n2].is_inserted;
-  else
-    return m_segment[n1].is_inserted;
-}
-
 // Get log*n for given n
 int
 math_logstar_n(int n)
 {
-  register int i;
+  int i;
   double v;
 
   for (i = 0, v = (double) n; v >= 1; i++)
@@ -161,7 +113,7 @@ math_logstar_n(int n)
 int
 math_N(int n, int h)
 {
-  register int i;
+  int i;
   double v;
 
   for (i = 0, v = (int) n; i < h; i++)
@@ -171,33 +123,6 @@ math_N(int n, int h)
 }
 
 /**************************************************************************************************/
-
-/* Return a new node to be added into the query tree */
-int
-QcSeidlerPolygonTriangulation::newnode()
-{
-  if (m_q_index < QSIZE)
-    return m_q_index++;
-  else {
-    fprintf (stderr, "newnode: Query-table overflow\n");
-    return -1;
-  }
-}
-
-/* Return a free trapezoid */
-int
-QcSeidlerPolygonTriangulation::new_trapezoid()
-{
-   if (m_trapezoid_index < TRSIZE) {
-    m_trapezoid[m_trapezoid_index].lseg = -1;
-    m_trapezoid[m_trapezoid_index].rseg = -1;
-    m_trapezoid[m_trapezoid_index].state = ST_VALID;
-    return m_trapezoid_index++;
-  } else {
-    fprintf(stderr, "new_trapezoid: Trapezoid-table overflow\n");
-    return -1;
-  }
-}
 
 /* Return the maximum of the two points into the yval structure */
 int
@@ -270,6 +195,102 @@ _less_than(point_t * v0, point_t * v1)
     return false;
   else
     return (v0->x < v1->x);
+}
+
+double
+get_angle(point_t * vp0, point_t * vpnext, point_t * vp1)
+{
+  point_t v0, v1;
+
+  v0.x = vpnext->x - vp0->x;
+  v0.y = vpnext->y - vp0->y;
+
+  v1.x = vp1->x - vp0->x;
+  v1.y = vp1->y - vp0->y;
+
+  if (CROSS_SINE(v0, v1) >= 0) /* sine is positive */
+    return DOT(v0, v1) / LENGTH(v0) / LENGTH(v1);
+  else
+    return (-1.0 * DOT(v0, v1) / LENGTH(v0) / LENGTH(v1) - 2);
+}
+
+/**************************************************************************************************/
+
+/* Generate a random permutation of the segments 1..n
+ */
+int
+QcSeidlerPolygonTriangulation::generate_random_ordering(int n)
+{
+  register int i;
+  int m, st[SEGSIZE], *p;
+
+  m_choose_index = 1;
+
+  for (i = 0; i <= n; i++)
+    st[i] = i;
+
+  p = st;
+  for (i = 1; i <= n; i++, p++) {
+    m = lrand48() % (n + 1 - i) + 1;
+    m_permute[i] = p[m];
+    if (m != 1)
+      p[m] = p[1];
+  }
+  return 0;
+}
+
+/* Return the next segment in the generated random ordering of all the segments in S */
+int
+QcSeidlerPolygonTriangulation::choose_segment()
+{
+#ifdef DEBUG
+  fprintf(stderr, "choose_segment: %d\n", m_permute[m_choose_index]);
+#endif
+
+  return m_permute[m_choose_index++];
+}
+
+int
+QcSeidlerPolygonTriangulation::inserted(int segment_number, int whichpt)
+{
+  int n1, n2;
+
+  n1 = segment_number % m_number_of_segments + 1; /* next seg. */
+  n2 = (segment_number - 1 + m_number_of_segments - 1) % m_number_of_segments + 1; /* prev. */
+
+  if (whichpt == FIRSTPT)
+    return m_segment[n2].is_inserted;
+  else
+    return m_segment[n1].is_inserted;
+}
+
+/**************************************************************************************************/
+
+/* Return a new node to be added into the query tree */
+int
+QcSeidlerPolygonTriangulation::newnode()
+{
+  if (m_q_index < QSIZE)
+    return m_q_index++;
+  else {
+    fprintf(stderr, "newnode: Query-table overflow\n");
+    return -1;
+  }
+}
+
+/* Return a free trapezoid */
+int
+QcSeidlerPolygonTriangulation::new_trapezoid()
+{
+   if (m_trapezoid_index < TRSIZE) {
+    m_trapezoid[m_trapezoid_index].lseg = -1;
+    m_trapezoid[m_trapezoid_index].rseg = -1;
+    m_trapezoid[m_trapezoid_index].state = ST_VALID;
+    return m_trapezoid_index++;
+  } else {
+    fprintf(stderr, "new_trapezoid: Trapezoid-table overflow\n");
+    return -1;
+  }
 }
 
 /* Initilialise the query structure (Q) and the trapezoid table (T)
@@ -1099,23 +1120,6 @@ QcSeidlerPolygonTriangulation::new_chain_element()
   return ++m_chain_index;
 }
 
-double
-get_angle(point_t * vp0, point_t * vpnext, point_t * vp1)
-{
-  point_t v0, v1;
-
-  v0.x = vpnext->x - vp0->x;
-  v0.y = vpnext->y - vp0->y;
-
-  v1.x = vp1->x - vp0->x;
-  v1.y = vp1->y - vp0->y;
-
-  if (CROSS_SINE(v0, v1) >= 0) /* sine is positive */
-    return DOT(v0, v1) / LENGTH(v0) / LENGTH(v1);
-  else
-    return (-1.0 * DOT(v0, v1) / LENGTH(v0) / LENGTH(v1) - 2);
-}
-
 /* (v0, v1) is the new diagonal to be added to the polygon. Find which
  * chain to use and return the positions of v0 and v1 in p and q */
 int
@@ -1624,20 +1628,6 @@ QcSeidlerPolygonTriangulation::triangulate_monotone_polygons(int nmonpoly, int o
 
 /**************************************************************************************************/
 
-int
-QcSeidlerPolygonTriangulation::initialise(int nseg)
-{
-  register int i;
-
-  for (i = 1; i <= nseg; i++)
-    m_segment[i].is_inserted = false;
-  generate_random_ordering(nseg);
-
-  return 0;
-}
-
-/* Not standalone. Use this as an interface routine */
-
 /* The points constituting the polygon are specified in anticlockwise
  * order. If there are n points in the polygon, it would be the
  * points p0, p1....p(n) (where p0 and pn are the same point). The
@@ -1653,32 +1643,32 @@ QcSeidlerPolygonTriangulation::initialise(int nseg)
  * vertices:  the vertices p0, p1..., p(n) of the polygon
  * triangles: output array containing the triangles
  */
-
-QcSeidlerPolygonTriangulation::QcSeidlerPolygonTriangulation(int n, double vertices[][2], int triangles[][3])
+QcSeidlerPolygonTriangulation::QcSeidlerPolygonTriangulation(int number_of_segments, double vertices[][2], int triangles[][3])
 {
-  register int i;
-  int nmonpoly;
+  m_number_of_segments = number_of_segments;
 
   memset((void *) m_segment, 0, sizeof(m_segment));
-  for (i = 1; i <= n; i++) {
+  for (int i = 1; i <= number_of_segments; i++) {
     m_segment[i].is_inserted = false;
 
     m_segment[i].v0.x = vertices[i][0]; /* x-cood */
     m_segment[i].v0.y = vertices[i][1]; /* y-cood */
     if (i == 1) {
-      m_segment[n].v1.x = m_segment[i].v0.x;
-      m_segment[n].v1.y = m_segment[i].v0.y;
+      m_segment[number_of_segments].v1.x = m_segment[i].v0.x;
+      m_segment[number_of_segments].v1.y = m_segment[i].v0.y;
     } else {
       m_segment[i - 1].v1.x = m_segment[i].v0.x;
       m_segment[i - 1].v1.y = m_segment[i].v0.y;
     }
   }
 
-  m_number_of_segments = n;
-  initialise(n);
-  construct_trapezoids(n, m_segment);
-  nmonpoly = monotonate_trapezoids(n);
-  triangulate_monotone_polygons(nmonpoly, triangles);
+  // for (int i = 1; i <= number_of_segments; i++)
+  //   m_segment[i].is_inserted = false;
+  generate_random_ordering(number_of_segments);
+
+  construct_trapezoids(number_of_segments, m_segment);
+  int number_of_monotone_polygons = monotonate_trapezoids(number_of_segments);
+  triangulate_monotone_polygons(number_of_monotone_polygons, triangles);
 }
 
 /* This function returns true or false depending upon whether the
