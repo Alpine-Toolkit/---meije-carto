@@ -29,7 +29,7 @@ with open(args.shader_prefix + '_vertex_shader.glsl', 'r') as f:
 with open(args.shader_prefix + '_fragment_shader.glsl', 'r') as f:
     fragment_shader_source = f.read()
 
-with open(args.shader_prefix + '_shader.cpp', 'w') as f:
+with open(args.shader_prefix + '_shader.h', 'w') as f:
     f.write('const char * vertex_shader =\n' + format_shader_for_c_string(vertex_shader_source) + '\n;\n')
     f.write('\n')
     f.write('const char * fragment_shader =\n' + format_shader_for_c_string(fragment_shader_source) + '\n;\n')
