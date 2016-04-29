@@ -9,12 +9,12 @@
 **
 ** This file is part of the QtCarto library.
 **
-** This program is free software: you can redism_tribute it and/or modify
+** This program is free software: you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation, either version 3 of the License, or
 ** (at your option) any later version.
 **
-** This program is dism_tributed in the hope that it will be useful,
+** This program is distributed in the hope that it will be useful,
 ** but WITHOUT ANY WARRANTY; without even the implied warranty of
 ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ** GNU General Public License for more details.
@@ -39,9 +39,9 @@
 // #include <QVector>
 // #include <QList>
 
-// #include "qtcarto_m_global.h"
-// #include "geomem_try/m_segment.h"
-// #include "geomem_try/vector.h"
+// #include "qtcarto_global.h"
+// #include "geometry/segment.h"
+// #include "geometry/vector.h"
 // #include "math/interval.h"
 // #include "math/qc_math.h"
 
@@ -51,43 +51,9 @@
 
 /**************************************************************************************************/
 
-constexpr int T_X = 1;
-constexpr int T_Y = 2;
-constexpr int T_SINK = 3;
-
 constexpr int QSIZE = 800; // maximum table sizes
-constexpr int TRSIZE = 400; // max# m_trapezoids
-constexpr int SEGSIZE = 100; // max# of m_segments
-
-constexpr int FIRSTPT = 1; // checking whether pt. is inserted
-constexpr int LASTPT = 2;
-
-constexpr double EPS = 0.000005;
-
-// constexpr int INFINITY 1<<30
-
-constexpr double C_EPS = 1.0e-7;
-
-constexpr int S_LEFT = 1; // for merge-direction
-constexpr int S_RIGHT = 2;
-
-constexpr int ST_VALID = 1; // for m_trapezium table
-constexpr int ST_INVALID = 2;
-
-constexpr int SP_SIMPLE_LRUP = 1; // for splitting m_trapezoids
-constexpr int SP_SIMPLE_LRDN = 2;
-constexpr int SP_2UP_2DN = 3;
-constexpr int SP_2UP_LEFT = 4;
-constexpr int SP_2UP_RIGHT = 5;
-constexpr int SP_2DN_LEFT = 6;
-constexpr int SP_2DN_RIGHT = 7;
-constexpr int SP_NOSPLIT = -1;
-
-constexpr int TR_FROM_UP = 1; // for m_traverse-direction
-constexpr int TR_FROM_DN = 2;
-
-constexpr int TRI_LHS = 1;
-constexpr int TRI_RHS = 2;
+constexpr int TRSIZE = 400; // max# trapezoids
+constexpr int SEGSIZE = 100; // max# of segments
 
 /**************************************************************************************************/
 
@@ -112,8 +78,8 @@ typedef struct {
 } trap_t;
 
 typedef struct {
-  int nodetype;
-  int segnum;
+  int node_type;
+  int segment_number;
   point_t yval;
   int trnum;
   int parent;
@@ -124,18 +90,14 @@ typedef struct {
   int vnum;
   int next;
   int prev;
-} monchain_t;
+} monotone_chain_t;
 
 typedef struct {
   point_t pt;
   int vnext[4]; // next vertices for the 4 chains
   int vpos[4]; // position of v in the 4 chains
   int nextfree;
-} vertexchain_t;
-
-struct global_s {
-  int nseg;
-};
+} vertex_chain_t;
 
 /**************************************************************************************************/
 
@@ -149,16 +111,16 @@ public:
 private:
   int generate_random_ordering(int n);
   int choose_segment();
-  int inserted(int segnum, int whichpt);
+  int inserted(int segment_number, int whichpt);
   int newnode();
-  int newtrap();
-  int init_query_structure(int segnum);
-  int is_left_of(int segnum, point_t * v);
-  int is_collinear(int segnum, point_t * v, int is_swapped);
+  int new_trapezoid();
+  int init_query_structure(int segment_number);
+  int is_left_of(int segment_number, point_t * v);
+  int is_collinear(int segment_number, point_t * v, int is_swapped);
   int locate_endpoint(point_t * v, point_t * vo, int r);
-  int merge_trapezoids(int segnum, int tfirst, int tlast, int side);
-  int add_segment(int segnum);
-  int find_new_roots(int segnum);
+  int merge_trapezoids(int segment_number, int tfirst, int tlast, int side);
+  int add_segment(int segment_number);
+  int find_new_roots(int segment_number);
   void construct_trapezoids(int nseg, segment_t seg[]);
   int inside_polygon(trap_t * t);
   int newmon();
@@ -172,30 +134,30 @@ private:
   int initialise(int nseg);
 
 private:
-  int m_chain_idx;
-  int m_choose_idx;
-  int m_mon_idx;
-  int m_op_idx;
-  int m_q_idx;
-  int m_tr_idx;
+  int m_number_of_segments;
 
-  int m_mon[SEGSIZE]; // contains position of any m_vertex in the monotone chain for the polygon
+  int m_chain_index;
+  int m_choose_index;
+  int m_mon_index;
+  int m_op_index;
+  int m_q_index;
+  int m_trapezoid_index;
+
+  int m_mon[SEGSIZE]; // contains position of any vertex in the monotone chain for the polygon
   int m_permute[SEGSIZE];
   int m_visited[TRSIZE];
 
-  global_s m_global;
-
-  node_t m_qs[QSIZE]; // Query sm_tructure
-  segment_t m_seg[SEGSIZE]; // Segment table
-  trap_t m_tr[TRSIZE]; // Trapezoid structure
+  node_t m_query[QSIZE]; // Query structure
+  segment_t m_segment[SEGSIZE]; // Segment table
+  trap_t m_trapezoid[TRSIZE]; // Trapezoid structure
 
   // Table to hold all the m_monotone polygons . Each monotone polygon is a circularly linked list
-  monchain_t m_mchain[TRSIZE];
+  monotone_chain_t m_monotone_chain[TRSIZE];
 
   /* chain init. information. This is used to decide which m_monotone
    * polygon to split if there are several other polygons touching at
-   * the same m_vertex */
-  vertexchain_t m_vert[SEGSIZE];
+   * the same vertex */
+  vertex_chain_t m_vertex[SEGSIZE];
 };
 
 /**************************************************************************************************/
