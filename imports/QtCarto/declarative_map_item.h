@@ -77,6 +77,8 @@ public:
   Q_INVOKABLE QVector2D from_coordinate(const QGeoCoordinate & coordinate, bool clip_to_viewport = true) const;
 
   Q_INVOKABLE void pan(int dx, int dy);
+  Q_INVOKABLE void stable_zoom(QPointF position_px, int zoom_level);
+  Q_INVOKABLE void stable_zoom_by_increment(QPointF position_px, int zoom_increment);
 
   Q_INVOKABLE void prefetch_data(); // optional hint for prefetch
 

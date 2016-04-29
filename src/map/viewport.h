@@ -185,6 +185,7 @@ class QC_EXPORT QcViewport : public QObject
   inline const QcGeoCoordinatePseudoWebMercator pseudo_web_mercator() const { return m_state.pseudo_web_mercator(); }
   // inline const QcGeoCoordinateNormalisedWebMercator & normalised_web_mercator() const { return m_state.normalised_web_mercator(); }
 
+  // Fixme: zoom_factor versus resolution [m/px]
   inline double zoom_factor() const { return m_state.tiled_zoom_level().zoom_factor(); }
   inline unsigned int zoom_level() const { return m_state.tiled_zoom_level().zoom_level(); }
 
@@ -211,24 +212,38 @@ class QC_EXPORT QcViewport : public QObject
 
   void set_bearing(double bearing);
 
+  void stable_zoom(const QcVectorDouble & position_px, unsigned int zoom_level);
   void zoom_at(const QcGeoCoordinateWebMercator & coordinate, unsigned int zoom_level);
   void pan(double x, double y);
 
   bool cross_datum() const { return m_cross_datum; }
 
   const QcPolygon & polygon() const { return m_polygon; }
+  const QcInterval2DDouble & interval() const { return m_polygon.interval(); }
+
+  QcGeoCoordinatePseudoWebMercator to_coordinate(const QcVectorDouble & position, bool clip_to_viewport) const;
+  QcVectorDouble from_coordinate(const QcGeoCoordinatePseudoWebMercator & coordinate, bool clip_to_viewport) const;
+
+  // QcGeoCoordinateWGS84 to_coordinate(const QcVectorDouble & position_px, bool clip_to_viewport) const {
+  //   return to_coordinate(position_px, clip_to_viewport).wgs84();
+  // }
+  QcVectorDouble from_coordinate(const QcGeoCoordinateWGS84 & coordinate, bool clip_to_viewport) const {
+    return from_coordinate(coordinate.pseudo_web_mercator(), clip_to_viewport);
+  }
 
  signals:
   void viewport_changed();
 
  private:
+  void update_area_size();
+  QcVectorDouble inf_point() const;
   void update_area();
 
  private:
   QcViewportState m_state;
   QSize m_viewport_size; // QcVectorInt ?
-  QcVectorDouble m_area_size;
-  QcVectorDouble m_half_diagonal;
+  QcVectorDouble m_area_size_m;
+  QcVectorDouble m_half_diagonal_m;
   QcPolygon m_polygon;
   bool m_cross_datum;
 };

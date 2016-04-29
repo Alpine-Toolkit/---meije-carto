@@ -107,20 +107,14 @@ QcMapItem {
 
         onDoubleClicked: {
             console.info("onDoubleClicked")
-            var mouse_geo_position = map.to_coordinate(Qt.point(mouse.x, mouse.y));
-            var pre_zoom_point = map.from_coordinate(mouse_geo_position, false);
+            var position_px = Qt.point(mouse.x, mouse.y);
+            var zoom_increment = 0;
             if (mouse.button === Qt.LeftButton) {
-                map.zoom_level++;
+                zoom_increment = 1;
             } else if (mouse.button === Qt.RightButton) {
-                map.zoom_level--;
+                zoom_increment = -1;
             }
-            var post_zoom_point = map.from_coordinate(mouse_geo_position, false);
-            // console.info("Ondoubleclicked", mouse_geo_position, pre_zoom_point, post_zoom_point)
-            var dx = post_zoom_point.x - pre_zoom_point.x;
-            var dy = post_zoom_point.y - pre_zoom_point.y;
-            // Keep location under pointer
-            var map_center_point = Qt.point(map.width / 2.0 + dx, map.height / 2.0 + dy);
-            map.center = map.to_coordinate(map_center_point);
+            map.stable_zoom_by_increment(position_px, zoom_increment);
 
             last_x = -1;
             last_y = -1;

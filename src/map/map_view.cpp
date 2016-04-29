@@ -117,6 +117,7 @@ QcMapView::update_scene()
     // bool new_tiles_introduced = !m_visible_tiles.contains(visible_tiles);
     m_visible_tiles = visible_tiles;
 
+    // Skip tiles
     // emit scene_graph_changed();
     // return;
 

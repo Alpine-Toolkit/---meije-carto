@@ -221,33 +221,11 @@ QcMapItem::wheelEvent(QWheelEvent * event)
     \a position is not within the current viewport.
 */
 QGeoCoordinate
-QcMapItem::to_coordinate(const QVector2D & pos, bool clip_to_viewport) const
+QcMapItem::to_coordinate(const QVector2D & position_px, bool clip_to_viewport) const
 {
-  qInfo() << pos << clip_to_viewport;
-
-  if (clip_to_viewport) {
-    int w = width();
-    int h = height();
-
-    if ((pos.x() < 0) || (w < pos.x()) || (pos.y() < 0) || (h < pos.y()))
-      return QGeoCoordinate();
-  }
-
-  QcTileMatrixSet & tile_matrix_set = m_plugin->tile_matrix_set();
-  const QcTileMatrix & tile_matrix = tile_matrix_set[m_viewport->zoom_level()];
-  double resolution = tile_matrix.resolution(); // [m/px]
-  const QcPolygon & polygon = m_viewport->polygon();
-  const QcInterval2DDouble & interval = polygon.interval();
-  double x_inf_m = interval.x().inf();
-  double y_inf_m = interval.y().inf();
-  double x = (x_inf_m + pos.x() * resolution) / EQUATORIAL_PERIMETER; // -> normalised_mercator
-  double y = (y_inf_m + pos.y() * resolution) / EQUATORIAL_PERIMETER;
-  QcGeoCoordinateWGS84 coordinate = QcGeoCoordinateNormalisedWebMercator(x, y).wgs84();
-
-  QGeoCoordinate _coordinate(coordinate.latitude(), coordinate.longitude()); // QGeoProjection::mercatorToCoord(m_mapScene->itemPositionToMercator(pos));;
-  qInfo() << _coordinate;
-  // return QGeoCoordinate();
-  return _coordinate;
+  QcVectorDouble _position_px(position_px.x(), position_px.y());
+  QcGeoCoordinateWGS84 coordinate = m_viewport->to_coordinate(_position_px, clip_to_viewport).wgs84();
+  return coordinate.to_qt();
 }
 
 /*!
@@ -261,33 +239,9 @@ QcMapItem::to_coordinate(const QVector2D & pos, bool clip_to_viewport) const
 QVector2D
 QcMapItem::from_coordinate(const QGeoCoordinate & coordinate, bool clip_to_viewport) const
 {
-  qInfo() << coordinate << clip_to_viewport;
-
-  QcGeoCoordinateNormalisedWebMercator normalised_mercator = QcGeoCoordinateWGS84(coordinate.longitude(), coordinate.latitude()).normalised_web_mercator();
-
-  QcTileMatrixSet & tile_matrix_set = m_plugin->tile_matrix_set();
-  const QcTileMatrix & tile_matrix = tile_matrix_set[m_viewport->zoom_level()];
-  double resolution = tile_matrix.resolution(); // [m/px]
-  const QcPolygon & polygon = m_viewport->polygon();
-  const QcInterval2DDouble & interval = polygon.interval();
-  double x_inf_m = interval.x().inf();
-  double y_inf_m = interval.y().inf();
-  double x = (normalised_mercator.x()*EQUATORIAL_PERIMETER - x_inf_m)/resolution;
-  double y = (normalised_mercator.y()*EQUATORIAL_PERIMETER - y_inf_m)/resolution;
-  QVector2D pos(x, y); //  = m_mapScene->mercatorToItemPosition(QGeoProjection::coordToMercator(coordinate));;
-
-  if (clip_to_viewport) {
-    int w = width();
-    int h = height();
-    double x = pos.x();
-    double y = pos.y();
-    if ((x < 0.0) || (x > w) || (y < 0) || (y > h) || qIsNaN(x) || qIsNaN(y))
-      return QVector2D(qQNaN(), qQNaN());
-  }
-
-  qInfo() << pos;
-  // return QPointF(qQNaN(), qQNaN());
-  return pos;
+  QcGeoCoordinateWGS84 _coordinate(coordinate);
+  QcVectorDouble position_px = m_viewport->from_coordinate(_coordinate, clip_to_viewport);
+  return QVector2D(position_px.x(), position_px.y());
 }
 
 void
@@ -326,7 +280,7 @@ QcMapItem::set_center(const QGeoCoordinate & center)
 
   qInfo() << "WGS84 " << center;
 
-  QcGeoCoordinateWGS84 coordinate(center.longitude(), center.latitude());
+  QcGeoCoordinateWGS84 coordinate(center);
   if (coordinate == m_viewport->wgs84())
     return;
 
@@ -347,8 +301,7 @@ QcMapItem::set_center(const QGeoCoordinate & center)
 QGeoCoordinate
 QcMapItem::center() const
 {
-  QcGeoCoordinateWGS84 center = m_viewport->wgs84();
-  return QGeoCoordinate(center.latitude(), center.longitude());
+  return m_viewport->wgs84().to_qt();
 }
 
 void
@@ -357,6 +310,19 @@ QcMapItem::pan(int dx, int dy)
   qInfo() << dx << dy;
   m_viewport->pan(dx, dy); // Fixme: unit is m
   update(); // Fixme: signal
+}
+
+void
+QcMapItem::stable_zoom(QPointF position_px, int zoom_level)
+{
+  QcVectorDouble _position_px(position_px.x(), position_px.y());
+  m_viewport->stable_zoom(_position_px, zoom_level);
+}
+
+void
+QcMapItem::stable_zoom_by_increment(QPointF position_px, int zoom_increment)
+{
+  stable_zoom(position_px, zoom_level() + zoom_increment);
 }
 
 void
