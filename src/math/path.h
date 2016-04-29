@@ -100,7 +100,7 @@ class QC_EXPORT QcPath
   VertexType nearest_vertex(const VertexType & point, Type & distance) const;
   EdgeType nearest_edge(const VertexType & point, Type & distance, Type & abscissa) const;
 
-  // bool is_self_intersecting() const;
+  bool is_self_intersecting() const;
 
  private:
   // Fixme: QVector

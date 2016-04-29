@@ -70,6 +70,8 @@ class QC_EXPORT QcPolygon : public QcPath
   QcTiledPolygon intersec_with_grid(double grid_step) const;
 
   QcPolygon rotate_counter_clockwise(double angle) const;
+
+  Type area() const;
 };
 
 class QC_EXPORT QcTiledPolygonRun

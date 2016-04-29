@@ -87,6 +87,7 @@ get_next_index(size_t number_of_items, size_t current)
 bool
 QcPolygon::contains(const VertexType & test_point) const
 {
+  // Fixme: check code for API
   size_t _number_of_vertexes = number_of_vertexes();
 
   // Initial start point
@@ -247,6 +248,31 @@ QcPolygon::rotate_counter_clockwise(double angle) const
     vertex.rotate_counter_clockwise(angle);
 
   return QcPolygon(_vertexes);
+}
+
+QcPolygon::Type
+QcPolygon::area() const
+{
+  /* (signed) Area of a planar non-self-intersecting polygon
+   *
+   * 1/2 Sum(determinant egde)
+   *
+   * Note that the area of a convex polygon is defined to be positive
+   * if the points are arranged in a counterclockwise order,
+   * and negative if they are in clockwise order.
+   *
+   * Reference: Beyer, W. H. (Ed.). CRC Standard Mathematical Tables, 28th ed. Boca Raton, FL: CRC Press, pp. 123-124, 1987.
+   */
+
+  if (is_self_intersecting())
+    return .0;
+
+  Type _area = .0;
+  EdgeListType _edges = edges();
+  for (const auto & edge : _edges)
+    _area += edge.determinant();
+
+  return abs(_area) * .5;
 }
 
 /**************************************************************************************************/

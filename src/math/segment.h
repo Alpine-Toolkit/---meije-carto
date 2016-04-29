@@ -99,11 +99,13 @@ class QC_EXPORT QcSegment
   inline void set_p1(const Point & point) { m_p1 = point; }
   inline void set_p2(const Point & point) { m_p2 = point; }
 
+  T length() const { return (m_p2 - m_p1).magnitude(); }
+  T length_square() const { return (m_p2 - m_p1).magnitude_square(); }
+  T determinant() const { return m_p1.cross(m_p2); }
+
   Point vector() const { return Point(m_p2 - m_p1); }
 
   unsigned int intersect(const Segment & line2);
-
-  T length() const { return (m_p2 - m_p1).magnitude(); }
 
  private:
   Point m_p1;

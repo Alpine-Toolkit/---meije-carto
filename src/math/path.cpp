@@ -281,6 +281,18 @@ QcPath::nearest_edge(const VertexType & point, Type & distance, Type & abscissa)
   return _edges[edge_min];
 }
 
+bool
+QcPath::is_self_intersecting() const
+{
+  EdgeListType _edges = edges();
+  int number_of_edges = _edges.size();
+  for (int i = 0; i < number_of_edges; i++)
+    for (int j = i + 1; j < number_of_edges; j++)
+      if (_edges[i].intersect(_edges[j]))
+        return true;
+  return false;
+}
+
 /***************************************************************************************************
  *
  * End
