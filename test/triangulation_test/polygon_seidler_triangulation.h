@@ -9,12 +9,12 @@
 **
 ** This file is part of the QtCarto library.
 **
-** This program is free software: you can redistribute it and/or modify
+** This program is free software: you can redism_tribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
 ** the Free Software Foundation, either version 3 of the License, or
 ** (at your option) any later version.
 **
-** This program is distributed in the hope that it will be useful,
+** This program is dism_tributed in the hope that it will be useful,
 ** but WITHOUT ANY WARRANTY; without even the implied warranty of
 ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ** GNU General Public License for more details.
@@ -39,9 +39,9 @@
 // #include <QVector>
 // #include <QList>
 
-// #include "qtcarto_global.h"
-// #include "geometry/segment.h"
-// #include "geometry/vector.h"
+// #include "qtcarto_m_global.h"
+// #include "geomem_try/m_segment.h"
+// #include "geomem_try/vector.h"
 // #include "math/interval.h"
 // #include "math/qc_math.h"
 
@@ -56,8 +56,8 @@ constexpr int T_Y = 2;
 constexpr int T_SINK = 3;
 
 constexpr int QSIZE = 800; // maximum table sizes
-constexpr int TRSIZE = 400; // max# trapezoids
-constexpr int SEGSIZE = 100; // max# of segments
+constexpr int TRSIZE = 400; // max# m_trapezoids
+constexpr int SEGSIZE = 100; // max# of m_segments
 
 constexpr int FIRSTPT = 1; // checking whether pt. is inserted
 constexpr int LASTPT = 2;
@@ -71,10 +71,10 @@ constexpr double C_EPS = 1.0e-7;
 constexpr int S_LEFT = 1; // for merge-direction
 constexpr int S_RIGHT = 2;
 
-constexpr int ST_VALID = 1; // for trapezium table
+constexpr int ST_VALID = 1; // for m_trapezium table
 constexpr int ST_INVALID = 2;
 
-constexpr int SP_SIMPLE_LRUP = 1; // for splitting trapezoids
+constexpr int SP_SIMPLE_LRUP = 1; // for splitting m_trapezoids
 constexpr int SP_SIMPLE_LRDN = 2;
 constexpr int SP_2UP_2DN = 3;
 constexpr int SP_2UP_LEFT = 4;
@@ -83,7 +83,7 @@ constexpr int SP_2DN_LEFT = 6;
 constexpr int SP_2DN_RIGHT = 7;
 constexpr int SP_NOSPLIT = -1;
 
-constexpr int TR_FROM_UP = 1; // for traverse-direction
+constexpr int TR_FROM_UP = 1; // for m_traverse-direction
 constexpr int TR_FROM_DN = 2;
 
 constexpr int TRI_LHS = 1;
@@ -172,30 +172,30 @@ private:
   int initialise(int nseg);
 
 private:
-  int chain_idx;
-  int choose_idx;
-  int mon_idx;
-  int op_idx;
-  int q_idx;
-  int tr_idx;
+  int m_chain_idx;
+  int m_choose_idx;
+  int m_mon_idx;
+  int m_op_idx;
+  int m_q_idx;
+  int m_tr_idx;
 
-  int mon[SEGSIZE]; // contains position of any vertex in the monotone chain for the polygon
-  int permute[SEGSIZE];
-  int visited[TRSIZE];
+  int m_mon[SEGSIZE]; // contains position of any m_vertex in the monotone chain for the polygon
+  int m_permute[SEGSIZE];
+  int m_visited[TRSIZE];
 
-  global_s global;
+  global_s m_global;
 
-  node_t qs[QSIZE]; // Query structure
-  segment_t seg[SEGSIZE]; // Segment table
-  trap_t tr[TRSIZE]; // Trapezoid structure
+  node_t m_qs[QSIZE]; // Query sm_tructure
+  segment_t m_seg[SEGSIZE]; // Segment table
+  trap_t m_tr[TRSIZE]; // Trapezoid structure
 
-  // Table to hold all the monotone polygons . Each monotone polygon is a circularly linked list
-  monchain_t mchain[TRSIZE];
+  // Table to hold all the m_monotone polygons . Each monotone polygon is a circularly linked list
+  monchain_t m_mchain[TRSIZE];
 
-  /* chain init. information. This is used to decide which monotone
+  /* chain init. information. This is used to decide which m_monotone
    * polygon to split if there are several other polygons touching at
-   * the same vertex */
-  vertexchain_t vert[SEGSIZE];
+   * the same m_vertex */
+  vertexchain_t m_vert[SEGSIZE];
 };
 
 /**************************************************************************************************/
