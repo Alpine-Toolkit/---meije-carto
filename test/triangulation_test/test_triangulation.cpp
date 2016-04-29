@@ -52,13 +52,13 @@ TestQcTriangulation::triangulation()
   int number_of_segments = 100;
 
   double vertices[number_of_vertexes][2] = {
-    0.0, 0.0,
-    10.0, 0.0,
-    20.0, 0.0,
-    20.0, 5.0,
+     0.0,  0.0,
+    10.0,  0.0,
+    20.0,  0.0,
+    20.0,  5.0,
     20.0, 20.0,
-    0.0, 20.0,
-    5.0, 10.0
+     0.0, 20.0,
+    5.0,  10.0
   };
 
   int triangles[number_of_segments][3];
@@ -67,7 +67,7 @@ TestQcTriangulation::triangulation()
       triangles[i][j] = 0;
   }
 
-  int rc = triangulate_polygon(number_of_vertexes, vertices, triangles);
+  QcSeidlerPolygonTriangulation triangulation(number_of_vertexes, vertices, triangles);
   // for (int i = 0; i < number_of_segments; i++)
   //   qInfo() << i << triangles[i][0] << triangles[i][1] << triangles[i][2];
 }

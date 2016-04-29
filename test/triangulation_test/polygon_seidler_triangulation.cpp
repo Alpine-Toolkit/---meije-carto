@@ -26,7 +26,7 @@
 
 /**************************************************************************************************/
 
-// #include "polygon.h"
+#include "polygon_seidler_triangulation.h"
 
 // #include <QVector>
 
@@ -51,94 +51,6 @@
 
 /**************************************************************************************************/
 
-constexpr int T_X = 1;
-constexpr int T_Y = 2;
-constexpr int T_SINK = 3;
-
-constexpr int QSIZE = 800; // maximum table sizes
-constexpr int TRSIZE = 400; // max# trapezoids
-constexpr int SEGSIZE = 100; // max# of segments
-
-constexpr int FIRSTPT = 1; // checking whether pt. is inserted
-constexpr int LASTPT = 2;
-
-constexpr double EPS = 0.000005;
-
-// constexpr int INFINITY 1<<30
-
-constexpr double C_EPS = 1.0e-7;
-
-constexpr int S_LEFT = 1; // for merge-direction
-constexpr int S_RIGHT = 2;
-
-constexpr int ST_VALID = 1; // for trapezium table
-constexpr int ST_INVALID = 2;
-
-constexpr int SP_SIMPLE_LRUP = 1; // for splitting trapezoids
-constexpr int SP_SIMPLE_LRDN = 2;
-constexpr int SP_2UP_2DN = 3;
-constexpr int SP_2UP_LEFT = 4;
-constexpr int SP_2UP_RIGHT = 5;
-constexpr int SP_2DN_LEFT = 6;
-constexpr int SP_2DN_RIGHT = 7;
-constexpr int SP_NOSPLIT = -1;
-
-constexpr int TR_FROM_UP = 1; // for traverse-direction
-constexpr int TR_FROM_DN = 2;
-
-constexpr int TRI_LHS = 1;
-constexpr int TRI_RHS = 2;
-
-/**************************************************************************************************/
-
-typedef struct {
-  double x, y;
-} point_t, vector_t;
-
-typedef struct {
-  point_t v0, v1;
-  int is_inserted;
-  int root0, root1;
-} segment_t;
-
-typedef struct {
-  int lseg, rseg;
-  point_t hi, lo;
-  int u0, u1;
-  int d0, d1;
-  int sink;
-  int usave, uside;
-  int state;
-} trap_t;
-
-typedef struct {
-  int nodetype;
-  int segnum;
-  point_t yval;
-  int trnum;
-  int parent;
-  int left, right;
-} node_t;
-
-typedef struct {
-  int vnum;
-  int next;
-  int prev;
-} monchain_t;
-
-typedef struct {
-  point_t pt;
-  int vnext[4]; // next vertices for the 4 chains
-  int vpos[4]; // position of v in the 4 chains
-  int nextfree;
-} vertexchain_t;
-
-struct global_s {
-  int nseg;
-};
-
-/**************************************************************************************************/
-
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
@@ -156,39 +68,10 @@ struct global_s {
 
 /**************************************************************************************************/
 
-/* Global variables */
-
-static node_t qs[QSIZE]; // Query structure
-static trap_t tr[TRSIZE]; // Trapezoid structure
-static segment_t seg[SEGSIZE]; // Segment table
-
-struct global_s global;
-
-static int choose_idx;
-static int permute[SEGSIZE];
-
-static int q_idx;
-static int tr_idx;
-
-/* Table to hold all the monotone polygons . Each monotone polygon is
- * a circularly linked list */
-static monchain_t mchain[TRSIZE];
-
-/* chain init. information. This is used to decide which monotone
- * polygon to split if there are several other polygons touching at
- * the same vertex */
-static vertexchain_t vert[SEGSIZE];
-
-static int mon[SEGSIZE]; /* contains position of any vertex in the monotone chain for the polygon */
-static int visited[TRSIZE];
-static int chain_idx, op_idx, mon_idx;
-
-/**************************************************************************************************/
-
 /* Generate a random permutation of the segments 1..n
  */
 int
-generate_random_ordering(int n)
+QcSeidlerPolygonTriangulation::generate_random_ordering(int n)
 {
   // Global: choose_idx, permute
 
@@ -212,7 +95,7 @@ generate_random_ordering(int n)
 
 /* Return the next segment in the generated random ordering of all the segments in S */
 int
-choose_segment()
+QcSeidlerPolygonTriangulation::choose_segment()
 {
 #ifdef DEBUG
   fprintf(stderr, "choose_segment: %d\n", permute[choose_idx]);
@@ -222,7 +105,7 @@ choose_segment()
 }
 
 int
-inserted(int segnum, int whichpt)
+QcSeidlerPolygonTriangulation::inserted(int segnum, int whichpt)
 {
   // Global: whichpt
 
@@ -266,7 +149,7 @@ math_N(int n, int h)
 
 /* Return a new node to be added into the query tree */
 int
-newnode()
+QcSeidlerPolygonTriangulation::newnode()
 {
   // Global:
 
@@ -280,7 +163,7 @@ newnode()
 
 /* Return a free trapezoid */
 int
-newtrap()
+QcSeidlerPolygonTriangulation::newtrap()
 {
   // Global: tr_idx, tr
 
@@ -372,7 +255,7 @@ _less_than(point_t * v0, point_t * v1)
  * when the first segment is added to start the trapezoidation
  */
 int
-init_query_structure(int segnum)
+QcSeidlerPolygonTriangulation::init_query_structure(int segnum)
 {
   // Global: seg, tr, qs
 
@@ -452,7 +335,7 @@ init_query_structure(int segnum)
  * segnum
  */
 int
-is_left_of(int segnum, point_t * v)
+QcSeidlerPolygonTriangulation::is_left_of(int segnum, point_t * v)
 {
   // Global: seg
 
@@ -494,7 +377,7 @@ is_left_of(int segnum, point_t * v)
 }
 
 int
-is_collinear(int segnum, point_t * v, int is_swapped)
+QcSeidlerPolygonTriangulation::is_collinear(int segnum, point_t * v, int is_swapped)
 {
   // Global: global, seg
 
@@ -513,7 +396,7 @@ is_collinear(int segnum, point_t * v, int is_swapped)
  * point v lie in. The return value is the trapezoid number
  */
 int
-locate_endpoint(point_t * v, point_t * vo, int r)
+QcSeidlerPolygonTriangulation::locate_endpoint(point_t * v, point_t * vo, int r)
 {
   // Global: qs, rptr, T_X, T_Y
 
@@ -566,7 +449,7 @@ locate_endpoint(point_t * v, point_t * vo, int r)
  * trapezoids containing the two endpoints of the segment
  */
 int
-merge_trapezoids(int segnum, int tfirst, int tlast, int side)
+QcSeidlerPolygonTriangulation::merge_trapezoids(int segnum, int tfirst, int tlast, int side)
 {
   // Global: tfirst
 
@@ -627,7 +510,7 @@ merge_trapezoids(int segnum, int tfirst, int tlast, int side)
 /* Add in the new segment into the trapezoidation and update Q and T structures
  */
 int
-add_segment(int segnum)
+QcSeidlerPolygonTriangulation::add_segment(int segnum)
 {
   // Global: seg, tr
 
@@ -1112,7 +995,7 @@ add_segment(int segnum)
  * the segment is inserted into the trapezoidation subsequently
  */
 int
-find_new_roots(int segnum)
+QcSeidlerPolygonTriangulation::find_new_roots(int segnum)
 {
   // Global:
 
@@ -1136,7 +1019,7 @@ find_new_roots(int segnum)
 
 /* Main routine to perform trapezoidation */
 void
-construct_trapezoids(int nseg, segment_t seg[])
+QcSeidlerPolygonTriangulation::construct_trapezoids(int nseg, segment_t seg[])
 {
   // Global:
 
@@ -1181,7 +1064,7 @@ construct_trapezoids(int nseg, segment_t seg[])
 
 /* Function returns true if the trapezoid lies inside the polygon */
 int
-inside_polygon(trap_t * t)
+QcSeidlerPolygonTriangulation::inside_polygon(trap_t * t)
 {
   int rseg = t->rseg;
 
@@ -1199,7 +1082,7 @@ inside_polygon(trap_t * t)
 
 /* return a new mon structure from the table */
 int
-newmon()
+QcSeidlerPolygonTriangulation::newmon()
 {
   // Global:
   return ++mon_idx;
@@ -1207,7 +1090,7 @@ newmon()
 
 /* return a new chain element from the table */
 int
-new_chain_element()
+QcSeidlerPolygonTriangulation::new_chain_element()
 {
   // Global:
   return ++chain_idx;
@@ -1233,7 +1116,7 @@ get_angle(point_t * vp0, point_t * vpnext, point_t * vp1)
 /* (v0, v1) is the new diagonal to be added to the polygon. Find which
  * chain to use and return the positions of v0 and v1 in p and q */
 int
-get_vertex_positions(int v0, int v1, int * ip, int * iq)
+QcSeidlerPolygonTriangulation::get_vertex_positions(int v0, int v1, int * ip, int * iq)
 {
   // Global:
   vertexchain_t *vp0, *vp1;
@@ -1286,7 +1169,7 @@ get_vertex_positions(int v0, int v1, int * ip, int * iq)
  * polygons using the diagonal (v0, v1)
  */
 int
-make_new_monotone_poly(int mcur, int v0, int v1)
+QcSeidlerPolygonTriangulation::make_new_monotone_poly(int mcur, int v0, int v1)
 {
   // Global:
 
@@ -1347,9 +1230,9 @@ make_new_monotone_poly(int mcur, int v0, int v1)
 
 /* recursively visit all the trapezoids */
 int
-traverse_polygon(int mcur, int trnum, int from, int dir)
+QcSeidlerPolygonTriangulation::traverse_polygon(int mcur, int trnum, int from, int dir)
 {
-  // Global: 
+  // Global:
 
   trap_t *t = &tr[trnum];
   int mnew;
@@ -1563,7 +1446,7 @@ traverse_polygon(int mcur, int trnum, int from, int dir)
 /* Main routine to get monotone polygons from the trapezoidation of the polygon.
  */
 int
-monotonate_trapezoids(int n)
+QcSeidlerPolygonTriangulation::monotonate_trapezoids(int n)
 {
   // Global:
 
@@ -1617,7 +1500,7 @@ monotonate_trapezoids(int n)
  * Joseph O-Rourke, Computational Geometry in C.
  */
 int
-triangulate_single_polygon(int posmax, int side, int op[][3])
+QcSeidlerPolygonTriangulation::triangulate_single_polygon(int posmax, int side, int op[][3])
 {
   // Global:
 
@@ -1683,7 +1566,7 @@ triangulate_single_polygon(int posmax, int side, int op[][3])
 }
 
 void
-triangulate_monotone_polygons(int nmonpoly, int op[][3])
+QcSeidlerPolygonTriangulation::triangulate_monotone_polygons(int nmonpoly, int op[][3])
 {
   // Global:
 
@@ -1750,7 +1633,7 @@ triangulate_monotone_polygons(int nmonpoly, int op[][3])
 /**************************************************************************************************/
 
 int
-initialise(int nseg)
+QcSeidlerPolygonTriangulation::initialise(int nseg)
 {
   // Global:
 
@@ -1819,8 +1702,7 @@ main(int argc, char *argv[])
  * triangles: output array containing the triangles
  */
 
-int
-triangulate_polygon(int n, double vertices[][2], int triangles[][3])
+QcSeidlerPolygonTriangulation::QcSeidlerPolygonTriangulation(int n, double vertices[][2], int triangles[][3])
 {
   // Global:
 
@@ -1847,8 +1729,6 @@ triangulate_polygon(int n, double vertices[][2], int triangles[][3])
   construct_trapezoids(n, seg);
   nmonpoly = monotonate_trapezoids(n);
   triangulate_monotone_polygons(nmonpoly, triangles);
-
-  return 0;
 }
 
 /* This function returns true or false depending upon whether the

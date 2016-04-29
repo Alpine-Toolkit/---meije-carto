@@ -51,11 +51,152 @@
 
 /**************************************************************************************************/
 
-// class QC_EXPORT QcTriangulation
-// {
-// };
+constexpr int T_X = 1;
+constexpr int T_Y = 2;
+constexpr int T_SINK = 3;
 
-int triangulate_polygon(int n, double vertices[][2], int triangles[][3]);
+constexpr int QSIZE = 800; // maximum table sizes
+constexpr int TRSIZE = 400; // max# trapezoids
+constexpr int SEGSIZE = 100; // max# of segments
+
+constexpr int FIRSTPT = 1; // checking whether pt. is inserted
+constexpr int LASTPT = 2;
+
+constexpr double EPS = 0.000005;
+
+// constexpr int INFINITY 1<<30
+
+constexpr double C_EPS = 1.0e-7;
+
+constexpr int S_LEFT = 1; // for merge-direction
+constexpr int S_RIGHT = 2;
+
+constexpr int ST_VALID = 1; // for trapezium table
+constexpr int ST_INVALID = 2;
+
+constexpr int SP_SIMPLE_LRUP = 1; // for splitting trapezoids
+constexpr int SP_SIMPLE_LRDN = 2;
+constexpr int SP_2UP_2DN = 3;
+constexpr int SP_2UP_LEFT = 4;
+constexpr int SP_2UP_RIGHT = 5;
+constexpr int SP_2DN_LEFT = 6;
+constexpr int SP_2DN_RIGHT = 7;
+constexpr int SP_NOSPLIT = -1;
+
+constexpr int TR_FROM_UP = 1; // for traverse-direction
+constexpr int TR_FROM_DN = 2;
+
+constexpr int TRI_LHS = 1;
+constexpr int TRI_RHS = 2;
+
+/**************************************************************************************************/
+
+typedef struct {
+  double x, y;
+} point_t, vector_t;
+
+typedef struct {
+  point_t v0, v1;
+  int is_inserted;
+  int root0, root1;
+} segment_t;
+
+typedef struct {
+  int lseg, rseg;
+  point_t hi, lo;
+  int u0, u1;
+  int d0, d1;
+  int sink;
+  int usave, uside;
+  int state;
+} trap_t;
+
+typedef struct {
+  int nodetype;
+  int segnum;
+  point_t yval;
+  int trnum;
+  int parent;
+  int left, right;
+} node_t;
+
+typedef struct {
+  int vnum;
+  int next;
+  int prev;
+} monchain_t;
+
+typedef struct {
+  point_t pt;
+  int vnext[4]; // next vertices for the 4 chains
+  int vpos[4]; // position of v in the 4 chains
+  int nextfree;
+} vertexchain_t;
+
+struct global_s {
+  int nseg;
+};
+
+/**************************************************************************************************/
+
+// QC_EXPORT
+class QcSeidlerPolygonTriangulation
+{
+public:
+  QcSeidlerPolygonTriangulation(int n, double vertices[][2], int triangles[][3]);
+  // ~QcSeidlerPolygonTriangulation();
+
+private:
+  int generate_random_ordering(int n);
+  int choose_segment();
+  int inserted(int segnum, int whichpt);
+  int newnode();
+  int newtrap();
+  int init_query_structure(int segnum);
+  int is_left_of(int segnum, point_t * v);
+  int is_collinear(int segnum, point_t * v, int is_swapped);
+  int locate_endpoint(point_t * v, point_t * vo, int r);
+  int merge_trapezoids(int segnum, int tfirst, int tlast, int side);
+  int add_segment(int segnum);
+  int find_new_roots(int segnum);
+  void construct_trapezoids(int nseg, segment_t seg[]);
+  int inside_polygon(trap_t * t);
+  int newmon();
+  int new_chain_element();
+  int get_vertex_positions(int v0, int v1, int * ip, int * iq);
+  int make_new_monotone_poly(int mcur, int v0, int v1);
+  int traverse_polygon(int mcur, int trnum, int from, int dir);
+  int monotonate_trapezoids(int n);
+  int triangulate_single_polygon(int posmax, int side, int op[][3]);
+  void triangulate_monotone_polygons(int nmonpoly, int op[][3]);
+  int initialise(int nseg);
+
+private:
+  int chain_idx;
+  int choose_idx;
+  int mon_idx;
+  int op_idx;
+  int q_idx;
+  int tr_idx;
+
+  int mon[SEGSIZE]; // contains position of any vertex in the monotone chain for the polygon
+  int permute[SEGSIZE];
+  int visited[TRSIZE];
+
+  global_s global;
+
+  node_t qs[QSIZE]; // Query structure
+  segment_t seg[SEGSIZE]; // Segment table
+  trap_t tr[TRSIZE]; // Trapezoid structure
+
+  // Table to hold all the monotone polygons . Each monotone polygon is a circularly linked list
+  monchain_t mchain[TRSIZE];
+
+  /* chain init. information. This is used to decide which monotone
+   * polygon to split if there are several other polygons touching at
+   * the same vertex */
+  vertexchain_t vert[SEGSIZE];
+};
 
 /**************************************************************************************************/
 
