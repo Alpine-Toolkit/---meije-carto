@@ -26,39 +26,38 @@
 
 /**************************************************************************************************/
 
-#include <QtDebug>
 #include <QtTest/QtTest>
 
 /**************************************************************************************************/
 
-#include "math/path.h"
+#include "geometry/line.h"
 
 /***************************************************************************************************/
 
-class TestQcPath: public QObject
+class TestQcLine: public QObject
 {
   Q_OBJECT
 
 private slots:
-  void length();
+  void constructor();
 };
 
-void
-TestQcPath::length()
+void TestQcLine::constructor()
 {
-  double l = 10;
-  QcPath path(QVector<double>({0, 0,  0, l,  l, l,  l, 0}), true);
-  for (const auto & vertex : path.vertexes())
-    qInfo() << vertex;
-  for (const auto & edge : path.edges())
-    qInfo() << edge.p1() << edge.p2();
-  QVERIFY(path.length() == 4*l);
+  QcLineDouble line1(QcVectorDouble(1., 10.), QcVectorDouble(2., 3.));
+
+  const QcVectorDouble & point = line1.point();
+  QVERIFY(point.x() == 1.);
+  QVERIFY(point.y() == 10.);
+  const QcVectorDouble & vector = line1.vector();
+  QVERIFY(vector.x() == 2.);
+  QVERIFY(vector.y() == 3.);
 }
 
 /***************************************************************************************************/
 
-QTEST_MAIN(TestQcPath)
-#include "test_path.moc"
+QTEST_MAIN(TestQcLine)
+#include "test_line.moc"
 
 /***************************************************************************************************
  *

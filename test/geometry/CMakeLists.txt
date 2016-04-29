@@ -13,7 +13,10 @@
 #
 
 foreach(name
-    interval
+    line
+    path
+    polygon
+    vector
     )
   add_executable(test_${name} test_${name}.cpp)
   target_link_libraries(test_${name} Qt5::Test qtcarto)

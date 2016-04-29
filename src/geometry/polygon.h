@@ -39,9 +39,9 @@
 #include <QList>
 
 #include "qtcarto_global.h"
-#include "math/path.h"
-#include "math/qc_math.h"
+#include "geometry/path.h"
 #include "map/tile_matrix_set.h"
+#include "math/qc_math.h"
 
 /**************************************************************************************************/
 

@@ -8,15 +8,32 @@
 # include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 ####################################################################################################
+
+# Generate in source !
+add_custom_command (
+  OUTPUT map/shaders/location_circle_shader.h
+  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/map/shaders/make-shader location_circle
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/map/shaders
+  DEPENDS
+  map/shaders/location_circle_vertex_shader.glsl
+  map/shaders/location_circle_fragment_shader.glsl
+)
+
+####################################################################################################
 #
 # Library
 #
 
 set(qtcarto_files
+  # map/shaders/location_circle_shader.h
   geo_data_format/gpx.cpp
   geo_data_format/route.cpp
   geo_data_format/waypoint.cpp
   geo_data_format/xml_reader.cpp
+  geometry/line.cpp
+  geometry/path.cpp
+  geometry/polygon.cpp
+  geometry/vector.cpp
   map/file_tile_cache.cpp
   map/geo_coordinate.cpp
   map/geoportail/geoportail_license.cpp
@@ -39,12 +56,8 @@ set(qtcarto_files
   map/wmts_request_manager.cpp
   map/wmts_tile_fetcher.cpp
   math/interval.cpp
-  math/line.cpp
-  math/path.cpp
-  math/polygon.cpp
   math/qc_math.cpp
   math/rational.cpp
-  math/vector.cpp
 )
 add_library(qtcarto SHARED ${qtcarto_files})
 target_link_libraries(qtcarto Qt5::Core Qt5::Quick Qt5::Gui Qt5::Network Qt5::Positioning ${PROJ4_LIBRARIES})

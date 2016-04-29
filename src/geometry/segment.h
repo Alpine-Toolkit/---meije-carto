@@ -38,8 +38,8 @@
 #include <QDebug>
 
 #include "qtcarto_global.h"
+#include "geometry/vector.h"
 #include "math/qc_math.h"
-#include "math/vector.h"
 
 /**************************************************************************************************/
 

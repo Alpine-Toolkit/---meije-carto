@@ -40,10 +40,10 @@
 #include <QList>
 
 #include "qtcarto_global.h"
+#include "geometry/segment.h"
+#include "geometry/vector.h"
 #include "math/interval.h"
 #include "math/qc_math.h"
-#include "math/segment.h"
-#include "math/vector.h"
 
 /**************************************************************************************************/
 

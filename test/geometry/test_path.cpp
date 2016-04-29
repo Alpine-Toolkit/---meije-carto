@@ -26,24 +26,39 @@
 
 /**************************************************************************************************/
 
-#include "math/vector.h"
+#include <QtDebug>
+#include <QtTest/QtTest>
 
 /**************************************************************************************************/
 
-#ifndef QT_NO_DEBUG_STREAM
-QC_EXPORT QDebug operator<<(QDebug debug, const QcVectorDouble & vector)
+#include "geometry/path.h"
+
+/***************************************************************************************************/
+
+class TestQcPath: public QObject
 {
-  QDebugStateSaver saver(debug); // Fixme: ???
+  Q_OBJECT
 
-  debug.nospace() << "QcVectorDouble(";
-  debug << vector.x();
-  debug << ", ";
-  debug << vector.y();
-  debug << ')';
+private slots:
+  void length();
+};
 
-  return debug;
+void
+TestQcPath::length()
+{
+  double l = 10;
+  QcPath path(QVector<double>({0, 0,  0, l,  l, l,  l, 0}), true);
+  for (const auto & vertex : path.vertexes())
+    qInfo() << vertex;
+  for (const auto & edge : path.edges())
+    qInfo() << edge.p1() << edge.p2();
+  QVERIFY(path.length() == 4*l);
 }
-#endif
+
+/***************************************************************************************************/
+
+QTEST_MAIN(TestQcPath)
+#include "test_path.moc"
 
 /***************************************************************************************************
  *

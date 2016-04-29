@@ -26,38 +26,24 @@
 
 /**************************************************************************************************/
 
-#include <QtTest/QtTest>
+#include "vector.h"
 
 /**************************************************************************************************/
 
-#include "math/line.h"
-
-/***************************************************************************************************/
-
-class TestQcLine: public QObject
+#ifndef QT_NO_DEBUG_STREAM
+QC_EXPORT QDebug operator<<(QDebug debug, const QcVectorDouble & vector)
 {
-  Q_OBJECT
+  QDebugStateSaver saver(debug); // Fixme: ???
 
-private slots:
-  void constructor();
-};
+  debug.nospace() << "QcVectorDouble(";
+  debug << vector.x();
+  debug << ", ";
+  debug << vector.y();
+  debug << ')';
 
-void TestQcLine::constructor()
-{
-  QcLineDouble line1(QcVectorDouble(1., 10.), QcVectorDouble(2., 3.));
-
-  const QcVectorDouble & point = line1.point();
-  QVERIFY(point.x() == 1.);
-  QVERIFY(point.y() == 10.);
-  const QcVectorDouble & vector = line1.vector();
-  QVERIFY(vector.x() == 2.);
-  QVERIFY(vector.y() == 3.);
+  return debug;
 }
-
-/***************************************************************************************************/
-
-QTEST_MAIN(TestQcLine)
-#include "test_line.moc"
+#endif
 
 /***************************************************************************************************
  *
