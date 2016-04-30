@@ -99,7 +99,7 @@ QcMapItem::componentComplete()
 {
   qInfo();
   // m_component_completed = true;
-  m_gesture_area->set_map(this); // Fixme
+  // m_gesture_area->set_map(this);
   QQuickItem::componentComplete();
 }
 

@@ -301,8 +301,7 @@ constexpr qreal MINIMUM_FLICK_VELOCITY = 75.0;
 
 QcMapGestureArea::QcMapGestureArea(QcMapItem * map)
   : QQuickItem(map),
-    m_map(nullptr),
-    m_declarative_map(map),
+    m_map(map),
     m_enabled(true),
     m_accepted_gestures(PinchGesture | PanGesture | FlickGesture),
     m_prevent_stealing(false),
@@ -318,18 +317,10 @@ QcMapGestureArea::QcMapGestureArea(QcMapItem * map)
   m_touch_point_state = TouchPoints0;
   m_pinch_state = PinchInactive;
   m_flick_state = FlickInactive;
-}
-
-void
-QcMapGestureArea::set_map(QcMapItem * map)
-{
-  qInfo();
-  if (m_map || !map)
-    return;
 
   m_map = map;
   m_flick.m_animation = new QcGeoCoordinateAnimation(this);
-  m_flick.m_animation->setTargetObject(m_declarative_map);
+  m_flick.m_animation->setTargetObject(m_map);
   m_flick.m_animation->setProperty(QStringLiteral("center"));
   m_flick.m_animation->setEasing(QEasingCurve(QEasingCurve::OutQuad));
   connect(m_flick.m_animation, &QQuickAbstractAnimation::stopped,
@@ -365,8 +356,8 @@ void QcMapGestureArea::set_prevent_stealing(bool prevent)
   qInfo();
   if (prevent != m_prevent_stealing) {
     m_prevent_stealing = prevent;
-    m_declarative_map->setKeepMouseGrab(m_prevent_stealing && m_enabled);
-    m_declarative_map->setKeepTouchGrab(m_prevent_stealing && m_enabled);
+    m_map->setKeepMouseGrab(m_prevent_stealing && m_enabled);
+    m_map->setKeepTouchGrab(m_prevent_stealing && m_enabled);
     emit prevent_stealingChanged();
   }
 }
@@ -676,7 +667,7 @@ QcMapGestureArea::handle_wheel_event(QWheelEvent * event)
     return;
 
   int zoom_increment = event->angleDelta().y() > 0 ? 1 : -1;
-  m_declarative_map->stable_zoom_by_increment(event->posF(), zoom_increment);
+  m_map->stable_zoom_by_increment(event->posF(), zoom_increment);
   event->accept();
 }
 
@@ -863,8 +854,8 @@ QcMapGestureArea::pinch_state_machine()
   case PinchInactive:
     if (m_all_points.count() >= 2) {
       if (can_start_pinch()) {
-        m_declarative_map->setKeepMouseGrab(true);
-        m_declarative_map->setKeepTouchGrab(true);
+        m_map->setKeepMouseGrab(true);
+        m_map->setKeepTouchGrab(true);
         start_pinch();
         m_pinch_state = PinchActive;
       } else {
@@ -877,8 +868,8 @@ QcMapGestureArea::pinch_state_machine()
       m_pinch_state = PinchInactive;
     } else {
       if (can_start_pinch()) {
-        m_declarative_map->setKeepMouseGrab(true);
-        m_declarative_map->setKeepTouchGrab(true);
+        m_map->setKeepMouseGrab(true);
+        m_map->setKeepTouchGrab(true);
         start_pinch();
         m_pinch_state = PinchActive;
       }
@@ -887,8 +878,8 @@ QcMapGestureArea::pinch_state_machine()
   case PinchActive:
     if (m_all_points.count() <= 1) {
       m_pinch_state = PinchInactive;
-      m_declarative_map->setKeepMouseGrab(m_prevent_stealing);
-      m_declarative_map->setKeepTouchGrab(m_prevent_stealing);
+      m_map->setKeepMouseGrab(m_prevent_stealing);
+      m_map->setKeepTouchGrab(m_prevent_stealing);
       end_pinch();
     }
     break;
@@ -942,11 +933,11 @@ QcMapGestureArea::start_pinch()
 {
   qInfo();
   m_pinch.m_start_dist = m_distance_between_touch_points;
-  m_pinch.m_zoom.m_previous = m_declarative_map->zoom_level();
+  m_pinch.m_zoom.m_previous = m_map->zoom_level();
   m_pinch.m_last_angle = m_two_touch_angle;
   m_pinch.m_last_point1 = mapFromScene(m_all_points.at(0).scenePos());
   m_pinch.m_last_point2 = mapFromScene(m_all_points.at(1).scenePos());
-  m_pinch.m_zoom.m_start = m_declarative_map->zoom_level();
+  m_pinch.m_zoom.m_start = m_map->zoom_level();
 }
 
 void
@@ -987,7 +978,7 @@ QcMapGestureArea::update_pinch()
     qreal per_pinch_minimum_zoom_level = qMax(m_pinch.m_zoom.m_start - m_pinch.m_zoom.maximum_change, m_pinch.m_zoom.m_minimum);
     qreal per_pinch_maximum_zoom_level = qMin(m_pinch.m_zoom.m_start + m_pinch.m_zoom.maximum_change, m_pinch.m_zoom.m_maximum);
     new_zoom_level = qMin(qMax(per_pinch_minimum_zoom_level, new_zoom_level), per_pinch_maximum_zoom_level);
-    m_declarative_map->set_zoom_level(new_zoom_level);
+    m_map->set_zoom_level(new_zoom_level);
     m_pinch.m_zoom.m_previous = new_zoom_level;
   }
 }
@@ -1022,7 +1013,7 @@ QcMapGestureArea::pan_state_machine()
       QGeoCoordinate new_start_coord = m_map->to_coordinate(QVector2D(m_scene_center), false);
       m_start_coord.setLongitude(new_start_coord.longitude());
       m_start_coord.setLatitude(new_start_coord.latitude());
-      m_declarative_map->setKeepMouseGrab(true);
+      m_map->setKeepMouseGrab(true);
       m_flick_state = PanActive;
     }
     break;
@@ -1033,7 +1024,7 @@ QcMapGestureArea::pan_state_machine()
           m_flick_state = FlickInactive;
           // mark as inactive for use by camera
           if (m_pinch_state == PinchInactive) {
-            m_declarative_map->setKeepMouseGrab(m_prevent_stealing);
+            m_map->setKeepMouseGrab(m_prevent_stealing);
             m_map->prefetch_data();
           }
           emit pan_finished();
@@ -1047,7 +1038,7 @@ QcMapGestureArea::pan_state_machine()
   case FlickActive:
     if (m_all_points.count() > 0) { // re touched before movement ended
       stop_flick();
-      m_declarative_map->setKeepMouseGrab(true);
+      m_map->setKeepMouseGrab(true);
       m_flick_state = PanActive;
     }
     break;
@@ -1100,7 +1091,7 @@ QcMapGestureArea::update_pan()
   map_center_point.setY(m_map->height() / 2.0  - dy);
   map_center_point.setX(m_map->width() / 2.0 - dx);
   QGeoCoordinate animation_start_coordinate = m_map->to_coordinate(QVector2D(map_center_point), false);
-  m_declarative_map->set_center(animation_start_coordinate);
+  m_map->set_center(animation_start_coordinate);
 }
 
 bool
@@ -1153,14 +1144,14 @@ QcMapGestureArea::start_flick(int dx, int dy, int time_ms)
   if (time_ms < 0)
     return;
 
-  QGeoCoordinate animation_start_coordinate = m_declarative_map->center();
+  QGeoCoordinate animation_start_coordinate = m_map->center();
 
   if (m_flick.m_animation->isRunning())
     m_flick.m_animation->stop();
-  QGeoCoordinate animation_end_coordinate = m_declarative_map->center();
+  QGeoCoordinate animation_end_coordinate = m_map->center();
   m_flick.m_animation->setDuration(time_ms);
 
-  double zoom = pow(2.0, m_declarative_map->zoom_level());
+  double zoom = pow(2.0, m_map->zoom_level());
   double longitude = animation_start_coordinate.longitude() - (dx / zoom);
   double latitude = animation_start_coordinate.latitude() + (dy / zoom);
 
@@ -1198,7 +1189,7 @@ QcMapGestureArea::stop_pan()
     m_velocity_x = 0;
     m_velocity_y = 0;
     m_flick_state = FlickInactive;
-    m_declarative_map->setKeepMouseGrab(m_prevent_stealing);
+    m_map->setKeepMouseGrab(m_prevent_stealing);
     emit pan_finished();
     emit pan_activeChanged();
     m_map->prefetch_data();
@@ -1223,7 +1214,7 @@ void
 QcMapGestureArea::handle_flick_animation_stopped()
 {
   qInfo();
-  m_declarative_map->setKeepMouseGrab(m_prevent_stealing);
+  m_map->setKeepMouseGrab(m_prevent_stealing);
   if (m_flick_state == FlickActive) {
     m_flick_state = FlickInactive;
     emit flick_finished();

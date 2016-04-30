@@ -318,7 +318,7 @@ private:
 
 private:
   QcMapItem * m_map; // Fixme: used for width, height, to_coordinate, from_coordinate, prefetch_data
-  QcMapItem * m_declarative_map; // used for QQuickItem, set_zoom_level, set_center, center
+  // used for QQuickItem, set_zoom_level, set_center, center
   bool m_enabled;
   Accepted_gestures m_accepted_gestures;
 
