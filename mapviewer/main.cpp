@@ -93,29 +93,23 @@ const QString ANSI_BG_LIGHT_MAGENTA = "\e[105m";
 const QString ANSI_BG_LIGHT_CYAN    = "\e[106m";
 const QString ANSI_BG_WHITE         = "\e[107m";
 
-void
-print_to_stderr(const QString & message_type, const QMessageLogContext & context, const QString & message)
-{
-  /*
-  * QMessageLogContext
-  *   category : const char * = default
-  *   file : const char *
-  *   function : const char *
-  *   line : int
-  *   version : int
-  */
+/*
+ * QMessageLogContext
+ *   category : const char * = default
+ *   file : const char *
+ *   function : const char *
+ *   line : int
+ *   version : int
+ */
 
+QString
+format_log_with_ansi(const QString & message_type, const QMessageLogContext & context, const QString & message)
+{
   QString date = QDateTime::currentDateTime().toString(QLatin1Literal("yyyy-MM-dd HH:mm:ss.zzz")); // Qt::ISODate
   QString full_message = QString("%1   %2   %3\n")
-#ifndef ANDROID
     .arg(ANSI_BOLD + ANSI_RED + message_type + ANSI_RESET)
     .arg(ANSI_BOLD + ANSI_BLUE + date + ANSI_RESET)
     .arg(ANSI_BOLD + ANSI_MAGENTA + context.function + ANSI_RESET);
-#else
-    .arg(message_type)
-    .arg(date)
-    .arg(context.function);
-#endif
   // .arg(context.file)
   // .arg(context.line)
 
@@ -125,29 +119,58 @@ print_to_stderr(const QString & message_type, const QMessageLogContext & context
     full_message += "  " + indented_messaged + "\n";
   }
 
-  fprintf(stderr, full_message.toStdString().c_str()); //  # QByteArray local_message = message.toLocal8Bit();
+  return full_message;
+}
+
+QString
+format_log(const QString & message_type, const QMessageLogContext & context, const QString & message)
+{
+  QString date = QDateTime::currentDateTime().toString(QLatin1Literal("yyyy-MM-dd HH:mm:ss.zzz")); // Qt::ISODate
+  QString full_message = QString("%1   %2   %3")
+    .arg(message_type)
+    .arg(date)
+    .arg(context.function);
+  // .arg(context.file)
+  // .arg(context.line)
+
+  full_message += message;
+  full_message += '\n';
+
+  return full_message;
 }
 
 void
 message_handler(QtMsgType type, const QMessageLogContext & context, const QString & message)
 {
+  QString formated_message;
+  QString (*formater)(const QString & message_type, const QMessageLogContext & context, const QString & message);
+  formater = format_log;
+// #ifndef ANDROID
+//   formater = format_log
+// #else
+//     formater = format_log_with_ansi
+// #endif
+
   switch (type) {
   case QtDebugMsg:
-    print_to_stderr(QLatin1Literal("Debug"), context, message);
+    formated_message = formater(QLatin1Literal("Debug"), context, message);
     break;
   case QtInfoMsg:
-    print_to_stderr(QLatin1Literal("Info"), context, message);
+    formated_message = formater(QLatin1Literal("Info"), context, message);
     break;
   case QtWarningMsg:
-    print_to_stderr(QLatin1Literal("Warning"), context, message);
+    formated_message = formater(QLatin1Literal("Warning"), context, message);
     break;
   case QtCriticalMsg:
-    print_to_stderr(QLatin1Literal("Critical"), context, message);
+    formated_message = formater(QLatin1Literal("Critical"), context, message);
     break;
   case QtFatalMsg:
-    print_to_stderr(QLatin1Literal("Fatal"), context, message);
+    formated_message = formater(QLatin1Literal("Fatal"), context, message);
     abort();
   }
+
+  // stderr
+  fprintf(stdout, formated_message.toStdString().c_str()); //  # QByteArray local_message = message.toLocal8Bit();
 }
 
 /**************************************************************************************************/
@@ -155,9 +178,7 @@ message_handler(QtMsgType type, const QMessageLogContext & context, const QStrin
 int
 main(int argc, char *argv[])
 {
-#ifndef ANDROID
   qInstallMessageHandler(message_handler);
-#endif
   QGuiApplication application(argc, argv);
   QGuiApplication::setApplicationDisplayName(QCoreApplication::translate("main", "QtCarto"));
 
