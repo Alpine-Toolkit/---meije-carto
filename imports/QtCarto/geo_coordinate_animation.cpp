@@ -39,6 +39,8 @@
 
 /**************************************************************************************************/
 
+#include <QtDebug>
+
 #include "map/geo_coordinate.h"
 #include "geo_coordinate_animation.h"
 
@@ -269,16 +271,20 @@ QcGeoCoordinateAnimation::direction() const
 void
 QcGeoCoordinateAnimation::setDirection(QcGeoCoordinateAnimation::Direction direction)
 {
+  qInfo() << direction;
   Q_D(QcGeoCoordinateAnimation);
   if (d->m_direction == direction)
     return;
 
+  // Fixme: <-map- direction is west
   d->m_direction = direction;
   switch (direction) {
-  case West:
+    // case West:
+  case East:
     d->interpolator = reinterpret_cast<QVariantAnimation::Interpolator>(&coordinate_west_interpolator);
     break;
-  case East:
+    // case East:
+  case West:
     d->interpolator = reinterpret_cast<QVariantAnimation::Interpolator>(&coordinate_east_interpolator);
     break;
   case Shortest:
@@ -286,6 +292,7 @@ QcGeoCoordinateAnimation::setDirection(QcGeoCoordinateAnimation::Direction direc
     d->interpolator = reinterpret_cast<QVariantAnimation::Interpolator>(&coordinate_shortest_interpolator);
     break;
   }
+
   emit directionChanged();
 }
 
