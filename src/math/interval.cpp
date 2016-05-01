@@ -36,8 +36,10 @@ QcIntervalDouble::wrap(double x) const
 {
   if (contains(x))
     return x;
+  else if (x > m_inf)
+    return m_inf + fmod(x - m_inf, length());
   else
-    return fmod(x - m_inf, length()) + m_inf;
+    return m_sup - fmod((m_inf - x), length());
 }
 
 template<>

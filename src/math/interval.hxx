@@ -210,8 +210,10 @@ QcInterval<T>::wrap(T x) const
 {
   if (contains(x))
     return x;
+  else if (x > m_inf)
+    return m_inf + ((x - m_inf) % length());
   else
-    return ((x - m_inf) % length()) + m_inf;
+    return m_sup - ((m_inf - x) % length());
 }
 
 // Test whether the interval intersects with i2?
