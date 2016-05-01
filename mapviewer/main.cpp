@@ -144,12 +144,12 @@ message_handler(QtMsgType type, const QMessageLogContext & context, const QStrin
 {
   QString formated_message;
   QString (*formater)(const QString & message_type, const QMessageLogContext & context, const QString & message);
+  // formater = format_log;
+#ifdef ANDROID
   formater = format_log;
-// #ifndef ANDROID
-//   formater = format_log
-// #else
-//     formater = format_log_with_ansi
-// #endif
+#else
+  formater = format_log_with_ansi;
+#endif
 
   switch (type) {
   case QtDebugMsg:
