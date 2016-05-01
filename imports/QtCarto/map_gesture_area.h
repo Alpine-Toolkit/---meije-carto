@@ -201,8 +201,6 @@ public:
 
   Q_DECLARE_FLAGS(Accepted_gestures, GeoMapGesture)
 
-  void set_map(QcMapItem * map); // Fixme
-
   Accepted_gestures accepted_gestures() const;
   void set_accepted_gestures(Accepted_gestures accepted_gestures);
 

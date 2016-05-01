@@ -551,10 +551,18 @@ QDataStream &operator>>(QDataStream & stream, QcGeoCoordinateWebMercator & coord
 QcGeoCoordinatePseudoWebMercator::QcGeoCoordinatePseudoWebMercator(double x, double y)
   : m_x(qQNaN()), m_y(qQNaN())
 {
+  // Fixme: right or in viewport ???
+  /*
   if (is_valid_x(x) && is_valid_x(y)) {
     m_x = x;
     m_y = y;
   }
+  */
+
+  // Adjust coordinate if outside domain
+  m_x = x_interval().wrap(x);
+  qInfo() << x << m_x;
+  m_y = y_interval().truncate(y);
 }
 
 QcGeoCoordinatePseudoWebMercator::QcGeoCoordinatePseudoWebMercator()
@@ -661,10 +669,10 @@ QDataStream &operator>>(QDataStream & stream, QcGeoCoordinatePseudoWebMercator &
 QcGeoCoordinateNormalisedWebMercator::QcGeoCoordinateNormalisedWebMercator(double x, double y)
   : m_x(qQNaN()), m_y(qQNaN())
 {
-  //if (is_valid_x(x) && is_valid_x(y)) {
+  if (is_valid_x(x) && is_valid_x(y)) {
     m_x = x;
     m_y = y;
-    //}
+  }
 }
 
 QcGeoCoordinateNormalisedWebMercator::QcGeoCoordinateNormalisedWebMercator()

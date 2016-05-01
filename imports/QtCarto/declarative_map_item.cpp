@@ -85,7 +85,7 @@ QcMapItem::QcMapItem(QQuickItem * parent)
   double longitude =  2.3491; // Paris Notre-Dame
   double latitude  = 48.8533;
   QcGeoCoordinateWGS84 coordinate(longitude, latitude);
-  m_viewport->zoom_at(coordinate.web_mercator(), level);
+  m_viewport->zoom_at(coordinate.pseudo_web_mercator(), level);
 }
 
 QcMapItem::~QcMapItem()

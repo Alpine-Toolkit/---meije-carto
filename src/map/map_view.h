@@ -78,11 +78,17 @@ class QC_EXPORT QcMapView : public QObject
   void update_scene();
 
  private:
+  QcTileSpecSet intersec_polygon_with_grid(const QcPolygon & polygon, double tile_length_m, int zoom_level);
+
+ private:
   QcWmtsPlugin * m_plugin; // could use several plugins !
   QPointer<QcWmtsManager> m_wmts_manager; // Fixme: why QPointer !
   QcWmtsRequestManager * m_request_manager;
   QcViewport * m_viewport;
   QcMapScene * m_map_scene;
+  QcTileSpecSet m_west_visible_tiles;
+  QcTileSpecSet m_middle_visible_tiles;
+  QcTileSpecSet m_east_visible_tiles;
   QcTileSpecSet m_visible_tiles;
 };
 

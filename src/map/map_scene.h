@@ -57,13 +57,19 @@ public:
 
   void add_tile(const QcTileSpec & tile_spec, QSharedPointer<QcTileTexture> texture);
 
-  void set_visible_tiles(const QcTileSpecSet & tile_specs);
+  void set_visible_tiles(const QcTileSpecSet & tile_specs,
+                         const QcTileSpecSet & west_tile_specs,
+                         const QcTileSpecSet & middle_tile_specs,
+                         const QcTileSpecSet & east_tile_specs);
   const QcTileSpecSet & visible_tiles() const { return m_visible_tiles; };
   QcTileSpecSet textured_tiles() const;
 
   QSGNode * update_scene_graph(QSGNode * old_node, QQuickWindow * window);
 
-  bool build_geometry(const QcTileSpec & tile_spec, QSGGeometry::TexturedPoint2D * vertices);
+  float width() { return m_viewport->width(); }
+  float height() { return m_viewport->height(); }
+
+  bool build_geometry(const QcTileSpec & tile_spec, QSGGeometry::TexturedPoint2D * vertices, const QcPolygon & polygon);
 
 private:
   void remove_tiles(const QcTileSpecSet & old_tiles);
@@ -75,6 +81,9 @@ private:
   const QcViewport * m_viewport; // Fixme: &
   const QcTileMatrixSet & m_tile_matrix_set;
   QcTileSpecSet m_visible_tiles;
+  QcTileSpecSet m_west_visible_tiles;
+  QcTileSpecSet m_middle_visible_tiles;
+  QcTileSpecSet m_east_visible_tiles;
 };
 
 // QC_END_NAMESPACE

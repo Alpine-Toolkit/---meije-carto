@@ -196,6 +196,8 @@ class QC_EXPORT QcViewport : public QObject
   inline int height() const  { return m_viewport_size.height(); }
   void set_viewport_size(const QSize & size);
 
+  QcVectorDouble area_size_m() const { return m_area_size_m; }
+
   void set_coordinate(const QcGeoCoordinatePseudoWebMercator & coordinate);
   void set_coordinate(const QcGeoCoordinateWGS84 & coordinate) {
     set_coordinate(coordinate.pseudo_web_mercator());
@@ -213,13 +215,22 @@ class QC_EXPORT QcViewport : public QObject
   void set_bearing(double bearing);
 
   void stable_zoom(const QcVectorDouble & position_px, unsigned int zoom_level);
-  void zoom_at(const QcGeoCoordinateWebMercator & coordinate, unsigned int zoom_level);
-  void pan(double x, double y);
+  void zoom_at(const QcGeoCoordinatePseudoWebMercator & coordinate, unsigned int zoom_level);
+  void pan(const QcVectorDouble & translation);
+  void pan(double x, double y) {
+    pan(QcVectorDouble(x, y));
+  }
 
-  bool cross_datum() const { return m_cross_datum; }
+  bool cross_date_line() const { return m_cross_date_line; }
+  bool cross_west_line() const { return m_cross_west_line; }
+  bool cross_east_line() const { return m_cross_east_line; }
 
-  const QcPolygon & polygon() const { return m_polygon; }
-  const QcInterval2DDouble & interval() const { return m_polygon.interval(); }
+  const QcPolygon & east_polygon() const { return m_east_polygon; }
+  const QcInterval2DDouble & east_interval() const { return m_east_polygon.interval(); }
+  const QcPolygon & middle_polygon() const { return m_middle_polygon; }
+  const QcInterval2DDouble & middle_interval() const { return m_middle_polygon.interval(); }
+  const QcPolygon & west_polygon() const { return m_west_polygon; }
+  const QcInterval2DDouble & west_interval() const { return m_west_polygon.interval(); }
 
   QcGeoCoordinatePseudoWebMercator to_coordinate(const QcVectorDouble & position, bool clip_to_viewport) const;
   QcVectorDouble from_coordinate(const QcGeoCoordinatePseudoWebMercator & coordinate, bool clip_to_viewport) const;
@@ -244,8 +255,12 @@ class QC_EXPORT QcViewport : public QObject
   QSize m_viewport_size; // QcVectorInt ?
   QcVectorDouble m_area_size_m;
   QcVectorDouble m_half_diagonal_m;
-  QcPolygon m_polygon;
-  bool m_cross_datum;
+  QcPolygon m_west_polygon;
+  QcPolygon m_middle_polygon;
+  QcPolygon m_east_polygon;
+  bool m_cross_date_line;
+  bool m_cross_west_line;
+  bool m_cross_east_line;
 };
 
 /**************************************************************************************************/

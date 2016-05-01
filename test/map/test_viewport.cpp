@@ -44,9 +44,56 @@ class TestQcViewport: public QObject
   Q_OBJECT
 
 private slots:
-  void constructor();
+  // void constructor();
+  void east_wrap();
 };
 
+void TestQcViewport::east_wrap()
+{
+  size_t number_of_levels = 20;
+  size_t tile_size = 256;
+  size_t level = 16;
+  QcTileMatrixSet tile_matrix_set("wtms", number_of_levels, tile_size);
+  double resolution = tile_matrix_set[level].resolution();
+  double tile_length_m = tile_matrix_set[level].tile_length_m();
+  std::cout << "Resolution " << resolution << std::endl;
+  std::cout << "tile length m " << tile_length_m << std::endl;
+
+  QcGeoCoordinateWebMercator coordinate_origin(0, 0); // Fixme: need to pass fake state
+  QcTiledZoomLevel tiled_zoom_level(EQUATORIAL_PERIMETER, tile_size, level); // map can have different tile size !
+  QcViewportState viewport_state(coordinate_origin, tiled_zoom_level, 0);
+  QSize viewport_size(1000, 1000); // widget size
+  QcViewport viewport(viewport_state, viewport_size);
+
+  QcVectorDouble area_size_m = viewport.area_size_m();
+  std::cout << "area size m " << area_size_m.x() << " " << area_size_m.y() << std::endl;
+
+  QcIntervalDouble x_interval = QcGeoCoordinatePseudoWebMercator::x_interval();
+  std::cout << "pseudo web mercator x interval"
+	    << "[" << (int) x_interval.inf() << ", " << (int) x_interval.sup() << "]"
+	    << std::endl;
+
+  double x_center;
+  QcGeoCoordinatePseudoWebMercator coordinate;
+
+  x_center = QcGeoCoordinatePseudoWebMercator::x_interval().sup() - tile_length_m;
+  std::cout << "x center " << (int) x_center << std::endl;
+  coordinate = QcGeoCoordinatePseudoWebMercator(x_center, HALF_EQUATORIAL_PERIMETER);
+  viewport.zoom_at(coordinate, level); // zoom_factor == tiled_matrix resolution
+
+  x_center = QcGeoCoordinatePseudoWebMercator::x_interval().inf() + tile_length_m;
+  std::cout << "x center " << (int) x_center << std::endl;
+  coordinate = QcGeoCoordinatePseudoWebMercator(x_center, HALF_EQUATORIAL_PERIMETER);
+  viewport.zoom_at(coordinate, level); // zoom_factor == tiled_matrix resolution
+
+  x_center = QcGeoCoordinatePseudoWebMercator::x_interval().sup() -10;
+  std::cout << "x center " << (int) x_center << std::endl;
+  coordinate = QcGeoCoordinatePseudoWebMercator(x_center, HALF_EQUATORIAL_PERIMETER);
+  viewport.zoom_at(coordinate, level); // zoom_factor == tiled_matrix resolution
+  viewport.pan(tile_length_m, 0);
+}
+
+/*
 void TestQcViewport::constructor()
 {
   size_t number_of_levels = 20;
@@ -65,7 +112,7 @@ void TestQcViewport::constructor()
   QcViewport viewport(viewport_state, viewport_size);
   // QcMosaicPainter mosaic_painter(viewport); // unused
 
-  viewport.zoom_at(QcGeoCoordinateWGS84(0, 0).web_mercator(), level); // zoom_factor == tiled_matrix resolution
+  viewport.zoom_at(QcGeoCoordinateWGS84(0, 0).pseudo_web_mercator(), level); // zoom_factor == tiled_matrix resolution
   QcGeoCoordinateWGS84 coordinate = viewport.wgs84();
   std::cout << "wgs84 " << coordinate.longitude() << " " << coordinate.latitude() << std::endl;
   QcGeoCoordinateWebMercator web_mercator_coordinate = viewport.web_mercator();
@@ -114,6 +161,7 @@ void TestQcViewport::constructor()
     std::cout << "Old Run " << run.y() << " [" << run_interval.inf() << ", " << run_interval.sup() << "]" << std::endl;
   }
 }
+*/
 
 /***************************************************************************************************/
 

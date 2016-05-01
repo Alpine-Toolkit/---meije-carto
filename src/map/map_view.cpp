@@ -79,6 +79,21 @@ QcMapView::update_tile(const QcTileSpec & tile_spec)
   }
 }
 
+QcTileSpecSet
+QcMapView::intersec_polygon_with_grid(const QcPolygon & polygon, double tile_length_m, int zoom_level)
+{
+  QcTileSpecSet visible_tiles;
+  QcTiledPolygon tiled_polygon = polygon.intersec_with_grid(tile_length_m);
+  for (const QcTiledPolygonRun & run: tiled_polygon.runs()) {
+    const QcIntervalInt & run_interval = run.interval();
+    size_t y = run.y();
+    qInfo() << "Run " << run.y() << " [" << run_interval.inf() << ", " << run_interval.sup() << "]";
+    for (int x = run_interval.inf(); x <= run_interval.sup(); x++)
+      visible_tiles.insert(m_plugin->create_tile_spec(0, zoom_level, x, y));
+  }
+  return visible_tiles;
+}
+
 void
 QcMapView::update_scene()
 {
@@ -92,27 +107,36 @@ QcMapView::update_scene()
   const QcTileMatrix & tile_matrix = tile_matrix_set[zoom_level];
   double tile_length_m = tile_matrix.tile_length_m();
 
-  const QcPolygon & polygon = m_viewport->polygon();
+  // Fixme: better check ?
+  // Fixme: clear first ?
+  const QcPolygon & polygon = m_viewport->middle_polygon();
   const QcInterval2DDouble & interval = polygon.interval();
   if (interval.x().is_empty() or interval.y().is_empty()) {
+    m_west_visible_tiles.clear();
+    m_middle_visible_tiles.clear();
+    m_east_visible_tiles.clear();
     m_visible_tiles.clear();
-    m_map_scene->set_visible_tiles(m_visible_tiles);
+    m_map_scene->set_visible_tiles(m_visible_tiles, m_east_visible_tiles, m_middle_visible_tiles, m_west_visible_tiles);
   } else {
-    qInfo() << "Normalised Mercator polygon interval [m]"
-            << "[" << (int) interval.x().inf() << ", " << (int) interval.x().sup() << "]"
-            << "x"
-            << "[" << (int) interval.y().inf() << ", " << (int) interval.y().sup() << "]";
-    QcTiledPolygon tiled_polygon = polygon.intersec_with_grid(tile_length_m);
-    QcTileSpecSet visible_tiles;
-    for (const QcTiledPolygonRun & run:  tiled_polygon.runs()) {
-      const QcIntervalInt & run_interval = run.interval();
-      size_t y = run.y();
-      qInfo() << "Run " << run.y() << " [" << run_interval.inf() << ", " << run_interval.sup() << "]";
-      for (int x = run_interval.inf(); x <= run_interval.sup(); x++)
-        visible_tiles.insert(m_plugin->create_tile_spec(0, zoom_level, x, y));
-    }
-    qInfo() << "visible tiles: " << visible_tiles;
-    qInfo() << "new visible tiles: " << visible_tiles - m_visible_tiles;
+    // qInfo() << "Normalised Mercator polygon interval [m]"
+    //         << "[" << (int) interval.x().inf() << ", " << (int) interval.x().sup() << "]"
+    //         << "x"
+    //         << "[" << (int) interval.y().inf() << ", " << (int) interval.y().sup() << "]";
+    m_middle_visible_tiles = intersec_polygon_with_grid(polygon, tile_length_m, zoom_level);
+    if (m_viewport->cross_west_line())
+      m_west_visible_tiles = intersec_polygon_with_grid(m_viewport->west_polygon(), tile_length_m, zoom_level);
+    else
+      m_west_visible_tiles.clear();
+    if (m_viewport->cross_east_line())
+      m_east_visible_tiles = intersec_polygon_with_grid(m_viewport->east_polygon(), tile_length_m, zoom_level);
+    else
+      m_east_visible_tiles.clear();
+    QcTileSpecSet visible_tiles = m_east_visible_tiles + m_middle_visible_tiles + m_west_visible_tiles;
+    qInfo() << "visible west tiles: " << m_west_visible_tiles << '\n'
+            << "visible middle tiles: " << m_middle_visible_tiles << '\n'
+            << "visible east tiles: " << m_east_visible_tiles << '\n'
+            << "visible tiles: " << visible_tiles << '\n'
+            << "new visible tiles: " << visible_tiles - m_visible_tiles;
 
     // bool new_tiles_introduced = !m_visible_tiles.contains(visible_tiles);
     m_visible_tiles = visible_tiles;
@@ -121,7 +145,9 @@ QcMapView::update_scene()
     // emit scene_graph_changed();
     // return;
 
-    m_map_scene->set_visible_tiles(visible_tiles);
+    // Fixme: better ?
+    m_map_scene->set_visible_tiles(m_visible_tiles,
+                                   m_west_visible_tiles, m_middle_visible_tiles, m_east_visible_tiles);
 
     // don't request tiles that are already built and textured
     QcTileSpecSet tile_to_request = m_visible_tiles - m_map_scene->textured_tiles();

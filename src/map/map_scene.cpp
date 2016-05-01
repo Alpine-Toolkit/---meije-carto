@@ -88,7 +88,7 @@ QcGridNode::update()
   double resolution = tile_matrix.resolution(); // [m/px]
   qInfo() << "tile_matrix" << m_viewport->zoom_level() << tile_length_m << resolution;
 
-  const QcPolygon & polygon = m_viewport->polygon();
+  const QcPolygon & polygon = m_viewport->middle_polygon(); // Fixme: when cross date line
   const QcInterval2DDouble & interval = polygon.interval();
 
   double x_inf_m = interval.x().inf();
@@ -133,7 +133,7 @@ QcGridNode::update()
 
 /**************************************************************************************************/
 
-class QcMapContainerNode : public QSGTransformNode
+class QcMapSideNode : public QSGTransformNode
 {
 public:
   void add_child(const QcTileSpec & tile_spec, QSGSimpleTextureNode * node);
@@ -142,7 +142,7 @@ public:
 };
 
 void
-QcMapContainerNode::add_child(const QcTileSpec & tile_spec, QSGSimpleTextureNode * texture_node)
+QcMapSideNode::add_child(const QcTileSpec & tile_spec, QSGSimpleTextureNode * texture_node)
 {
   texture_nodes.insert(tile_spec, texture_node);
   appendChildNode(texture_node);
@@ -157,7 +157,9 @@ public:
   ~QcMapRootNode();
 
   void update_clip_rect();
-  void update_tiles(QcMapContainerNode * root, QcMapScene * map_scene);
+  void update_tiles(QcMapScene * map_scene,
+                    QcMapSideNode * map_side_node, const QcTileSpecSet & visible_tiles, const QcPolygon & polygon,
+                    double offset);
 
 private:
   const QcTileMatrixSet & m_tile_matrix_set;
@@ -168,7 +170,9 @@ public:
   QSGGeometry geometry;
   QSGTransformNode * root;
   QcGridNode * grid_node;
-  QcMapContainerNode * map_container_node;
+  QcMapSideNode * west_map_node;
+  QcMapSideNode * middle_map_node;
+  QcMapSideNode * east_map_node;
   QHash<QcTileSpec, QSGTexture *> textures;
 };
 
@@ -178,13 +182,17 @@ QcMapRootNode::QcMapRootNode(const QcTileMatrixSet & tile_matrix_set, const QcVi
     geometry(QSGGeometry::defaultAttributes_Point2D(), 4),
     root(new QSGTransformNode()),
     grid_node(new QcGridNode(tile_matrix_set, viewport)),
-    map_container_node(new QcMapContainerNode())
+    west_map_node(new QcMapSideNode()),
+    middle_map_node(new QcMapSideNode()),
+    east_map_node(new QcMapSideNode())
 {
   qInfo();
   setIsRectangular(true);
   setGeometry(&geometry);
-  map_container_node->appendChildNode(grid_node); // Fixme map_container_node due to matrix
-  root->appendChildNode(map_container_node);
+  middle_map_node->appendChildNode(grid_node); // Fixme:
+  root->appendChildNode(west_map_node);
+  root->appendChildNode(middle_map_node);
+  root->appendChildNode(east_map_node);
   appendChildNode(root);
 
 #ifndef ANDROID
@@ -238,28 +246,41 @@ QcMapRootNode::update_clip_rect()
 }
 
 void
-QcMapRootNode::update_tiles(QcMapContainerNode * map_container_node, QcMapScene * map_scene)
+QcMapRootNode::update_tiles(QcMapScene * map_scene,
+                            QcMapSideNode * map_side_node,
+                            const QcTileSpecSet & visible_tiles,
+                            const QcPolygon & polygon,
+                            double offset)
 {
-  QcTileSpecSet tiles_in_scene = QcTileSpecSet::fromList(map_container_node->texture_nodes.keys()); // Fixme: cf. textured_tiles
-  QcTileSpecSet visible_tiles = map_scene->visible_tiles();
+  float width = map_scene->width();
+  float height = map_scene->height();
+
+  QMatrix4x4 space_matrix;
+  space_matrix.scale(2/width, 2/height);
+  space_matrix.translate(-width/2 + offset, -height/2);
+  map_side_node->setMatrix(space_matrix);
+  qInfo() << "map side space matrix" << space_matrix;
+
+  QcTileSpecSet tiles_in_scene = QcTileSpecSet::fromList(map_side_node->texture_nodes.keys()); // Fixme: cf. textured_tiles
   // QcTileSpecSet to_remove = tiles_in_scene - visible_tiles;
   // QcTileSpecSet to_add = visible_tiles - tiles_in_scene;
 
   QcTileSpecSet to_remove = tiles_in_scene;
   QcTileSpecSet to_add = visible_tiles;
 
-  qInfo() << "tiles_in_scene" << tiles_in_scene
+  qInfo() << "Offset" << offset
+          << "tiles_in_scene" << tiles_in_scene
           << "\nvisible_tiles" << visible_tiles
           << "\nto_remove" << to_remove
           << "\nto_add" << to_add;
 
   for (const auto & tile_spec : to_remove)
-    delete map_container_node->texture_nodes.take(tile_spec);
+    delete map_side_node->texture_nodes.take(tile_spec);
 
   // Update tile geometries
-  // for (auto * texture_node : map_container_node->texture_nodes) {
-  for (QHash<QcTileSpec, QSGSimpleTextureNode *>::iterator it = map_container_node->texture_nodes.begin();
-       it != map_container_node->texture_nodes.end(); ) {
+  // for (auto * texture_node : map_side_node->texture_nodes) {
+  for (QHash<QcTileSpec, QSGSimpleTextureNode *>::iterator it = map_side_node->texture_nodes.begin();
+       it != map_side_node->texture_nodes.end(); ) {
     const QcTileSpec & tile_spec = it.key();
     QSGSimpleTextureNode * texture_node = it.value();
     qInfo() << "texture nodes loop" << tile_spec;
@@ -267,7 +288,7 @@ QcMapRootNode::update_tiles(QcMapContainerNode * map_container_node, QcMapScene 
     // Compute new geometry
     QSGGeometry visual_geometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 4);
     QSGGeometry::TexturedPoint2D * vertexes = visual_geometry.vertexDataAsTexturedPoint2D();
-    bool ok = map_scene->build_geometry(tile_spec, vertexes); // && qgeotiledmapscene_isTileInViewport(v, map_container_node->matrix())
+    bool ok = map_scene->build_geometry(tile_spec, vertexes, polygon); // && qgeotiledmapscene_isTileInViewport(v, map_side_node->matrix())
 
     QSGNode::DirtyState dirty_bits = 0;
     // Check and handle changes to vertex data.
@@ -288,7 +309,7 @@ QcMapRootNode::update_tiles(QcMapContainerNode * map_container_node, QcMapScene 
         texture_node->markDirty(dirty_bits);
       it++;
     } else {
-      it = map_container_node->texture_nodes.erase(it);
+      it = map_side_node->texture_nodes.erase(it);
       delete texture_node;
     }
   }
@@ -302,10 +323,10 @@ QcMapRootNode::update_tiles(QcMapContainerNode * map_container_node, QcMapScene 
       QSGSimpleTextureNode * tile_node = new QSGSimpleTextureNode();
       // note: setTexture will update coordinates so do it here, before we buildGeometry
       tile_node->setTexture(textures.value(tile_spec));
-      if (map_scene->build_geometry(tile_spec, tile_node->geometry()->vertexDataAsTexturedPoint2D())) {
-        // && qgeotiledmapscene_isTileInViewport(tileNode->geometry()->vertexDataAsTexturedPoint2D(), map_container_node->matrix())
+      if (map_scene->build_geometry(tile_spec, tile_node->geometry()->vertexDataAsTexturedPoint2D(), polygon)) {
+        // && qgeotiledmapscene_isTileInViewport(tileNode->geometry()->vertexDataAsTexturedPoint2D(), map_side_node->matrix())
         tile_node->setFiltering(QSGTexture::Linear);
-        map_container_node->add_child(tile_spec, tile_node);
+        map_side_node->add_child(tile_spec, tile_node);
       } else
         delete tile_node;
     }
@@ -339,12 +360,19 @@ QcMapScene::add_tile(const QcTileSpec & tile_spec, QSharedPointer<QcTileTexture>
 }
 
 void
-QcMapScene::set_visible_tiles(const QcTileSpecSet & tile_specs)
+QcMapScene::set_visible_tiles(const QcTileSpecSet & tile_specs,
+                              const QcTileSpecSet & west_tile_specs,
+                              const QcTileSpecSet & middle_tile_specs,
+                              const QcTileSpecSet & east_tile_specs)
 {
   QcTileSpecSet to_remove = m_visible_tiles - tile_specs;
   if (!to_remove.isEmpty())
     remove_tiles(to_remove);
   m_visible_tiles = tile_specs;
+  // Fixme: better ?
+  m_west_visible_tiles = west_tile_specs;
+  m_middle_visible_tiles = middle_tile_specs;
+  m_east_visible_tiles = east_tile_specs;
 }
 
 void
@@ -362,14 +390,13 @@ QcMapScene::textured_tiles() const
 }
 
 bool
-QcMapScene::build_geometry(const QcTileSpec & tile_spec, QSGGeometry::TexturedPoint2D * vertices)
+QcMapScene::build_geometry(const QcTileSpec & tile_spec, QSGGeometry::TexturedPoint2D * vertices, const QcPolygon & polygon)
 {
   int tile_size = m_tile_matrix_set.tile_size();
   const QcTileMatrix & tile_matrix = m_tile_matrix_set[m_viewport->zoom_level()];
   // double tile_length_m = tile_matrix.tile_length_m();
   double resolution = tile_matrix.resolution(); // [m/px]
 
-  const QcPolygon & polygon = m_viewport->polygon();
   const QcInterval2DDouble & interval = polygon.interval();
   double x_inf_m = interval.x().inf();
   double y_inf_m = interval.y().inf();
@@ -421,20 +448,16 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
   // Fixme: ok ?
   map_root_node->update_clip_rect();
 
-  // Setup model matrix
+  /* Setup model matrix
+   *   origin at center
+   *   y downward
+   *   diagonal is set (1, 1)
+   */
   QMatrix4x4 item_space_matrix;
   item_space_matrix.scale(width/2, height/2);
   item_space_matrix.translate(1, 1);
-  item_space_matrix.scale(1, 1); // y is downward
   map_root_node->root->setMatrix(item_space_matrix);
   qInfo() << "item_space_matrix" << item_space_matrix;
-
-  QcMapContainerNode * container_node = map_root_node->map_container_node;
-  QMatrix4x4 container_space_matrix;
-  container_space_matrix.scale(2/width, 2/height);
-  container_space_matrix.translate(-width/2, -height/2);
-  container_node->setMatrix(container_space_matrix);
-  qInfo() << "container_space_matrix" << container_space_matrix;
 
   map_root_node->grid_node->update();
 
@@ -456,7 +479,22 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
     }
   }
 
-   map_root_node->update_tiles(map_root_node->map_container_node, this);
+  const QcTileMatrix & tile_matrix = m_tile_matrix_set[m_viewport->zoom_level()];
+  double resolution = tile_matrix.resolution(); // [m/px]
+  // when we cross west line
+  map_root_node->update_tiles(this,
+                              map_root_node->west_map_node, m_west_visible_tiles, m_viewport->west_polygon(),
+                              .0);
+  double middle_offset = 0;
+  if (m_viewport->cross_west_line())
+    middle_offset = m_viewport->west_interval().x().length() / resolution;
+  map_root_node->update_tiles(this,
+                              map_root_node->middle_map_node, m_middle_visible_tiles, m_viewport->middle_polygon(),
+                              middle_offset);
+  double east_offset = m_viewport->middle_interval().x().length() / resolution;
+  map_root_node->update_tiles(this,
+                              map_root_node->east_map_node, m_east_visible_tiles, m_viewport->east_polygon(),
+                              east_offset);
 
   return map_root_node;
 }
