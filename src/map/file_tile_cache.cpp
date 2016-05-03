@@ -63,6 +63,7 @@
 /**************************************************************************************************/
 
 #include "file_tile_cache.h"
+#include "tile_image.h"
 
 #include <QDebug>
 #include <QDir>
@@ -138,27 +139,17 @@ constexpr int EXTRA_TEXTURE_USAGE = 6 * MEGA2;
 
 constexpr int NUMBER_OF_QUEUES = 4;
 
+/**************************************************************************************************/
+
 QcFileTileCache::QcFileTileCache(const QString & directory)
   : QObject(),
+    m_offline_cache(nullptr),
     m_directory(directory), m_min_texture_usage(0), m_extra_texture_usage(0)
 {
   const QString base_path = base_cache_directory();
 
-  // Fixme:
-
-  // delete old tiles from QtLocation 5.4 or prior
-  // Newer version use plugin-specific subdirectories so those are not affected.
-  // TODO Remove cache cleanup in Qt 6
-  // QDir base_dir(base_path);
-  // if (base_dir.exists()) {
-  //   const QStringList oldCacheFiles = base_dir.entryList(QDir::Files);
-  //   foreach (const QString& file, oldCacheFiles)
-  //     base_dir.remove(file);
-  // }
-
   if (m_directory.isEmpty()) {
     m_directory = base_path;
-    qWarning() << "Plugin uses uninitialized QcFileTileCache directory which was deleted during startup";
   }
 
   QDir::root().mkpath(m_directory);
@@ -169,6 +160,10 @@ QcFileTileCache::QcFileTileCache(const QString & directory)
   set_extra_texture_usage(EXTRA_TEXTURE_USAGE);
 
   load_tiles();
+
+  // Fixme: delete m_offline_cache
+  QString offline_cache_directory = m_directory + QDir::separator() + QLatin1Literal("offline");
+  m_offline_cache = new QcOfflineTileCache(offline_cache_directory);
 }
 
 QcFileTileCache::~QcFileTileCache()
@@ -306,6 +301,7 @@ QcFileTileCache::load_tiles()
   // 2. remaining tiles that aren't registered in a queue get pushed into cache here
   // this is a backup, in case the queue manifest files get deleted or out of sync due to
   // the application not closing down properly
+  // Fixme: or for off-line cache
   for (const auto & relative_filename : files) {
     QcTileSpec tile_spec = filename_to_tile_spec(relative_filename);
     if (tile_spec.level() == -1)
@@ -407,47 +403,73 @@ QcFileTileCache::get(const QcTileSpec & tile_spec)
 
   // Try memory cache
   QSharedPointer<QcCachedTileMemory> tile_memory = m_memory_cache.object(tile_spec);
-  if (tile_memory) {
-    QImage image;
-    if (!image.loadFromData(tile_memory->bytes)) { // Load PNG, JPEG
-      handle_error(tile_spec, QLatin1Literal("Problem with tile image"));
-      return QSharedPointer<QcTileTexture>(0);
-    }
-    QSharedPointer<QcTileTexture> tile_texture = add_to_texture_cache(tile_spec, image);
-    if (tile_texture)
-      return tile_texture;
-  }
+  if (tile_memory)
+    return load_from_memory(tile_memory);
 
   // Try disk cache
   QSharedPointer<QcCachedTileDisk> tile_directory = m_disk_cache.object(tile_spec);
-  if (tile_directory) {
-    // Fixme: to func
-    const QString format = QFileInfo(tile_directory->filename).suffix();
-    QFile file(tile_directory->filename);
-    file.open(QIODevice::ReadOnly);
-    QByteArray bytes = file.readAll();
-    file.close();
+  if (tile_directory)
+    return load_from_disk(tile_directory->tile_spec, tile_directory->filename);
 
-    QImage image;
-    if (!image.loadFromData(bytes)) {
-      handle_error(tile_spec, QLatin1Literal("Problem with tile image"));
-      return QSharedPointer<QcTileTexture>(0);
-    }
-
-    add_to_memory_cache(tile_spec, bytes, format);
-    QSharedPointer<QcTileTexture> tile_texture = add_to_texture_cache(tile_directory->tile_spec, image);
-    if (tile_texture)
-      return tile_texture;
+  // Try offline cache
+  // QSharedPointer<QcOfflineCachedTileDisk> offline_tile = m_offline_cache->get(tile_spec);
+  // if (offline_tile) {
+  if (m_offline_cache->contains(tile_spec)) {
+    QcOfflineCachedTileDisk offline_tile = m_offline_cache->get(tile_spec);
+    qInfo() << "In offline cache" << tile_spec;
+    // return load_from_disk(offline_tile->tile_spec, offline_tile->filename);
+    return load_from_disk(offline_tile.tile_spec, offline_tile.filename);
   }
 
   // else
   return QSharedPointer<QcTileTexture>();
 }
 
+QSharedPointer<QcTileTexture>
+// QcFileTileCache::load_from_disk(const QSharedPointer<QcCachedTileDisk> & tile_directory)
+QcFileTileCache::load_from_disk(const QcTileSpec & tile_spec, const QString & filename)
+{
+  // const QcTileSpec & tile_spec = tile_directory->tile_spec;
+  // const QString & filename = tile_directory->filename;
+
+  QByteArray bytes = read_tile_image(filename);
+
+  // Load PNG, JPEG from bytes
+  QImage image;
+  if (image.loadFromData(bytes)) {
+    const QString format = QFileInfo(filename).suffix();
+    add_to_memory_cache(tile_spec, bytes, format);
+
+    QSharedPointer<QcTileTexture> tile_texture = add_to_texture_cache(tile_spec, image);
+    if (tile_texture) // Fixme: when ? memory overflow ?
+      return tile_texture;
+  } else
+    handle_error(tile_spec, QLatin1Literal("Problem with tile image"));
+
+  // else
+  return QSharedPointer<QcTileTexture>(nullptr);
+}
+
+QSharedPointer<QcTileTexture>
+QcFileTileCache::load_from_memory(const QSharedPointer<QcCachedTileMemory> & tile_memory)
+{
+  const QcTileSpec & tile_spec = tile_memory->tile_spec;
+
+  // Fixme: duplicated code, excepted add_to_memory_cache
+  QImage image;
+  if (image.loadFromData(tile_memory->bytes)) {
+    QSharedPointer<QcTileTexture> tile_texture = add_to_texture_cache(tile_spec, image);
+    if (tile_texture)
+      return tile_texture;
+  } else
+    handle_error(tile_spec, QLatin1Literal("Problem with tile image"));
+
+  // else
+ return QSharedPointer<QcTileTexture>(0);
+}
+
 void
-QcFileTileCache::insert(const QcTileSpec & tile_spec,
-			const QByteArray & bytes,
-			const QString & format)
+QcFileTileCache::insert(const QcTileSpec & tile_spec, const QByteArray & bytes, const QString & format)
 // Fixme:
 // QcTiledMappingManagerEngine::CacheAreas areas
 {
@@ -455,12 +477,8 @@ QcFileTileCache::insert(const QcTileSpec & tile_spec,
     return;
 
   // if (areas & QcTiledMappingManagerEngine::DiskCache) {
-  // Fixme: to func
   QString filename = tile_spec_to_filename(tile_spec, format, m_directory);
-  QFile file(filename);
-  file.open(QIODevice::WriteOnly);
-  file.write(bytes);
-  file.close();
+  write_tile_image(filename, bytes);
   add_to_disk_cache(tile_spec, filename);
   // }
 
@@ -474,7 +492,8 @@ QcFileTileCache::insert(const QcTileSpec & tile_spec,
    */
 }
 
-void QcFileTileCache::evict_from_disk_cache(QcCachedTileDisk * tile_directory)
+void
+QcFileTileCache::evict_from_disk_cache(QcCachedTileDisk * tile_directory)
 {
   QFile::remove(tile_directory->filename);
 }
@@ -484,7 +503,7 @@ QcFileTileCache::evict_from_memory_cache(QcCachedTileMemory * /* tile_memory  */
 {}
 
 QSharedPointer<QcCachedTileDisk>
-QcFileTileCache::add_to_disk_cache(const QcTileSpec & tile_spec, const QString  &filename)
+QcFileTileCache::add_to_disk_cache(const QcTileSpec & tile_spec, const QString  & filename)
 {
   QSharedPointer<QcCachedTileDisk> tile_directory(new QcCachedTileDisk);
   tile_directory->tile_spec = tile_spec;
@@ -523,61 +542,6 @@ QcFileTileCache::add_to_texture_cache(const QcTileSpec & tile_spec, const QImage
   m_texture_cache.insert(tile_spec, tile_texture, texture_cost);
 
   return tile_texture;
-}
-
-QString
-QcFileTileCache::tile_spec_to_filename(const QcTileSpec & tile_spec, const QString & format, const QString & directory_)
-{
-  QString filename = tile_spec.plugin(); // Fixme: litteral, arg
-  filename += QLatin1Literal("-");
-  filename += QString::number(tile_spec.map_id());
-  filename += QLatin1Literal("-");
-  filename += QString::number(tile_spec.level());
-  filename += QLatin1Literal("-");
-  filename += QString::number(tile_spec.x());
-  filename += QLatin1Literal("-");
-  filename += QString::number(tile_spec.y());
-  filename += QLatin1Literal(".");
-  filename += format;
-
-  return QDir(directory_).filePath(filename);
-}
-
-QcTileSpec
-QcFileTileCache::filename_to_tile_spec(const QString & filename)
-{
-  QcTileSpec tile_spec;
-
-  QStringList parts = filename.split('.');
-  if (parts.length() != 2)
-    return tile_spec;
-  QString name = parts.at(0);
-
-  QStringList fields = name.split('-');
-  int length = fields.length();
-  if (length != 5)
-    return tile_spec;
-
-  QList<int> numbers;
-  bool ok = false;
-  for (int i = 1; i < length; ++i) {
-    ok = false;
-    int value = fields.at(i).toInt(&ok);
-    if (!ok)
-      return tile_spec;
-    numbers.append(value);
-  }
-
-  return QcTileSpec(fields.at(0),
-		    numbers.at(0),
-		    numbers.at(1),
-		    numbers.at(2),
-		    numbers.at(3));
-}
-
-QString QcFileTileCache::directory() const
-{
-  return m_directory;
 }
 
 /**************************************************************************************************/

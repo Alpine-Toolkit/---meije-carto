@@ -1,3 +1,5 @@
+// -*- mode: c++ -*-
+
 /***************************************************************************************************
 **
 ** $QTCARTO_BEGIN_LICENSE:GPL3$
@@ -26,22 +28,24 @@
 
 /**************************************************************************************************/
 
-#include "wmts_plugin.h"
+#ifndef __TILE_LOADER_H__
+#define __TILE_LOADER_H__
 
 /**************************************************************************************************/
 
-QcWmtsPlugin::QcWmtsPlugin(const QString & name, size_t number_of_levels, size_t tile_size)
-  : m_name(name),
-    m_tile_matrix_set(name, number_of_levels, tile_size),
-    m_wmts_manager(name)
-{}
+// QC_BEGIN_NAMESPACE
 
-QcWmtsPlugin::~QcWmtsPlugin()
-{}
+class TileLoader
+{
+public:
+  TileLoader(const QcPlugin * plugin);
 
-/**************************************************************************************************/
+  load(const QcPolygon * polygon);
+}
 
-// #include "wmts_plugin.moc"
+// QC_END_NAMESPACE
+
+#endif /* __TILE_LOADER_H__ */
 
 /***************************************************************************************************
  *

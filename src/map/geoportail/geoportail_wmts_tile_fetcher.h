@@ -37,21 +37,24 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 
-#include "geoportail_license.h"
+#include "map/geoportail/geoportail_license.h"
+// #include "map/geoportail/geoportail_plugin.h" // Fixme: circular
 #include "map/wmts_tile_fetcher.h"
 
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
 
+class QcGeoportailPlugin; // Fixme: circular
+
 class QcGeoportailWmtsTileFetcher : public QcWmtsTileFetcher
 {
   Q_OBJECT
 
 public:
-  QcGeoportailWmtsTileFetcher(const QcGeoportailWmtsLicence & license);
+  QcGeoportailWmtsTileFetcher(const QcGeoportailPlugin * plugin);
 
-  const QcGeoportailWmtsLicence & license() const { return m_licence; }
+  // const QcGeoportailWmtsLicense & license() const { return m_plugin->license(); }
 
   void set_user_agent(const QByteArray & user_agent) { m_user_agent = user_agent; }
 
@@ -63,7 +66,7 @@ private:
 
 private:
   QNetworkAccessManager * m_network_manager;
-  const QcGeoportailWmtsLicence & m_licence;
+  const QcGeoportailPlugin * m_plugin;
   QByteArray m_user_agent;
   QString m_reply_format;
 };

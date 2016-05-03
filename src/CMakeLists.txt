@@ -24,6 +24,8 @@ add_custom_command (
 # Library
 #
 
+# geometry/polygon_seidler_triangulation.cpp
+
 set(qtcarto_files
   # map/shaders/location_circle_shader.h
   geo_data_format/gpx.cpp
@@ -43,9 +45,11 @@ set(qtcarto_files
   map/location_circle_material_shader.cpp
   map/map_scene.cpp
   map/map_view.cpp
+  map/offline_cache.cpp
   map/osm/osm_plugin.cpp
   map/osm/osm_wmts_reply.cpp
   map/osm/osm_wmts_tile_fetcher.cpp
+  map/tile_image.cpp
   map/tile_matrix_index.cpp
   map/tile_matrix_set.cpp
   map/tile_spec.cpp
@@ -58,7 +62,8 @@ set(qtcarto_files
   math/interval.cpp
   math/qc_math.cpp
   math/rational.cpp
-)
+  tools/logger.cpp
+  )
 add_library(qtcarto SHARED ${qtcarto_files})
 target_link_libraries(qtcarto Qt5::Core Qt5::Quick Qt5::Gui Qt5::Network Qt5::Positioning ${PROJ4_LIBRARIES})
 

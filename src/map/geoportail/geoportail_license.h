@@ -44,22 +44,22 @@
 
 /**************************************************************************************************/
 
-class QC_EXPORT QcGeoportailWmtsLicence
+class QC_EXPORT QcGeoportailWmtsLicense
 {
  public:
-  QcGeoportailWmtsLicence(const QString & json_path);
-  QcGeoportailWmtsLicence(const QString & user, const QString & password, const QString & api_key,
+  QcGeoportailWmtsLicense(const QString & json_path);
+  QcGeoportailWmtsLicense(const QString & user, const QString & password, const QString & api_key,
 			  unsigned int offline_cache_limit);
-  QcGeoportailWmtsLicence(const QcGeoportailWmtsLicence & other);
+  QcGeoportailWmtsLicense(const QcGeoportailWmtsLicense & other);
 
-  QcGeoportailWmtsLicence & operator=(const QcGeoportailWmtsLicence & other);
+  QcGeoportailWmtsLicense & operator=(const QcGeoportailWmtsLicense & other);
 
   inline const QString & user() const { return m_user; }
   inline const QString & password() const { return m_password; }
   inline const QString & api_key() const { return m_api_key; }
   inline unsigned int offline_cache_limit() const { return m_offline_cache_limit; }
 
-  bool operator==(const QcGeoportailWmtsLicence & rhs) const;
+  bool operator==(const QcGeoportailWmtsLicense & rhs) const;
 
  private:
   void load_json(const QString & json_path);

@@ -78,8 +78,9 @@
 #include <QTimer>
 
 #include "qtcarto_global.h"
-#include "tile_spec.h"
-#include "cache3q.h"
+#include "map/cache3q.h"
+#include "map/offline_cache.h"
+#include "map/tile_spec.h"
 
 /**************************************************************************************************/
 
@@ -104,8 +105,9 @@ class QC_EXPORT QcTileTexture
 
 /**************************************************************************************************/
 
-// This would be internal to qgeofiletilecache.cpp except that the
-// eviction policy can't be defined without it being concrete here
+/* This would be internal to qgeofiletilecache.cpp except that the
+ * eviction policy can't be defined without it being concrete here
+ */
 class QcCachedTileDisk
 {
  public:
@@ -154,6 +156,8 @@ class QC_EXPORT QcFileTileCache : public QObject
   void clear_all();
 
   QSharedPointer<QcTileTexture> get(const QcTileSpec & tile_spec);
+  // QSharedPointer<QcTileTexture> load_from_disk(const QSharedPointer<QcCachedTileDisk> & tile_directory);
+  QSharedPointer<QcTileTexture> load_from_disk(const QcTileSpec & tile_spec, const QString & filename);
 
   // can be called without a specific tileCache pointer
   static void evict_from_disk_cache(QcCachedTileDisk * td);
@@ -167,21 +171,23 @@ class QC_EXPORT QcFileTileCache : public QObject
 
   static QString base_cache_directory();
 
+  QcOfflineTileCache * offline_cache() { return m_offline_cache; }
+
  private:
   void print_stats();
   void load_tiles();
 
-  QString directory() const;
+  QString directory() const { return m_directory; } // Fixme: ???
   QString queue_filename(int i) const;
+
+  QSharedPointer<QcTileTexture> load_from_memory(const QSharedPointer<QcCachedTileMemory> & tile_memory);
 
   QSharedPointer<QcCachedTileDisk> add_to_disk_cache(const QcTileSpec & tile_spec, const QString & filename);
   QSharedPointer<QcCachedTileMemory> add_to_memory_cache(const QcTileSpec & tile_spec, const QByteArray & bytes, const QString & format);
   QSharedPointer<QcTileTexture> add_to_texture_cache(const QcTileSpec & tile_spec, const QImage & image);
 
-  static QString tile_spec_to_filename(const QcTileSpec & tile_spec, const QString & format, const QString & directory);
-  static QcTileSpec filename_to_tile_spec(const QString & filename);
-
  private:
+  QcOfflineTileCache * m_offline_cache;
   QcCache3Q<QcTileSpec, QcCachedTileDisk, QCache3QTileEvictionPolicy > m_disk_cache; // Store image on disk
   QcCache3Q<QcTileSpec, QcCachedTileMemory > m_memory_cache; // Store encoded images on memory : PNG, JPEG
   QcCache3Q<QcTileSpec, QcTileTexture > m_texture_cache; // Store decoded images

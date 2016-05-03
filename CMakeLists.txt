@@ -128,9 +128,12 @@ endif(PROJ4_FOUND)
 INCLUDE_DIRECTORIES(src)
 
 add_subdirectory(src)
-add_subdirectory(test)
+add_subdirectory(tools)
+
 add_subdirectory(imports)
 add_subdirectory(mapviewer)
+
+add_subdirectory(test)
 
 ####################################################################################################
 #

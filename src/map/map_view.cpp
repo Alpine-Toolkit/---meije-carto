@@ -82,6 +82,7 @@ QcMapView::update_tile(const QcTileSpec & tile_spec)
 QcTileSpecSet
 QcMapView::intersec_polygon_with_grid(const QcPolygon & polygon, double tile_length_m, int zoom_level)
 {
+  int map_id = 2;
   QcTileSpecSet visible_tiles;
   QcTiledPolygon tiled_polygon = polygon.intersec_with_grid(tile_length_m);
   for (const QcTiledPolygonRun & run: tiled_polygon.runs()) {
@@ -89,7 +90,7 @@ QcMapView::intersec_polygon_with_grid(const QcPolygon & polygon, double tile_len
     size_t y = run.y();
     qInfo() << "Run " << run.y() << " [" << run_interval.inf() << ", " << run_interval.sup() << "]";
     for (int x = run_interval.inf(); x <= run_interval.sup(); x++)
-      visible_tiles.insert(m_plugin->create_tile_spec(0, zoom_level, x, y));
+      visible_tiles.insert(m_plugin->create_tile_spec(map_id, zoom_level, x, y));
   }
   return visible_tiles;
 }

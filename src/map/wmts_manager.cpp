@@ -74,13 +74,12 @@
 
 // QC_BEGIN_NAMESPACE
 
-QcWmtsManager::QcWmtsManager()
+QcWmtsManager::QcWmtsManager(const QString & plugin_name)
   : QObject(),
-    // cacheHint_(QcWmtsManager::AllCaches),
+    m_plugin_name(plugin_name),
     m_tile_cache(nullptr), // must call set_tile_fetcher() !!!
     m_tile_fetcher(nullptr) // created by a call to tile_cache()
-{
-}
+{}
 
 /*!
   Destroys this mapping manager.
@@ -118,7 +117,7 @@ QcWmtsManager::tile_fetcher()
 void
 QcWmtsManager::set_tile_cache(QcFileTileCache * cache)
 {
-  // Fixme: delete
+  // Fixme: delete, legacy from Qt ???
   Q_ASSERT_X(!m_tile_cache, Q_FUNC_INFO, "This should be called only once");
   m_tile_cache = cache;
 }
@@ -127,10 +126,8 @@ QcFileTileCache *
 QcWmtsManager::tile_cache()
 {
   if (!m_tile_cache) {
-    // QString cache_directory;
-    // if (!manager_name().isEmpty())
-    //   cache_directory = QcFileTileCache::base_cache_directory() + manager_name();
-    m_tile_cache = new QcFileTileCache(); // cache_directory
+    QString cache_directory = QcFileTileCache::base_cache_directory() + QDir::separator() + m_plugin_name;
+    m_tile_cache = new QcFileTileCache(cache_directory);
   }
   return m_tile_cache;
 }
@@ -237,12 +234,15 @@ void
 QcWmtsManager::fetcher_tile_finished(const QcTileSpec & tile_spec, const QByteArray & bytes, const QString & format)
 {
   qInfo();
-  QcMapViewPointerSet map_views = m_tile_hash.value(tile_spec);
-  remove_tile_spec(tile_spec);
-  tile_cache()->insert(tile_spec, bytes, format); // , m_cache_hint
-
-  for (QcMapView * map_view : map_views)
-    map_view->request_manager()->tile_fetched(tile_spec);
+  // Is tile requested by a map view ?
+  if (m_tile_hash.contains(tile_spec)) {
+    QcMapViewPointerSet map_views = m_tile_hash.value(tile_spec);
+    remove_tile_spec(tile_spec);
+    tile_cache()->insert(tile_spec, bytes, format);
+    for (QcMapView * map_view : map_views)
+      map_view->request_manager()->tile_fetched(tile_spec);
+  } else
+    qInfo() << "any client" << tile_spec;
 }
 
 void
@@ -273,32 +273,6 @@ QcWmtsManager::dump() const
   for (auto & map_view : m_map_view_hash.keys())
     qInfo() << map_view << "--->" << m_map_view_hash[map_view];
 }
-
-/*
-  void
-  QcWmtsManager::set_tile_size(const QSize & tile_size)
-  {
-  m_tile_size = tile_size;
-  }
-
-  QSize
-  QcWmtsManager::tile_size() const
-  {
-  return m_tile_size;
-  }
-
-  QcWmtsManager::CacheAreas
-  QcWmtsManager::cache_hint() const
-  {
-  return m_cache_hint;
-  }
-
-  void
-  QcWmtsManager::set_cache_hint(QcWmtsManager::CacheAreas cache_hint)
-  {
-  m_cache_hint = cache_hint;
-  }
-*/
 
 /**************************************************************************************************/
 

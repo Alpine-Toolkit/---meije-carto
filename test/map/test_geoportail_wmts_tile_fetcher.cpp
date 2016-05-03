@@ -26,8 +26,9 @@
 
 /**************************************************************************************************/
 
-#include <QtTest>
+#include <QString>
 #include <QtDebug>
+#include <QtTest>
 
 /**************************************************************************************************/
 
@@ -65,7 +66,7 @@ class TileFetcherHelper : public QObject
 void TestQcGeoportailWmtsTileFetcher::constructor()
 {
   QString json_path("geoportail-license.json");
-  QcGeoportailWmtsLicence geoportail_license(json_path);
+  QcGeoportailWmtsLicense geoportail_license(json_path);
   QcGeoportailPlugin geoportail_plugin(geoportail_license);
   QcGeoportailWmtsTileFetcher * tile_fetcher = geoportail_plugin.tile_fetcher(); // subclass QcGeoportailPlugin ???
 
@@ -75,7 +76,12 @@ void TestQcGeoportailWmtsTileFetcher::constructor()
   connect(tile_fetcher, &QcGeoportailWmtsTileFetcher::tile_finished,
   	  &tile_fetcher_helper, &TileFetcherHelper::tile_finished);
 
-  QcTileSpec tile_spec = geoportail_plugin.create_tile_spec(1, 16, 33885, 23658);
+  QString layer_title = "Carte topographique";
+  // QString layer_title = "Carte"; // error
+  // QString layer_title = "Vue aérienne";
+  int map_id = geoportail_plugin.layer(layer_title).map_id();
+  QcTileSpec tile_spec = geoportail_plugin.create_tile_spec(map_id, 16, 33885, 23658);
+  qInfo() << tile_spec;
   QSet<QcTileSpec> tiles_added = {tile_spec};
   QSet<QcTileSpec> tiles_removed;
   tile_fetcher->update_tile_requests(tiles_added, tiles_removed);

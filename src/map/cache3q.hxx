@@ -348,7 +348,7 @@ QSharedPointer<T> QcCache3Q<Key, T, EvictionPolicy>::object(const Key & key) con
 {
   if (!m_lookup.contains(key)) {
     const_cast<QcCache3Q<Key, T, EvictionPolicy> *>(this)->m_miss_count++;
-    return QSharedPointer<T>(0);
+    return QSharedPointer<T>(nullptr);
   }
 
   QcCache3Q<Key, T, EvictionPolicy> *me = const_cast<QcCache3Q<Key,T,EvictionPolicy> *>(this);

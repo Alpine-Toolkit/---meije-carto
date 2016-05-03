@@ -30,11 +30,15 @@ QcMapItem {
     // opacity: 1.
 
     center {
-        latitude: 44.6900
-        longitude: 6.1639
+        // latitude: 0
+        // longitude: 0
+        // latitude: 44.6900
+        // longitude: 6.1639
+        latitude: 45.956
+        longitude: 6.311
     }
     // zoomLevel: (maximum_zoom_level - minimum_zoom_level) / 2
-    zoom_level: 10 // 16
+    zoom_level: 13 // 3 10 16
 
     // PositionSource{
     //     id: position_source

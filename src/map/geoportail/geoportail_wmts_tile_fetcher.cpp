@@ -26,8 +26,9 @@
 
 /**************************************************************************************************/
 
-#include "geoportail_wmts_tile_fetcher.h"
+#include "geoportail_plugin.h"
 #include "geoportail_wmts_reply.h"
+#include "geoportail_wmts_tile_fetcher.h"
 
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
@@ -37,10 +38,10 @@
 
 /**************************************************************************************************/
 
-QcGeoportailWmtsTileFetcher::QcGeoportailWmtsTileFetcher(const QcGeoportailWmtsLicence & license)
+QcGeoportailWmtsTileFetcher::QcGeoportailWmtsTileFetcher(const QcGeoportailPlugin * plugin)
   : QcWmtsTileFetcher(),
     m_network_manager(new QNetworkAccessManager(this)),
-    m_licence(license),
+    m_plugin(plugin),
     m_user_agent("QtCarto based application"),
     m_reply_format("jpg")
 {
@@ -68,18 +69,38 @@ QcGeoportailWmtsTileFetcher::setAccessToken(const QString &accessToken)
 }
 */
 
+/*
+ * Vue aérienne LAYER = ORTHOIMAGERY.ORTHOPHOTOS
+ * http://wxs.ign.fr/<KEY>/geoportail/wmts?
+ * SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ORTHOIMAGERY.ORTHOPHOTOS
+ * &STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX=16&TILEROW=23327&TILECOL=33919&FORMAT=image/jpeg
+ *
+ * Carte LAYER = GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD
+ * http://wxs.ign.fr/<KEY>/geoportail/wmts?
+ * SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD
+ * &STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX=16&TILEROW=23327&TILECOL=33920&FORMAT=image/jpeg
+ *
+ * Carte topographique LAYER = GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN25TOUR
+ * http://wxs.ign.fr/<KEY>/geoportail/wmts?
+ * SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN25TOUR
+ * &STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX=16&TILEROW=23326&TILECOL=33920&FORMAT=image/jpeg
+ *
+ * Parcelles cadastrales
+ * http://wxs.ign.fr/<KEY>/geoportail/wmts?
+ * SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=CADASTRALPARCELS.PARCELS
+ * &STYLE=bdparcellaire&TILEMATRIXSET=PM&TILEMATRIX=16&TILEROW=23325&TILECOL=33915&FORMAT=image/png
+ *
+ * Routes
+ * http://wxs.ign.fr/<KEY>/geoportail/wmts?
+ * SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=TRANSPORTNETWORKS.ROADS&STYLE=normal
+ * &TILEMATRIXSET=PM&TILEMATRIX=16&TILEROW=23326&TILECOL=33917&FORMAT=image/png
+ *
+ */
+
 QcWmtsReply *
 QcGeoportailWmtsTileFetcher::get_tile_image(const QcTileSpec & tile_spec)
 {
-  QUrl url(QStringLiteral("https://wxs.ign.fr/")
-           + m_licence.api_key() + "/geoportail/wmts" +
-           "?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&" +
-           "LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS" +
-           "&STYLE=normal&FORMAT=image/jpeg&TILEMATRIXSET=PM" +
-           "&TILEMATRIX=" + QString::number(tile_spec.level()) +
-           "&TILEROW=" + QString::number(tile_spec.y()) +
-           "&TILECOL=" + QString::number(tile_spec.x()) +
-           QLatin1Char('&'));
+  QUrl url = m_plugin->make_layer_url(tile_spec);
   qInfo() << url;
 
   QNetworkRequest request;
@@ -99,8 +120,9 @@ QcGeoportailWmtsTileFetcher::on_authentication_request_slot(QNetworkReply *reply
 {
   Q_UNUSED(reply);
   qInfo() << "on_authentication_request_slot";
-  authenticator->setUser(m_licence.user());
-  authenticator->setPassword(m_licence.password());
+  const QcGeoportailWmtsLicense & _license = m_plugin->license();
+  authenticator->setUser(_license.user());
+  authenticator->setPassword(_license.password());
 }
 
 /**************************************************************************************************/

@@ -1,3 +1,5 @@
+// -*- mode: c++ -*-
+
 /***************************************************************************************************
 **
 ** $QTCARTO_BEGIN_LICENSE:GPL3$
@@ -26,22 +28,31 @@
 
 /**************************************************************************************************/
 
-#include "wmts_plugin.h"
+#ifndef __TILE_IMAGE_H__
+#define __TILE_IMAGE_H__
 
 /**************************************************************************************************/
 
-QcWmtsPlugin::QcWmtsPlugin(const QString & name, size_t number_of_levels, size_t tile_size)
-  : m_name(name),
-    m_tile_matrix_set(name, number_of_levels, tile_size),
-    m_wmts_manager(name)
-{}
+#include <QString>
+#include <QByteArray>
 
-QcWmtsPlugin::~QcWmtsPlugin()
-{}
+#include "map/tile_spec.h"
 
 /**************************************************************************************************/
 
-// #include "wmts_plugin.moc"
+// QC_BEGIN_NAMESPACE
+
+QString tile_spec_to_filename(const QcTileSpec & tile_spec, const QString & format, const QString & directory);
+QcTileSpec filename_to_tile_spec(const QString & filename);
+
+void write_tile_image(const QString & filename, const QByteArray & bytes);
+QByteArray read_tile_image(const QString & filename);
+
+// QC_END_NAMESPACE
+
+/**************************************************************************************************/
+
+#endif /* __TILE_IMAGE_H__ */
 
 /***************************************************************************************************
  *

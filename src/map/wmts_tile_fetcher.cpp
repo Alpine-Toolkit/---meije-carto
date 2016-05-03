@@ -197,10 +197,10 @@ QcWmtsTileFetcher::handle_reply(QcWmtsReply * wmts_reply, const QcTileSpec & til
 
   // emit signal according to the reply status
   if (wmts_reply->error() == QcWmtsReply::NoError) {
-    qInfo() << "emit tile_finished";
+    qInfo() << "emit tile_finished" << tile_spec;
     emit tile_finished(tile_spec, wmts_reply->map_image_data(), wmts_reply->map_image_format());
   } else {
-    qInfo() << "emit tile_error";
+    qInfo() << "emit tile_error" << tile_spec;
     emit tile_error(tile_spec, wmts_reply->error_string());
   }
 

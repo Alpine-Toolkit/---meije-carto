@@ -65,11 +65,11 @@ QcMapItem::QcMapItem(QQuickItem * parent)
   setFiltersChildMouseEvents(true);
 
   // Fixme: init plugin where ???
-  // QString json_path("geoportail-license.json");
-  // QcGeoportailWmtsLicence geoportail_license(json_path);
-  // m_plugin = new QcGeoportailPlugin(geoportail_license);
+  QString json_path("geoportail-license.json");
+  QcGeoportailWmtsLicense geoportail_license(json_path);
+  m_plugin = new QcGeoportailPlugin(geoportail_license);
 
-  m_plugin = new QcOsmPlugin();
+  // m_plugin = new QcOsmPlugin();
 
   m_map_view = new QcMapView(m_plugin);
   m_viewport = m_map_view->viewport();

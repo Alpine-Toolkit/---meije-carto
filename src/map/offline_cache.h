@@ -1,3 +1,5 @@
+// -*- mode: c++ -*-
+
 /***************************************************************************************************
 **
 ** $QTCARTO_BEGIN_LICENSE:GPL3$
@@ -26,22 +28,72 @@
 
 /**************************************************************************************************/
 
-#include "wmts_plugin.h"
+#ifndef __OFFLINE_CACHE_H__
+#define __OFFLINE_CACHE_H__
 
 /**************************************************************************************************/
 
-QcWmtsPlugin::QcWmtsPlugin(const QString & name, size_t number_of_levels, size_t tile_size)
-  : m_name(name),
-    m_tile_matrix_set(name, number_of_levels, tile_size),
-    m_wmts_manager(name)
-{}
+#include <QHash>
+#include <QSharedPointer>
+#include <QString>
 
-QcWmtsPlugin::~QcWmtsPlugin()
-{}
+#include "qtcarto_global.h"
+#include "map/tile_spec.h"
 
 /**************************************************************************************************/
 
-// #include "wmts_plugin.moc"
+// QC_BEGIN_NAMESPACE
+
+/**************************************************************************************************/
+
+/*
+ * count tile
+ * per layer
+ *
+ */
+
+class QcOfflineCachedTileDisk
+{
+public:
+  QcOfflineCachedTileDisk();
+  QcOfflineCachedTileDisk(const QcOfflineCachedTileDisk & other);
+
+  QcOfflineCachedTileDisk & operator=(const QcOfflineCachedTileDisk & other);
+
+public:
+  QcTileSpec tile_spec;
+  QString filename;
+  QString format;
+};
+
+class QC_EXPORT QcOfflineTileCache // : public QObject
+{
+  // Q_OBJECT
+
+ public:
+  QcOfflineTileCache(const QString & directory = QString());
+  ~QcOfflineTileCache();
+
+  void clear_all();
+
+  bool contains(const QcTileSpec & tile_spec) const;
+  // QSharedPointer<QcOfflineCachedTileDisk> get(const QcTileSpec & tile_spec); //  const
+  QcOfflineCachedTileDisk get(const QcTileSpec & tile_spec); //  const
+  void insert(const QcTileSpec & tile_spec, const QByteArray & bytes, const QString & format);
+
+ private:
+  void load_tiles();
+  void add_to_disk_cache(const QcTileSpec & tile_spec, const QString & filename);
+
+ private:
+  QString m_directory;
+  // QHash<QcTileSpec, QSharedPointer<QcOfflineCachedTileDisk>> m_offline_cache;
+  QHash<QcTileSpec, QcOfflineCachedTileDisk> m_offline_cache;
+};
+
+// QC_END_NAMESPACE
+
+#endif /* __OFFLINE_CACHE_H__ */
 
 /***************************************************************************************************
  *

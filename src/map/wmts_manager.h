@@ -109,7 +109,7 @@ class QC_EXPORT QcWmtsManager : public QObject
   Q_DECLARE_FLAGS(CacheAreas, CacheArea)
 
  public:
-  explicit QcWmtsManager();
+  explicit QcWmtsManager(const QString & plugin_name);
   virtual ~QcWmtsManager();
 
   void release_map(QcMapView * map_view);
@@ -125,9 +125,6 @@ class QC_EXPORT QcWmtsManager : public QObject
 
   void dump() const;
 
-  // QSize tileSize() const;
-  // QcWmtsManager::CacheAreas cache_hint() const;
-
  private slots:
   // Fixme: name
   void fetcher_tile_finished(const QcTileSpec & tile_spec, const QByteArray & bytes, const QString & format);
@@ -141,19 +138,16 @@ class QC_EXPORT QcWmtsManager : public QObject
  public:
   void set_tile_fetcher(QcWmtsTileFetcher * tile_fetcher);
   void set_tile_cache(QcFileTileCache * cache);
-  // void set_tile_size(const QSize &tileSize);
-  // void set_cache_hint(QcWmtsManager::CacheAreas cacheHint);
 
  private:
   void remove_tile_spec(const QcTileSpec & tile_spec);
 
  private:
+  QString m_plugin_name; // needed by cache directory
   QHash<QcMapView *, QcTileSpecSet > m_map_view_hash;
   QHash<QcTileSpec, QcMapViewPointerSet > m_tile_hash;
   QcFileTileCache * m_tile_cache;
   QcWmtsTileFetcher * m_tile_fetcher;
-  // QSize m_tile_size;
-  // QcWmtsManager::CacheAreas m_cache_hint;
 
   Q_DISABLE_COPY(QcWmtsManager);
 
