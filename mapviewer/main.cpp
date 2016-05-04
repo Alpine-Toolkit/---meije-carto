@@ -29,6 +29,8 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include <QDir>
+#include <QStandardPaths>
 #include <QDateTime>
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
@@ -40,10 +42,37 @@
 
 /**************************************************************************************************/
 
+QDir
+create_user_application_directory()
+{
+  // on Android
+  //   DataLocation = /data/data/org.alpine_toolkit
+  //   GenericDataLocation = <USER> = /storage/emulated/0 = user land root
+  // on Linux
+  //   GenericDataLocation = /home/fabrice/.local/share
+  QString generic_data_location_path = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+  qInfo() << "GenericDataLocation:" << generic_data_location_path;
+  // /storage/emulated/0/Android/data/org.xxx/files Alarms Download Notifications cache
+
+  QString application_user_directory_path = QDir(generic_data_location_path).filePath("alpine-toolkit");
+  QDir application_user_directory(application_user_directory_path);
+  if (! application_user_directory.exists()) {
+    if (!application_user_directory.mkpath(application_user_directory.absolutePath())) {
+      qWarning() << "Cannot create application user directory";
+    }
+  }
+
+  return application_user_directory;
+}
+
+/**************************************************************************************************/
+
 int
 main(int argc, char *argv[])
 {
+#ifndef ANDROID
   qInstallMessageHandler(message_handler);
+#endif
   QGuiApplication application(argc, argv);
   QGuiApplication::setApplicationDisplayName(QCoreApplication::translate("main", "QtCarto"));
 
@@ -56,6 +85,8 @@ main(int argc, char *argv[])
   // view.setFormat(format);
   // view.setSource(QUrl("qrc:///..."));
   // view.show();
+
+  create_user_application_directory();
 
   // QQmlApplicationEngine provides a convenient way to load an application from a single QML file
   QQmlApplicationEngine engine;

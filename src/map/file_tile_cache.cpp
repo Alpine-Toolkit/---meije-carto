@@ -200,7 +200,15 @@ QcFileTileCache::base_cache_directory()
   // If this is not supported by the platform, use the application-specific cache location.
   // (e.g. ~/.cache/<app_name>/QtLocation)
 
+  // /data/user/11/org.qtproject.example.mapviewer_atk/cache/QtCarto/
+#ifdef ANDROID
+  QString generic_data_location_path = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+  qInfo() << "GenericDataLocation:" << generic_data_location_path;
+  QString application_user_directory_path = QDir(generic_data_location_path).filePath("alpine-toolkit");
+  QString directory = application_user_directory_path + QDir::separator() + QLatin1Literal("cache");
+#else
   QString directory = QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation);
+#endif
   qInfo() << "base_cache_directory" << directory;
 
   // Check we can write on the cache directory

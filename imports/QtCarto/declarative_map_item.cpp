@@ -28,6 +28,9 @@
 
 #include <cmath>
 
+#include <QDir>
+#include <QStandardPaths>
+
 #include <QSGSimpleRectNode>
 #include <QtDebug>
 #include <QtQuick/qsgnode.h>
@@ -65,7 +68,10 @@ QcMapItem::QcMapItem(QQuickItem * parent)
   setFiltersChildMouseEvents(true);
 
   // Fixme: init plugin where ???
-  QString json_path("geoportail-license.json");
+  QString generic_data_location_path = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+  QString application_user_directory_path = QDir(generic_data_location_path).filePath("alpine-toolkit");
+  QString json_path = QDir(application_user_directory_path).filePath("geoportail-license.json");
+  qInfo() << "Geoportail license json" << json_path;
   QcGeoportailWmtsLicense geoportail_license(json_path);
   m_plugin = new QcGeoportailPlugin(geoportail_license);
 
