@@ -1,7 +1,7 @@
 ####################################################################################################
 
 TEMPLATE = app
-TARGET = mapviewer
+TARGET = mapviewer-atk
 
 !include(../common.pri) {
   error( "Couldn't find the common.pri file!" )
@@ -11,7 +11,12 @@ CONFIG += qml_debug
 
 QT += core gui qml quick
 
-SOURCES += main.cpp
+INCLUDEPATH += ../src
+
+SOURCES += main.cpp \
+  ../src/tools/logger.cpp
+
+HEADERS += ../src/tools/logger.h
 
 RESOURCES += mapviewer.qrc
 

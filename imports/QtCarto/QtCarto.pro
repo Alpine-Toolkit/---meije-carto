@@ -14,10 +14,13 @@ QT += qml quick positioning
 TARGET = $$qtLibraryTarget($$TARGET)
 
 # Fixme : Private QT API
-INCLUDEPATH += /opt/Qt-dev-5.7.0/include/QtQuick/5.7.0/QtQuick
-INCLUDEPATH += /opt/Qt-dev-5.7.0/include/QtQml/5.7.0/QtQml
+INCLUDEPATH += /opt/Qt-dev-5.7.0/include/QtCore/5.7.0/
 INCLUDEPATH += /opt/Qt-dev-5.7.0/include/QtCore/5.7.0/QtCore
-INCLUDEPATH += /opt/Qt-dev-5.7.0/include/QtCore/5.7.0
+INCLUDEPATH += /opt/Qt-dev-5.7.0/include/QtGui/5.7.0/
+INCLUDEPATH += /opt/Qt-dev-5.7.0/include/QtGui/5.7.0/QtGui
+INCLUDEPATH += /opt/Qt-dev-5.7.0/include/QtQml/5.7.0/QtQml
+INCLUDEPATH += /opt/Qt-dev-5.7.0/include/QtQuick/5.7.0/
+INCLUDEPATH += /opt/Qt-dev-5.7.0/include/QtQuick/5.7.0/QtQuick
 
 SOURCES += \
   declarative_map_item.cpp \

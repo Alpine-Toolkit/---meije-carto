@@ -1,7 +1,7 @@
 ####################################################################################################
 
-TARGET = qtcarto
 TEMPLATE = lib
+TARGET = qtcarto
 
 !include(../common.pri) {
   error("Couldn't find the common.pri file!")
