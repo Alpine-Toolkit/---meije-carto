@@ -51,10 +51,9 @@ public:
   QcWmtsPlugin(const QString & name, size_t number_of_levels, size_t tile_size);
   ~QcWmtsPlugin();
 
+  const QString & name() { return m_name; }
   QcTileMatrixSet & tile_matrix_set() { return m_tile_matrix_set; }
-
-  // Fixme: & or *
-  QcWmtsManager * wmts_manager() { return &m_wmts_manager; }
+  QcWmtsManager * wmts_manager() { return &m_wmts_manager; }  // Fixme: & or *
 
   QcTileSpec create_tile_spec(int map_id, int level, int x, int y) const {
     return QcTileSpec(m_name, map_id, level, x, y);

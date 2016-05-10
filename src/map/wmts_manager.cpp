@@ -137,82 +137,82 @@ QcWmtsManager::remove_tile_spec(const QcTileSpec & tile_spec)
 {
   // Remove tile_spec in sets
 
-  QcMapViewPointerSet map_views = m_tile_hash.value(tile_spec);
+  QcMapViewLayerPointerSet map_view_layers = m_tile_hash.value(tile_spec);
 
   // Fixme: inplace update ?
-  for (auto map_view : map_views) {
-    QcTileSpecSet tile_set = m_map_view_hash.value(map_view);
+  for (auto map_view_layer : map_view_layers) {
+    QcTileSpecSet tile_set = m_map_view_layer_hash.value(map_view_layer);
     tile_set.remove(tile_spec);
     if (tile_set.isEmpty())
-      m_map_view_hash.remove(map_view);
+      m_map_view_layer_hash.remove(map_view_layer);
     else
-      m_map_view_hash.insert(map_view, tile_set);
+      m_map_view_layer_hash.insert(map_view_layer, tile_set);
   }
 
   m_tile_hash.remove(tile_spec);
 }
 
 void
-QcWmtsManager::release_map(QcMapView * map_view)
+QcWmtsManager::release_map(QcMapViewLayer * map_view_layer)
 {
-  m_map_view_hash.remove(map_view);
+  m_map_view_layer_hash.remove(map_view_layer);
 
   // Update m_tile_hash
-  QHash<QcTileSpec, QcMapViewPointerSet > new_tile_hash = m_tile_hash;
+  QHash<QcTileSpec, QcMapViewLayerPointerSet > new_tile_hash = m_tile_hash;
   // for (auto & tile_spec : m_tile_hash.keys())
-  typedef QHash<QcTileSpec, QcMapViewPointerSet >::const_iterator hash_iterator;
+  typedef QHash<QcTileSpec, QcMapViewLayerPointerSet >::const_iterator hash_iterator;
   hash_iterator iter = m_tile_hash.constBegin();
   hash_iterator iter_end = m_tile_hash.constEnd();
   for (; iter != iter_end; ++iter) { // Fixme: cxx11
-    QcMapViewPointerSet map_views = iter.value();
-    if (map_views.contains(map_view)) {
-      map_views.remove(map_view);
-      if (map_views.isEmpty())
+    QcMapViewLayerPointerSet map_view_layers = iter.value();
+    if (map_view_layers.contains(map_view_layer)) {
+      map_view_layers.remove(map_view_layer);
+      if (map_view_layers.isEmpty())
 	new_tile_hash.remove(iter.key());
       else
-	new_tile_hash.insert(iter.key(), map_views); // Fixme: inplace update ?
+	new_tile_hash.insert(iter.key(), map_view_layers); // Fixme: inplace update ?
     }
   }
   m_tile_hash = new_tile_hash;
 }
 
 void
-QcWmtsManager::update_tile_requests(QcMapView * map_view,
+QcWmtsManager::update_tile_requests(QcMapViewLayer * map_view_layer,
 				    const QcTileSpecSet & tiles_added,
 				    const QcTileSpecSet & tiles_removed)
 {
   typedef QcTileSpecSet::const_iterator tile_iter;
   tile_iter iter, iter_end;
 
-  // add and remove tiles from tileset for this map_view
-  QcTileSpecSet old_tiles = m_map_view_hash.value(map_view);
+  // add and remove tiles from tileset for this map_view_layer
+  QcTileSpecSet old_tiles = m_map_view_layer_hash.value(map_view_layer);
   old_tiles += tiles_added;
   old_tiles -= tiles_removed;
-  m_map_view_hash.insert(map_view, old_tiles);
+  m_map_view_layer_hash.insert(map_view_layer, old_tiles);
 
   // add and remove map from mapset for the tiles
 
   // Fixme: duplicated code, inplace update ?
   QcTileSpecSet canceled_tiles;
   for (auto & tile_spec : tiles_removed) {
-    QcMapViewPointerSet map_view_set = m_tile_hash.value(tile_spec);
-    map_view_set.remove(map_view);
-    if (map_view_set.isEmpty()) {
+    QcMapViewLayerPointerSet map_view_layer_set = m_tile_hash.value(tile_spec);
+    map_view_layer_set.remove(map_view_layer);
+    if (map_view_layer_set.isEmpty()) {
       m_tile_hash.remove(tile_spec);
       canceled_tiles.insert(tile_spec);
     } else {
-      m_tile_hash.insert(tile_spec, map_view_set);
+      m_tile_hash.insert(tile_spec, map_view_layer_set);
     }
   }
 
   QcTileSpecSet requested_tiles;
   for (auto & tile_spec : tiles_added) {
-    QcMapViewPointerSet map_view_set = m_tile_hash.value(tile_spec);
-    if (map_view_set.isEmpty()) {
+    QcMapViewLayerPointerSet map_view_layer_set = m_tile_hash.value(tile_spec);
+    if (map_view_layer_set.isEmpty()) {
       requested_tiles.insert(tile_spec);
     }
-    map_view_set.insert(map_view);
-    m_tile_hash.insert(tile_spec, map_view_set);
+    map_view_layer_set.insert(map_view_layer);
+    m_tile_hash.insert(tile_spec, map_view_layer_set);
   }
 
   // Fixme: why ?
@@ -236,11 +236,11 @@ QcWmtsManager::fetcher_tile_finished(const QcTileSpec & tile_spec, const QByteAr
   qInfo();
   // Is tile requested by a map view ?
   if (m_tile_hash.contains(tile_spec)) {
-    QcMapViewPointerSet map_views = m_tile_hash.value(tile_spec);
+    QcMapViewLayerPointerSet map_view_layers = m_tile_hash.value(tile_spec);
     remove_tile_spec(tile_spec);
     tile_cache()->insert(tile_spec, bytes, format);
-    for (QcMapView * map_view : map_views)
-      map_view->request_manager()->tile_fetched(tile_spec);
+    for (QcMapViewLayer * map_view_layer : map_view_layers)
+      map_view_layer->request_manager()->tile_fetched(tile_spec);
   } else
     qInfo() << "any client" << tile_spec;
 }
@@ -249,11 +249,11 @@ void
 QcWmtsManager::fetcher_tile_error(const QcTileSpec & tile_spec, const QString & error_string)
 {
   qInfo();
-  QcMapViewPointerSet map_views = m_tile_hash.value(tile_spec);
+  QcMapViewLayerPointerSet map_view_layers = m_tile_hash.value(tile_spec);
   remove_tile_spec(tile_spec);
 
-  for (QcMapView * map_view : map_views)
-    map_view->request_manager()->tile_error(tile_spec, error_string);
+  for (QcMapViewLayer * map_view_layer : map_view_layers)
+    map_view_layer->request_manager()->tile_error(tile_spec, error_string);
 
   emit tile_error(tile_spec, error_string);
 }
@@ -270,8 +270,8 @@ QcWmtsManager::dump() const
   qInfo() << "Dump";
   for (auto & tile_spec : m_tile_hash.keys())
     qInfo() << tile_spec << "--->" << m_tile_hash[tile_spec];
-  for (auto & map_view : m_map_view_hash.keys())
-    qInfo() << map_view << "--->" << m_map_view_hash[map_view];
+  for (auto & map_view_layer : m_map_view_layer_hash.keys())
+    qInfo() << map_view_layer << "--->" << m_map_view_layer_hash[map_view_layer];
 }
 
 /**************************************************************************************************/

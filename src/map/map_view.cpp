@@ -35,38 +35,29 @@
 
 // QC_BEGIN_NAMESPACE
 
-QcMapView::QcMapView(QcWmtsPlugin * wmts_plugin)
+QcMapViewLayer::QcMapViewLayer(QcMapView * map_view, QcWmtsPlugin * plugin, int map_id)
   : QObject(),
-    m_plugin(wmts_plugin),
-    m_wmts_manager(wmts_plugin->wmts_manager()),
-    m_request_manager(nullptr), // initialised in ctor
-    m_viewport(nullptr), // initialised in ctor
-    m_map_scene(nullptr) // initialised in ctor
+    m_map_view(map_view),
+    m_viewport(map_view->viewport()),
+    m_map_scene(nullptr),
+    m_plugin(plugin),
+    m_map_id(map_id),
+    m_wmts_manager(plugin->wmts_manager()),
+    m_request_manager(nullptr) // initialised in ctor
 {
+  QString layer_name = plugin->name() + '/' + QString::number(map_id);
+  m_map_scene = map_view->map_scene()->add_layer(layer_name, m_plugin->tile_matrix_set());
   m_request_manager = new QcWmtsRequestManager(this, m_wmts_manager);
-
-  // Fixme: need to pass fake state
-  QcGeoCoordinatePseudoWebMercator coordinate_origin(0, 0);
-  QcTiledZoomLevel tiled_zoom_level(EQUATORIAL_PERIMETER, m_plugin->tile_matrix_set().tile_size(), 0); // map can have different tile size !
-  QcViewportState viewport_state(coordinate_origin, tiled_zoom_level, 0);
-  QSize viewport_size(0, 0);
-  m_viewport = new QcViewport(viewport_state, viewport_size);
-
-  m_map_scene = new QcMapScene(m_viewport, m_plugin->tile_matrix_set()); // parent
-
-  connect(m_viewport, SIGNAL(viewport_changed()),
-	  this, SLOT(update_scene()),
-	  Qt::QueuedConnection);
 }
 
-QcMapView::~QcMapView()
+QcMapViewLayer::~QcMapViewLayer()
 {
   if (m_request_manager)
     delete m_request_manager;
 }
 
 void
-QcMapView::update_tile(const QcTileSpec & tile_spec)
+QcMapViewLayer::update_tile(const QcTileSpec & tile_spec)
 {
   qInfo() << tile_spec;
   // Only promote the texture up to GPU if it is visible
@@ -80,9 +71,8 @@ QcMapView::update_tile(const QcTileSpec & tile_spec)
 }
 
 QcTileSpecSet
-QcMapView::intersec_polygon_with_grid(const QcPolygon & polygon, double tile_length_m, int zoom_level)
+QcMapViewLayer::intersec_polygon_with_grid(const QcPolygon & polygon, double tile_length_m, int zoom_level)
 {
-  int map_id = 2;
   QcTileSpecSet visible_tiles;
   QcTiledPolygon tiled_polygon = polygon.intersec_with_grid(tile_length_m);
   for (const QcTiledPolygonRun & run: tiled_polygon.runs()) {
@@ -90,13 +80,13 @@ QcMapView::intersec_polygon_with_grid(const QcPolygon & polygon, double tile_len
     size_t y = run.y();
     qInfo() << "Run " << run.y() << " [" << run_interval.inf() << ", " << run_interval.sup() << "]";
     for (int x = run_interval.inf(); x <= run_interval.sup(); x++)
-      visible_tiles.insert(m_plugin->create_tile_spec(map_id, zoom_level, x, y));
+      visible_tiles.insert(m_plugin->create_tile_spec(m_map_id, zoom_level, x, y));
   }
   return visible_tiles;
 }
 
 void
-QcMapView::update_scene()
+QcMapViewLayer::update_scene()
 {
   qInfo();
 
@@ -112,7 +102,7 @@ QcMapView::update_scene()
   // Fixme: clear first ?
   const QcPolygon & polygon = m_viewport->middle_polygon();
   const QcInterval2DDouble & interval = polygon.interval();
-  if (interval.x().is_empty() or interval.y().is_empty()) {
+  if (interval.is_empty()) {
     m_west_visible_tiles.clear();
     m_middle_visible_tiles.clear();
     m_east_visible_tiles.clear();
@@ -162,6 +152,64 @@ QcMapView::update_scene()
   }
 
   // Fixme: viewport_changed -> scene_graph_changed
+  emit scene_graph_changed();
+}
+
+/**************************************************************************************************/
+
+QcMapView::QcMapView()
+  : QObject(),
+    m_viewport(nullptr), // initialised in ctor
+    m_map_scene(nullptr) // initialised in ctor
+{
+  // Fixme: need to pass fake state
+  QcGeoCoordinatePseudoWebMercator coordinate_origin(0, 0);
+  int tile_size = 256; // map can have different tile size !
+  QcTiledZoomLevel tiled_zoom_level(EQUATORIAL_PERIMETER, tile_size, 0);
+  QcViewportState viewport_state(coordinate_origin, tiled_zoom_level, 0);
+  QSize viewport_size(0, 0);
+  m_viewport = new QcViewport(viewport_state, viewport_size);
+
+  m_map_scene = new QcMapScene(m_viewport); // parent
+
+  connect(m_viewport, SIGNAL(viewport_changed()),
+	  this, SLOT(update_scene()),
+	  Qt::QueuedConnection);
+}
+
+QcMapView::~QcMapView()
+{
+  // Fixme: delete layers
+}
+
+void
+QcMapView::add_layer(QcWmtsPlugin * plugin, int map_id)
+{
+  QcMapViewLayer * layer = new QcMapViewLayer(this, plugin, map_id);
+  m_layers << layer;
+  // Fixme:
+  //   use signal to connect update_scene ?
+  //   return bool to emit scene_graph_changed ?
+  connect(layer, SIGNAL(scene_graph_changed()),
+	  this, SLOT(scene_graph_changed()),
+	  Qt::QueuedConnection);
+}
+
+void
+QcMapView::remove_layer(QcWmtsPlugin * plugin, int map_id)
+{
+  // Fixme:
+}
+
+void
+QcMapView::update_scene()
+{
+  qInfo();
+  // Fixme: if layers share the same tile matrix ?
+  for (auto * layer : m_layers)
+    layer->update_scene();
+
+  // Fixme: check
   emit scene_graph_changed();
 }
 

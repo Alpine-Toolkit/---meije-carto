@@ -363,10 +363,10 @@ QcViewport::update_area()
 
   const QcInterval2DDouble & _interval = polygon.interval();
   m_cross_date_line = !_interval.is_included_in(QcGeoCoordinatePseudoWebMercator::domain());
-  qInfo() << "Cross datum line" << m_cross_date_line;
+  qInfo() << "Cross date line" << m_cross_date_line;
   if (m_cross_date_line) {
     if (_bearing) {
-      // Fixme: bearing and datume line crossing
+      // Fixme: bearing and date line crossing
     } else {
       // interval matches polygon
       double mercator_x_sup = QcGeoCoordinatePseudoWebMercator::x_interval().sup();

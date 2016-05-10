@@ -33,6 +33,7 @@
 
 /**************************************************************************************************/
 
+#include <QList>
 #include <QObject>
 
 #include "qtcarto_global.h"
@@ -52,22 +53,67 @@
 
 /**************************************************************************************************/
 
+class QcMapView;
+
+class QC_EXPORT QcMapViewLayer : public QObject
+{
+  Q_OBJECT
+
+ public:
+  QcMapViewLayer(QcMapView * map_view, QcWmtsPlugin * plugin, int map_id);
+  ~QcMapViewLayer();
+
+  QcWmtsPlugin * plugin() { return m_plugin; }
+  int map_id() const { return m_map_id; }
+  QcWmtsRequestManager * request_manager() { return m_request_manager; };
+
+  void update_tile(const QcTileSpec & tile_spec);
+  void update_scene();
+
+ signals:
+  void scene_graph_changed();
+
+ private:
+  QcTileSpecSet intersec_polygon_with_grid(const QcPolygon & polygon, double tile_length_m, int zoom_level);
+
+ private:
+  QcMapView * m_map_view;
+  QcViewport * m_viewport;
+  QcMapLayerScene * m_map_scene;
+
+  QcWmtsPlugin * m_plugin;
+  int m_map_id;
+
+  QPointer<QcWmtsManager> m_wmts_manager; // Fixme: why QPointer !
+  QcWmtsRequestManager * m_request_manager;
+
+  QcTileSpecSet m_west_visible_tiles;
+  QcTileSpecSet m_middle_visible_tiles;
+  QcTileSpecSet m_east_visible_tiles;
+  QcTileSpecSet m_visible_tiles;
+};
+
+typedef QSet<QcMapViewLayer *> QcMapViewLayerPointerSet;
+
+/**************************************************************************************************/
+
 class QC_EXPORT QcMapView : public QObject
 {
   Q_OBJECT
 
  public:
-  QcMapView(QcWmtsPlugin * wmts_plugin);
+  QcMapView();
   ~QcMapView();
 
-  QcWmtsRequestManager * request_manager() { return m_request_manager; };
   QcViewport * viewport() { return m_viewport; };
+  QcMapScene * map_scene() { return m_map_scene; };
+
+  void add_layer(QcWmtsPlugin * plugin, int map_id);
+  void remove_layer(QcWmtsPlugin * plugin, int map_id);
 
   void update_tile(const QcTileSpec & tile_spec);
 
-  QcMapScene * map_scene() { return m_map_scene; };
-  QSGNode * update_scene_graph(QSGNode *old_node, QQuickWindow *window)
-  {
+  QSGNode * update_scene_graph(QSGNode *old_node, QQuickWindow *window) {
     return m_map_scene->update_scene_graph(old_node, window);
   }
 
@@ -78,21 +124,11 @@ class QC_EXPORT QcMapView : public QObject
   void update_scene();
 
  private:
-  QcTileSpecSet intersec_polygon_with_grid(const QcPolygon & polygon, double tile_length_m, int zoom_level);
-
- private:
-  QcWmtsPlugin * m_plugin; // could use several plugins !
-  QPointer<QcWmtsManager> m_wmts_manager; // Fixme: why QPointer !
-  QcWmtsRequestManager * m_request_manager;
   QcViewport * m_viewport;
   QcMapScene * m_map_scene;
-  QcTileSpecSet m_west_visible_tiles;
-  QcTileSpecSet m_middle_visible_tiles;
-  QcTileSpecSet m_east_visible_tiles;
-  QcTileSpecSet m_visible_tiles;
+  // QHash<QString, QcMapViewLayer *> m_layers;
+  QList<QcMapViewLayer *> m_layers;
 };
-
-typedef QSet<QcMapView *> QcMapViewPointerSet;
 
 // QC_END_NAMESPACE
 

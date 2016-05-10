@@ -51,18 +51,6 @@
 
 /**************************************************************************************************/
 
-class QcGridNode : public QSGGeometryNode
-{
-public:
-  QcGridNode(const QcTileMatrixSet & tile_matrix_set, const QcViewport * viewport);
-
-  void update();
-
-private:
-  const QcTileMatrixSet & m_tile_matrix_set;
-  const QcViewport * m_viewport;
-};
-
 QcGridNode::QcGridNode(const QcTileMatrixSet & tile_matrix_set, const QcViewport * viewport)
   : QSGGeometryNode(),
     m_tile_matrix_set(tile_matrix_set),
@@ -133,14 +121,6 @@ QcGridNode::update()
 
 /**************************************************************************************************/
 
-class QcMapSideNode : public QSGTransformNode
-{
-public:
-  void add_child(const QcTileSpec & tile_spec, QSGSimpleTextureNode * node);
-
-  QHash<QcTileSpec, QSGSimpleTextureNode *> texture_nodes;
-};
-
 void
 QcMapSideNode::add_child(const QcTileSpec & tile_spec, QSGSimpleTextureNode * texture_node)
 {
@@ -150,107 +130,36 @@ QcMapSideNode::add_child(const QcTileSpec & tile_spec, QSGSimpleTextureNode * te
 
 /**************************************************************************************************/
 
-class QcMapRootNode : public QSGClipNode
-{
-public:
-  QcMapRootNode(const QcTileMatrixSet & tile_matrix_set, const QcViewport * viewport);
-  ~QcMapRootNode();
-
-  void update_clip_rect();
-  void update_tiles(QcMapScene * map_scene,
-                    QcMapSideNode * map_side_node, const QcTileSpecSet & visible_tiles, const QcPolygon & polygon,
-                    double offset);
-
-private:
-  const QcTileMatrixSet & m_tile_matrix_set;
-  const QcViewport * m_viewport;
-  QRect m_clip_rect;
-
-public:
-  QSGGeometry geometry;
-  QSGTransformNode * root;
-  QcGridNode * grid_node;
-  QcMapSideNode * west_map_node;
-  QcMapSideNode * middle_map_node;
-  QcMapSideNode * east_map_node;
-  QHash<QcTileSpec, QSGTexture *> textures;
-};
-
-QcMapRootNode::QcMapRootNode(const QcTileMatrixSet & tile_matrix_set, const QcViewport * viewport)
-  : m_tile_matrix_set(tile_matrix_set),
+QcMapLayerRootNode::QcMapLayerRootNode(const QcTileMatrixSet & tile_matrix_set, const QcViewport * viewport)
+  : QSGOpacityNode(),
+    m_tile_matrix_set(tile_matrix_set),
     m_viewport(viewport),
-    geometry(QSGGeometry::defaultAttributes_Point2D(), 4),
-    root(new QSGTransformNode()),
-    grid_node(new QcGridNode(tile_matrix_set, viewport)),
+    // grid_node(new QcGridNode(tile_matrix_set, viewport)),
     west_map_node(new QcMapSideNode()),
     middle_map_node(new QcMapSideNode()),
     east_map_node(new QcMapSideNode())
 {
   qInfo();
-  setIsRectangular(true);
-  setGeometry(&geometry);
-  middle_map_node->appendChildNode(grid_node); // Fixme:
-  root->appendChildNode(west_map_node);
-  root->appendChildNode(middle_map_node);
-  root->appendChildNode(east_map_node);
-  appendChildNode(root);
 
-#ifndef ANDROID
-  QSGOpacityNode * node = new QSGOpacityNode();
-  node->setOpacity(.9); // 1. black
-  QSGGeometryNode * location_circle_node = new QSGGeometryNode();
+  setOpacity(.5);
 
-  QSGGeometry * location_circle_geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 1);
-  location_circle_geometry->setLineWidth(100); // point size
-  location_circle_geometry->setDrawingMode(GL_POINTS);
-  location_circle_node->setGeometry(location_circle_geometry);
-  location_circle_node->setFlag(QSGNode::OwnsGeometry);
-
-  // Fixme: black instead of white
-  QSGSimpleMaterial<QcLocationCircleMaterialShaderState> * location_circle_material = QcLocationCircleMaterialShader::createMaterial();
-  location_circle_material->state()->r = 0;
-  location_circle_material->state()->g = 0;
-  location_circle_material->state()->b = 1;
-  location_circle_material->state()->a = 1.;
-  location_circle_node->setMaterial(location_circle_material);
-  location_circle_node->setFlag(QSGNode::OwnsMaterial);
-
-  QSGGeometry::Point2D * location_circle_vertices = location_circle_geometry->vertexDataAsPoint2D();
-  location_circle_vertices[0].set(0, 0);
-
-  node->appendChildNode(location_circle_node);
-  // root->appendChildNode(location_circle_node);
-  root->appendChildNode(node);
-#endif
+  // middle_map_node->appendChildNode(grid_node); // Fixme:
+  appendChildNode(west_map_node);
+  appendChildNode(middle_map_node);
+  appendChildNode(east_map_node);
 }
 
-QcMapRootNode::~QcMapRootNode()
+QcMapLayerRootNode::~QcMapLayerRootNode()
 {
-
   qDeleteAll(textures);
 }
 
 void
-QcMapRootNode::update_clip_rect()
-{
-  int width = m_viewport->width();
-  int height = m_viewport->height();
-  QRect rect = QRect(0, 0, width, height);
-  qInfo() << rect;
-  if (rect != m_clip_rect) {
-    QSGGeometry::updateRectGeometry(&geometry, rect);
-    QSGClipNode::setClipRect(rect);
-    m_clip_rect = rect;
-    markDirty(DirtyGeometry);
-  }
-}
-
-void
-QcMapRootNode::update_tiles(QcMapScene * map_scene,
-                            QcMapSideNode * map_side_node,
-                            const QcTileSpecSet & visible_tiles,
-                            const QcPolygon & polygon,
-                            double offset)
+QcMapLayerRootNode::update_tiles(QcMapLayerScene * map_scene,
+                                 QcMapSideNode * map_side_node,
+                                 const QcTileSpecSet & visible_tiles,
+                                 const QcPolygon & polygon,
+                                 double offset)
 {
   float width = map_scene->width();
   float height = map_scene->height();
@@ -335,21 +244,79 @@ QcMapRootNode::update_tiles(QcMapScene * map_scene,
 
 /**************************************************************************************************/
 
-QcMapScene::QcMapScene(const QcViewport * viewport, const QcTileMatrixSet & tile_matrix_set, QObject * parent)
+QcMapRootNode::QcMapRootNode(const QcViewport * viewport)
+  : m_viewport(viewport),
+    geometry(QSGGeometry::defaultAttributes_Point2D(), 4),
+    root(new QSGTransformNode()),
+    location_circle_root_node(new QSGOpacityNode())
+{
+  qInfo();
+  setIsRectangular(true);
+  setGeometry(&geometry);
+  appendChildNode(root);
+
+#ifndef ANDROID
+  location_circle_root_node->setOpacity(.25); // 1. black
+
+  QSGGeometryNode * location_circle_node = new QSGGeometryNode();
+  QSGGeometry * location_circle_geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 1);
+  location_circle_geometry->setLineWidth(100); // point size
+  location_circle_geometry->setDrawingMode(GL_POINTS);
+  location_circle_node->setGeometry(location_circle_geometry);
+  location_circle_node->setFlag(QSGNode::OwnsGeometry);
+
+  // Fixme: black instead of white
+  QSGSimpleMaterial<QcLocationCircleMaterialShaderState> * location_circle_material = QcLocationCircleMaterialShader::createMaterial();
+  location_circle_material->state()->r = 0;
+  location_circle_material->state()->g = 0;
+  location_circle_material->state()->b = 1;
+  location_circle_material->state()->a = 1.;
+  location_circle_node->setMaterial(location_circle_material);
+  location_circle_node->setFlag(QSGNode::OwnsMaterial);
+
+  QSGGeometry::Point2D * location_circle_vertices = location_circle_geometry->vertexDataAsPoint2D();
+  location_circle_vertices[0].set(0, 0);
+
+  location_circle_root_node->appendChildNode(location_circle_node);
+  // root->appendChildNode(location_circle_node);
+  root->appendChildNode(location_circle_root_node);
+#endif
+}
+
+QcMapRootNode::~QcMapRootNode()
+{}
+
+void
+QcMapRootNode::update_clip_rect()
+{
+  int width = m_viewport->width();
+  int height = m_viewport->height();
+  QRect rect = QRect(0, 0, width, height);
+  qInfo() << rect;
+  if (rect != m_clip_rect) {
+    QSGGeometry::updateRectGeometry(&geometry, rect);
+    QSGClipNode::setClipRect(rect);
+    m_clip_rect = rect;
+    markDirty(DirtyGeometry);
+  }
+}
+
+/**************************************************************************************************/
+
+QcMapLayerScene::QcMapLayerScene(const QString & name, const QcViewport * viewport, const QcTileMatrixSet & tile_matrix_set, QObject * parent)
   : QObject(parent),
+    m_name(name),
     m_viewport(viewport),
     m_tile_matrix_set(tile_matrix_set)
 {
   qInfo();
 }
 
-QcMapScene::~QcMapScene()
-{
-  qInfo();
-}
+QcMapLayerScene::~QcMapLayerScene()
+{}
 
 void
-QcMapScene::add_tile(const QcTileSpec & tile_spec, QSharedPointer<QcTileTexture> texture)
+QcMapLayerScene::add_tile(const QcTileSpec & tile_spec, QSharedPointer<QcTileTexture> texture)
 {
   if (m_visible_tiles.contains(tile_spec)) { // Don't add the geometry if it isn't visible
     m_tile_textures.insert(tile_spec, texture);
@@ -360,10 +327,10 @@ QcMapScene::add_tile(const QcTileSpec & tile_spec, QSharedPointer<QcTileTexture>
 }
 
 void
-QcMapScene::set_visible_tiles(const QcTileSpecSet & tile_specs,
-                              const QcTileSpecSet & west_tile_specs,
-                              const QcTileSpecSet & middle_tile_specs,
-                              const QcTileSpecSet & east_tile_specs)
+QcMapLayerScene::set_visible_tiles(const QcTileSpecSet & tile_specs,
+                                   const QcTileSpecSet & west_tile_specs,
+                                   const QcTileSpecSet & middle_tile_specs,
+                                   const QcTileSpecSet & east_tile_specs)
 {
   QcTileSpecSet to_remove = m_visible_tiles - tile_specs;
   if (!to_remove.isEmpty())
@@ -376,7 +343,7 @@ QcMapScene::set_visible_tiles(const QcTileSpecSet & tile_specs,
 }
 
 void
-QcMapScene::remove_tiles(const QcTileSpecSet & old_tiles)
+QcMapLayerScene::remove_tiles(const QcTileSpecSet & old_tiles)
 {
   qInfo() << old_tiles;
   for (auto tile_spec : old_tiles)
@@ -384,13 +351,13 @@ QcMapScene::remove_tiles(const QcTileSpecSet & old_tiles)
 }
 
 QcTileSpecSet
-QcMapScene::textured_tiles() const
+QcMapLayerScene::textured_tiles() const
 {
   return QcTileSpecSet::fromList(m_tile_textures.keys());
 }
 
 bool
-QcMapScene::build_geometry(const QcTileSpec & tile_spec, QSGGeometry::TexturedPoint2D * vertices, const QcPolygon & polygon)
+QcMapLayerScene::build_geometry(const QcTileSpec & tile_spec, QSGGeometry::TexturedPoint2D * vertices, const QcPolygon & polygon)
 {
   int tile_size = m_tile_matrix_set.tile_size();
   const QcTileMatrix & tile_matrix = m_tile_matrix_set[m_viewport->zoom_level()];
@@ -424,42 +391,16 @@ QcMapScene::build_geometry(const QcTileSpec & tile_spec, QSGGeometry::TexturedPo
   return true;
 }
 
-QSGNode *
-QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
+QcMapLayerRootNode *
+QcMapLayerScene::make_node()
 {
-  qInfo() << old_node;
+  return new QcMapLayerRootNode(m_tile_matrix_set, m_viewport);
+}
 
-  QSize viewport_size = m_viewport->viewport_size();
-  float width = m_viewport->width();
-  float height = m_viewport->height();
-  qInfo() << "viewport size" << viewport_size;
-  // Check viewport has a rectangular shape
-  if (width <= 0 || height <= 0) {
-    delete old_node;
-    return nullptr;
-  }
-
-  QcMapRootNode * map_root_node = static_cast<QcMapRootNode *>(old_node);
-  if (!map_root_node) {
-    qInfo() << "map_root_node is null";
-    map_root_node = new QcMapRootNode(m_tile_matrix_set, m_viewport);
-  }
-
-  // Fixme: ok ?
-  map_root_node->update_clip_rect();
-
-  /* Setup model matrix
-   *   origin at center
-   *   y downward
-   *   diagonal is set (1, 1)
-   */
-  QMatrix4x4 item_space_matrix;
-  item_space_matrix.scale(width/2, height/2);
-  item_space_matrix.translate(1, 1);
-  map_root_node->root->setMatrix(item_space_matrix);
-  qInfo() << "item_space_matrix" << item_space_matrix;
-
-  map_root_node->grid_node->update();
+void
+QcMapLayerScene::update_scene_graph(QcMapLayerRootNode * map_root_node, QQuickWindow * window)
+{
+  qInfo();
 
   // Fixme: duplicated code?
   QcTileSpecSet textures_in_scene = QcTileSpecSet::fromList(map_root_node->textures.keys()); // cf. textured_tiles
@@ -495,6 +436,79 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
   map_root_node->update_tiles(this,
                               map_root_node->east_map_node, m_east_visible_tiles, m_viewport->east_polygon(),
                               east_offset);
+}
+
+/**************************************************************************************************/
+
+QcMapScene::QcMapScene(const QcViewport * viewport, QObject * parent)
+  : QObject(parent),
+    m_viewport(viewport)
+{}
+
+QcMapScene::~QcMapScene()
+{}
+
+QcMapLayerScene *
+QcMapScene::add_layer(const QString & name, const QcTileMatrixSet & tile_matrix_set)
+{
+  QcMapLayerScene * layer = new QcMapLayerScene(name, m_viewport, tile_matrix_set);
+  m_layers << layer;
+  return layer;
+}
+
+void
+QcMapScene::remove_layer()
+{
+  // Fixme:
+}
+
+QSGNode *
+QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
+{
+  qInfo() << old_node;
+
+  QSize viewport_size = m_viewport->viewport_size();
+  float width = m_viewport->width();
+  float height = m_viewport->height();
+  qInfo() << "viewport size" << viewport_size;
+  // Check viewport has a rectangular shape
+  if (width <= 0 || height <= 0) {
+    delete old_node;
+    return nullptr;
+  }
+
+  QcMapRootNode * map_root_node = static_cast<QcMapRootNode *>(old_node);
+  if (!map_root_node) {
+    qInfo() << "map_root_node is null";
+    map_root_node = new QcMapRootNode(m_viewport);
+  }
+
+  // Fixme: ok ?
+  map_root_node->update_clip_rect();
+
+  /* Setup model matrix
+   *   origin at center
+   *   y downward
+   *   diagonal is set (1, 1)
+   */
+  QMatrix4x4 item_space_matrix;
+  item_space_matrix.scale(width/2, height/2);
+  item_space_matrix.translate(1, 1);
+  map_root_node->root->setMatrix(item_space_matrix);
+  qInfo() << "item_space_matrix" << item_space_matrix;
+
+  for (auto * layer : m_layers) {
+    QcMapLayerRootNode * layer_node = nullptr;
+    if (map_root_node->layers.contains(layer->name()))
+      layer_node = map_root_node->layers[layer->name()];
+    else {
+      layer_node = layer->make_node();
+      map_root_node->layers.insert(layer->name(), layer_node);
+      map_root_node->root->insertChildNodeBefore(layer_node, map_root_node->location_circle_root_node);
+    }
+    layer->update_scene_graph(layer_node, window);
+  }
+  // Fixme: map_root_node->grid_node->update();
 
   return map_root_node;
 }

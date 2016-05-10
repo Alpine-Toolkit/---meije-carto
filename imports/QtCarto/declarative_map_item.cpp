@@ -67,6 +67,14 @@ QcMapItem::QcMapItem(QQuickItem * parent)
   setFlags(QQuickItem::ItemHasContents | QQuickItem::ItemClipsChildrenToShape);
   setFiltersChildMouseEvents(true);
 
+  m_map_view = new QcMapView();
+  m_viewport = m_map_view->viewport();
+
+  m_gesture_area->set_minimum_zoom_level(0);
+  m_gesture_area->set_maximum_zoom_level(20);
+
+  connect(m_map_view, &QcMapView::scene_graph_changed, this, &QQuickItem::update);
+
   // Fixme: init plugin where ???
   QString generic_data_location_path = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
   QString application_user_directory_path = QDir(generic_data_location_path).filePath("alpine-toolkit");
@@ -74,16 +82,12 @@ QcMapItem::QcMapItem(QQuickItem * parent)
   qInfo() << "Geoportail license json" << json_path;
   QcGeoportailWmtsLicense geoportail_license(json_path);
   m_plugin = new QcGeoportailPlugin(geoportail_license);
+  int map_id = 0;
+  m_map_view->add_layer(m_plugin, map_id);
 
-  // m_plugin = new QcOsmPlugin();
-
-  m_map_view = new QcMapView(m_plugin);
-  m_viewport = m_map_view->viewport();
-
-  m_gesture_area->set_minimum_zoom_level(0);
-  m_gesture_area->set_maximum_zoom_level(20);
-
-  connect(m_map_view, &QcMapView::scene_graph_changed, this, &QQuickItem::update);
+  // QcOsmPlugin * m_plugin2 = new QcOsmPlugin();
+  map_id = 2;
+  m_map_view->add_layer(m_plugin, map_id);
 
   // Fixme: remove
   // Set default viewport center and zoom level

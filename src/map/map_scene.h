@@ -37,6 +37,16 @@
 #include <QObject>
 #include <QQuickWindow>
 #include <QSGNode>
+#include <QString>
+
+//#include <QMatrix4x4>
+#include <QSGClipNode>
+#include <QSGFlatColorMaterial>
+#include <QSGGeometry>
+#include <QSGSimpleMaterial>
+#include <QSGSimpleTextureNode>
+#include <QSGTransformNode>
+#include <QtDebug>
 
 /**************************************************************************************************/
 
@@ -49,11 +59,22 @@
 
 // QC_BEGIN_NAMESPACE
 
-class QcMapScene : public QObject
+/**************************************************************************************************/
+
+class QcMapLayerRootNode;
+
+/**************************************************************************************************/
+
+class QcMapLayerScene : public QObject
 {
 public:
-  QcMapScene(const QcViewport * viewport, const QcTileMatrixSet & tile_matrix_set, QObject * parent = nullptr);
-  ~QcMapScene();
+  QcMapLayerScene(const QString & name, const QcViewport * viewport, const QcTileMatrixSet & tile_matrix_set, QObject * parent = nullptr);
+  ~QcMapLayerScene();
+
+  const QString name() const { return m_name; }
+
+  float width() { return m_viewport->width(); }
+  float height() { return m_viewport->height(); }
 
   void add_tile(const QcTileSpec & tile_spec, QSharedPointer<QcTileTexture> texture);
 
@@ -64,11 +85,9 @@ public:
   const QcTileSpecSet & visible_tiles() const { return m_visible_tiles; };
   QcTileSpecSet textured_tiles() const;
 
-  QSGNode * update_scene_graph(QSGNode * old_node, QQuickWindow * window);
 
-  float width() { return m_viewport->width(); }
-  float height() { return m_viewport->height(); }
-
+  QcMapLayerRootNode * make_node();
+  void update_scene_graph(QcMapLayerRootNode * map_root_node, QQuickWindow * window);
   bool build_geometry(const QcTileSpec & tile_spec, QSGGeometry::TexturedPoint2D * vertices, const QcPolygon & polygon);
 
 private:
@@ -78,6 +97,7 @@ public:
   QHash<QcTileSpec, QSharedPointer<QcTileTexture> > m_tile_textures;
 
 private:
+  QString m_name;
   const QcViewport * m_viewport; // Fixme: &
   const QcTileMatrixSet & m_tile_matrix_set;
   QcTileSpecSet m_visible_tiles;
@@ -85,6 +105,99 @@ private:
   QcTileSpecSet m_middle_visible_tiles;
   QcTileSpecSet m_east_visible_tiles;
 };
+
+/**************************************************************************************************/
+
+class QcMapScene : public QObject
+{
+public:
+  QcMapScene(const QcViewport * viewport, QObject * parent = nullptr);
+  ~QcMapScene();
+
+  QSGNode * update_scene_graph(QSGNode * old_node, QQuickWindow * window);
+
+  QcMapLayerScene * add_layer(const QString & name, const QcTileMatrixSet & tile_matrix_set);
+  void remove_layer();
+
+private:
+  float width() { return m_viewport->width(); }
+  float height() { return m_viewport->height(); }
+
+private:
+  const QcViewport * m_viewport; // Fixme: &
+  QList<QcMapLayerScene *> m_layers;
+};
+
+/**************************************************************************************************/
+
+class QcGridNode : public QSGGeometryNode
+{
+public:
+  QcGridNode(const QcTileMatrixSet & tile_matrix_set, const QcViewport * viewport);
+
+  void update();
+
+private:
+  const QcTileMatrixSet & m_tile_matrix_set;
+  const QcViewport * m_viewport;
+};
+
+/**************************************************************************************************/
+
+class QcMapSideNode : public QSGTransformNode
+{
+public:
+  void add_child(const QcTileSpec & tile_spec, QSGSimpleTextureNode * node);
+
+  QHash<QcTileSpec, QSGSimpleTextureNode *> texture_nodes;
+};
+
+/**************************************************************************************************/
+
+class QcMapLayerRootNode : public QSGOpacityNode
+{
+public:
+  QcMapLayerRootNode(const QcTileMatrixSet & tile_matrix_set, const QcViewport * viewport);
+  ~QcMapLayerRootNode();
+
+  void update_tiles(QcMapLayerScene * map_scene,
+                    QcMapSideNode * map_side_node, const QcTileSpecSet & visible_tiles, const QcPolygon & polygon,
+                    double offset);
+
+private:
+  const QcTileMatrixSet & m_tile_matrix_set;
+  const QcViewport * m_viewport;
+
+public:
+  // QcGridNode * grid_node;
+  QcMapSideNode * west_map_node;
+  QcMapSideNode * middle_map_node;
+  QcMapSideNode * east_map_node;
+  QHash<QcTileSpec, QSGTexture *> textures;
+};
+
+/**************************************************************************************************/
+
+class QcMapRootNode : public QSGClipNode
+{
+public:
+  QcMapRootNode(const QcViewport * viewport);
+  ~QcMapRootNode();
+
+  void update_clip_rect();
+
+private:
+  const QcViewport * m_viewport;
+  QRect m_clip_rect;
+
+public:
+  QSGGeometry geometry;
+  QSGTransformNode * root;
+  QSGOpacityNode * location_circle_root_node;
+  QHash<QString, QcMapLayerRootNode *> layers;
+};
+
+/**************************************************************************************************/
 
 // QC_END_NAMESPACE
 

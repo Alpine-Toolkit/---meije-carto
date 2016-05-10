@@ -84,8 +84,8 @@
 
 /**************************************************************************************************/
 
-class QcMapView;
-typedef QSet<QcMapView *> QcMapViewPointerSet;
+class QcMapViewLayer;
+typedef QSet<QcMapViewLayer *> QcMapViewLayerPointerSet;
 
 /**************************************************************************************************/
 
@@ -112,12 +112,12 @@ class QC_EXPORT QcWmtsManager : public QObject
   explicit QcWmtsManager(const QString & plugin_name);
   virtual ~QcWmtsManager();
 
-  void release_map(QcMapView * map_view);
+  void release_map(QcMapViewLayer * map_view_layer);
 
   QcWmtsTileFetcher * tile_fetcher();
   QcFileTileCache * tile_cache();
 
-  void update_tile_requests(QcMapView * map_view,
+  void update_tile_requests(QcMapViewLayer * map_view_layer,
 			    const QcTileSpecSet & tiles_added,
 			    const QcTileSpecSet & tiles_removed);
 
@@ -144,8 +144,8 @@ class QC_EXPORT QcWmtsManager : public QObject
 
  private:
   QString m_plugin_name; // needed by cache directory
-  QHash<QcMapView *, QcTileSpecSet > m_map_view_hash;
-  QHash<QcTileSpec, QcMapViewPointerSet > m_tile_hash;
+  QHash<QcMapViewLayer *, QcTileSpecSet > m_map_view_layer_hash;
+  QHash<QcTileSpec, QcMapViewLayerPointerSet > m_tile_hash;
   QcFileTileCache * m_tile_cache;
   QcWmtsTileFetcher * m_tile_fetcher;
 

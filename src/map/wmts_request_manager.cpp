@@ -69,10 +69,10 @@
 
 /**************************************************************************************************/
 
-QcRetryFuture::QcRetryFuture(const QcTileSpec & tile_spec, QcMapView * map_view, QcWmtsManager * wmts_manager)
+QcRetryFuture::QcRetryFuture(const QcTileSpec & tile_spec, QcMapViewLayer * map_view_layer, QcWmtsManager * wmts_manager)
   : QObject(),
     m_tile_spec(tile_spec),
-    m_map_view(map_view),
+    m_map_view_layer(map_view_layer),
     m_wmts_manager(wmts_manager)
 {}
 
@@ -82,14 +82,14 @@ QcRetryFuture::retry()
   if (!m_wmts_manager.isNull()) {
     QcTileSpecSet request_tiles = {m_tile_spec};
     QcTileSpecSet cancel_tiles;
-    m_wmts_manager->update_tile_requests(m_map_view, request_tiles, cancel_tiles);
+    m_wmts_manager->update_tile_requests(m_map_view_layer, request_tiles, cancel_tiles);
   }
 }
 
 /**************************************************************************************************/
 
-QcWmtsRequestManager::QcWmtsRequestManager(QcMapView * map_view, QcWmtsManager * wmts_manager)
-  : m_map_view(map_view),
+QcWmtsRequestManager::QcWmtsRequestManager(QcMapViewLayer * map_view_layer, QcWmtsManager * wmts_manager)
+  : m_map_view_layer(map_view_layer),
     m_wmts_manager(wmts_manager)
 {}
 
@@ -134,7 +134,7 @@ QcWmtsRequestManager::request_tiles(const QcTileSpecSet & tile_specs)
 
   if ((!requested_tiles.isEmpty() || !canceled_tiles.isEmpty())
       && (!m_wmts_manager.isNull())) {
-    m_wmts_manager->update_tile_requests(m_map_view, requested_tiles, canceled_tiles);
+    m_wmts_manager->update_tile_requests(m_map_view_layer, requested_tiles, canceled_tiles);
 
     // Fixme: ??? place ???
     // Remove any cancelled tiles from the error retry hash to avoid
@@ -155,7 +155,7 @@ void
 QcWmtsRequestManager::tile_fetched(const QcTileSpec & tile_spec)
 {
   qInfo();
-  m_map_view->update_tile(tile_spec);
+  m_map_view_layer->update_tile(tile_spec);
   m_requested.remove(tile_spec);
   m_retries.remove(tile_spec);
   m_futures.remove(tile_spec);
@@ -183,7 +183,7 @@ QcWmtsRequestManager::tile_error(const QcTileSpec & tile_spec, const QString & e
       qDebug() << "Retry x" << count << tile_spec;
       // Exponential time backoff when retrying
       int delay = (1 << count) * 500;
-      QSharedPointer<QcRetryFuture> future(new QcRetryFuture(tile_spec, m_map_view, m_wmts_manager));
+      QSharedPointer<QcRetryFuture> future(new QcRetryFuture(tile_spec, m_map_view_layer, m_wmts_manager));
       m_futures.insert(tile_spec, future);
       QTimer::singleShot(delay, future.data(), SLOT(retry()));
       // Passing .data() to singleShot is ok -- Qt will clean up the connection if the target qobject is deleted

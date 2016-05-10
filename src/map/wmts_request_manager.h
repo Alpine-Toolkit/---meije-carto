@@ -85,6 +85,8 @@
 
 // QC_BEGIN_NAMESPACE
 
+class QcMapViewLayer; // circular
+
 /**************************************************************************************************/
 
 // Represents a tile that needs to be retried after a certain period of time
@@ -93,14 +95,14 @@ class QcRetryFuture : public QObject
   Q_OBJECT
 
  public:
-  QcRetryFuture(const QcTileSpec & tile_spec, QcMapView * map_view, QcWmtsManager * wmts_manager);
+  QcRetryFuture(const QcTileSpec & tile_spec, QcMapViewLayer * map_view_layer, QcWmtsManager * wmts_manager);
 
  public slots:
   void retry();
 
  private:
   QcTileSpec m_tile_spec;
-  QcMapView * m_map_view;
+  QcMapViewLayer * m_map_view_layer;
   QPointer<QcWmtsManager> m_wmts_manager;
 };
 
@@ -114,7 +116,7 @@ class QcWmtsRequestManager : public QObject
   Q_OBJECT
 
  public:
-  explicit QcWmtsRequestManager(QcMapView * map_view, QcWmtsManager * wmts_manager);
+  explicit QcWmtsRequestManager(QcMapViewLayer * map_view_layer, QcWmtsManager * wmts_manager);
   ~QcWmtsRequestManager();
 
   QList<QSharedPointer<QcTileTexture> > request_tiles(const QcTileSpecSet & tile_specs);
@@ -125,7 +127,7 @@ class QcWmtsRequestManager : public QObject
   QSharedPointer<QcTileTexture> tile_texture(const QcTileSpec & tile_spec);
 
  private:
-  QcMapView * m_map_view;
+  QcMapViewLayer * m_map_view_layer;
   QPointer<QcWmtsManager> m_wmts_manager;
   QHash<QcTileSpec, int> m_retries;
   QHash<QcTileSpec, QSharedPointer<QcRetryFuture> > m_futures;
