@@ -105,7 +105,7 @@ template <typename T>
 bool
 QcInterval<T>::operator==(const QcInterval<T> & other) const
 {
-  return (m_empty == other.m_empty) && (m_inf == other.m_inf) && (m_sup == other.m_sup);
+  return (m_empty == other.m_empty) and (m_inf == other.m_inf) and (m_sup == other.m_sup);
 }
 
 template <typename T>
@@ -189,7 +189,7 @@ QcInterval<T>::contains(T x) const
   if (m_empty)
     return false;
   else
-    return m_inf <= x && x <= m_sup;
+    return m_inf <= x and x <= m_sup;
 }
 
 template <typename T>
@@ -221,10 +221,10 @@ template <typename T>
 bool
 QcInterval<T>::intersect(const QcInterval<T> & other) const
 {
-  if (m_empty || other.m_empty)
+  if (m_empty or other.m_empty)
     return false;
   else
-    return m_inf <= other.m_sup && other.m_inf <= m_sup;
+    return m_inf <= other.m_sup and other.m_inf <= m_sup;
 }
 
 // Test whether the interval is included in i1?
@@ -232,7 +232,7 @@ template <typename T>
 bool
 QcInterval<T>::is_included_in(const QcInterval<T> & other) const
 {
-  return other.m_inf <= m_inf && m_sup <= other.m_sup;
+  return other.m_inf <= m_inf and m_sup <= other.m_sup;
 }
 
 // Test whether the interval is outside of i2?
@@ -240,10 +240,10 @@ template <typename T>
 bool
 QcInterval<T>::is_outside_of(const QcInterval<T> & other) const
 {
-  if (m_empty || other.m_empty)
+  if (m_empty or other.m_empty)
     return false;
   else
-    return m_inf < other.m_inf && other.m_sup < m_sup;
+    return m_inf < other.m_inf and other.m_sup < m_sup;
 }
 
 // Intersection
@@ -280,11 +280,11 @@ operator&(const QcInterval<T> & interval1, const QcInterval<T> & interval2)
 template <typename T>
 QcInterval<T> &
 QcInterval<T>::operator|=(const QcInterval<T> & other) {
-  if (!(m_empty || other.m_empty)) {
+  if (!(m_empty or other.m_empty)) {
     m_inf = std::min(m_inf, other.m_inf);
     m_sup = std::max(m_sup, other.m_sup);
   }
-  else if (m_empty && !other.m_empty) {
+  else if (m_empty and !other.m_empty) {
     m_inf = other.m_inf;
     m_sup = other.m_sup;
   }
@@ -295,10 +295,10 @@ template <typename T>
 QcInterval<T>
 operator|(const QcInterval<T> & interval1, const QcInterval<T> & interval2)
 {
-  if (!(interval1.m_empty || interval2.m_empty))
+  if (!(interval1.m_empty or interval2.m_empty))
     return QcInterval<T>(std::min(interval1.m_inf, interval2.m_inf),
 			 std::max(interval1.m_sup, interval2.m_sup));
-  else if (interval1.m_empty && !interval2.m_empty)
+  else if (interval1.m_empty and !interval2.m_empty)
     return QcInterval<T>(*interval2);
   else
     return QcInterval<T>(*interval1);
@@ -341,13 +341,13 @@ QcInterval2D<T>::operator=(const QcInterval2D<T> & other)
 template <typename T>
 inline bool
 QcInterval2D<T>::is_empty() const {
-  return x.is_empty() || y.is_empty();
+  return m_x.is_empty() or m_y.is_empty();
 }
 
 template <typename T>
 bool
 QcInterval2D<T>::operator==(const QcInterval2D<T> & other) const {
-  return (m_x == other.m_x) && (m_y == other.m_y);
+  return (m_x == other.m_x) and (m_y == other.m_y);
 }
 
 template <typename T>
@@ -370,7 +370,7 @@ template <typename T>
 bool
 QcInterval2D<T>::contains(T x, T y) const
 {
-  return m_x.contains(x) && m_y.contains(y);
+  return m_x.contains(x) and m_y.contains(y);
 }
 
 // Test whether the interval intersects with i2?
@@ -378,7 +378,7 @@ template <typename T>
 bool
 QcInterval2D<T>::intersect(const QcInterval2D<T> & other) const
 {
-  return m_x.intersect(other.m_x) && m_y.intersect(other.m_y);
+  return m_x.intersect(other.m_x) and m_y.intersect(other.m_y);
 }
 
 // Test whether the interval is included in i1?
@@ -386,7 +386,7 @@ template <typename T>
 bool
 QcInterval2D<T>::is_included_in(const QcInterval2D<T> & other) const
 {
-  return m_x.is_included_in(other.m_x) && m_y.is_included_in(other.m_y);
+  return m_x.is_included_in(other.m_x) and m_y.is_included_in(other.m_y);
 }
 
 // Test whether the interval is outside of i2?
@@ -394,7 +394,7 @@ template <typename T>
 bool
 QcInterval2D<T>::is_outside_of(const QcInterval2D<T> & other) const
 {
-  return m_x.is_outside_of(other.m_x) && m_y.is_outside_of(other.m_y);
+  return m_x.is_outside_of(other.m_x) and m_y.is_outside_of(other.m_y);
 }
 
 // Intersection
@@ -431,10 +431,10 @@ QcInterval2D<T>::operator|=(const QcInterval2D<T> & other)
 
 /*
   QcInterval2D<T> operator|(const QcInterval2D<T> & interval1, const QcInterval2D<T> & T interval2) {
-  if (!(interval1.is_empty() || interval2.is_empty()))
+  if (!(interval1.is_empty() or interval2.is_empty()))
   return QcInterval2D(interval1.m_x | interval2.m_x,
   interval1.m_y | interval2.m_y);
-  else if (interval1.empty() && !interval2.is_empty())
+  else if (interval1.empty() and !interval2.is_empty())
   return QcInterval<T>(*interval2);
   else
   return QcInterval<T>(*interval1);
