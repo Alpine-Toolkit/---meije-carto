@@ -38,7 +38,7 @@
 #include <QString>
 
 #include "qtcarto_global.h"
-#include "map/wmts/tile_spec.h"
+#include "wmts/tile_spec.h"
 
 /**************************************************************************************************/
 

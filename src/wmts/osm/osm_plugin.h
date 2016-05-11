@@ -28,46 +28,43 @@
 
 /**************************************************************************************************/
 
-#ifndef __OSM_WMTS_TILE_FETCHER_H__
-#define __OSM_WMTS_TILE_FETCHER_H__
+#ifndef __OSM_PLUGIN_H__
+#define __OSM_PLUGIN_H__
 
 /**************************************************************************************************/
 
-#include <QAuthenticator>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
+#include "wmts/wmts_plugin.h"
 
-#include "map/wmts/wmts_tile_fetcher.h"
+#include "wmts/osm/osm_wmts_tile_fetcher.h"
+
+#include <QObject>
+#include <QString>
 
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
 
-class QcOsmWmtsTileFetcher : public QcWmtsTileFetcher
+class QcOsmPlugin : public QcWmtsPlugin
 {
-  Q_OBJECT
-
 public:
-  QcOsmWmtsTileFetcher();
+  QcOsmPlugin();
+  ~QcOsmPlugin();
 
-  void set_user_agent(const QByteArray & user_agent) {
-    m_user_agent = user_agent;
+  QcOsmWmtsTileFetcher * tile_fetcher() {
+    return &m_tile_fetcher;
   }
 
-private:
-  QcWmtsReply * get_tile_image(const QcTileSpec & tile_spec);
+  // off-line cache : load tiles from a polygon
 
 private:
-  QNetworkAccessManager * m_network_manager;
-  QByteArray m_user_agent;
-  QString m_reply_format;
+  QcOsmWmtsTileFetcher m_tile_fetcher;
 };
 
 // QC_END_NAMESPACE
 
 /**************************************************************************************************/
 
-#endif /* __OSM_WMTS_TILE_FETCHER_H__ */
+#endif /* __OSM_PLUGIN_H__ */
 
 /***************************************************************************************************
  *

@@ -36,8 +36,9 @@
 
 /**************************************************************************************************/
 
-#include "declarative_map_item.h"
 #include "map_gesture_area.h"
+
+#include "declarative_map_item.h"
 
 #include <cmath>
 

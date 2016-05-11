@@ -28,54 +28,46 @@
 
 /**************************************************************************************************/
 
-#ifndef __GEOPORTAIL_WMTS_TILE_FETCHER_H__
-#define __GEOPORTAIL_WMTS_TILE_FETCHER_H__
+#ifndef __GEOPORTAIL_WMTS_REPLY_H__
+#define __GEOPORTAIL_WMTS_REPLY_H__
 
 /**************************************************************************************************/
 
-#include <QAuthenticator>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
+#include "wmts/wmts_reply.h"
 
-#include "map/geoportail/geoportail_license.h"
-// #include "map/geoportail/geoportail_plugin.h" // Fixme: circular
-#include "map/wmts/wmts_tile_fetcher.h"
+#include <QNetworkReply>
+#include <QPointer>
 
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
 
-class QcGeoportailPlugin; // Fixme: circular
-
-class QcGeoportailWmtsTileFetcher : public QcWmtsTileFetcher
+class QcGeoportailWmtsReply : public QcWmtsReply
 {
   Q_OBJECT
 
 public:
-  QcGeoportailWmtsTileFetcher(const QcGeoportailPlugin * plugin);
+  explicit QcGeoportailWmtsReply(QNetworkReply * reply, const QcTileSpec & spec, const QString & format);
+  ~QcGeoportailWmtsReply();
 
-  // const QcGeoportailWmtsLicense & license() const { return m_plugin->license(); }
+  void abort();
 
-  void set_user_agent(const QByteArray & user_agent) { m_user_agent = user_agent; }
+  QNetworkReply * network_reply() const;
 
-private Q_SLOTS:
-  void on_authentication_request_slot(QNetworkReply * reply, QAuthenticator * authenticator);
+private slots:
+  void network_reply_finished();
+  void network_reply_error(QNetworkReply::NetworkError error);
 
 private:
-  QcWmtsReply * get_tile_image(const QcTileSpec & tile_spec);
-
-private:
-  QNetworkAccessManager * m_network_manager;
-  const QcGeoportailPlugin * m_plugin;
-  QByteArray m_user_agent;
-  QString m_reply_format;
+  QPointer<QNetworkReply> m_reply;
+  QString m_format;
 };
 
 // QC_END_NAMESPACE
 
 /**************************************************************************************************/
 
-#endif /* __GEOPORTAIL_WMTS_TILE_FETCHER_H__ */
+#endif /* __GEOPORTAIL_WMTS_REPLY_H__ */
 
 /***************************************************************************************************
  *

@@ -27,7 +27,8 @@
 /**************************************************************************************************/
 
 #include "map_view.h"
-#include "map/wmts/tile_spec.h"
+
+#include "wmts/tile_spec.h"
 
 #include <QtDebug>
 

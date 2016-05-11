@@ -80,8 +80,8 @@
 #include <QTimer>
 
 #include "qtcarto_global.h"
-#include "map/wmts/tile_spec.h"
-#include "map/wmts/wmts_reply.h"
+#include "wmts/tile_spec.h"
+#include "wmts/wmts_reply.h"
 
 /**************************************************************************************************/
 

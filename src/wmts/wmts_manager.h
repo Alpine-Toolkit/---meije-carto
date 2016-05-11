@@ -75,10 +75,10 @@
 #include <QSet>
 #include <QSize>
 
+#include "cache/file_tile_cache.h"
 #include "qtcarto_global.h"
-#include "map/cache/file_tile_cache.h"
+#include "wmts/wmts_tile_fetcher.h"
 // #include "map_view.h" // circular
-#include "map/wmts/wmts_tile_fetcher.h"
 
 // QC_BEGIN_NAMESPACE
 

@@ -28,46 +28,82 @@
 
 /**************************************************************************************************/
 
-#ifndef __OSM_WMTS_REPLY_H__
-#define __OSM_WMTS_REPLY_H__
+#ifndef __WMTS_PLUGIN_H__
+#define __WMTS_PLUGIN_H__
 
 /**************************************************************************************************/
 
-#include <QNetworkReply>
-#include <QPointer>
+#include <QObject>
+#include <QString>
 
-#include "map/wmts/wmts_reply.h"
+#include "wmts/tile_matrix_set.h"
+#include "wmts/wmts_manager.h"
 
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
 
-class QcOsmWmtsReply : public QcWmtsReply
+class QcWmtsPluginMap;
+
+/**************************************************************************************************/
+
+class QcWmtsPlugin
 {
-  Q_OBJECT
-
 public:
-  explicit QcOsmWmtsReply(QNetworkReply * reply, const QcTileSpec & spec, const QString & format);
-  ~QcOsmWmtsReply();
+  QcWmtsPlugin(const QString & name, size_t number_of_levels, size_t tile_size);
+  ~QcWmtsPlugin();
 
-  void abort();
+  const QString & name() { return m_name; }
+  QcTileMatrixSet & tile_matrix_set() { return m_tile_matrix_set; }
+  QcWmtsManager * wmts_manager() { return &m_wmts_manager; }  // Fixme: & or *
 
-  QNetworkReply * network_reply() const;
+  bool is_valid_map_id(int map_id) const { return true; }
 
-private slots:
-  void network_reply_finished();
-  void network_reply_error(QNetworkReply::NetworkError error);
+  QcWmtsPluginMap plugin_map(int map_id); // const
+
+  QcTileSpec create_tile_spec(int map_id, int level, int x, int y) const {
+    return QcTileSpec(m_name, map_id, level, x, y);
+  }
 
 private:
-  QPointer<QNetworkReply> m_reply;
-  QString m_format;
+  QString m_name;
+  QcTileMatrixSet m_tile_matrix_set;
+  QcWmtsManager m_wmts_manager;
 };
+
+/**************************************************************************************************/
+
+class QcWmtsPluginMap
+{
+public:
+  // Fixme: const plugin
+  QcWmtsPluginMap(QcWmtsPlugin * plugin, int map_id);
+  QcWmtsPluginMap(const QcWmtsPluginMap & other);
+  ~QcWmtsPluginMap();
+
+  QcWmtsPluginMap & operator=(const QcWmtsPluginMap & other);
+
+  QcWmtsPlugin * plugin() { return m_plugin; }
+  int map_id() const { return m_map_id; }
+
+  QString name() const;
+
+  QcTileSpec create_tile_spec(int level, int x, int y) const {
+    return m_plugin->create_tile_spec(m_map_id, level, x, y);
+  }
+
+private:
+  QcWmtsPlugin * m_plugin;
+  int m_map_id;
+};
+
+/**************************************************************************************************/
 
 // QC_END_NAMESPACE
 
 /**************************************************************************************************/
 
-#endif /* __OSM_WMTS_REPLY_H__ */
+#endif /* __WMTS_PLUGIN_H__ */
 
 /***************************************************************************************************
  *

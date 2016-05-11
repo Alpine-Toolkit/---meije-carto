@@ -37,9 +37,9 @@
 #include <QList>
 #include <QHash>
 
-#include "map/geoportail/geoportail_license.h"
-#include "map/geoportail/geoportail_wmts_tile_fetcher.h" // Fixme: circular
-#include "map/wmts/wmts_plugin.h"
+#include "wmts/geoportail/geoportail_license.h"
+#include "wmts/geoportail/geoportail_wmts_tile_fetcher.h" // Fixme: circular
+#include "wmts/wmts_plugin.h"
 
 /**************************************************************************************************/
 

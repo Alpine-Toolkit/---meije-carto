@@ -34,7 +34,7 @@
 
 /**************************************************************************************************/
 
-#include "map/shaders/location_circle_shader.h"
+#include "shaders/location_circle_shader.h"
 
 const char *
 QcLocationCircleMaterialShader::vertexShader() const

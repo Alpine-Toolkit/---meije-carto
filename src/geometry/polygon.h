@@ -38,10 +38,10 @@
 #include <QVector>
 #include <QList>
 
-#include "qtcarto_global.h"
 #include "geometry/path.h"
-#include "map/wmts/tile_matrix_set.h" // Fixme: outside, for QcTileMatrixIndex
 #include "math/qc_math.h"
+#include "qtcarto_global.h"
+#include "wmts/tile_matrix_set.h" // Fixme: outside, for QcTileMatrixIndex
 
 /**************************************************************************************************/
 

@@ -28,46 +28,74 @@
 
 /**************************************************************************************************/
 
-#ifndef __GEOPORTAIL_WMTS_REPLY_H__
-#define __GEOPORTAIL_WMTS_REPLY_H__
+#ifndef __TILE_SPEC_H__
+#define __TILE_SPEC_H__
 
 /**************************************************************************************************/
 
-#include <QNetworkReply>
-#include <QPointer>
+#include <QSharedDataPointer>
+#include <QString>
+#include <QtCore/QMetaType>
 
-#include "map/wmts/wmts_reply.h"
+#include "qtcarto_global.h"
+#include "wmts/tile_matrix_index.h"
 
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
 
-class QcGeoportailWmtsReply : public QcWmtsReply
+class QC_EXPORT QcTileSpec : public QcTileMatrixIndex
 {
-  Q_OBJECT
+ public:
+  QcTileSpec();
+  QcTileSpec(const QcTileSpec & other);
+  QcTileSpec(const QString & plugin, int map_id, int level, int x, int y);
+  ~QcTileSpec();
 
-public:
-  explicit QcGeoportailWmtsReply(QNetworkReply * reply, const QcTileSpec & spec, const QString & format);
-  ~QcGeoportailWmtsReply();
+  QcTileSpec & operator=(const QcTileSpec & other);
 
-  void abort();
+  inline const QString & plugin() const {
+    return m_plugin;
+  }
+  void set_plugin(const QString & plugin) {
+    m_plugin = plugin;
+  }
 
-  QNetworkReply * network_reply() const;
+  int level() const {
+    return m_level;
+  }
+  inline void set_level(int level) {
+    m_level = level;
+  }
 
-private slots:
-  void network_reply_finished();
-  void network_reply_error(QNetworkReply::NetworkError error);
+  int map_id() const {
+    return m_map_id;
+  }
+  void set_map_id(int map_id) {
+    m_map_id = map_id;
+  }
 
-private:
-  QPointer<QNetworkReply> m_reply;
-  QString m_format;
+  bool operator==(const QcTileSpec & rhs) const;
+  // bool operator<(const QcTileSpec & rhs) const;
+
+ private:
+  QString m_plugin;
+  int m_map_id;
+  int m_level;
 };
+
+QC_EXPORT unsigned int qHash(const QcTileSpec & tile_spec);
+
+QC_EXPORT QDebug operator<<(QDebug, const QcTileSpec & tile_spec);
+
+typedef QSet<QcTileSpec> QcTileSpecSet;
 
 // QC_END_NAMESPACE
 
-/**************************************************************************************************/
+Q_DECLARE_METATYPE(QcTileSpec)
+// Q_DECLARE_METATYPE(QcTileSpecSet)
 
-#endif /* __GEOPORTAIL_WMTS_REPLY_H__ */
+#endif /* __TILE_SPEC_H__ */
 
 /***************************************************************************************************
  *

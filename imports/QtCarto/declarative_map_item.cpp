@@ -26,6 +26,13 @@
 
 /**************************************************************************************************/
 
+#include "declarative_map_item.h"
+
+#include "earth.h"
+#include "coordinate/geo_coordinate.h"
+#include "wmts/geoportail/geoportail_plugin.h"
+#include "wmts/osm/osm_plugin.h"
+
 #include <cmath>
 
 #include <QDir>
@@ -37,15 +44,6 @@
 
 // Fixme: Use QtQuick Private API !!!
 #include <private/qquickwindow_p.h>
-
-/**************************************************************************************************/
-
-#include "declarative_map_item.h"
-
-#include "map/earth.h"
-#include "map/geo_coordinate.h"
-#include "map/geoportail/geoportail_plugin.h"
-#include "map/osm/osm_plugin.h"
 
 /**************************************************************************************************/
 

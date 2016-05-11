@@ -36,10 +36,10 @@
 #include <QObject>
 #include <QSize>
 
-#include "qtcarto_global.h"
+#include "coordinate/geo_coordinate.h"
 #include "geometry/polygon.h"
-#include "map/geo_coordinate.h"
 #include "math/interval.h"
+#include "qtcarto_global.h"
 
 /**************************************************************************************************/
 

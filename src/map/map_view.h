@@ -36,12 +36,12 @@
 #include <QList>
 #include <QObject>
 
-#include "qtcarto_global.h"
-#include "map/scene/map_scene.h"
 #include "map/viewport.h"
-#include "map/wmts/tile_spec.h"
-#include "map/wmts/wmts_plugin.h" // circular
-#include "map/wmts/wmts_request_manager.h" // circular
+#include "qtcarto_global.h"
+#include "scene/map_scene.h"
+#include "wmts/tile_spec.h"
+#include "wmts/wmts_plugin.h" // circular
+#include "wmts/wmts_request_manager.h" // circular
 
 /**************************************************************************************************/
 

@@ -77,10 +77,10 @@
 #include <QSet>
 #include <QTimer>
 
+#include "cache/cache3q.h"
+#include "cache/offline_cache.h"
 #include "qtcarto_global.h"
-#include "map/cache/cache3q.h"
-#include "map/cache/offline_cache.h"
-#include "map/wmts/tile_spec.h"
+#include "wmts/tile_spec.h"
 
 /**************************************************************************************************/
 

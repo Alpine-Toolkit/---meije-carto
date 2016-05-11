@@ -77,9 +77,9 @@
 #include <QSize>
 
 #include "qtcarto_global.h"
-#include "map/cache/file_tile_cache.h"
-#include "map/wmts/tile_spec.h"
-#include "map/wmts/wmts_manager.h"
+#include "cache/file_tile_cache.h"
+#include "wmts/tile_spec.h"
+#include "wmts/wmts_manager.h"
 
 /**************************************************************************************************/
 

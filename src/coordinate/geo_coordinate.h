@@ -40,10 +40,10 @@
 #include <QString>
 #include <QtCore/QMetaType>
 
-#include "qtcarto_global.h"
+#include "earth.h"
 #include "geometry/vector.h"
-#include "map/earth.h"
 #include "math/interval.h"
+#include "qtcarto_global.h"
 
 /**************************************************************************************************/
 

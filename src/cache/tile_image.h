@@ -28,42 +28,31 @@
 
 /**************************************************************************************************/
 
-#ifndef __OSM_PLUGIN_H__
-#define __OSM_PLUGIN_H__
+#ifndef __TILE_IMAGE_H__
+#define __TILE_IMAGE_H__
 
 /**************************************************************************************************/
 
-#include "osm_wmts_tile_fetcher.h"
-#include "map/wmts/wmts_plugin.h"
-
-#include <QObject>
 #include <QString>
+#include <QByteArray>
+
+#include "wmts/tile_spec.h"
 
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
 
-class QcOsmPlugin : public QcWmtsPlugin
-{
-public:
-  QcOsmPlugin();
-  ~QcOsmPlugin();
+QString tile_spec_to_filename(const QcTileSpec & tile_spec, const QString & format, const QString & directory);
+QcTileSpec filename_to_tile_spec(const QString & filename);
 
-  QcOsmWmtsTileFetcher * tile_fetcher() {
-    return &m_tile_fetcher;
-  }
-
-  // off-line cache : load tiles from a polygon
-
-private:
-  QcOsmWmtsTileFetcher m_tile_fetcher;
-};
+void write_tile_image(const QString & filename, const QByteArray & bytes);
+QByteArray read_tile_image(const QString & filename);
 
 // QC_END_NAMESPACE
 
 /**************************************************************************************************/
 
-#endif /* __OSM_PLUGIN_H__ */
+#endif /* __TILE_IMAGE_H__ */
 
 /***************************************************************************************************
  *

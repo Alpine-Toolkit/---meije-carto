@@ -37,7 +37,7 @@
 #include <QString>
 #include <QList>
 
-#include "map/geo_coordinate.h"
+#include "coordinate/geo_coordinate.h"
 
 /**************************************************************************************************/
 

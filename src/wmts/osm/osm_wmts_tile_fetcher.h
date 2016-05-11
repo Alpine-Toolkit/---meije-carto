@@ -28,74 +28,46 @@
 
 /**************************************************************************************************/
 
-#ifndef __TILE_SPEC_H__
-#define __TILE_SPEC_H__
+#ifndef __OSM_WMTS_TILE_FETCHER_H__
+#define __OSM_WMTS_TILE_FETCHER_H__
 
 /**************************************************************************************************/
 
-#include <QSharedDataPointer>
-#include <QString>
-#include <QtCore/QMetaType>
+#include "wmts/wmts_tile_fetcher.h"
 
-#include "qtcarto_global.h"
-#include "map/wmts/tile_matrix_index.h"
+#include <QAuthenticator>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
 
-class QC_EXPORT QcTileSpec : public QcTileMatrixIndex
+class QcOsmWmtsTileFetcher : public QcWmtsTileFetcher
 {
- public:
-  QcTileSpec();
-  QcTileSpec(const QcTileSpec & other);
-  QcTileSpec(const QString & plugin, int map_id, int level, int x, int y);
-  ~QcTileSpec();
+  Q_OBJECT
 
-  QcTileSpec & operator=(const QcTileSpec & other);
+public:
+  QcOsmWmtsTileFetcher();
 
-  inline const QString & plugin() const {
-    return m_plugin;
-  }
-  void set_plugin(const QString & plugin) {
-    m_plugin = plugin;
+  void set_user_agent(const QByteArray & user_agent) {
+    m_user_agent = user_agent;
   }
 
-  int level() const {
-    return m_level;
-  }
-  inline void set_level(int level) {
-    m_level = level;
-  }
+private:
+  QcWmtsReply * get_tile_image(const QcTileSpec & tile_spec);
 
-  int map_id() const {
-    return m_map_id;
-  }
-  void set_map_id(int map_id) {
-    m_map_id = map_id;
-  }
-
-  bool operator==(const QcTileSpec & rhs) const;
-  // bool operator<(const QcTileSpec & rhs) const;
-
- private:
-  QString m_plugin;
-  int m_map_id;
-  int m_level;
+private:
+  QNetworkAccessManager * m_network_manager;
+  QByteArray m_user_agent;
+  QString m_reply_format;
 };
-
-QC_EXPORT unsigned int qHash(const QcTileSpec & tile_spec);
-
-QC_EXPORT QDebug operator<<(QDebug, const QcTileSpec & tile_spec);
-
-typedef QSet<QcTileSpec> QcTileSpecSet;
 
 // QC_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QcTileSpec)
-// Q_DECLARE_METATYPE(QcTileSpecSet)
+/**************************************************************************************************/
 
-#endif /* __TILE_SPEC_H__ */
+#endif /* __OSM_WMTS_TILE_FETCHER_H__ */
 
 /***************************************************************************************************
  *

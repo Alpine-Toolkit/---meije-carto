@@ -39,10 +39,11 @@
 
 /**************************************************************************************************/
 
-#include <QtDebug>
-
-#include "map/geo_coordinate.h"
 #include "geo_coordinate_animation.h"
+
+#include "coordinate/geo_coordinate.h"
+
+#include <QtDebug>
 
 /**************************************************************************************************/
 

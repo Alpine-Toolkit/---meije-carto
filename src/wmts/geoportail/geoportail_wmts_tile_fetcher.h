@@ -28,31 +28,55 @@
 
 /**************************************************************************************************/
 
-#ifndef __TILE_IMAGE_H__
-#define __TILE_IMAGE_H__
+#ifndef __GEOPORTAIL_WMTS_TILE_FETCHER_H__
+#define __GEOPORTAIL_WMTS_TILE_FETCHER_H__
 
 /**************************************************************************************************/
 
-#include <QString>
-#include <QByteArray>
+#include "wmts/wmts_tile_fetcher.h"
 
-#include "map/wmts/tile_spec.h"
+#include <QAuthenticator>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+
+#include "wmts/geoportail/geoportail_license.h"
+// #include "map/geoportail/geoportail_plugin.h" // Fixme: circular
 
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
 
-QString tile_spec_to_filename(const QcTileSpec & tile_spec, const QString & format, const QString & directory);
-QcTileSpec filename_to_tile_spec(const QString & filename);
+class QcGeoportailPlugin; // Fixme: circular
 
-void write_tile_image(const QString & filename, const QByteArray & bytes);
-QByteArray read_tile_image(const QString & filename);
+class QcGeoportailWmtsTileFetcher : public QcWmtsTileFetcher
+{
+  Q_OBJECT
+
+public:
+  QcGeoportailWmtsTileFetcher(const QcGeoportailPlugin * plugin);
+
+  // const QcGeoportailWmtsLicense & license() const { return m_plugin->license(); }
+
+  void set_user_agent(const QByteArray & user_agent) { m_user_agent = user_agent; }
+
+private Q_SLOTS:
+  void on_authentication_request_slot(QNetworkReply * reply, QAuthenticator * authenticator);
+
+private:
+  QcWmtsReply * get_tile_image(const QcTileSpec & tile_spec);
+
+private:
+  QNetworkAccessManager * m_network_manager;
+  const QcGeoportailPlugin * m_plugin;
+  QByteArray m_user_agent;
+  QString m_reply_format;
+};
 
 // QC_END_NAMESPACE
 
 /**************************************************************************************************/
 
-#endif /* __TILE_IMAGE_H__ */
+#endif /* __GEOPORTAIL_WMTS_TILE_FETCHER_H__ */
 
 /***************************************************************************************************
  *
