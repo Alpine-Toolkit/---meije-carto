@@ -43,10 +43,12 @@
 
 // QC_BEGIN_NAMESPACE
 
-class QcWmtsPlugin : public QObject
-{
-  Q_OBJECT
+class QcWmtsPluginMap;
 
+/**************************************************************************************************/
+
+class QcWmtsPlugin
+{
 public:
   QcWmtsPlugin(const QString & name, size_t number_of_levels, size_t tile_size);
   ~QcWmtsPlugin();
@@ -54,6 +56,10 @@ public:
   const QString & name() { return m_name; }
   QcTileMatrixSet & tile_matrix_set() { return m_tile_matrix_set; }
   QcWmtsManager * wmts_manager() { return &m_wmts_manager; }  // Fixme: & or *
+
+  bool is_valid_map_id(int map_id) const { return true; }
+
+  QcWmtsPluginMap plugin_map(int map_id); // const
 
   QcTileSpec create_tile_spec(int map_id, int level, int x, int y) const {
     return QcTileSpec(m_name, map_id, level, x, y);
@@ -64,6 +70,34 @@ private:
   QcTileMatrixSet m_tile_matrix_set;
   QcWmtsManager m_wmts_manager;
 };
+
+/**************************************************************************************************/
+
+class QcWmtsPluginMap
+{
+public:
+  // Fixme: const plugin
+  QcWmtsPluginMap(QcWmtsPlugin * plugin, int map_id);
+  QcWmtsPluginMap(const QcWmtsPluginMap & other);
+  ~QcWmtsPluginMap();
+
+  QcWmtsPluginMap & operator=(const QcWmtsPluginMap & other);
+
+  QcWmtsPlugin * plugin() { return m_plugin; }
+  int map_id() const { return m_map_id; }
+
+  QString name() const;
+
+  QcTileSpec create_tile_spec(int level, int x, int y) const {
+    return m_plugin->create_tile_spec(m_map_id, level, x, y);
+  }
+
+private:
+  QcWmtsPlugin * m_plugin;
+  int m_map_id;
+};
+
+/**************************************************************************************************/
 
 // QC_END_NAMESPACE
 

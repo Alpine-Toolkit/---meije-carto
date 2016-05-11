@@ -45,8 +45,6 @@
 
 class QcOsmPlugin : public QcWmtsPlugin
 {
-  Q_OBJECT
-
 public:
   QcOsmPlugin();
   ~QcOsmPlugin();

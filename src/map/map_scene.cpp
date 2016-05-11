@@ -303,11 +303,11 @@ QcMapRootNode::update_clip_rect()
 
 /**************************************************************************************************/
 
-QcMapLayerScene::QcMapLayerScene(const QString & name, const QcViewport * viewport, const QcTileMatrixSet & tile_matrix_set, QObject * parent)
+QcMapLayerScene::QcMapLayerScene(QcWmtsPluginMap plugin_map, const QcViewport * viewport, QObject * parent)
   : QObject(parent),
-    m_name(name),
+    m_name(plugin_map.name()),
     m_viewport(viewport),
-    m_tile_matrix_set(tile_matrix_set)
+    m_tile_matrix_set(plugin_map.plugin()->tile_matrix_set())
 {
   qInfo();
 }
@@ -449,15 +449,15 @@ QcMapScene::~QcMapScene()
 {}
 
 QcMapLayerScene *
-QcMapScene::add_layer(const QString & name, const QcTileMatrixSet & tile_matrix_set)
+QcMapScene::add_layer(QcWmtsPluginMap plugin_map)
 {
-  QcMapLayerScene * layer = new QcMapLayerScene(name, m_viewport, tile_matrix_set);
+  QcMapLayerScene * layer = new QcMapLayerScene(plugin_map, m_viewport);
   m_layers << layer;
   return layer;
 }
 
 void
-QcMapScene::remove_layer()
+QcMapScene::remove_layer(QcWmtsPluginMap plugin_map)
 {
   // Fixme:
 }

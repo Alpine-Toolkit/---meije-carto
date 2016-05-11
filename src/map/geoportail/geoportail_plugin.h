@@ -84,8 +84,6 @@ private:
 
 class QcGeoportailPlugin : public QcWmtsPlugin
 {
-  Q_OBJECT
-
 public:
   QcGeoportailPlugin(const QcGeoportailWmtsLicense & license);
   ~QcGeoportailPlugin();

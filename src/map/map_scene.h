@@ -54,6 +54,7 @@
 #include "map/tile_matrix_set.h"
 #include "map/tile_spec.h"
 #include "map/viewport.h"
+#include "map/wmts_plugin.h"
 
 /**************************************************************************************************/
 
@@ -68,7 +69,7 @@ class QcMapLayerRootNode;
 class QcMapLayerScene : public QObject
 {
 public:
-  QcMapLayerScene(const QString & name, const QcViewport * viewport, const QcTileMatrixSet & tile_matrix_set, QObject * parent = nullptr);
+  QcMapLayerScene(QcWmtsPluginMap plugin_map, const QcViewport * viewport, QObject * parent = nullptr);
   ~QcMapLayerScene();
 
   const QString name() const { return m_name; }
@@ -98,8 +99,8 @@ public:
 
 private:
   QString m_name;
-  const QcViewport * m_viewport; // Fixme: &
   const QcTileMatrixSet & m_tile_matrix_set;
+  const QcViewport * m_viewport; // Fixme: &
   QcTileSpecSet m_visible_tiles;
   QcTileSpecSet m_west_visible_tiles;
   QcTileSpecSet m_middle_visible_tiles;
@@ -116,8 +117,8 @@ public:
 
   QSGNode * update_scene_graph(QSGNode * old_node, QQuickWindow * window);
 
-  QcMapLayerScene * add_layer(const QString & name, const QcTileMatrixSet & tile_matrix_set);
-  void remove_layer();
+  QcMapLayerScene * add_layer(QcWmtsPluginMap plugin_map);
+  void remove_layer(QcWmtsPluginMap plugin_map);
 
 private:
   float width() { return m_viewport->width(); }

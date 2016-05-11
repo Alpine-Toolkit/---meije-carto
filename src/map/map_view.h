@@ -60,11 +60,11 @@ class QC_EXPORT QcMapViewLayer : public QObject
   Q_OBJECT
 
  public:
-  QcMapViewLayer(QcMapView * map_view, QcWmtsPlugin * plugin, int map_id);
+  QcMapViewLayer(QcMapView * map_view, QcWmtsPluginMap plugin_map);
   ~QcMapViewLayer();
 
-  QcWmtsPlugin * plugin() { return m_plugin; }
-  int map_id() const { return m_map_id; }
+  QcWmtsPlugin * plugin() { return m_plugin_map.plugin(); }
+  int map_id() const { return m_plugin_map.map_id(); }
   QcWmtsRequestManager * request_manager() { return m_request_manager; };
 
   void update_tile(const QcTileSpec & tile_spec);
@@ -77,12 +77,10 @@ class QC_EXPORT QcMapViewLayer : public QObject
   QcTileSpecSet intersec_polygon_with_grid(const QcPolygon & polygon, double tile_length_m, int zoom_level);
 
  private:
+  QcWmtsPluginMap m_plugin_map;
   QcMapView * m_map_view;
   QcViewport * m_viewport;
   QcMapLayerScene * m_map_scene;
-
-  QcWmtsPlugin * m_plugin;
-  int m_map_id;
 
   QPointer<QcWmtsManager> m_wmts_manager; // Fixme: why QPointer !
   QcWmtsRequestManager * m_request_manager;
@@ -93,7 +91,7 @@ class QC_EXPORT QcMapViewLayer : public QObject
   QcTileSpecSet m_visible_tiles;
 };
 
-typedef QSet<QcMapViewLayer *> QcMapViewLayerPointerSet;
+// typedef QSet<QcMapViewLayer *> QcMapViewLayerSet;
 
 /**************************************************************************************************/
 
@@ -108,10 +106,8 @@ class QC_EXPORT QcMapView : public QObject
   QcViewport * viewport() { return m_viewport; };
   QcMapScene * map_scene() { return m_map_scene; };
 
-  void add_layer(QcWmtsPlugin * plugin, int map_id);
-  void remove_layer(QcWmtsPlugin * plugin, int map_id);
-
-  void update_tile(const QcTileSpec & tile_spec);
+  void add_layer(QcWmtsPluginMap plugin_map);
+  void remove_layer(QcWmtsPluginMap plugin_map);
 
   QSGNode * update_scene_graph(QSGNode *old_node, QQuickWindow *window) {
     return m_map_scene->update_scene_graph(old_node, window);
@@ -126,7 +122,6 @@ class QC_EXPORT QcMapView : public QObject
  private:
   QcViewport * m_viewport;
   QcMapScene * m_map_scene;
-  // QHash<QString, QcMapViewLayer *> m_layers;
   QList<QcMapViewLayer *> m_layers;
 };
 

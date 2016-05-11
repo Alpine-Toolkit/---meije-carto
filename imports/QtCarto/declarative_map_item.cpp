@@ -83,11 +83,11 @@ QcMapItem::QcMapItem(QQuickItem * parent)
   QcGeoportailWmtsLicense geoportail_license(json_path);
   m_plugin = new QcGeoportailPlugin(geoportail_license);
   int map_id = 0;
-  m_map_view->add_layer(m_plugin, map_id);
+  m_map_view->add_layer(m_plugin->plugin_map(map_id));
 
   // QcOsmPlugin * m_plugin2 = new QcOsmPlugin();
   map_id = 2;
-  m_map_view->add_layer(m_plugin, map_id);
+  m_map_view->add_layer(m_plugin->plugin_map(map_id));
 
   // Fixme: remove
   // Set default viewport center and zoom level

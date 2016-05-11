@@ -35,18 +35,16 @@
 
 // QC_BEGIN_NAMESPACE
 
-QcMapViewLayer::QcMapViewLayer(QcMapView * map_view, QcWmtsPlugin * plugin, int map_id)
+QcMapViewLayer::QcMapViewLayer(QcMapView * map_view, QcWmtsPluginMap plugin_map)
   : QObject(),
     m_map_view(map_view),
     m_viewport(map_view->viewport()),
     m_map_scene(nullptr),
-    m_plugin(plugin),
-    m_map_id(map_id),
-    m_wmts_manager(plugin->wmts_manager()),
+    m_plugin_map(plugin_map),
+    m_wmts_manager(plugin()->wmts_manager()),
     m_request_manager(nullptr) // initialised in ctor
 {
-  QString layer_name = plugin->name() + '/' + QString::number(map_id);
-  m_map_scene = map_view->map_scene()->add_layer(layer_name, m_plugin->tile_matrix_set());
+  m_map_scene = map_view->map_scene()->add_layer(m_plugin_map);
   m_request_manager = new QcWmtsRequestManager(this, m_wmts_manager);
 }
 
@@ -80,7 +78,7 @@ QcMapViewLayer::intersec_polygon_with_grid(const QcPolygon & polygon, double til
     size_t y = run.y();
     qInfo() << "Run " << run.y() << " [" << run_interval.inf() << ", " << run_interval.sup() << "]";
     for (int x = run_interval.inf(); x <= run_interval.sup(); x++)
-      visible_tiles.insert(m_plugin->create_tile_spec(m_map_id, zoom_level, x, y));
+      visible_tiles.insert(m_plugin_map.create_tile_spec(zoom_level, x, y));
   }
   return visible_tiles;
 }
@@ -93,7 +91,7 @@ QcMapViewLayer::update_scene()
   // Compute visible tile set in viewport
 
   // Fixme: Done in map scene !!!
-  QcTileMatrixSet tile_matrix_set = m_plugin->tile_matrix_set();
+  QcTileMatrixSet tile_matrix_set = plugin()->tile_matrix_set();
   int zoom_level = m_viewport->zoom_level();
   const QcTileMatrix & tile_matrix = tile_matrix_set[zoom_level];
   double tile_length_m = tile_matrix.tile_length_m();
@@ -183,9 +181,9 @@ QcMapView::~QcMapView()
 }
 
 void
-QcMapView::add_layer(QcWmtsPlugin * plugin, int map_id)
+QcMapView::add_layer(QcWmtsPluginMap plugin_map)
 {
-  QcMapViewLayer * layer = new QcMapViewLayer(this, plugin, map_id);
+  QcMapViewLayer * layer = new QcMapViewLayer(this, plugin_map);
   m_layers << layer;
   // Fixme:
   //   use signal to connect update_scene ?
@@ -196,7 +194,7 @@ QcMapView::add_layer(QcWmtsPlugin * plugin, int map_id)
 }
 
 void
-QcMapView::remove_layer(QcWmtsPlugin * plugin, int map_id)
+QcMapView::remove_layer(QcWmtsPluginMap plugin_map)
 {
   // Fixme:
 }

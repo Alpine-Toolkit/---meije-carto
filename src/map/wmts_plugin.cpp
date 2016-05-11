@@ -39,6 +39,47 @@ QcWmtsPlugin::QcWmtsPlugin(const QString & name, size_t number_of_levels, size_t
 QcWmtsPlugin::~QcWmtsPlugin()
 {}
 
+QcWmtsPluginMap
+QcWmtsPlugin::plugin_map(int map_id) // const
+{
+  if (is_valid_map_id(map_id))
+    return QcWmtsPluginMap(this, map_id);
+  else
+    throw std::invalid_argument("invalid map id");
+}
+
+/**************************************************************************************************/
+
+QcWmtsPluginMap::QcWmtsPluginMap(QcWmtsPlugin * plugin, int map_id)
+  : m_plugin(plugin),
+    m_map_id(map_id)
+{}
+
+QcWmtsPluginMap::QcWmtsPluginMap(const QcWmtsPluginMap & other)
+  : m_plugin(other.m_plugin),
+    m_map_id(other.m_map_id)
+{}
+
+QcWmtsPluginMap::~QcWmtsPluginMap()
+{}
+
+QcWmtsPluginMap &
+QcWmtsPluginMap::operator=(const QcWmtsPluginMap & other)
+{
+  if (this != &other) {
+    m_plugin = other.m_plugin;
+    m_map_id = other.m_map_id;
+  }
+
+  return *this;
+}
+
+QString
+QcWmtsPluginMap::name() const
+{
+  return m_plugin->name() + '/' + QString::number(m_map_id);
+}
+
 /**************************************************************************************************/
 
 // #include "wmts_plugin.moc"
