@@ -202,6 +202,7 @@ QcMapView::remove_layer(QcWmtsPluginMap plugin_map)
     m_layers.removeOne(layer);
     layer->deleteLater();
     // Fixme: deconnect ?
+    m_map_scene->remove_layer(plugin_map);
   }
 }
 

@@ -50,6 +50,7 @@ set(qtcarto_files
   map/osm/osm_wmts_tile_fetcher.cpp
   map/scene/location_circle_material_shader.cpp
   map/scene/map_scene.cpp
+  map/scene/map_layer_scene.cpp
   map/viewport.cpp
   map/wmts/tile_matrix_index.cpp
   map/wmts/tile_matrix_set.cpp
