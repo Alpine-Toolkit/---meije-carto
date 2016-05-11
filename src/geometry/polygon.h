@@ -40,7 +40,7 @@
 
 #include "qtcarto_global.h"
 #include "geometry/path.h"
-#include "map/tile_matrix_set.h"
+#include "map/wmts/tile_matrix_set.h" // Fixme: outside, for QcTileMatrixIndex
 #include "math/qc_math.h"
 
 /**************************************************************************************************/

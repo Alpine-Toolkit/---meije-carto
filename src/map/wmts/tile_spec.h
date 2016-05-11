@@ -33,13 +33,12 @@
 
 /**************************************************************************************************/
 
-#include <QtCore/QMetaType>
-#include <QString>
-
 #include <QSharedDataPointer>
+#include <QString>
+#include <QtCore/QMetaType>
 
 #include "qtcarto_global.h"
-#include "map/tile_matrix_index.h"
+#include "map/wmts/tile_matrix_index.h"
 
 /**************************************************************************************************/
 

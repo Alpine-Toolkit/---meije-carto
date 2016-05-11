@@ -64,14 +64,6 @@
 
 /**************************************************************************************************/
 
-#include <QtCore/qlinkedlist.h>
-#include <QtCore/qhash.h>
-#include <QtCore/qcache.h>
-#include <QtCore/qsharedpointer.h>
-#include <QDebug>
-
-/**************************************************************************************************/
-
 // QC_BEGIN_NAMESPACE
 
 template <class Key, class T>

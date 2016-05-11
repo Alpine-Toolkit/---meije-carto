@@ -36,29 +36,29 @@ set(qtcarto_files
   geometry/path.cpp
   geometry/polygon.cpp
   geometry/vector.cpp
-  map/file_tile_cache.cpp
+  map/cache/file_tile_cache.cpp
+  map/cache/offline_cache.cpp
+  map/cache/tile_image.cpp
   map/geo_coordinate.cpp
   map/geoportail/geoportail_license.cpp
   map/geoportail/geoportail_plugin.cpp
   map/geoportail/geoportail_wmts_reply.cpp
   map/geoportail/geoportail_wmts_tile_fetcher.cpp
-  map/location_circle_material_shader.cpp
-  map/map_scene.cpp
   map/map_view.cpp
-  map/offline_cache.cpp
   map/osm/osm_plugin.cpp
   map/osm/osm_wmts_reply.cpp
   map/osm/osm_wmts_tile_fetcher.cpp
-  map/tile_image.cpp
-  map/tile_matrix_index.cpp
-  map/tile_matrix_set.cpp
-  map/tile_spec.cpp
+  map/scene/location_circle_material_shader.cpp
+  map/scene/map_scene.cpp
   map/viewport.cpp
-  map/wmts_manager.cpp
-  map/wmts_plugin.cpp
-  map/wmts_reply.cpp
-  map/wmts_request_manager.cpp
-  map/wmts_tile_fetcher.cpp
+  map/wmts/tile_matrix_index.cpp
+  map/wmts/tile_matrix_set.cpp
+  map/wmts/tile_spec.cpp
+  map/wmts/wmts_manager.cpp
+  map/wmts/wmts_plugin.cpp
+  map/wmts/wmts_reply.cpp
+  map/wmts/wmts_request_manager.cpp
+  map/wmts/wmts_tile_fetcher.cpp
   math/interval.cpp
   math/qc_math.cpp
   math/rational.cpp

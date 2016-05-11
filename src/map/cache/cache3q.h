@@ -69,10 +69,9 @@
 
 /**************************************************************************************************/
 
-#include <QtCore/qlinkedlist.h>
-#include <QtCore/qhash.h>
-#include <QtCore/qcache.h>
-#include <QtCore/qsharedpointer.h>
+#include <QHash>
+#include <QCache>
+#include <QSharedPointer>
 #include <QDebug>
 
 /**************************************************************************************************/

@@ -26,7 +26,7 @@
 
 /**************************************************************************************************/
 
-#include "map/tile_image.h"
+#include "tile_image.h"
 
 #include <QDir>
 #include <QFile>

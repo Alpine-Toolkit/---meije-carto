@@ -37,12 +37,11 @@
 #include <QObject>
 
 #include "qtcarto_global.h"
-#include "map/map_scene.h"
-#include "map/tile_spec.h"
-#include "map/wmts_manager.h" // circular
-#include "map/wmts_plugin.h" // circular
-#include "map/wmts_request_manager.h" // circular
+#include "map/scene/map_scene.h"
 #include "map/viewport.h"
+#include "map/wmts/tile_spec.h"
+#include "map/wmts/wmts_plugin.h" // circular
+#include "map/wmts/wmts_request_manager.h" // circular
 
 /**************************************************************************************************/
 
@@ -60,7 +59,7 @@ class QC_EXPORT QcMapViewLayer : public QObject
   Q_OBJECT
 
  public:
-  QcMapViewLayer(QcMapView * map_view, QcWmtsPluginMap plugin_map);
+  QcMapViewLayer(QcWmtsPluginMap plugin_map, QcViewport * m_viewport, QcMapLayerScene * layer_scene);
   ~QcMapViewLayer();
 
   QcWmtsPlugin * plugin() { return m_plugin_map.plugin(); }
@@ -78,11 +77,9 @@ class QC_EXPORT QcMapViewLayer : public QObject
 
  private:
   QcWmtsPluginMap m_plugin_map;
-  QcMapView * m_map_view;
   QcViewport * m_viewport;
-  QcMapLayerScene * m_map_scene;
+  QcMapLayerScene * m_layer_scene;
 
-  QPointer<QcWmtsManager> m_wmts_manager; // Fixme: why QPointer !
   QcWmtsRequestManager * m_request_manager;
 
   QcTileSpecSet m_west_visible_tiles;
@@ -104,7 +101,6 @@ class QC_EXPORT QcMapView : public QObject
   ~QcMapView();
 
   QcViewport * viewport() { return m_viewport; };
-  QcMapScene * map_scene() { return m_map_scene; };
 
   void add_layer(QcWmtsPluginMap plugin_map);
   void remove_layer(QcWmtsPluginMap plugin_map);
@@ -123,6 +119,7 @@ class QC_EXPORT QcMapView : public QObject
   QcViewport * m_viewport;
   QcMapScene * m_map_scene;
   QList<QcMapViewLayer *> m_layers;
+  QHash<QString, QcMapViewLayer *> m_layer_map;
 };
 
 // QC_END_NAMESPACE

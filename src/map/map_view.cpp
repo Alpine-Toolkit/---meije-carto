@@ -26,8 +26,8 @@
 
 /**************************************************************************************************/
 
-#include "map/map_view.h"
-#include "map/tile_spec.h"
+#include "map_view.h"
+#include "map/wmts/tile_spec.h"
 
 #include <QtDebug>
 
@@ -35,18 +35,13 @@
 
 // QC_BEGIN_NAMESPACE
 
-QcMapViewLayer::QcMapViewLayer(QcMapView * map_view, QcWmtsPluginMap plugin_map)
+QcMapViewLayer::QcMapViewLayer(QcWmtsPluginMap plugin_map, QcViewport * viewport, QcMapLayerScene * layer_scene)
   : QObject(),
-    m_map_view(map_view),
-    m_viewport(map_view->viewport()),
-    m_map_scene(nullptr),
     m_plugin_map(plugin_map),
-    m_wmts_manager(plugin()->wmts_manager()),
-    m_request_manager(nullptr) // initialised in ctor
-{
-  m_map_scene = map_view->map_scene()->add_layer(m_plugin_map);
-  m_request_manager = new QcWmtsRequestManager(this, m_wmts_manager);
-}
+    m_viewport(viewport),
+    m_layer_scene(layer_scene),
+    m_request_manager(new QcWmtsRequestManager(this, plugin()->wmts_manager()))
+{}
 
 QcMapViewLayer::~QcMapViewLayer()
 {
@@ -54,15 +49,16 @@ QcMapViewLayer::~QcMapViewLayer()
     delete m_request_manager;
 }
 
+/*! Slot to add a tile to the layer scene
+ */
 void
 QcMapViewLayer::update_tile(const QcTileSpec & tile_spec)
 {
   qInfo() << tile_spec;
-  // Only promote the texture up to GPU if it is visible
   if (m_visible_tiles.contains(tile_spec)) {
     QSharedPointer<QcTileTexture> texture = m_request_manager->tile_texture(tile_spec);
     if (!texture.isNull()) {
-      m_map_scene->add_tile(tile_spec, texture);
+      m_layer_scene->add_tile(tile_spec, texture);
       emit scene_graph_changed();
     }
   }
@@ -88,6 +84,8 @@ QcMapViewLayer::update_scene()
 {
   qInfo();
 
+  // Fixme: if layers share the same tile matrix ?
+
   // Compute visible tile set in viewport
 
   // Fixme: Done in map scene !!!
@@ -105,7 +103,7 @@ QcMapViewLayer::update_scene()
     m_middle_visible_tiles.clear();
     m_east_visible_tiles.clear();
     m_visible_tiles.clear();
-    m_map_scene->set_visible_tiles(m_visible_tiles, m_east_visible_tiles, m_middle_visible_tiles, m_west_visible_tiles);
+    m_layer_scene->set_visible_tiles(m_visible_tiles, m_east_visible_tiles, m_middle_visible_tiles, m_west_visible_tiles);
   } else {
     // qInfo() << "Normalised Mercator polygon interval [m]"
     //         << "[" << (int) interval.x().inf() << ", " << (int) interval.x().sup() << "]"
@@ -135,15 +133,14 @@ QcMapViewLayer::update_scene()
     // return;
 
     // Fixme: better ?
-    m_map_scene->set_visible_tiles(m_visible_tiles,
-                                   m_west_visible_tiles, m_middle_visible_tiles, m_east_visible_tiles);
+    m_layer_scene->set_visible_tiles(m_visible_tiles, m_west_visible_tiles, m_middle_visible_tiles, m_east_visible_tiles);
 
-    // don't request tiles that are already built and textured
-    QcTileSpecSet tile_to_request = m_visible_tiles - m_map_scene->textured_tiles();
+    // Don't request tiles that are already built and textured
+    QcTileSpecSet tile_to_request = m_visible_tiles - m_layer_scene->textured_tiles();
     if (!tile_to_request.isEmpty()) {
         QList<QSharedPointer<QcTileTexture> > cached_tiles = m_request_manager->request_tiles(tile_to_request);
         for (const auto & texture : cached_tiles)
-          m_map_scene->add_tile(texture->tile_spec, texture);
+          m_layer_scene->add_tile(texture->tile_spec, texture);
         if (!cached_tiles.isEmpty())
           emit scene_graph_changed();
     }
@@ -177,37 +174,45 @@ QcMapView::QcMapView()
 
 QcMapView::~QcMapView()
 {
-  // Fixme: delete layers
+  for (auto * layer : m_layers)
+    layer->deleteLater(); // Fixme: delete ?
 }
 
 void
 QcMapView::add_layer(QcWmtsPluginMap plugin_map)
 {
-  QcMapViewLayer * layer = new QcMapViewLayer(this, plugin_map);
-  m_layers << layer;
-  // Fixme:
-  //   use signal to connect update_scene ?
-  //   return bool to emit scene_graph_changed ?
-  connect(layer, SIGNAL(scene_graph_changed()),
-	  this, SLOT(scene_graph_changed()),
-	  Qt::QueuedConnection);
+  QString name = plugin_map.name();
+  if (!m_layer_map.contains(name)) {
+    QcMapLayerScene * layer_scene = m_map_scene->add_layer(plugin_map);
+    QcMapViewLayer * layer = new QcMapViewLayer(plugin_map, m_viewport, layer_scene);
+    connect(layer, SIGNAL(scene_graph_changed()),
+            this, SLOT(scene_graph_changed()),
+            Qt::QueuedConnection);
+    m_layers << layer;
+    m_layer_map.insert(name, layer);
+  }
 }
 
 void
 QcMapView::remove_layer(QcWmtsPluginMap plugin_map)
 {
-  // Fixme:
+  QString name = plugin_map.name();
+  if (m_layer_map.contains(name)) {
+    QcMapViewLayer * layer = m_layer_map[name];
+    m_layers.removeOne(layer);
+    layer->deleteLater();
+    // Fixme: deconnect ?
+  }
 }
 
 void
 QcMapView::update_scene()
 {
   qInfo();
-  // Fixme: if layers share the same tile matrix ?
   for (auto * layer : m_layers)
     layer->update_scene();
 
-  // Fixme: check
+  // Fixme: else black at startup
   emit scene_graph_changed();
 }
 

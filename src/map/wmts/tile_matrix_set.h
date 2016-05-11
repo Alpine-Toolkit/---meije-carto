@@ -42,7 +42,7 @@
 #include "qtcarto_global.h"
 #include "map/earth.h"
 #include "map/geo_coordinate.h"
-#include "map/tile_matrix_index.h"
+#include "map/wmts/tile_matrix_index.h"
 
 /**************************************************************************************************/
 

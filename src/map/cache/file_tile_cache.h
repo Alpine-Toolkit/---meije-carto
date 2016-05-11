@@ -78,9 +78,9 @@
 #include <QTimer>
 
 #include "qtcarto_global.h"
-#include "map/cache3q.h"
-#include "map/offline_cache.h"
-#include "map/tile_spec.h"
+#include "map/cache/cache3q.h"
+#include "map/cache/offline_cache.h"
+#include "map/wmts/tile_spec.h"
 
 /**************************************************************************************************/
 

@@ -64,84 +64,84 @@
 
 /**************************************************************************************************/
 
-#ifndef __WMTS_REPLY_H__
-#define __WMTS_REPLY_H__
+#ifndef __WMTS_TILE_FETCHER_H__
+#define __WMTS_TILE_FETCHER_H__
 
 /**************************************************************************************************/
 
-#include <QByteArray>
 #include <QObject>
-#include <QString>
+
+#include <QHash>
+#include <QList>
+#include <QMap>
+#include <QMutex>
+#include <QMutexLocker>
+#include <QSize>
+#include <QTimer>
 
 #include "qtcarto_global.h"
-#include "map/tile_spec.h"
+#include "map/wmts/tile_spec.h"
+#include "map/wmts/wmts_reply.h"
+
+/**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
 
-/**************************************************************************************************/
-
-// QcWmtsReply is a kind of future
-
-class QC_EXPORT QcWmtsReply : public QObject
+/*! This class implements a WMTS Tile Fetcher abstract class for WMTS
+ *  providers. It must be subclassed for each provider in order to
+ *  provide an implementation for the get_tile_image method.
+ *
+ * It manages a request queue, schedule requests and
+ * emit a signal when a request finishes or failes.
+ *
+ */
+class QC_EXPORT QcWmtsTileFetcher : public QObject
 {
   Q_OBJECT
 
  public:
-  enum Error { // Fixme: check
-    NoError,
-    CommunicationError,
-    ParseError,
-    UnknownError
-  };
+  QcWmtsTileFetcher();
+  virtual ~QcWmtsTileFetcher();
 
-  QcWmtsReply(const QcTileSpec & tile_spec);
-  QcWmtsReply(Error error, const QString & error_string);
-  virtual ~QcWmtsReply();
+ public slots:
+  // void update_tile_requests(const QcTileSpecSet & tiles_added, const QcTileSpecSet & tiles_removed);
+  void update_tile_requests(const QSet<QcTileSpec> & tiles_added, const QSet<QcTileSpec> & tiles_removed);
 
-  bool is_finished() const;
-  Error error() const;
-  QString error_string() const;
-
-  bool is_cached() const;
-
-  QcTileSpec tile_spec() const;
-
-  QByteArray map_image_data() const;
-  QString map_image_format() const;
-
-  virtual void abort();
+ private slots:
+  void cancel_tile_requests(const QcTileSpecSet & tile_specs);
+  void request_next_tile();
+  void finished();
 
  signals:
-  void finished();
-  void error(Error error, const QString & error_string = QString());
+  void tile_finished(const QcTileSpec & tile_spec, const QByteArray & bytes, const QString & format);
+  void tile_error(const QcTileSpec & tile_spec, const QString & errorString);
 
  protected:
-  void set_error(Error error, const QString & error_string);
-  void set_finished(bool finished);
-
-  void set_cached(bool cached);
-
-  void set_map_image_data(const QByteArray & data);
-  void set_map_image_format(const QString & format);
+  void timerEvent(QTimerEvent * event);
+  // QGeoTiledMappingManagerEngine::CacheAreas cache_hint() const;
 
  private:
-  Q_DISABLE_COPY(QcWmtsReply);
+  virtual QcWmtsReply * get_tile_image(const QcTileSpec & tile_spec) = 0;
+  void handle_reply(QcWmtsReply * wmts_reply, const QcTileSpec & tile_spec);
+
+  // Q_DECLARE_PRIVATE(QcWmtsTileFetcher);
+  // Q_DISABLE_COPY(QcWmtsTileFetcher);
+
+  // friend class QGeoTiledMappingManagerEngine;
 
  private:
-  Error m_error;
-  QString m_error_string;
-  bool m_is_finished;
-  bool m_is_cached; // Fixme: purpose ?
-  QcTileSpec m_tile_spec;
-  QByteArray m_map_image_data;
-  QString m_map_image_format;
+  bool m_enabled;
+  QBasicTimer m_timer;
+  QMutex m_queue_mutex;
+  QList<QcTileSpec> m_queue;
+  QHash<QcTileSpec, QcWmtsReply *> m_invmap;
 };
 
 // QC_END_NAMESPACE
 
 /**************************************************************************************************/
 
-#endif /* __WMTS_REPLY_H__ */
+#endif /* __WMTS_TILE_FETCHER_H__ */
 
 /***************************************************************************************************
  *

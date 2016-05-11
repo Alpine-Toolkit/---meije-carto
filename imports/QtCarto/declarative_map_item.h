@@ -41,7 +41,8 @@
 
 #include "map/map_view.h"
 #include "map/viewport.h"
-#include "map/wmts_plugin.h"
+#include "map/wmts/wmts_plugin.h"
+
 #include "map_gesture_area.h"
 
 /**************************************************************************************************/

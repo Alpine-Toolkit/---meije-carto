@@ -33,11 +33,11 @@
 
 /**************************************************************************************************/
 
+#include "osm_wmts_tile_fetcher.h"
+#include "map/wmts/wmts_plugin.h"
+
 #include <QObject>
 #include <QString>
-
-#include "osm_wmts_tile_fetcher.h"
-#include "map/wmts_plugin.h"
 
 /**************************************************************************************************/
 

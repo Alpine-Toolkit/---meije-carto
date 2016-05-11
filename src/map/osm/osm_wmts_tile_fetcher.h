@@ -37,7 +37,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 
-#include "map/wmts_tile_fetcher.h"
+#include "map/wmts/wmts_tile_fetcher.h"
 
 /**************************************************************************************************/
 

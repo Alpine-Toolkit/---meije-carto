@@ -39,7 +39,7 @@
 
 #include "map/geoportail/geoportail_license.h"
 // #include "map/geoportail/geoportail_plugin.h" // Fixme: circular
-#include "map/wmts_tile_fetcher.h"
+#include "map/wmts/wmts_tile_fetcher.h"
 
 /**************************************************************************************************/
 

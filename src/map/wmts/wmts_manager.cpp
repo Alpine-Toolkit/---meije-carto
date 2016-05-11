@@ -63,7 +63,7 @@
 /**************************************************************************************************/
 
 #include "wmts_manager.h"
-#include "map_view.h" // circular
+#include "map/map_view.h" // circular
 
 #include <QDir>
 #include <QLocale>

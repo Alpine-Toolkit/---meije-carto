@@ -26,6 +26,8 @@
 
 /**************************************************************************************************/
 
+#include "map_scene.h"
+
 #include <cmath>
 
 #include <QMatrix4x4>
@@ -37,13 +39,9 @@
 #include <QSGTransformNode>
 #include <QtDebug>
 
-/**************************************************************************************************/
-
-#include "map_scene.h"
 #include "location_circle_material_shader.h"
-
 #include "map/geo_coordinate.h"
-#include "map/tile_spec.h"
+#include "map/wmts/tile_spec.h"
 
 /**************************************************************************************************/
 

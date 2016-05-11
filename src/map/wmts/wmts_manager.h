@@ -64,83 +64,103 @@
 
 /**************************************************************************************************/
 
-#ifndef __WMTS_REQUEST_MANAGER_H__
-#define __WMTS_REQUEST_MANAGER_H__
+#ifndef __WMTS_MANAGER_H__
+#define __WMTS_MANAGER_H__
 
 /**************************************************************************************************/
 
 #include <QHash>
 #include <QObject>
-#include <QPointer>
+#include <QPair>
 #include <QSet>
-#include <QSharedPointer>
 #include <QSize>
 
 #include "qtcarto_global.h"
-#include "map/file_tile_cache.h"
-#include "map/tile_spec.h"
-#include "map/wmts_manager.h"
-
-/**************************************************************************************************/
+#include "map/cache/file_tile_cache.h"
+// #include "map_view.h" // circular
+#include "map/wmts/wmts_tile_fetcher.h"
 
 // QC_BEGIN_NAMESPACE
 
-class QcMapViewLayer; // circular
+/**************************************************************************************************/
+
+class QcMapViewLayer;
+typedef QSet<QcMapViewLayer *> QcMapViewLayerPointerSet;
 
 /**************************************************************************************************/
 
-// Represents a tile that needs to be retried after a certain period of time
-class QcRetryFuture : public QObject
-{
-  Q_OBJECT
-
- public:
-  QcRetryFuture(const QcTileSpec & tile_spec, QcMapViewLayer * map_view_layer, QcWmtsManager * wmts_manager);
-
- public slots:
-  void retry();
-
- private:
-  QcTileSpec m_tile_spec;
-  QcMapViewLayer * m_map_view_layer;
-  QPointer<QcWmtsManager> m_wmts_manager;
-};
-
-/*! This class implements a WMTS Request Manager for a map view.
+/*! This class implements a WMTS Manager for a WTMS provide.
  *
- * It works as a proxy between the map view and WTMS Request Manager.
+ * It manages requests from several concurrent map views and dispatch
+ * them to the WTMS Tile Fetcher and store tile images in a cache.
  *
+ * It notify the WTMS Request Manager when a tile is fetched or failed.
  */
-class QcWmtsRequestManager : public QObject
+class QC_EXPORT QcWmtsManager : public QObject
 {
   Q_OBJECT
 
  public:
-  explicit QcWmtsRequestManager(QcMapViewLayer * map_view_layer, QcWmtsManager * wmts_manager);
-  ~QcWmtsRequestManager();
+  enum CacheArea {
+    DiskCache = 0x01,
+    MemoryCache = 0x02,
+    AllCaches = 0xFF
+  };
+  Q_DECLARE_FLAGS(CacheAreas, CacheArea)
 
-  QList<QSharedPointer<QcTileTexture> > request_tiles(const QcTileSpecSet & tile_specs);
+ public:
+  explicit QcWmtsManager(const QString & plugin_name);
+  virtual ~QcWmtsManager();
 
-  void tile_fetched(const QcTileSpec & tile_spec);
+  void release_map(QcMapViewLayer * map_view_layer);
+
+  QcWmtsTileFetcher * tile_fetcher();
+  QcFileTileCache * tile_cache();
+
+  void update_tile_requests(QcMapViewLayer * map_view_layer,
+			    const QcTileSpecSet & tiles_added,
+			    const QcTileSpecSet & tiles_removed);
+
+  QSharedPointer<QcTileTexture> get_tile_texture(const QcTileSpec & tile_spec);
+
+  void dump() const;
+
+ private slots:
+  // Fixme: name
+  void fetcher_tile_finished(const QcTileSpec & tile_spec, const QByteArray & bytes, const QString & format);
+  void fetcher_tile_error(const QcTileSpec & tile_spec, const QString & error_string);
+
+ signals:
   void tile_error(const QcTileSpec & tile_spec, const QString & error_string);
+  void tile_version_changed();
 
-  QSharedPointer<QcTileTexture> tile_texture(const QcTileSpec & tile_spec);
+  // protected:
+ public:
+  void set_tile_fetcher(QcWmtsTileFetcher * tile_fetcher);
+  void set_tile_cache(QcFileTileCache * cache);
 
  private:
-  QcMapViewLayer * m_map_view_layer;
-  QPointer<QcWmtsManager> m_wmts_manager;
-  QHash<QcTileSpec, int> m_retries;
-  QHash<QcTileSpec, QSharedPointer<QcRetryFuture> > m_futures;
-  QcTileSpecSet m_requested;
+  void remove_tile_spec(const QcTileSpec & tile_spec);
 
-  Q_DISABLE_COPY(QcWmtsRequestManager)
+ private:
+  QString m_plugin_name; // needed by cache directory
+  QHash<QcMapViewLayer *, QcTileSpecSet > m_map_view_layer_hash;
+  QHash<QcTileSpec, QcMapViewLayerPointerSet > m_tile_hash;
+  QcFileTileCache * m_tile_cache;
+  QcWmtsTileFetcher * m_tile_fetcher;
+
+  Q_DISABLE_COPY(QcWmtsManager);
+
+  friend class QcWmtsTileFetcher;
 };
+
+// Q_DECLARE_OPERATORS_FOR_FLAGS(QcWmtsManager::CacheAreas)
 
 // QC_END_NAMESPACE
 
 /**************************************************************************************************/
 
-#endif /* __WMTS_REQUEST_MANAGER_H__ */
+#endif /* __WMTS_MANAGER_H__ */
 
 /***************************************************************************************************
  *

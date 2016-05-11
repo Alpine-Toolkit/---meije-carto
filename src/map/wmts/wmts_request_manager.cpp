@@ -62,7 +62,8 @@
 
 /**************************************************************************************************/
 
-#include "map/wmts_request_manager.h"
+#include "wmts_request_manager.h"
+
 #include "map/map_view.h" // circular
 
 // QC_BEGIN_NAMESPACE

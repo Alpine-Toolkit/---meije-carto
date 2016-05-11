@@ -28,82 +28,31 @@
 
 /**************************************************************************************************/
 
-#ifndef __WMTS_PLUGIN_H__
-#define __WMTS_PLUGIN_H__
+#ifndef __TILE_IMAGE_H__
+#define __TILE_IMAGE_H__
 
 /**************************************************************************************************/
 
-#include <QObject>
 #include <QString>
+#include <QByteArray>
 
-#include "map/tile_matrix_set.h"
-#include "map/wmts_manager.h"
+#include "map/wmts/tile_spec.h"
 
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
 
-class QcWmtsPluginMap;
+QString tile_spec_to_filename(const QcTileSpec & tile_spec, const QString & format, const QString & directory);
+QcTileSpec filename_to_tile_spec(const QString & filename);
 
-/**************************************************************************************************/
-
-class QcWmtsPlugin
-{
-public:
-  QcWmtsPlugin(const QString & name, size_t number_of_levels, size_t tile_size);
-  ~QcWmtsPlugin();
-
-  const QString & name() { return m_name; }
-  QcTileMatrixSet & tile_matrix_set() { return m_tile_matrix_set; }
-  QcWmtsManager * wmts_manager() { return &m_wmts_manager; }  // Fixme: & or *
-
-  bool is_valid_map_id(int map_id) const { return true; }
-
-  QcWmtsPluginMap plugin_map(int map_id); // const
-
-  QcTileSpec create_tile_spec(int map_id, int level, int x, int y) const {
-    return QcTileSpec(m_name, map_id, level, x, y);
-  }
-
-private:
-  QString m_name;
-  QcTileMatrixSet m_tile_matrix_set;
-  QcWmtsManager m_wmts_manager;
-};
-
-/**************************************************************************************************/
-
-class QcWmtsPluginMap
-{
-public:
-  // Fixme: const plugin
-  QcWmtsPluginMap(QcWmtsPlugin * plugin, int map_id);
-  QcWmtsPluginMap(const QcWmtsPluginMap & other);
-  ~QcWmtsPluginMap();
-
-  QcWmtsPluginMap & operator=(const QcWmtsPluginMap & other);
-
-  QcWmtsPlugin * plugin() { return m_plugin; }
-  int map_id() const { return m_map_id; }
-
-  QString name() const;
-
-  QcTileSpec create_tile_spec(int level, int x, int y) const {
-    return m_plugin->create_tile_spec(m_map_id, level, x, y);
-  }
-
-private:
-  QcWmtsPlugin * m_plugin;
-  int m_map_id;
-};
-
-/**************************************************************************************************/
+void write_tile_image(const QString & filename, const QByteArray & bytes);
+QByteArray read_tile_image(const QString & filename);
 
 // QC_END_NAMESPACE
 
 /**************************************************************************************************/
 
-#endif /* __WMTS_PLUGIN_H__ */
+#endif /* __TILE_IMAGE_H__ */
 
 /***************************************************************************************************
  *

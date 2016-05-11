@@ -50,11 +50,11 @@
 
 /**************************************************************************************************/
 
-#include "map/file_tile_cache.h"
-#include "map/tile_matrix_set.h"
-#include "map/tile_spec.h"
+#include "map/cache/file_tile_cache.h"
 #include "map/viewport.h"
-#include "map/wmts_plugin.h"
+#include "map/wmts/tile_matrix_set.h"
+#include "map/wmts/tile_spec.h"
+#include "map/wmts/wmts_plugin.h"
 
 /**************************************************************************************************/
 
