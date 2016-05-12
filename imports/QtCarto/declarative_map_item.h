@@ -49,6 +49,37 @@
 
 // QC_BEGIN_NAMESPACE
 
+/**************************************************************************************************/
+
+class QcWmtsPluginLayerName // : public QObject
+{
+  Q_GADGET
+  // Q_OBJECT
+  Q_PROPERTY(QString plugin READ plugin CONSTANT)
+  Q_PROPERTY(int map_id READ map_id CONSTANT)
+  Q_PROPERTY(QString title READ title CONSTANT)
+
+public:
+  QcWmtsPluginLayerName();
+  QcWmtsPluginLayerName(const QString & plugin, int map_id, const QString & title);
+  QcWmtsPluginLayerName(const QcWmtsPluginLayerName & other);
+
+  QcWmtsPluginLayerName & operator=(const QcWmtsPluginLayerName & other);
+
+  QString plugin() const { return m_plugin; }
+  int map_id() const { return m_map_id; }
+  QString title() const { return m_title; }
+
+private:
+  QString m_plugin;
+  int m_map_id;
+  QString m_title;
+};
+
+// Q_DECLARE_METATYPE(QcWmtsPluginLayerName)
+
+/**************************************************************************************************/
+
 class QcMapItem : public QQuickItem
 {
   Q_OBJECT
@@ -57,6 +88,7 @@ class QcMapItem : public QQuickItem
   Q_PROPERTY(QGeoCoordinate center READ center WRITE set_center NOTIFY centerChanged)
   Q_PROPERTY(QcMapGestureArea * gesture READ gesture CONSTANT)
   Q_PROPERTY(QColor color READ color WRITE set_color NOTIFY colorChanged)
+  Q_PROPERTY(QStringList plugin_names READ plugin_names CONSTANT)
 
 public:
   QcMapItem(QQuickItem *parent = 0);
@@ -82,6 +114,11 @@ public:
   Q_INVOKABLE void stable_zoom_by_increment(QPointF position_px, int zoom_increment);
 
   Q_INVOKABLE void prefetch_data(); // optional hint for prefetch
+
+  Q_INVOKABLE QStringList plugin_names() const;
+  // Q_INVOKABLE QList<QcWmtsPluginLayerName> plugin_layers(const QString & plugin) const;
+  Q_INVOKABLE QVariantList plugin_layers(const QString & plugin) const;
+  Q_INVOKABLE void add_layer(const QcWmtsPluginLayerName & plugin_layer);
 
   bool childMouseEventFilter(QQuickItem * item, QEvent * event) Q_DECL_OVERRIDE ;
 

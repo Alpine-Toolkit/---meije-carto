@@ -60,12 +60,13 @@ class QtCartoDeclarativeModule : public QQmlExtensionPlugin
       // QDeclarativeGeoMap
       qmlRegisterType<QcMapItem>(uri, major, minor, "QcMapItem");
 
-      qmlRegisterUncreatableType<QcMapPinchEvent >(uri, major, minor, "MapPinchEvent",
-                                                   QStringLiteral("(Map)PinchEvent is not intended instantiable by developer."));
+      qmlRegisterUncreatableType<QcMapPinchEvent>(uri, major, minor, "MapPinchEvent",
+                                                  QStringLiteral("(Map)PinchEvent is not intended instantiable by developer."));
       qmlRegisterUncreatableType<QcMapGestureArea>(uri, major, minor, "MapGestureArea",
                                                    QStringLiteral("(Map)GestureArea is not intended instantiable by developer."));
-      qmlRegisterUncreatableType<QcMapGestureArea, 1>(uri, major, minor, "MapGestureArea",
-                                                      QStringLiteral("(Map)GestureArea is not intended instantiable by developer."));
+
+      qmlRegisterUncreatableType<QcWmtsPluginLayerName>(uri, major, minor, "WmtsPluginLayerName",
+                                                        QStringLiteral("QcWmtsPluginLayerName is not intended instantiable by developer."));
 
       // registrations below are version independent
     } else {

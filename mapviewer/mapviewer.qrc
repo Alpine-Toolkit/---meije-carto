@@ -1,6 +1,28 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource prefix="/">
-  <file>mapviewer.qml</file>
-  <file>MapComponent.qml</file>
+  <file>icons/arrow-back-white.png</file>
+  <file>icons/arrow-back-white@3x.png</file>
+  <file>icons/explore-black.png</file>
+  <file>icons/explore-black.png</file>
+  <file>icons/explore-black@3x.png</file>
+  <file>icons/explore-black@3x.png</file>
+  <file>icons/explore-white.png</file>
+  <file>icons/explore-white@3x.png</file>
+  <file>icons/gps-fixed-black.png</file>
+  <file>icons/gps-fixed-black@3x.png</file>
+  <file>icons/gps-fixed-white.png</file>
+  <file>icons/gps-fixed-white@3x.png</file>
+  <file>icons/gps-not-fixed-black.png</file>
+  <file>icons/gps-not-fixed-black@3x.png</file>
+  <file>icons/gps-not-fixed-white.png</file>
+  <file>icons/gps-not-fixed-white@3x.png</file>
+  <file>icons/menu-white.png</file>
+  <file>icons/menu-white@3x.png</file>
+  <file>icons/more-vert-white.png</file>
+  <file>icons/more-vert-white@3x.png</file>
+  <file>pages/Layers.qml</file>
+  <file>pages/MapComponent.qml</file>
+  <file>pages/main.qml</file>
+  <file>qtquickcontrols2.conf</file>
 </qresource>
 </RCC>

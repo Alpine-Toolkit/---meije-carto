@@ -67,6 +67,10 @@ QcMapScene::remove_layer(const QcWmtsPluginLayer * plugin_layer)
 QSGNode *
 QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
 {
+  qreal device_pixel_ratio = window->devicePixelRatio();
+
+  qInfo() << old_node << "device pixel ratio" << device_pixel_ratio;
+
   QSize viewport_size = m_viewport->viewport_size();
   float width = m_viewport->width();
   float height = m_viewport->height();
@@ -92,6 +96,7 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
    *   diagonal is set (1, 1)
    */
   QMatrix4x4 item_space_matrix;
+  // item_space_matrix.scale(1/device_pixel_ratio, 1/device_pixel_ratio);
   item_space_matrix.scale(width/2, height/2);
   item_space_matrix.translate(1, 1);
   map_root_node->root->setMatrix(item_space_matrix);

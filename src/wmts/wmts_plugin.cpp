@@ -30,14 +30,6 @@
 
 /**************************************************************************************************/
 
-// QcPluginLayer::QcPluginLayer()
-//   : m_map_id(),
-//     m_position(),
-//     m_title(),
-//     m_name(),
-//     m_image_format()
-// {}
-
 QcWmtsPluginLayer::QcWmtsPluginLayer(QcWmtsPlugin * plugin,
                                      int map_id,
                                      int position,

@@ -186,7 +186,7 @@ class QcMapGestureArea: public QQuickItem
   Q_PROPERTY(Accepted_gestures accepted_gestures READ accepted_gestures WRITE set_accepted_gestures NOTIFY accepted_gesturesChanged)
   Q_PROPERTY(qreal maximum_zoom_level_change READ maximum_zoom_level_change WRITE set_maximum_zoom_level_change NOTIFY maximum_zoom_level_changeChanged)
   Q_PROPERTY(qreal flick_deceleration READ flick_deceleration WRITE set_flick_deceleration NOTIFY flick_decelerationChanged)
-  Q_PROPERTY(bool prevent_stealing READ prevent_stealing WRITE set_prevent_stealing NOTIFY prevent_stealingChanged REVISION 1)
+  Q_PROPERTY(bool prevent_stealing READ prevent_stealing WRITE set_prevent_stealing NOTIFY prevent_stealingChanged)
 
 public:
   QcMapGestureArea(QcMapItem * map);

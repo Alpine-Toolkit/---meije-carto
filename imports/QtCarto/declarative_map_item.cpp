@@ -51,6 +51,41 @@
 
 /**************************************************************************************************/
 
+QcWmtsPluginLayerName::QcWmtsPluginLayerName()
+  : // QObject(),
+    m_plugin(),
+    m_map_id(),
+    m_title()
+{}
+
+QcWmtsPluginLayerName::QcWmtsPluginLayerName(const QString & plugin, int map_id, const QString & title)
+  : // QObject(),
+    m_plugin(plugin),
+    m_map_id(map_id),
+    m_title(title)
+{}
+
+QcWmtsPluginLayerName::QcWmtsPluginLayerName(const QcWmtsPluginLayerName & other)
+  : // QObject(),
+    m_plugin(other.m_plugin),
+    m_map_id(other.m_map_id),
+    m_title(other.m_title)
+{}
+
+QcWmtsPluginLayerName &
+QcWmtsPluginLayerName::operator=(const QcWmtsPluginLayerName & other)
+{
+  if (this != &other) {
+    m_plugin = other.m_plugin;
+    m_map_id = other.m_map_id;
+    m_title = other.m_title;
+  }
+
+  return *this;
+}
+
+/**************************************************************************************************/
+
 QcMapItem::QcMapItem(QQuickItem * parent)
   : QQuickItem(parent),
     m_color(),
@@ -68,20 +103,11 @@ QcMapItem::QcMapItem(QQuickItem * parent)
   m_map_view = new QcMapView();
   m_viewport = m_map_view->viewport();
 
+  // Fixme:
   m_gesture_area->set_minimum_zoom_level(0);
   m_gesture_area->set_maximum_zoom_level(20);
 
   connect(m_map_view, &QcMapView::scene_graph_changed, this, &QQuickItem::update);
-
-  for (const auto & plugin_name : m_plugin_manager.plugin_names()) {
-    const QcWmtsPlugin * plugin = m_plugin_manager[plugin_name];
-    for (const auto * layer : plugin->layers()) {
-      qInfo() << plugin->name() << layer->title();
-    }
-  }
-
-  // m_map_view->add_layer(m_plugin_manager["geoportail"]->layer(0));
-  m_map_view->add_layer(m_plugin_manager["osm"]->layer(0));
 
   // Fixme: remove
   // Set default viewport center and zoom level
@@ -105,6 +131,38 @@ QcMapItem::componentComplete()
   // m_component_completed = true;
   // m_gesture_area->set_map(this);
   QQuickItem::componentComplete();
+}
+
+QStringList
+QcMapItem::plugin_names() const
+{
+  return m_plugin_manager.plugin_names();
+}
+
+// QList<QcWmtsPluginLayerName>
+QVariantList
+QcMapItem::plugin_layers(const QString & plugin_name) const
+{
+  // QList<QcWmtsPluginLayerName> plugin_layers;
+  QVariantList plugin_layers;
+  const QcWmtsPlugin * plugin = m_plugin_manager[plugin_name];
+  if (plugin)
+    for (const auto * layer : plugin->layers())
+      plugin_layers << QVariant::fromValue(QcWmtsPluginLayerName(plugin_name, layer->map_id(), layer->title()));
+  return plugin_layers;
+}
+
+void
+QcMapItem::add_layer(const QcWmtsPluginLayerName & plugin_layer)
+{
+  const QcWmtsPlugin * plugin = m_plugin_manager[plugin_layer.plugin()];
+  if (plugin) {
+    const QcWmtsPluginLayer * layer = plugin->layer(plugin_layer.map_id());
+    if (layer) {
+      m_map_view->add_layer(layer);
+      update();
+    }
+  }
 }
 
 /*!

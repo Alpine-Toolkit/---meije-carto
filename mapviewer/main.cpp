@@ -73,31 +73,21 @@ main(int argc, char *argv[])
 #ifndef ANDROID
   qInstallMessageHandler(message_handler);
 #endif
+
+  // QGuiApplication::setApplicationDisplayName(QCoreApplication::translate("main", "Alpine Toolkit "));
+  QGuiApplication::setApplicationName("Alpine Toolkit");
+  QGuiApplication::setOrganizationName("FabriceSalvaire"); // overridden ???
+  // QGuiApplication::setOrganizationDomain("fabrice-salvaire.fr")
+  // QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+
   QGuiApplication application(argc, argv);
-  QGuiApplication::setApplicationDisplayName(QCoreApplication::translate("main", "QtCarto"));
-
-  // Q_INIT_RESOURCE(mapviewer);
-
-  // QQuickView class provides a window for displaying a Qt Quick user interface
-  // QQuickView view;
-  // QSurfaceFormat format = view.format();
-  // format.setSamples(16);
-  // view.setFormat(format);
-  // view.setSource(QUrl("qrc:///..."));
-  // view.show();
 
   create_user_application_directory();
 
-  // QQmlApplicationEngine provides a convenient way to load an application from a single QML file
   QQmlApplicationEngine engine;
-  // engine.addImportPath(QStringLiteral(":/imports"));
-  engine.load(QUrl(QStringLiteral("qrc:///mapviewer.qml")));
+  engine.load(QUrl("qrc:/pages/main.qml"));
   if (engine.rootObjects().isEmpty())
-    return -1;
-
-  // QObject::connect(&engine, SIGNAL(quit()), qApp, SLOT(quit()));
-
-  // QObject * qml_application = engine.rootObjects().first();
+    return EXIT_FAILURE;
 
   return application.exec();
 }

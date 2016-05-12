@@ -51,7 +51,6 @@ class QcWmtsPlugin;
 class QcWmtsPluginLayer
 {
 public:
-  // QcWmtsPluginLayer();
   QcWmtsPluginLayer(QcWmtsPlugin * plugin,
                     int map_id,
                     int position,
