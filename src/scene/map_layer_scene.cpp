@@ -162,7 +162,8 @@ QcMapLayerScene::QcMapLayerScene(const QcWmtsPluginLayer * plugin_layer, const Q
   : QObject(parent),
     m_plugin_layer(plugin_layer),
     m_viewport(viewport),
-    m_tile_matrix_set(plugin_layer->plugin()->tile_matrix_set())
+    m_tile_matrix_set(plugin_layer->plugin()->tile_matrix_set()),
+    m_opacity(1.)
 {
   qInfo();
 }
@@ -256,6 +257,10 @@ void
 QcMapLayerScene::update_scene_graph(QcMapLayerRootNode * map_root_node, QQuickWindow * window)
 {
   qInfo();
+
+  if (map_root_node->opacity() != m_opacity)
+    map_root_node->setOpacity(m_opacity);
+  // dirty
 
   // Fixme: duplicated code?
   QcTileSpecSet textures_in_scene = QcTileSpecSet::fromList(map_root_node->textures.keys()); // cf. textured_tiles

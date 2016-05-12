@@ -71,6 +71,12 @@ QcWmtsPluginLayer::operator=(const QcWmtsPluginLayer & other)
   return *this;
 }
 
+const QString &
+QcWmtsPluginLayer::plugin_name() const
+{
+  return m_plugin->name();
+}
+
 QString
 QcWmtsPluginLayer::hash_name() const
 {

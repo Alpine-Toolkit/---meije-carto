@@ -77,6 +77,9 @@ public:
   float width() { return m_viewport->width(); }
   float height() { return m_viewport->height(); }
 
+  float opacity() const { return m_opacity; };
+  void set_opacity(float opacity) { m_opacity = opacity; };
+
   void add_tile(const QcTileSpec & tile_spec, QSharedPointer<QcTileTexture> texture);
 
   void set_visible_tiles(const QcTileSpecSet & tile_specs,
@@ -106,6 +109,8 @@ private:
   QcTileSpecSet m_west_visible_tiles;
   QcTileSpecSet m_middle_visible_tiles;
   QcTileSpecSet m_east_visible_tiles;
+
+  float m_opacity;
 };
 
 /**************************************************************************************************/

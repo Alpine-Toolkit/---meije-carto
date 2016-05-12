@@ -50,6 +50,18 @@ QcMapViewLayer::~QcMapViewLayer()
     delete m_request_manager;
 }
 
+float
+QcMapViewLayer::opacity() const
+{
+  return m_layer_scene->opacity();
+}
+
+void
+QcMapViewLayer::set_opacity(float opacity)
+{
+  m_layer_scene->set_opacity(opacity);
+}
+
 /*! Slot to add a tile to the layer scene
  */
 void
@@ -179,6 +191,16 @@ QcMapView::~QcMapView()
     layer->deleteLater(); // Fixme: delete ?
 }
 
+QcMapViewLayer *
+QcMapView::get_layer(const QcWmtsPluginLayer * plugin_layer)
+{
+  QString name = plugin_layer->hash_name();
+  if (m_layer_map.contains(name))
+    return m_layer_map[name];
+  else
+    return nullptr;
+}
+
 void
 QcMapView::add_layer(const QcWmtsPluginLayer * plugin_layer)
 {
@@ -186,9 +208,10 @@ QcMapView::add_layer(const QcWmtsPluginLayer * plugin_layer)
   if (!m_layer_map.contains(name)) {
     QcMapLayerScene * layer_scene = m_map_scene->add_layer(plugin_layer);
     QcMapViewLayer * layer = new QcMapViewLayer(plugin_layer, m_viewport, layer_scene);
-    connect(layer, SIGNAL(scene_graph_changed()),
-            this, SLOT(scene_graph_changed()),
-            Qt::QueuedConnection);
+    // Fixme:
+    // connect(layer, SIGNAL(scene_graph_changed()),
+    //         this, SLOT(scene_graph_changed()),
+    //         Qt::QueuedConnection);
     m_layers << layer;
     m_layer_map.insert(name, layer);
   }
@@ -197,14 +220,40 @@ QcMapView::add_layer(const QcWmtsPluginLayer * plugin_layer)
 void
 QcMapView::remove_layer(const QcWmtsPluginLayer * plugin_layer)
 {
-  QString name = plugin_layer->hash_name();
-  if (m_layer_map.contains(name)) {
-    QcMapViewLayer * layer = m_layer_map[name];
+  QcMapViewLayer * layer = get_layer(plugin_layer);
+  if (layer) {
     m_layers.removeOne(layer);
     layer->deleteLater();
     // Fixme: deconnect ?
     m_map_scene->remove_layer(plugin_layer);
   }
+}
+
+QList<const QcWmtsPluginLayer *>
+QcMapView::layers() const
+{
+  QList<const QcWmtsPluginLayer *> plugin_layers;
+  for (auto * layer : m_layers)
+    plugin_layers << layer->plugin_layer();
+  return plugin_layers;
+}
+
+float
+QcMapView::opacity(const QcWmtsPluginLayer * plugin_layer)
+{
+  QcMapViewLayer * layer = get_layer(plugin_layer);
+  if (layer)
+    return layer->opacity();
+  else
+    return .0;
+}
+
+void
+QcMapView::set_opacity(const QcWmtsPluginLayer * plugin_layer, float opacity)
+{
+  QcMapViewLayer * layer = get_layer(plugin_layer);
+  if (layer)
+    layer->set_opacity(opacity);
 }
 
 void

@@ -62,9 +62,14 @@ class QC_EXPORT QcMapViewLayer : public QObject
   QcMapViewLayer(const QcWmtsPluginLayer * plugin_layer, QcViewport * m_viewport, QcMapLayerScene * layer_scene);
   ~QcMapViewLayer();
 
+  const QcWmtsPluginLayer * plugin_layer() const { return m_plugin_layer; }
   QcWmtsPlugin * plugin() { return m_plugin_layer->plugin(); }
   int map_id() const { return m_plugin_layer->map_id(); }
+
   QcWmtsRequestManager * request_manager() { return m_request_manager; };
+
+  float opacity() const;
+  void set_opacity(float opacity);
 
   void update_tile(const QcTileSpec & tile_spec);
   void update_scene();
@@ -104,6 +109,9 @@ class QC_EXPORT QcMapView : public QObject
 
   void add_layer(const QcWmtsPluginLayer * plugin_layer);
   void remove_layer(const QcWmtsPluginLayer * plugin_layer);
+  float opacity(const QcWmtsPluginLayer * plugin_layer);
+  void set_opacity(const QcWmtsPluginLayer * plugin_layer, float opacity);
+  QList<const QcWmtsPluginLayer *> layers() const;
 
   QSGNode * update_scene_graph(QSGNode * old_node, QQuickWindow * window) {
     return m_map_scene->update_scene_graph(old_node, window);
@@ -114,6 +122,9 @@ class QC_EXPORT QcMapView : public QObject
 
  public slots:
   void update_scene();
+
+ private:
+  QcMapViewLayer * get_layer(const QcWmtsPluginLayer * plugin_layer);
 
  private:
   QcViewport * m_viewport;

@@ -140,12 +140,7 @@ ApplicationWindow {
 
     MapComponent {
         id: map
-        anchors.fill: parent
-
-        Component.onCompleted: {
-            // console.info(map.plugin_names)
-            console.log(map.plugin_layers("geoportail"))
-        }
+        // anchors.fill: parent
     }
 
     StackView {

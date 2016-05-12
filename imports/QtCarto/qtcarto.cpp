@@ -65,8 +65,8 @@ class QtCartoDeclarativeModule : public QQmlExtensionPlugin
       qmlRegisterUncreatableType<QcMapGestureArea>(uri, major, minor, "MapGestureArea",
                                                    QStringLiteral("(Map)GestureArea is not intended instantiable by developer."));
 
-      qmlRegisterUncreatableType<QcWmtsPluginLayerName>(uri, major, minor, "WmtsPluginLayerName",
-                                                        QStringLiteral("QcWmtsPluginLayerName is not intended instantiable by developer."));
+      qmlRegisterUncreatableType<QcWmtsPluginLayerData>(uri, major, minor, "WmtsPluginLayerData",
+                                                        QStringLiteral("QcWmtsPluginLayerData is not intended instantiable by developer."));
 
       // registrations below are version independent
     } else {

@@ -35,6 +35,7 @@
 
 #include <QColor>
 #include <QGeoCoordinate>
+#include <QHash>
 #include <QQuickItem>
 
 /**************************************************************************************************/
@@ -51,32 +52,42 @@
 
 /**************************************************************************************************/
 
-class QcWmtsPluginLayerName // : public QObject
+class QcWmtsPluginLayerData : public QObject
 {
-  Q_GADGET
-  // Q_OBJECT
+  Q_OBJECT
   Q_PROPERTY(QString plugin READ plugin CONSTANT)
-  Q_PROPERTY(int map_id READ map_id CONSTANT)
   Q_PROPERTY(QString title READ title CONSTANT)
+  Q_PROPERTY(bool status READ status WRITE set_status NOTIFY statusChanged)
+  Q_PROPERTY(float opacity READ opacity WRITE set_opacity NOTIFY opacityChanged)
 
 public:
-  QcWmtsPluginLayerName();
-  QcWmtsPluginLayerName(const QString & plugin, int map_id, const QString & title);
-  QcWmtsPluginLayerName(const QcWmtsPluginLayerName & other);
+  QcWmtsPluginLayerData();
+  QcWmtsPluginLayerData(const QcWmtsPluginLayer * plugin_layer);
+  QcWmtsPluginLayerData(const QcWmtsPluginLayerData & other);
 
-  QcWmtsPluginLayerName & operator=(const QcWmtsPluginLayerName & other);
+  QcWmtsPluginLayerData & operator=(const QcWmtsPluginLayerData & other);
 
-  QString plugin() const { return m_plugin; }
-  int map_id() const { return m_map_id; }
-  QString title() const { return m_title; }
+  const QcWmtsPluginLayer * plugin_layer() const { return m_plugin_layer; }
+  QString plugin() const { return m_plugin_layer->plugin_name(); }
+  QString title() const { return m_plugin_layer->title(); }
+
+  bool status() const { return m_status; }
+  float opacity() const { return m_opacity; }
+
+  void set_status(bool status);
+  void set_opacity(float opacity);
+
+signals:
+  void statusChanged(bool status);
+  void opacityChanged(float opacity);
 
 private:
-  QString m_plugin;
-  int m_map_id;
-  QString m_title;
+  const QcWmtsPluginLayer * m_plugin_layer;
+  bool m_status;
+  float m_opacity;
 };
 
-// Q_DECLARE_METATYPE(QcWmtsPluginLayerName)
+Q_DECLARE_METATYPE(QcWmtsPluginLayerData)
 
 /**************************************************************************************************/
 
@@ -116,9 +127,7 @@ public:
   Q_INVOKABLE void prefetch_data(); // optional hint for prefetch
 
   Q_INVOKABLE QStringList plugin_names() const;
-  // Q_INVOKABLE QList<QcWmtsPluginLayerName> plugin_layers(const QString & plugin) const;
-  Q_INVOKABLE QVariantList plugin_layers(const QString & plugin) const;
-  Q_INVOKABLE void add_layer(const QcWmtsPluginLayerName & plugin_layer);
+  Q_INVOKABLE QVariantList plugin_layers(const QString & plugin);
 
   bool childMouseEventFilter(QQuickItem * item, QEvent * event) Q_DECL_OVERRIDE ;
 
@@ -126,6 +135,10 @@ signals:
   void zoom_levelChanged(int zoom_level);
   void centerChanged(const QGeoCoordinate & coordinate);
   void colorChanged(const QColor & color);
+
+private slots:
+  void layer_status_changed(bool status);
+  void layer_opacity_changed(float opacity);
 
 protected:
   void mouseMoveEvent(QMouseEvent * event) Q_DECL_OVERRIDE ;
@@ -147,6 +160,7 @@ private:
   bool is_interactive();
   bool send_touch_event(QTouchEvent * event);
   bool send_mouse_event(QMouseEvent * event);
+  QVariantList make_plugin_layers(const QString & plugin);
 
 private:
   QColor m_color;
@@ -154,6 +168,7 @@ private:
   QcWmtsPluginManager & m_plugin_manager;
   QcMapView * m_map_view;
   QcViewport * m_viewport; // ???
+  QHash<QString, QVariantList> m_plugin_layers;
 };
 
 // QC_END_NAMESPACE

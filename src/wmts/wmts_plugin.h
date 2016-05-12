@@ -63,6 +63,7 @@ public:
   QcWmtsPluginLayer & operator=(const QcWmtsPluginLayer & other);
 
   QcWmtsPlugin * plugin() const { return m_plugin; }
+  const QString & plugin_name() const;
   int map_id() const { return m_map_id; }
   int position() const { return m_position; }
   const QString & title() const { return m_title; }

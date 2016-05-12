@@ -33,22 +33,23 @@ Pane {
                             property var plugin_layer: modelData
 
                             CheckBox {
+                                id: checkbox
                                 anchors.verticalCenter: parent.verticalCenter
-                                checked: False
-                                onCheckedChanged: {
-                                    if (checked)
-                                        map.add_layer(plugin_layer)
-                                }
+                                checked: plugin_layer.status
                             }
+                            Binding { target: plugin_layer; property: "status"; value: checkbox.checked }
                             Text {
                                 anchors.verticalCenter: parent.verticalCenter
                                 width: layer_pane.width / 3
                                 text: plugin_layer.title
                             }
                             Slider {
+                                id: slider
                                 anchors.verticalCenter: parent.verticalCenter
-                                value: 1.
+                                enabled: checkbox.checked
+                                value: plugin_layer.opacity
                             }
+                            Binding { target: plugin_layer; property: "opacity"; value: slider.value }
                         }
                     }
                 }

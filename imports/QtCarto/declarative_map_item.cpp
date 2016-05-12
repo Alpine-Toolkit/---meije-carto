@@ -51,37 +51,57 @@
 
 /**************************************************************************************************/
 
-QcWmtsPluginLayerName::QcWmtsPluginLayerName()
-  : // QObject(),
-    m_plugin(),
-    m_map_id(),
-    m_title()
+QcWmtsPluginLayerData::QcWmtsPluginLayerData()
+  : QObject(),
+    m_plugin_layer(nullptr),
+    m_status(false),
+    m_opacity(1.)
 {}
 
-QcWmtsPluginLayerName::QcWmtsPluginLayerName(const QString & plugin, int map_id, const QString & title)
-  : // QObject(),
-    m_plugin(plugin),
-    m_map_id(map_id),
-    m_title(title)
+QcWmtsPluginLayerData::QcWmtsPluginLayerData(const QcWmtsPluginLayer * plugin_layer)
+  : QObject(),
+    m_plugin_layer(plugin_layer),
+    m_status(false),
+    m_opacity(1.)
 {}
 
-QcWmtsPluginLayerName::QcWmtsPluginLayerName(const QcWmtsPluginLayerName & other)
-  : // QObject(),
-    m_plugin(other.m_plugin),
-    m_map_id(other.m_map_id),
-    m_title(other.m_title)
+QcWmtsPluginLayerData::QcWmtsPluginLayerData(const QcWmtsPluginLayerData & other)
+  : QObject(),
+    m_plugin_layer(other.m_plugin_layer),
+    m_status(other.m_status),
+    m_opacity(other.m_opacity)
 {}
 
-QcWmtsPluginLayerName &
-QcWmtsPluginLayerName::operator=(const QcWmtsPluginLayerName & other)
+QcWmtsPluginLayerData &
+QcWmtsPluginLayerData::operator=(const QcWmtsPluginLayerData & other)
 {
   if (this != &other) {
-    m_plugin = other.m_plugin;
-    m_map_id = other.m_map_id;
-    m_title = other.m_title;
+    m_plugin_layer = other.m_plugin_layer;
+    m_status = other.m_status;
+    m_opacity = other.m_opacity;
   }
 
   return *this;
+}
+
+void
+QcWmtsPluginLayerData::set_status(bool status)
+{
+  qInfo() << status;
+  if (m_status != status) {
+    m_status = status;
+    emit statusChanged(status);
+  }
+}
+
+void
+QcWmtsPluginLayerData::set_opacity(float opacity)
+{
+  qInfo() << opacity;
+  if (m_opacity != opacity) {
+    m_opacity = opacity;
+    emit opacityChanged(opacity);
+  }
 }
 
 /**************************************************************************************************/
@@ -106,6 +126,9 @@ QcMapItem::QcMapItem(QQuickItem * parent)
   // Fixme:
   m_gesture_area->set_minimum_zoom_level(0);
   m_gesture_area->set_maximum_zoom_level(20);
+
+  for (const auto & plugin_name : m_plugin_manager.plugin_names())
+    m_plugin_layers.insert(plugin_name, make_plugin_layers(plugin_name));
 
   connect(m_map_view, &QcMapView::scene_graph_changed, this, &QQuickItem::update);
 
@@ -133,35 +156,58 @@ QcMapItem::componentComplete()
   QQuickItem::componentComplete();
 }
 
+QVariantList
+QcMapItem::make_plugin_layers(const QString & plugin_name)
+{
+  QVariantList plugin_layers;
+  const QcWmtsPlugin * plugin = m_plugin_manager[plugin_name];
+  if (plugin)
+    for (const auto * layer : plugin->layers()) {
+      QcWmtsPluginLayerData * layer_data = new QcWmtsPluginLayerData(layer);
+      connect(layer_data, &QcWmtsPluginLayerData::statusChanged, this, &QcMapItem::layer_status_changed);
+      connect(layer_data, &QcWmtsPluginLayerData::opacityChanged, this, &QcMapItem::layer_opacity_changed);
+      plugin_layers << QVariant::fromValue(layer_data);
+    }
+  return plugin_layers;
+}
+
 QStringList
 QcMapItem::plugin_names() const
 {
   return m_plugin_manager.plugin_names();
 }
 
-// QList<QcWmtsPluginLayerName>
 QVariantList
-QcMapItem::plugin_layers(const QString & plugin_name) const
+QcMapItem::plugin_layers(const QString & plugin_name)
 {
-  // QList<QcWmtsPluginLayerName> plugin_layers;
-  QVariantList plugin_layers;
-  const QcWmtsPlugin * plugin = m_plugin_manager[plugin_name];
-  if (plugin)
-    for (const auto * layer : plugin->layers())
-      plugin_layers << QVariant::fromValue(QcWmtsPluginLayerName(plugin_name, layer->map_id(), layer->title()));
-  return plugin_layers;
+  if (m_plugin_layers.contains(plugin_name))
+    return m_plugin_layers[plugin_name];
+  else
+    return QVariantList();
 }
 
 void
-QcMapItem::add_layer(const QcWmtsPluginLayerName & plugin_layer)
+QcMapItem::layer_status_changed(bool status)
 {
-  const QcWmtsPlugin * plugin = m_plugin_manager[plugin_layer.plugin()];
-  if (plugin) {
-    const QcWmtsPluginLayer * layer = plugin->layer(plugin_layer.map_id());
-    if (layer) {
-      m_map_view->add_layer(layer);
-      update();
-    }
+  QcWmtsPluginLayerData * layer_data = qobject_cast<QcWmtsPluginLayerData *>(QObject::sender());
+  const QcWmtsPluginLayer * plugin_layer = layer_data->plugin_layer();
+  qInfo() << plugin_layer->hash_name() << status;
+  if (status)
+    m_map_view->add_layer(plugin_layer);
+  else
+    m_map_view->remove_layer(plugin_layer);
+  update();
+}
+
+void
+QcMapItem::layer_opacity_changed(float opacity)
+{
+  QcWmtsPluginLayerData * layer_data = qobject_cast<QcWmtsPluginLayerData *>(QObject::sender());
+  const QcWmtsPluginLayer * plugin_layer = layer_data->plugin_layer();
+  qInfo() << plugin_layer->hash_name() << opacity;
+  if (layer_data->status()) {
+    m_map_view->set_opacity(plugin_layer, opacity);
+    update();
   }
 }
 

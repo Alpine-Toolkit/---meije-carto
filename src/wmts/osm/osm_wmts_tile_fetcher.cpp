@@ -47,12 +47,7 @@ QcOsmWmtsTileFetcher::QcOsmWmtsTileFetcher(const QcOsmPlugin * plugin)
     m_plugin(plugin),
     m_network_manager(new QNetworkAccessManager(this)),
     m_user_agent("QtCarto based application")
-{
-  connect(m_network_manager,
-	  SIGNAL(authenticationRequired(QNetworkReply*, QAuthenticator*)),
-	  this,
-	  SLOT(on_authentication_request_slot(QNetworkReply*, QAuthenticator*)));
-}
+{}
 
 QcWmtsReply *
 QcOsmWmtsTileFetcher::get_tile_image(const QcTileSpec & tile_spec)
