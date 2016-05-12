@@ -36,9 +36,9 @@
 
 // QC_BEGIN_NAMESPACE
 
-QcMapViewLayer::QcMapViewLayer(QcWmtsPluginMap plugin_map, QcViewport * viewport, QcMapLayerScene * layer_scene)
+QcMapViewLayer::QcMapViewLayer(const QcWmtsPluginLayer * plugin_layer, QcViewport * viewport, QcMapLayerScene * layer_scene)
   : QObject(),
-    m_plugin_map(plugin_map),
+    m_plugin_layer(plugin_layer),
     m_viewport(viewport),
     m_layer_scene(layer_scene),
     m_request_manager(new QcWmtsRequestManager(this, plugin()->wmts_manager()))
@@ -75,7 +75,7 @@ QcMapViewLayer::intersec_polygon_with_grid(const QcPolygon & polygon, double til
     size_t y = run.y();
     qInfo() << "Run " << run.y() << " [" << run_interval.inf() << ", " << run_interval.sup() << "]";
     for (int x = run_interval.inf(); x <= run_interval.sup(); x++)
-      visible_tiles.insert(m_plugin_map.create_tile_spec(zoom_level, x, y));
+      visible_tiles.insert(m_plugin_layer->create_tile_spec(zoom_level, x, y));
   }
   return visible_tiles;
 }
@@ -180,12 +180,12 @@ QcMapView::~QcMapView()
 }
 
 void
-QcMapView::add_layer(QcWmtsPluginMap plugin_map)
+QcMapView::add_layer(const QcWmtsPluginLayer * plugin_layer)
 {
-  QString name = plugin_map.name();
+  QString name = plugin_layer->hash_name();
   if (!m_layer_map.contains(name)) {
-    QcMapLayerScene * layer_scene = m_map_scene->add_layer(plugin_map);
-    QcMapViewLayer * layer = new QcMapViewLayer(plugin_map, m_viewport, layer_scene);
+    QcMapLayerScene * layer_scene = m_map_scene->add_layer(plugin_layer);
+    QcMapViewLayer * layer = new QcMapViewLayer(plugin_layer, m_viewport, layer_scene);
     connect(layer, SIGNAL(scene_graph_changed()),
             this, SLOT(scene_graph_changed()),
             Qt::QueuedConnection);
@@ -195,15 +195,15 @@ QcMapView::add_layer(QcWmtsPluginMap plugin_map)
 }
 
 void
-QcMapView::remove_layer(QcWmtsPluginMap plugin_map)
+QcMapView::remove_layer(const QcWmtsPluginLayer * plugin_layer)
 {
-  QString name = plugin_map.name();
+  QString name = plugin_layer->hash_name();
   if (m_layer_map.contains(name)) {
     QcMapViewLayer * layer = m_layer_map[name];
     m_layers.removeOne(layer);
     layer->deleteLater();
     // Fixme: deconnect ?
-    m_map_scene->remove_layer(plugin_map);
+    m_map_scene->remove_layer(plugin_layer);
   }
 }
 

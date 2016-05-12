@@ -41,7 +41,7 @@
 
 #include "map/map_view.h"
 #include "map/viewport.h"
-#include "wmts/wmts_plugin.h"
+#include "wmts/wmts_plugin_manager.h"
 
 #include "map_gesture_area.h"
 
@@ -114,7 +114,7 @@ private:
 private:
   QColor m_color;
   QcMapGestureArea * m_gesture_area;
-  QcWmtsPlugin * m_plugin;
+  QcWmtsPluginManager & m_plugin_manager;
   QcMapView * m_map_view;
   QcViewport * m_viewport; // ???
 };

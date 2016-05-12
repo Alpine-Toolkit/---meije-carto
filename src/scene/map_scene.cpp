@@ -45,18 +45,18 @@ QcMapScene::~QcMapScene()
 {}
 
 QcMapLayerScene *
-QcMapScene::add_layer(QcWmtsPluginMap plugin_map)
+QcMapScene::add_layer(const QcWmtsPluginLayer * plugin_layer)
 {
-  QcMapLayerScene * layer = new QcMapLayerScene(plugin_map, m_viewport);
+  QcMapLayerScene * layer = new QcMapLayerScene(plugin_layer, m_viewport);
   m_layers << layer;
-  m_layer_map.insert(plugin_map.name(), layer);
+  m_layer_map.insert(plugin_layer->hash_name(), layer);
   return layer;
 }
 
 void
-QcMapScene::remove_layer(QcWmtsPluginMap plugin_map)
+QcMapScene::remove_layer(const QcWmtsPluginLayer * plugin_layer)
 {
-  QString name = plugin_map.name();
+  QString name = plugin_layer->hash_name();
   if (m_layer_map.contains(name)) {
     QcMapLayerScene * layer = m_layer_map[name];
     m_layers.removeOne(layer);
@@ -67,8 +67,6 @@ QcMapScene::remove_layer(QcWmtsPluginMap plugin_map)
 QSGNode *
 QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
 {
-  qInfo() << old_node;
-
   QSize viewport_size = m_viewport->viewport_size();
   float width = m_viewport->width();
   float height = m_viewport->height();

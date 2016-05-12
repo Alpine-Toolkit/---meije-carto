@@ -68,11 +68,11 @@ class QcMapLayerRootNode;
 class QcMapLayerScene : public QObject
 {
 public:
-  QcMapLayerScene(QcWmtsPluginMap plugin_map, const QcViewport * viewport, QObject * parent = nullptr);
+  QcMapLayerScene(const QcWmtsPluginLayer * plugin_layer, const QcViewport * viewport, QObject * parent = nullptr);
   ~QcMapLayerScene();
 
-  QString name() const { return m_plugin_map.name(); }
-  const QcWmtsPluginMap & plugin_map() const { return m_plugin_map; }
+  QString name() const { return m_plugin_layer->hash_name(); }
+  const QcWmtsPluginLayer * plugin_layer() const { return m_plugin_layer; }
 
   float width() { return m_viewport->width(); }
   float height() { return m_viewport->height(); }
@@ -97,7 +97,7 @@ public:
   QHash<QcTileSpec, QSharedPointer<QcTileTexture> > m_tile_textures;
 
 private:
-  QcWmtsPluginMap m_plugin_map;
+  const QcWmtsPluginLayer * m_plugin_layer;
   const QcViewport * m_viewport; // Fixme: &
 
   const QcTileMatrixSet & m_tile_matrix_set;
@@ -118,8 +118,8 @@ public:
 
   QSGNode * update_scene_graph(QSGNode * old_node, QQuickWindow * window);
 
-  QcMapLayerScene * add_layer(QcWmtsPluginMap plugin_map);
-  void remove_layer(QcWmtsPluginMap plugin_map);
+  QcMapLayerScene * add_layer(const QcWmtsPluginLayer * plugin_layer);
+  void remove_layer(const QcWmtsPluginLayer * plugin_layer);
 
 private:
   float width() { return m_viewport->width(); }

@@ -59,11 +59,11 @@ class QC_EXPORT QcMapViewLayer : public QObject
   Q_OBJECT
 
  public:
-  QcMapViewLayer(QcWmtsPluginMap plugin_map, QcViewport * m_viewport, QcMapLayerScene * layer_scene);
+  QcMapViewLayer(const QcWmtsPluginLayer * plugin_layer, QcViewport * m_viewport, QcMapLayerScene * layer_scene);
   ~QcMapViewLayer();
 
-  QcWmtsPlugin * plugin() { return m_plugin_map.plugin(); }
-  int map_id() const { return m_plugin_map.map_id(); }
+  QcWmtsPlugin * plugin() { return m_plugin_layer->plugin(); }
+  int map_id() const { return m_plugin_layer->map_id(); }
   QcWmtsRequestManager * request_manager() { return m_request_manager; };
 
   void update_tile(const QcTileSpec & tile_spec);
@@ -76,7 +76,7 @@ class QC_EXPORT QcMapViewLayer : public QObject
   QcTileSpecSet intersec_polygon_with_grid(const QcPolygon & polygon, double tile_length_m, int zoom_level);
 
  private:
-  QcWmtsPluginMap m_plugin_map;
+  const QcWmtsPluginLayer * m_plugin_layer;
   QcViewport * m_viewport;
   QcMapLayerScene * m_layer_scene;
 
@@ -102,10 +102,10 @@ class QC_EXPORT QcMapView : public QObject
 
   QcViewport * viewport() { return m_viewport; };
 
-  void add_layer(QcWmtsPluginMap plugin_map);
-  void remove_layer(QcWmtsPluginMap plugin_map);
+  void add_layer(const QcWmtsPluginLayer * plugin_layer);
+  void remove_layer(const QcWmtsPluginLayer * plugin_layer);
 
-  QSGNode * update_scene_graph(QSGNode *old_node, QQuickWindow *window) {
+  QSGNode * update_scene_graph(QSGNode * old_node, QQuickWindow * window) {
     return m_map_scene->update_scene_graph(old_node, window);
   }
 

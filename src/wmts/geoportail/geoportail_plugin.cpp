@@ -33,36 +33,20 @@
 
 /**************************************************************************************************/
 
-QcGeoportailLayer::QcGeoportailLayer()
-  : m_map_id(),
-    m_position(),
-    m_title(),
-    m_name(),
-    m_style(),
-    m_image_format()
-{}
-
-QcGeoportailLayer::QcGeoportailLayer(int map_id,
+QcGeoportailLayer::QcGeoportailLayer(QcGeoportailPlugin * plugin,
+                                     int map_id,
                                      int position,
                                      const QString & title,
                                      const QString & name,
-                                     const QString & style,
-                                     const QString & image_format)
-  : m_map_id(map_id),
-    m_position(position),
-    m_title(title),
-    m_name(name),
-    m_style(style),
-    m_image_format(image_format)
+                                     const QString & image_format,
+                                     const QString & style)
+  : QcWmtsPluginLayer(plugin, map_id, position, title, name, image_format),
+    m_style(style)
 {}
 
 QcGeoportailLayer::QcGeoportailLayer(const QcGeoportailLayer & other)
-  : m_map_id(other.m_map_id),
-    m_position(other.m_position),
-    m_title(other.m_title),
-    m_name(other.m_name),
-    m_style(other.m_style),
-    m_image_format(other.m_image_format)
+  : QcWmtsPluginLayer(other),
+    m_style(other.m_style)
 {}
 
 QcGeoportailLayer::~QcGeoportailLayer()
@@ -72,42 +56,68 @@ QcGeoportailLayer &
 QcGeoportailLayer::operator=(const QcGeoportailLayer & other)
 {
   if (this != &other) {
-    m_map_id = other.m_map_id;
-    m_position = other.m_position;
-    m_title = other.m_title;
-    m_name = other.m_name;
+    QcWmtsPluginLayer::operator=(other);
     m_style = other.m_style;
-    m_image_format = other.m_image_format;
   }
 
   return *this;
 }
 
 QUrl
-QcGeoportailLayer::url(const QcTileSpec & tile_spec, const QcGeoportailWmtsLicense & license) const
+QcGeoportailLayer::url(const QcTileSpec & tile_spec) const
 {
+  /*
+   * Vue aérienne LAYER = ORTHOIMAGERY.ORTHOPHOTOS
+   * http://wxs.ign.fr/<KEY>/geoportail/wmts?
+   * SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ORTHOIMAGERY.ORTHOPHOTOS
+   * &STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX=16&TILEROW=23327&TILECOL=33919&FORMAT=image/jpeg
+   *
+   * Carte LAYER = GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD
+   * http://wxs.ign.fr/<KEY>/geoportail/wmts?
+   * SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD
+   * &STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX=16&TILEROW=23327&TILECOL=33920&FORMAT=image/jpeg
+   *
+   * Carte topographique LAYER = GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN25TOUR
+   * http://wxs.ign.fr/<KEY>/geoportail/wmts?
+   * SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN25TOUR
+   * &STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX=16&TILEROW=23326&TILECOL=33920&FORMAT=image/jpeg
+   *
+   * Parcelles cadastrales
+   * http://wxs.ign.fr/<KEY>/geoportail/wmts?
+   * SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=CADASTRALPARCELS.PARCELS
+   * &STYLE=bdparcellaire&TILEMATRIXSET=PM&TILEMATRIX=16&TILEROW=23325&TILECOL=33915&FORMAT=image/png
+   *
+   * Routes
+   * http://wxs.ign.fr/<KEY>/geoportail/wmts?
+   * SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=TRANSPORTNETWORKS.ROADS&STYLE=normal
+   * &TILEMATRIXSET=PM&TILEMATRIX=16&TILEROW=23326&TILECOL=33917&FORMAT=image/png
+   *
+   */
+
   // Fixme: name, split ???
   QStringList parameters;
   parameters << QStringLiteral("SERVICE=WMTS");
   parameters << QStringLiteral("VERSION=1.0.0");
   parameters << QStringLiteral("REQUEST=GetTile");
-  parameters << QStringLiteral("LAYER=") + m_name;
+  parameters << QStringLiteral("LAYER=") + name();
   parameters << QStringLiteral("STYLE=") + m_style;
-  parameters << QStringLiteral("FORMAT=image/") + m_image_format;
+  parameters << QStringLiteral("FORMAT=image/") + image_format();
   parameters << QStringLiteral("TILEMATRIXSET=PM");
   parameters << QStringLiteral("TILEMATRIX=") + QString::number(tile_spec.level());
   parameters << QStringLiteral("TILEROW=") + QString::number(tile_spec.y());
   parameters << QStringLiteral("TILECOL=") + QString::number(tile_spec.x());
 
+  QString api_key = static_cast<QcGeoportailPlugin *>(plugin())->license().api_key();
+
   return QUrl(QStringLiteral("https://wxs.ign.fr/") +
-              license.api_key() +
+              api_key +
               QStringLiteral("/geoportail/wmts?") +
               parameters.join(QString('&')));
 }
 
 /**************************************************************************************************/
 
-constexpr const char * PLUGIN_NAME = "geoportail";
+const QString QcGeoportailPlugin::PLUGIN_NAME = "geoportail";
 constexpr size_t NUMBER_OF_LEVELS = 20;
 constexpr size_t TILE_SIZE = 256;
 
@@ -123,65 +133,50 @@ QcGeoportailPlugin::QcGeoportailPlugin(const QcGeoportailWmtsLicense & license)
 
   // Fixme: to json
   int map_id = -1;
-  add_layer(QcGeoportailLayer(++map_id, // 1
-                              2,
-                              QStringLiteral("Carte topographique"),
-                              QStringLiteral("GEOGRAPHICALGRIDSYSTEMS.MAPS"), // .SCAN25TOUR
-                              QStringLiteral("normal"),
-                              QStringLiteral("jpeg")));
-  add_layer(QcGeoportailLayer(++map_id, // 2
-                              3,
-                              QStringLiteral("Vue aérienne"),
-                              QStringLiteral("ORTHOIMAGERY.ORTHOPHOTOS"),
-                              QStringLiteral("normal"),
-                              QStringLiteral("jpeg")));
-
-  add_layer(QcGeoportailLayer(++map_id, // 0
-                              1,
-                              QStringLiteral("Carte"),
-                              QStringLiteral("GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD"),
-                              QStringLiteral("normal"),
-                              QStringLiteral("jpeg")));
-  add_layer(QcGeoportailLayer(++map_id, // 3
-                              4,
-                              QStringLiteral("Routes"),
-                              QStringLiteral("TRANSPORTNETWORKS.ROADS"),
-                              QStringLiteral("normal"),
-                              QStringLiteral("png")));
-  add_layer(QcGeoportailLayer(++map_id, // 4
-                              5,
-                              QStringLiteral("Parcelles cadastrales"),
-                              QStringLiteral("CADASTRALPARCELS.PARCELS"),
-                              QStringLiteral("bdparcellaire"),
-                              QStringLiteral("png")));
+  add_layer(new QcGeoportailLayer(this,
+                                  ++map_id, // 1
+                                  2,
+                                  QStringLiteral("Carte topographique"),
+                                  QLatin1Literal("GEOGRAPHICALGRIDSYSTEMS.MAPS"), // .SCAN25TOUR
+                                  QLatin1Literal("jpeg"),
+                                  QLatin1Literal("normal")
+                                  ));
+  add_layer(new QcGeoportailLayer(this,
+                                  ++map_id, // 2
+                                  3,
+                                  QStringLiteral("Vue aérienne"),
+                                  QLatin1Literal("ORTHOIMAGERY.ORTHOPHOTOS"),
+                                  QLatin1Literal("jpeg"),
+                                  QLatin1Literal("normal")
+                                  ));
+  add_layer(new QcGeoportailLayer(this,
+                                  ++map_id, // 0
+                                  1,
+                                  QStringLiteral("Carte"),
+                                  QLatin1Literal("GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD"),
+                                  QLatin1Literal("jpeg"),
+                                  QLatin1Literal("normal")
+                                  ));
+  add_layer(new QcGeoportailLayer(this,
+                                  ++map_id, // 3
+                                  4,
+                                  QStringLiteral("Routes"),
+                                  QLatin1Literal("TRANSPORTNETWORKS.ROADS"),
+                                  QLatin1Literal("png"),
+                                  QLatin1Literal("normal")
+                                  ));
+  add_layer(new QcGeoportailLayer(this,
+                                  ++map_id, // 4
+                                  5,
+                                  QStringLiteral("Parcelles cadastrales"),
+                                  QLatin1Literal("CADASTRALPARCELS.PARCELS"),
+                                  QLatin1Literal("png"),
+                                  QLatin1Literal("bdparcellaire")
+                                  ));
 }
 
 QcGeoportailPlugin::~QcGeoportailPlugin()
 {}
-
-void
-QcGeoportailPlugin::add_layer(const QcGeoportailLayer & layer)
-{
-  // Fixme: check for errors
-  m_layers.insert(layer.map_id(), layer);
-}
-
-// const QcGeoportailLayer &
-QcGeoportailLayer
-QcGeoportailPlugin::layer(const QString & title) const
-{
-  for (const auto & _layer : m_layers)
-    if (_layer.title() == title)
-      return _layer;
-  return QcGeoportailLayer();
-}
-
-QUrl
-QcGeoportailPlugin::make_layer_url(const QcTileSpec & tile_spec) const
-{
-  // Fixme: error
-  return m_layers[tile_spec.map_id()].url(tile_spec, m_license);
-}
 
 /**************************************************************************************************/
 

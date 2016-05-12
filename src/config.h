@@ -1,3 +1,5 @@
+// -*- mode: c++ -*-
+
 /***************************************************************************************************
 **
 ** $QTCARTO_BEGIN_LICENSE:GPL3$
@@ -26,15 +28,12 @@
 
 /**************************************************************************************************/
 
-#include "osm_wmts_tile_fetcher.h"
+#ifndef __CONFIG_H__
+#define __CONFIG_H__
 
-#include "osm_plugin.h"
-#include "osm_wmts_reply.h"
-#include "wmts/wmts_plugin.h"
+/**************************************************************************************************/
 
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QDebug>
+#include <QString>
 
 /**************************************************************************************************/
 
@@ -42,41 +41,36 @@
 
 /**************************************************************************************************/
 
-QcOsmWmtsTileFetcher::QcOsmWmtsTileFetcher(const QcOsmPlugin * plugin)
-  : QcWmtsTileFetcher(),
-    m_plugin(plugin),
-    m_network_manager(new QNetworkAccessManager(this)),
-    m_user_agent("QtCarto based application")
+class QcConfig
 {
-  connect(m_network_manager,
-	  SIGNAL(authenticationRequired(QNetworkReply*, QAuthenticator*)),
-	  this,
-	  SLOT(on_authentication_request_slot(QNetworkReply*, QAuthenticator*)));
-}
+public:
+  static QcConfig & instance() {
+    // Thread-safe in C++11
+    static QcConfig m_instance;
+    return m_instance;
+  }
 
-QcWmtsReply *
-QcOsmWmtsTileFetcher::get_tile_image(const QcTileSpec & tile_spec)
-{
-  const QcWmtsPluginLayer * layer = m_plugin->layer(tile_spec);
-  QUrl url = layer->url(tile_spec);
-  qInfo() << url;
+  // Delete copy and move constructors and assign operators
+  QcConfig(QcConfig const &) = delete;             // Copy construct
+  QcConfig & operator=(QcConfig const &) = delete; // Copy assign
+  QcConfig(QcConfig &&) = delete;                  // Move construct
+  QcConfig & operator=(QcConfig &&) = delete;      // Move assign
 
-  QNetworkRequest request;
-  request.setRawHeader("User-Agent", m_user_agent);
-  request.setUrl(url);
+  const QString & application_user_directory() const { return m_application_user_directory; }
 
-  QNetworkReply *reply = m_network_manager->get(request);
-  if (reply->error() != QNetworkReply::NoError)
-    qWarning() << __FUNCTION__ << reply->errorString();
+private:
+  ~QcConfig();
+  QcConfig();
 
-  return new QcOsmWmtsReply(reply, tile_spec, layer->image_format());
-}
+private:
+  QString m_application_user_directory;
+};
 
 /**************************************************************************************************/
 
-// #include "osm_wmts_tile_fetcher.moc"
-
 // QC_END_NAMESPACE
+
+#endif /* __CONFIG_H__ */
 
 /***************************************************************************************************
  *

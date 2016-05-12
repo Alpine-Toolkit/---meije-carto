@@ -26,57 +26,70 @@
 
 /**************************************************************************************************/
 
-#include "osm_wmts_tile_fetcher.h"
+#include "wmts_plugin_manager.h"
 
-#include "osm_plugin.h"
-#include "osm_wmts_reply.h"
-#include "wmts/wmts_plugin.h"
+#include "config.h"
+#include "geoportail/geoportail_plugin.h"
+#include "osm/osm_plugin.h"
 
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QDebug>
+#include <QtDebug>
 
 /**************************************************************************************************/
 
-// QC_BEGIN_NAMESPACE
-
-/**************************************************************************************************/
-
-QcOsmWmtsTileFetcher::QcOsmWmtsTileFetcher(const QcOsmPlugin * plugin)
-  : QcWmtsTileFetcher(),
-    m_plugin(plugin),
-    m_network_manager(new QNetworkAccessManager(this)),
-    m_user_agent("QtCarto based application")
+QcWmtsPluginManager::QcWmtsPluginManager()
 {
-  connect(m_network_manager,
-	  SIGNAL(authenticationRequired(QNetworkReply*, QAuthenticator*)),
-	  this,
-	  SLOT(on_authentication_request_slot(QNetworkReply*, QAuthenticator*)));
+  // Fixme: plugin name versus title ?
+  m_plugin_names << QcGeoportailPlugin::PLUGIN_NAME
+                 << QcOsmPlugin::PLUGIN_NAME;
 }
 
-QcWmtsReply *
-QcOsmWmtsTileFetcher::get_tile_image(const QcTileSpec & tile_spec)
+QcWmtsPluginManager::~QcWmtsPluginManager()
+{}
+
+QcWmtsPlugin *
+QcWmtsPluginManager::operator[](const QString & name)
 {
-  const QcWmtsPluginLayer * layer = m_plugin->layer(tile_spec);
-  QUrl url = layer->url(tile_spec);
-  qInfo() << url;
+  if (m_plugins.contains(name))
+    return m_plugins[name];
+  else {
+    // Fixme:: use Qt Meta
+    // int QMetaObject::indexOfMethod(const char *method) const
+    // bool QMetaObject::invokeMethod(QObject *obj, const char *member
+    QcWmtsPlugin * plugin = nullptr;
+    if (name == QcGeoportailPlugin::PLUGIN_NAME)
+      plugin = create_plugin_geoportail();
+    else if (name == QcOsmPlugin::PLUGIN_NAME)
+      plugin = create_plugin_osm();
 
-  QNetworkRequest request;
-  request.setRawHeader("User-Agent", m_user_agent);
-  request.setUrl(url);
+    if (plugin)
+      m_plugins.insert(plugin->name(), plugin);
 
-  QNetworkReply *reply = m_network_manager->get(request);
-  if (reply->error() != QNetworkReply::NoError)
-    qWarning() << __FUNCTION__ << reply->errorString();
+    return plugin;
+  }
+}
 
-  return new QcOsmWmtsReply(reply, tile_spec, layer->image_format());
+QcWmtsPlugin *
+QcWmtsPluginManager::create_plugin_geoportail()
+{
+  QcConfig & config = QcConfig::instance();
+
+  // Fixme: Hide license
+  QString json_path = QDir(config.application_user_directory()).filePath(QLatin1Literal("geoportail-license.json"));
+  qInfo() << "Geoportail license json" << json_path;
+  QcGeoportailWmtsLicense geoportail_license(json_path);
+
+  return new QcGeoportailPlugin(geoportail_license);
+}
+
+QcWmtsPlugin *
+QcWmtsPluginManager::create_plugin_osm()
+{
+  return new QcOsmPlugin();
 }
 
 /**************************************************************************************************/
 
-// #include "osm_wmts_tile_fetcher.moc"
-
-// QC_END_NAMESPACE
+// #include "wmts_plugin_manager.moc"
 
 /***************************************************************************************************
  *

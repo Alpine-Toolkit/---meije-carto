@@ -158,11 +158,11 @@ QcMapLayerRootNode::update_tiles(QcMapLayerScene * map_scene,
 
 /**************************************************************************************************/
 
-QcMapLayerScene::QcMapLayerScene(QcWmtsPluginMap plugin_map, const QcViewport * viewport, QObject * parent)
+QcMapLayerScene::QcMapLayerScene(const QcWmtsPluginLayer * plugin_layer, const QcViewport * viewport, QObject * parent)
   : QObject(parent),
-    m_plugin_map(plugin_map),
+    m_plugin_layer(plugin_layer),
     m_viewport(viewport),
-    m_tile_matrix_set(plugin_map.plugin()->tile_matrix_set())
+    m_tile_matrix_set(plugin_layer->plugin()->tile_matrix_set())
 {
   qInfo();
 }

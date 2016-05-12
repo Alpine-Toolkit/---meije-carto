@@ -26,15 +26,10 @@
 
 /**************************************************************************************************/
 
-#include "osm_wmts_tile_fetcher.h"
+#include "config.h"
 
-#include "osm_plugin.h"
-#include "osm_wmts_reply.h"
-#include "wmts/wmts_plugin.h"
-
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QDebug>
+#include <QDir>
+#include <QStandardPaths>
 
 /**************************************************************************************************/
 
@@ -42,39 +37,16 @@
 
 /**************************************************************************************************/
 
-QcOsmWmtsTileFetcher::QcOsmWmtsTileFetcher(const QcOsmPlugin * plugin)
-  : QcWmtsTileFetcher(),
-    m_plugin(plugin),
-    m_network_manager(new QNetworkAccessManager(this)),
-    m_user_agent("QtCarto based application")
+QcConfig::QcConfig()
 {
-  connect(m_network_manager,
-	  SIGNAL(authenticationRequired(QNetworkReply*, QAuthenticator*)),
-	  this,
-	  SLOT(on_authentication_request_slot(QNetworkReply*, QAuthenticator*)));
+  QString generic_data_location_path = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+  m_application_user_directory = QDir(generic_data_location_path).filePath(QLatin1Literal("alpine-toolkit"));
 }
 
-QcWmtsReply *
-QcOsmWmtsTileFetcher::get_tile_image(const QcTileSpec & tile_spec)
-{
-  const QcWmtsPluginLayer * layer = m_plugin->layer(tile_spec);
-  QUrl url = layer->url(tile_spec);
-  qInfo() << url;
-
-  QNetworkRequest request;
-  request.setRawHeader("User-Agent", m_user_agent);
-  request.setUrl(url);
-
-  QNetworkReply *reply = m_network_manager->get(request);
-  if (reply->error() != QNetworkReply::NoError)
-    qWarning() << __FUNCTION__ << reply->errorString();
-
-  return new QcOsmWmtsReply(reply, tile_spec, layer->image_format());
-}
+QcConfig::~QcConfig()
+{}
 
 /**************************************************************************************************/
-
-// #include "osm_wmts_tile_fetcher.moc"
 
 // QC_END_NAMESPACE
 

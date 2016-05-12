@@ -45,39 +45,31 @@
 
 // QC_BEGIN_NAMESPACE
 
+class QcGeoportailPlugin;
+
 /**************************************************************************************************/
 
-class QcGeoportailLayer
+class QcGeoportailLayer : public QcWmtsPluginLayer
 {
 public:
-  QcGeoportailLayer();
-  QcGeoportailLayer(int map_id,
+  QcGeoportailLayer(QcGeoportailPlugin * plugin,
+                    int map_id,
                     int position,
                     const QString & title,
                     const QString & name,
-                    const QString & style,
-                    const QString & image_format);
+                    const QString & image_format,
+                    const QString & style);
   QcGeoportailLayer(const QcGeoportailLayer & other);
   ~QcGeoportailLayer();
 
   QcGeoportailLayer & operator=(const QcGeoportailLayer & other);
 
-  int map_id() const { return m_map_id; }
-  int position() const { return m_position; }
-  const QString & title() const { return m_title; }
-  const QString & name() const { return m_name; }
   const QString & style() const { return m_style; }
-  const QString & image_format() const { return m_image_format; }
 
-  QUrl url(const QcTileSpec & tile_spec, const QcGeoportailWmtsLicense & license) const;
+  QUrl url(const QcTileSpec & tile_spec) const;
 
 private:
-  int m_map_id;
-  int m_position;
-  QString m_title;
-  QString m_name;
   QString m_style;
-  QString m_image_format;
 };
 
 /**************************************************************************************************/
@@ -85,28 +77,20 @@ private:
 class QcGeoportailPlugin : public QcWmtsPlugin
 {
 public:
+  static const QString PLUGIN_NAME;
+
+public:
   QcGeoportailPlugin(const QcGeoportailWmtsLicense & license);
   ~QcGeoportailPlugin();
 
   const QcGeoportailWmtsLicense & license() const { return m_license; }
 
+  // Fixme: private ?
   QcGeoportailWmtsTileFetcher * tile_fetcher() { return &m_tile_fetcher; }
-
-  // off-line cache : load tiles from a polygon
-
-  int number_of_layers() const { return m_layers.size(); }
-  QcGeoportailLayer layer(int i) const { return m_layers[i]; } // Fixme: const &
-  QcGeoportailLayer layer(const QString & title) const;
-
-  QUrl make_layer_url(const QcTileSpec & tile_spec) const;
-
-private:
-  void add_layer(const QcGeoportailLayer & layer);
 
 private:
   QcGeoportailWmtsLicense m_license;
   QcGeoportailWmtsTileFetcher m_tile_fetcher;
-  QHash<int, QcGeoportailLayer> m_layers;
 };
 
 // QC_END_NAMESPACE

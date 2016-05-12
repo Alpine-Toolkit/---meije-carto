@@ -31,6 +31,7 @@ set(qtcarto_files
   cache/file_tile_cache.cpp
   cache/offline_cache.cpp
   cache/tile_image.cpp
+  config.cpp
   coordinate/geo_coordinate.cpp
   geo_data_format/gpx.cpp
   geo_data_format/route.cpp
@@ -61,6 +62,7 @@ set(qtcarto_files
   wmts/tile_spec.cpp
   wmts/wmts_manager.cpp
   wmts/wmts_plugin.cpp
+  wmts/wmts_plugin_manager.cpp
   wmts/wmts_reply.cpp
   wmts/wmts_request_manager.cpp
   wmts/wmts_tile_fetcher.cpp

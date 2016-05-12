@@ -26,9 +26,11 @@
 
 /**************************************************************************************************/
 
+#include "geoportail_wmts_tile_fetcher.h"
+
 #include "geoportail_plugin.h"
 #include "geoportail_wmts_reply.h"
-#include "geoportail_wmts_tile_fetcher.h"
+#include "wmts/wmts_plugin.h"
 
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
@@ -40,10 +42,9 @@
 
 QcGeoportailWmtsTileFetcher::QcGeoportailWmtsTileFetcher(const QcGeoportailPlugin * plugin)
   : QcWmtsTileFetcher(),
-    m_network_manager(new QNetworkAccessManager(this)),
     m_plugin(plugin),
-    m_user_agent("QtCarto based application"),
-    m_reply_format("jpg")
+    m_network_manager(new QNetworkAccessManager(this)),
+    m_user_agent("QtCarto based application")
 {
   connect(m_network_manager,
 	  SIGNAL(authenticationRequired(QNetworkReply*, QAuthenticator*)),
@@ -51,56 +52,11 @@ QcGeoportailWmtsTileFetcher::QcGeoportailWmtsTileFetcher(const QcGeoportailPlugi
 	  SLOT(on_authentication_request_slot(QNetworkReply*, QAuthenticator*)));
 }
 
-/*
-void QcGeoportailWmtsTileFetcher::setFormat(const QString &format)
-{
-  m_format = format;
-
-  if (m_format == "jpg")
-    m_replyFormat = "jpg";
-  else
-    qWarning() << "Unknown map format " << m_format;
-}
-
-void
-QcGeoportailWmtsTileFetcher::setAccessToken(const QString &accessToken)
-{
-  m_accessToken = accessToken;
-}
-*/
-
-/*
- * Vue aérienne LAYER = ORTHOIMAGERY.ORTHOPHOTOS
- * http://wxs.ign.fr/<KEY>/geoportail/wmts?
- * SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ORTHOIMAGERY.ORTHOPHOTOS
- * &STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX=16&TILEROW=23327&TILECOL=33919&FORMAT=image/jpeg
- *
- * Carte LAYER = GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD
- * http://wxs.ign.fr/<KEY>/geoportail/wmts?
- * SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD
- * &STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX=16&TILEROW=23327&TILECOL=33920&FORMAT=image/jpeg
- *
- * Carte topographique LAYER = GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN25TOUR
- * http://wxs.ign.fr/<KEY>/geoportail/wmts?
- * SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN25TOUR
- * &STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX=16&TILEROW=23326&TILECOL=33920&FORMAT=image/jpeg
- *
- * Parcelles cadastrales
- * http://wxs.ign.fr/<KEY>/geoportail/wmts?
- * SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=CADASTRALPARCELS.PARCELS
- * &STYLE=bdparcellaire&TILEMATRIXSET=PM&TILEMATRIX=16&TILEROW=23325&TILECOL=33915&FORMAT=image/png
- *
- * Routes
- * http://wxs.ign.fr/<KEY>/geoportail/wmts?
- * SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=TRANSPORTNETWORKS.ROADS&STYLE=normal
- * &TILEMATRIXSET=PM&TILEMATRIX=16&TILEROW=23326&TILECOL=33917&FORMAT=image/png
- *
- */
-
 QcWmtsReply *
 QcGeoportailWmtsTileFetcher::get_tile_image(const QcTileSpec & tile_spec)
 {
-  QUrl url = m_plugin->make_layer_url(tile_spec);
+  const QcWmtsPluginLayer * layer = m_plugin->layer(tile_spec);
+  QUrl url = layer->url(tile_spec);
   qInfo() << url;
 
   QNetworkRequest request;
@@ -111,7 +67,7 @@ QcGeoportailWmtsTileFetcher::get_tile_image(const QcTileSpec & tile_spec)
   if (reply->error() != QNetworkReply::NoError)
     qWarning() << __FUNCTION__ << reply->errorString();
 
-  return new QcGeoportailWmtsReply(reply, tile_spec, m_reply_format);
+  return new QcGeoportailWmtsReply(reply, tile_spec, layer->image_format());
 }
 
 void

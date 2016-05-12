@@ -48,14 +48,14 @@
 
 class QcGeoportailPlugin; // Fixme: circular
 
+/**************************************************************************************************/
+
 class QcGeoportailWmtsTileFetcher : public QcWmtsTileFetcher
 {
   Q_OBJECT
 
 public:
   QcGeoportailWmtsTileFetcher(const QcGeoportailPlugin * plugin);
-
-  // const QcGeoportailWmtsLicense & license() const { return m_plugin->license(); }
 
   void set_user_agent(const QByteArray & user_agent) { m_user_agent = user_agent; }
 
@@ -66,10 +66,9 @@ private:
   QcWmtsReply * get_tile_image(const QcTileSpec & tile_spec);
 
 private:
-  QNetworkAccessManager * m_network_manager;
   const QcGeoportailPlugin * m_plugin;
+  QNetworkAccessManager * m_network_manager;
   QByteArray m_user_agent;
-  QString m_reply_format;
 };
 
 // QC_END_NAMESPACE

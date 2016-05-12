@@ -34,6 +34,7 @@
 /**************************************************************************************************/
 
 #include "wmts/wmts_tile_fetcher.h"
+// #include "map/osm/osm_plugin.h" // Fixme: circular
 
 #include <QAuthenticator>
 #include <QNetworkAccessManager>
@@ -43,21 +44,26 @@
 
 // QC_BEGIN_NAMESPACE
 
+class QcOsmPlugin; // Fixme: circular
+
+/**************************************************************************************************/
+
+// Fixme: merge code
+
 class QcOsmWmtsTileFetcher : public QcWmtsTileFetcher
 {
   Q_OBJECT
 
 public:
-  QcOsmWmtsTileFetcher();
+  QcOsmWmtsTileFetcher(const QcOsmPlugin * plugin);
 
-  void set_user_agent(const QByteArray & user_agent) {
-    m_user_agent = user_agent;
-  }
+  void set_user_agent(const QByteArray & user_agent) { m_user_agent = user_agent; }
 
 private:
   QcWmtsReply * get_tile_image(const QcTileSpec & tile_spec);
 
 private:
+  const QcOsmPlugin * m_plugin;
   QNetworkAccessManager * m_network_manager;
   QByteArray m_user_agent;
   QString m_reply_format;

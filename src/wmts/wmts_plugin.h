@@ -35,6 +35,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QUrl>
 
 #include "wmts/tile_matrix_set.h"
 #include "wmts/wmts_manager.h"
@@ -43,7 +44,44 @@
 
 // QC_BEGIN_NAMESPACE
 
-class QcWmtsPluginMap;
+class QcWmtsPlugin;
+
+/**************************************************************************************************/
+
+class QcWmtsPluginLayer
+{
+public:
+  // QcWmtsPluginLayer();
+  QcWmtsPluginLayer(QcWmtsPlugin * plugin,
+                    int map_id,
+                    int position,
+                    const QString & title,
+                    const QString & name,
+                    const QString & image_format);
+  QcWmtsPluginLayer(const QcWmtsPluginLayer & other);
+  ~QcWmtsPluginLayer();
+
+  QcWmtsPluginLayer & operator=(const QcWmtsPluginLayer & other);
+
+  QcWmtsPlugin * plugin() const { return m_plugin; }
+  int map_id() const { return m_map_id; }
+  int position() const { return m_position; }
+  const QString & title() const { return m_title; }
+  const QString & name() const { return m_name; }
+  const QString & image_format() const { return m_image_format; }
+
+  QString hash_name() const;
+  QcTileSpec create_tile_spec(int level, int x, int y) const;
+  virtual QUrl url(const QcTileSpec & tile_spec) const = 0;
+
+private:
+  QcWmtsPlugin * m_plugin;
+  int m_map_id;
+  int m_position;
+  QString m_title;
+  QString m_name;
+  QString m_image_format;
+};
 
 /**************************************************************************************************/
 
@@ -53,48 +91,30 @@ public:
   QcWmtsPlugin(const QString & name, size_t number_of_levels, size_t tile_size);
   ~QcWmtsPlugin();
 
-  const QString & name() { return m_name; }
-  QcTileMatrixSet & tile_matrix_set() { return m_tile_matrix_set; }
+  const QString & name() const { return m_name; };
+  QcTileMatrixSet & tile_matrix_set() { return m_tile_matrix_set; } // Fixme: const ?
   QcWmtsManager * wmts_manager() { return &m_wmts_manager; }  // Fixme: & or *
 
-  bool is_valid_map_id(int map_id) const { return true; }
+  void add_layer(const QcWmtsPluginLayer * layer);
+  const QList<const QcWmtsPluginLayer *> & layers() const { return m_layers; }
+  // Fimxe: * vs & ?
+  const QcWmtsPluginLayer * layer(int map_id) const;
+  const QcWmtsPluginLayer * layer(const QcTileSpec & tile_spec) const;
+  const QcWmtsPluginLayer * layer(const QString & title) const;
 
-  QcWmtsPluginMap plugin_map(int map_id); // const
-
+  // Fixme: protected ?
   QcTileSpec create_tile_spec(int map_id, int level, int x, int y) const {
     return QcTileSpec(m_name, map_id, level, x, y);
   }
+  // Fixme: usefull ?
+  QUrl make_layer_url(const QcTileSpec & tile_spec) const;
 
 private:
   QString m_name;
+  QList<const QcWmtsPluginLayer *> m_layers;
+  QHash<int, const QcWmtsPluginLayer *> m_layer_map;
   QcTileMatrixSet m_tile_matrix_set;
   QcWmtsManager m_wmts_manager;
-};
-
-/**************************************************************************************************/
-
-class QcWmtsPluginMap
-{
-public:
-  // Fixme: const plugin
-  QcWmtsPluginMap(QcWmtsPlugin * plugin, int map_id);
-  QcWmtsPluginMap(const QcWmtsPluginMap & other);
-  ~QcWmtsPluginMap();
-
-  QcWmtsPluginMap & operator=(const QcWmtsPluginMap & other);
-
-  QcWmtsPlugin * plugin() { return m_plugin; }
-  int map_id() const { return m_map_id; }
-
-  QString name() const;
-
-  QcTileSpec create_tile_spec(int level, int x, int y) const {
-    return m_plugin->create_tile_spec(m_map_id, level, x, y);
-  }
-
-private:
-  QcWmtsPlugin * m_plugin;
-  int m_map_id;
 };
 
 /**************************************************************************************************/

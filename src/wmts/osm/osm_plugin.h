@@ -34,7 +34,6 @@
 /**************************************************************************************************/
 
 #include "wmts/wmts_plugin.h"
-
 #include "wmts/osm/osm_wmts_tile_fetcher.h"
 
 #include <QObject>
@@ -42,10 +41,42 @@
 
 /**************************************************************************************************/
 
+class QcOsmPlugin;
+
+/**************************************************************************************************/
+
+class QcOsmLayer : public QcWmtsPluginLayer
+{
+public:
+  QcOsmLayer(QcOsmPlugin * plugin,
+             int map_id,
+             int position,
+             const QString & title,
+             const QString & name,
+             const QString & image_format,
+             const QString & base);
+  QcOsmLayer(const QcOsmLayer & other);
+  ~QcOsmLayer();
+
+  QcOsmLayer & operator=(const QcOsmLayer & other);
+
+  const QString & base() const { return m_base; }
+
+  QUrl url(const QcTileSpec & tile_spec) const;
+
+private:
+  QString m_base;
+};
+
+/**************************************************************************************************/
+
 // QC_BEGIN_NAMESPACE
 
 class QcOsmPlugin : public QcWmtsPlugin
 {
+public:
+  static const QString PLUGIN_NAME;
+
 public:
   QcOsmPlugin();
   ~QcOsmPlugin();

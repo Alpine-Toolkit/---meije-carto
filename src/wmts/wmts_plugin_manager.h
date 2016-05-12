@@ -1,3 +1,5 @@
+// -*- mode: c++ -*-
+
 /***************************************************************************************************
 **
 ** $QTCARTO_BEGIN_LICENSE:GPL3$
@@ -26,15 +28,15 @@
 
 /**************************************************************************************************/
 
-#include "osm_wmts_tile_fetcher.h"
+#ifndef __WMTS_PLUGIN_MANAGER_H__
+#define __WMTS_PLUGIN_MANAGER_H__
 
-#include "osm_plugin.h"
-#include "osm_wmts_reply.h"
+/**************************************************************************************************/
+
+#include <QObject>
+#include <QHash>
+
 #include "wmts/wmts_plugin.h"
-
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QDebug>
 
 /**************************************************************************************************/
 
@@ -42,41 +44,44 @@
 
 /**************************************************************************************************/
 
-QcOsmWmtsTileFetcher::QcOsmWmtsTileFetcher(const QcOsmPlugin * plugin)
-  : QcWmtsTileFetcher(),
-    m_plugin(plugin),
-    m_network_manager(new QNetworkAccessManager(this)),
-    m_user_agent("QtCarto based application")
+class QcWmtsPluginManager : QObject
 {
-  connect(m_network_manager,
-	  SIGNAL(authenticationRequired(QNetworkReply*, QAuthenticator*)),
-	  this,
-	  SLOT(on_authentication_request_slot(QNetworkReply*, QAuthenticator*)));
-}
+public:
+  static QcWmtsPluginManager & instance() {
+    // Thread-safe in C++11
+    static QcWmtsPluginManager m_instance;
+    return m_instance;
+  }
 
-QcWmtsReply *
-QcOsmWmtsTileFetcher::get_tile_image(const QcTileSpec & tile_spec)
-{
-  const QcWmtsPluginLayer * layer = m_plugin->layer(tile_spec);
-  QUrl url = layer->url(tile_spec);
-  qInfo() << url;
+  // Delete copy and move constructors and assign operators
+  QcWmtsPluginManager(QcWmtsPluginManager const &) = delete;             // Copy construct
+  QcWmtsPluginManager & operator=(QcWmtsPluginManager const &) = delete; // Copy assign
+  QcWmtsPluginManager(QcWmtsPluginManager &&) = delete;                  // Move construct
+  QcWmtsPluginManager & operator=(QcWmtsPluginManager &&) = delete;      // Move assign
 
-  QNetworkRequest request;
-  request.setRawHeader("User-Agent", m_user_agent);
-  request.setUrl(url);
+  const QList<QString> & plugin_names() const { return m_plugin_names; }
 
-  QNetworkReply *reply = m_network_manager->get(request);
-  if (reply->error() != QNetworkReply::NoError)
-    qWarning() << __FUNCTION__ << reply->errorString();
+  QcWmtsPlugin * operator[](const QString & name);
 
-  return new QcOsmWmtsReply(reply, tile_spec, layer->image_format());
-}
+private:
+  ~QcWmtsPluginManager();
+  QcWmtsPluginManager();
+
+  QcWmtsPlugin * create_plugin_geoportail();
+  QcWmtsPlugin * create_plugin_osm();
+
+private:
+  QList<QString> m_plugin_names;
+  QHash<QString, QcWmtsPlugin *> m_plugins;
+};
 
 /**************************************************************************************************/
 
-// #include "osm_wmts_tile_fetcher.moc"
-
 // QC_END_NAMESPACE
+
+/**************************************************************************************************/
+
+#endif /* __WMTS_PLUGIN_MANAGER_H__ */
 
 /***************************************************************************************************
  *

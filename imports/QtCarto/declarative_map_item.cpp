@@ -55,7 +55,7 @@ QcMapItem::QcMapItem(QQuickItem * parent)
   : QQuickItem(parent),
     m_color(),
     m_gesture_area(new QcMapGestureArea(this)),
-    m_plugin(nullptr),
+    m_plugin_manager(QcWmtsPluginManager::instance()),
     m_map_view(nullptr),
     m_viewport(nullptr)
 {
@@ -73,19 +73,15 @@ QcMapItem::QcMapItem(QQuickItem * parent)
 
   connect(m_map_view, &QcMapView::scene_graph_changed, this, &QQuickItem::update);
 
-  // Fixme: init plugin where ???
-  QString generic_data_location_path = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
-  QString application_user_directory_path = QDir(generic_data_location_path).filePath("alpine-toolkit");
-  QString json_path = QDir(application_user_directory_path).filePath("geoportail-license.json");
-  qInfo() << "Geoportail license json" << json_path;
-  QcGeoportailWmtsLicense geoportail_license(json_path);
-  m_plugin = new QcGeoportailPlugin(geoportail_license);
-  int map_id = 0;
-  m_map_view->add_layer(m_plugin->plugin_map(map_id));
+  for (const auto & plugin_name : m_plugin_manager.plugin_names()) {
+    const QcWmtsPlugin * plugin = m_plugin_manager[plugin_name];
+    for (const auto * layer : plugin->layers()) {
+      qInfo() << plugin->name() << layer->title();
+    }
+  }
 
-  // QcOsmPlugin * m_plugin2 = new QcOsmPlugin();
-  map_id = 2;
-  m_map_view->add_layer(m_plugin->plugin_map(map_id));
+  // m_map_view->add_layer(m_plugin_manager["geoportail"]->layer(0));
+  m_map_view->add_layer(m_plugin_manager["osm"]->layer(0));
 
   // Fixme: remove
   // Set default viewport center and zoom level

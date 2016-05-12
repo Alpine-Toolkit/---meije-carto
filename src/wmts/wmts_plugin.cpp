@@ -30,6 +30,69 @@
 
 /**************************************************************************************************/
 
+// QcPluginLayer::QcPluginLayer()
+//   : m_map_id(),
+//     m_position(),
+//     m_title(),
+//     m_name(),
+//     m_image_format()
+// {}
+
+QcWmtsPluginLayer::QcWmtsPluginLayer(QcWmtsPlugin * plugin,
+                                     int map_id,
+                                     int position,
+                                     const QString & title,
+                                     const QString & name,
+                                     const QString & image_format)
+  : m_plugin(plugin),
+    m_map_id(map_id),
+    m_position(position),
+    m_title(title),
+    m_name(name),
+    m_image_format(image_format)
+{}
+
+QcWmtsPluginLayer::QcWmtsPluginLayer(const QcWmtsPluginLayer & other)
+  : m_plugin(other.m_plugin),
+    m_map_id(other.m_map_id),
+    m_position(other.m_position),
+    m_title(other.m_title),
+    m_name(other.m_name),
+    m_image_format(other.m_image_format)
+{}
+
+QcWmtsPluginLayer::~QcWmtsPluginLayer()
+{}
+
+QcWmtsPluginLayer &
+QcWmtsPluginLayer::operator=(const QcWmtsPluginLayer & other)
+{
+  if (this != &other) {
+    m_plugin = other.m_plugin;
+    m_map_id = other.m_map_id;
+    m_position = other.m_position;
+    m_title = other.m_title;
+    m_name = other.m_name;
+    m_image_format = other.m_image_format;
+  }
+
+  return *this;
+}
+
+QString
+QcWmtsPluginLayer::hash_name() const
+{
+  return m_plugin->name() + '/' + QString::number(m_map_id);
+}
+
+QcTileSpec
+QcWmtsPluginLayer::create_tile_spec(int level, int x, int y) const
+{
+  return m_plugin->create_tile_spec(m_map_id, level, x, y);
+}
+
+/**************************************************************************************************/
+
 QcWmtsPlugin::QcWmtsPlugin(const QString & name, size_t number_of_levels, size_t tile_size)
   : m_name(name),
     m_tile_matrix_set(name, number_of_levels, tile_size),
@@ -39,45 +102,40 @@ QcWmtsPlugin::QcWmtsPlugin(const QString & name, size_t number_of_levels, size_t
 QcWmtsPlugin::~QcWmtsPlugin()
 {}
 
-QcWmtsPluginMap
-QcWmtsPlugin::plugin_map(int map_id) // const
+void
+QcWmtsPlugin::add_layer(const QcWmtsPluginLayer * layer)
 {
-  if (is_valid_map_id(map_id))
-    return QcWmtsPluginMap(this, map_id);
-  else
-    throw std::invalid_argument("invalid map id");
+  // Fixme: check for errors
+  m_layers << layer;
+  m_layer_map.insert(layer->map_id(), layer);
 }
 
-/**************************************************************************************************/
-
-QcWmtsPluginMap::QcWmtsPluginMap(QcWmtsPlugin * plugin, int map_id)
-  : m_plugin(plugin),
-    m_map_id(map_id)
-{}
-
-QcWmtsPluginMap::QcWmtsPluginMap(const QcWmtsPluginMap & other)
-  : m_plugin(other.m_plugin),
-    m_map_id(other.m_map_id)
-{}
-
-QcWmtsPluginMap::~QcWmtsPluginMap()
-{}
-
-QcWmtsPluginMap &
-QcWmtsPluginMap::operator=(const QcWmtsPluginMap & other)
+const QcWmtsPluginLayer *
+QcWmtsPlugin::layer(int map_id) const
 {
-  if (this != &other) {
-    m_plugin = other.m_plugin;
-    m_map_id = other.m_map_id;
-  }
-
-  return *this;
+  return m_layer_map.value(map_id, nullptr);
 }
 
-QString
-QcWmtsPluginMap::name() const
+const QcWmtsPluginLayer *
+QcWmtsPlugin::layer(const QcTileSpec & tile_spec) const
 {
-  return m_plugin->name() + '/' + QString::number(m_map_id);
+  return m_layer_map.value(tile_spec.map_id(), nullptr);
+}
+
+const QcWmtsPluginLayer *
+QcWmtsPlugin::layer(const QString & title) const
+{
+  for (const auto * _layer : m_layers)
+    if (_layer->title() == title)
+      return _layer;
+  return nullptr;
+}
+
+QUrl
+QcWmtsPlugin::make_layer_url(const QcTileSpec & tile_spec) const
+{
+  // Fixme: error
+  return layer(tile_spec)->url(tile_spec);
 }
 
 /**************************************************************************************************/
