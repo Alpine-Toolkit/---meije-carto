@@ -310,8 +310,10 @@ endif(USE_THREAD AND Threads_FOUND AND CMAKE_USE_PTHREADS_INIT)
 
 ####################################################################################################
 
-add_executable(test_proj4 test.c)
-target_link_libraries(test_proj4 ${PROJ_CORE_TARGET})
+if(!ANDROID)
+  add_executable(test_proj4 test.c)
+  target_link_libraries(test_proj4 ${PROJ_CORE_TARGET})
+endif(!ANDROID)
 
 ####################################################################################################
 #

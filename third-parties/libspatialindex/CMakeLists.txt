@@ -249,9 +249,11 @@ set_target_properties(${SIDX_C_LIB_NAME}
 
 ####################################################################################################
 
-add_executable(test_libspatialindex test.cpp)
-target_link_libraries(test_libspatialindex ${SIDX_LIB_NAME} ${SIDX_C_LIB_NAME})
-target_compile_options(test_libspatialindex PRIVATE "--std=c++0x")
+if(!ANDROID)
+  add_executable(test_libspatialindex test.cpp)
+  target_link_libraries(test_libspatialindex ${SIDX_LIB_NAME} ${SIDX_C_LIB_NAME})
+  target_compile_options(test_libspatialindex PRIVATE "--std=c++0x")
+endif(!ANDROID)
 
 ####################################################################################################
 #

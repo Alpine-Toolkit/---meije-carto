@@ -26,12 +26,6 @@
 
 project(QtCarto)
 
-set(QTCARTO_VERSION_MAJOR 1)
-set(QTCARTO_VERSION_MINOR 0)
-set(QTCARTO_VERSION_PATCH 0)
-
-set(QTCARTO_VERSION ${QTCARTO_VERSION_MAJOR}.${QTCARTO_VERSION_MINOR}.${QTCARTO_VERSION_PATCH})
-
 ####################################################################################################
 
 # check cmake version
@@ -48,19 +42,41 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE
 include(qtcarto_functions)
 
 ####################################################################################################
+
+if(ANDROID)
+  message(STATUS "Android build")
+endif()
+
+####################################################################################################
 #
 # Test
 #
 
-enable_testing()
+if(NOT ANDROID)
+  enable_testing()
+endif(NOT ANDROID)
+
+####################################################################################################
+#
+# Version
+#
+
+set(QTCARTO_VERSION_MAJOR 1)
+set(QTCARTO_VERSION_MINOR 0)
+set(QTCARTO_VERSION_PATCH 0)
+
+set(QTCARTO_VERSION ${QTCARTO_VERSION_MAJOR}.${QTCARTO_VERSION_MINOR}.${QTCARTO_VERSION_PATCH})
 
 ####################################################################################################
 #
 # Compiler Options
 #
 
-# SET(CMAKE_BUILD_TYPE RELEASE)
-SET(CMAKE_BUILD_TYPE DEBUG)
+if(NOT ANDROID)
+  # SET(CMAKE_BUILD_TYPE RELEASE)
+  SET(CMAKE_BUILD_TYPE DEBUG)
+endif(NOT ANDROID)
+
 SET(CMAKE_VERBOSE_MAKEFILE ON)
 
 include(CheckCXXCompilerFlag)
@@ -88,57 +104,68 @@ endif(CMAKE_SYSTEM_NAME MATCHES "Windows")
 # Find Qt
 #
 
-# Find includes in corresponding build directories
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-# Instruct CMake to run moc automatically when needed.
-set(CMAKE_AUTOMOC ON)
-# Instruct CMake to run rcc automatically when needed.
-set(CMAKE_AUTORCC ON)
+if(NOT ANDROID)
+  # Find includes in corresponding build directories
+  set(CMAKE_INCLUDE_CURRENT_DIR ON)
+  # Instruct CMake to run moc automatically when needed.
+  set(CMAKE_AUTOMOC ON)
+  # Instruct CMake to run rcc automatically when needed.
+  set(CMAKE_AUTORCC ON)
 
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Gui REQUIRED)
-find_package(Qt5Network REQUIRED)
-find_package(Qt5Positioning REQUIRED)
-find_package(Qt5Qml REQUIRED)
-find_package(Qt5Quick REQUIRED) # QtQuickWidgets
-find_package(Qt5Sensors REQUIRED)
-find_package(Qt5Test REQUIRED)
-# find_package(Qt5Xml REQUIRED)
-# find_package(Qt5WebView REQUIRED)
+  find_package(Qt5Core REQUIRED)
+  find_package(Qt5Gui REQUIRED)
+  find_package(Qt5Network REQUIRED)
+  find_package(Qt5Positioning REQUIRED)
+  find_package(Qt5Qml REQUIRED)
+  find_package(Qt5Quick REQUIRED) # QtQuickWidgets
+  find_package(Qt5Sensors REQUIRED)
+  find_package(Qt5Test REQUIRED)
+  # find_package(Qt5Xml REQUIRED)
+  # find_package(Qt5WebView REQUIRED)
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DQT_QML_DEBUG") # Fixme: right way to do?
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DQT_QML_DEBUG") # Fixme: right way to do?
 
-# INCLUDE_DIRECTORIES(${Qt5Core_INCLUDES})
-# ADD_DEFINITIONS(${Qt5Core_DEFINITIONS})
-# SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
+  # INCLUDE_DIRECTORIES(${Qt5Core_INCLUDES})
+  # ADD_DEFINITIONS(${Qt5Core_DEFINITIONS})
+  # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
+endif(NOT ANDROID)
 
 ####################################################################################################
 #
 # Find Proj4
 #
 
-include(FindProj4)
-if(PROJ4_FOUND)
-  add_definitions(-DWITH_PROJ4)
-  INCLUDE_DIRECTORIES(PROJ4_INCLUDE_DIR)
-endif(PROJ4_FOUND)
+if(NOT ANDROID)
+  include(FindProj4)
+  if(PROJ4_FOUND)
+    add_definitions(-DWITH_PROJ4)
+    INCLUDE_DIRECTORIES(PROJ4_INCLUDE_DIR)
+  endif(PROJ4_FOUND)
+endif(NOT ANDROID)
 
 ####################################################################################################
 #
 # Sub directories
 #
 
-INCLUDE_DIRECTORIES(src)
+if(ANDROID)
+  add_subdirectory(third-parties)
+endif(ANDROID)
 
-add_subdirectory(src)
-add_subdirectory(tools)
+if(NOT ANDROID)
+  INCLUDE_DIRECTORIES(src)
+endif(NOT ANDROID)
 
-add_subdirectory(imports)
-add_subdirectory(mapviewer)
+if(NOT ANDROID)
+  add_subdirectory(src)
+  add_subdirectory(imports)
+  add_subdirectory(mapviewer)
+endif(NOT ANDROID)
 
-add_subdirectory(third-parties)
-
-add_subdirectory(test)
+if(NOT ANDROID)
+  add_subdirectory(tools)
+  add_subdirectory(test)
+endif(NOT ANDROID)
 
 ####################################################################################################
 #
