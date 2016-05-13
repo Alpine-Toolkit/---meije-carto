@@ -42,7 +42,10 @@ if(POLICY CMP0990)
 endif()
 
 # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
+
+include(qtcarto_functions)
 
 ####################################################################################################
 #
@@ -111,7 +114,7 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DQT_QML_DEBUG") # Fixme: right way to d
 
 ####################################################################################################
 #
-# Find Qt
+# Find Proj4
 #
 
 include(FindProj4)
@@ -132,6 +135,8 @@ add_subdirectory(tools)
 
 add_subdirectory(imports)
 add_subdirectory(mapviewer)
+
+add_subdirectory(third-parties)
 
 add_subdirectory(test)
 

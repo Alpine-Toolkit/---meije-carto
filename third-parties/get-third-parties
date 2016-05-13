@@ -1,0 +1,10 @@
+#! /bin/bash
+
+# pushd third-party
+
+git clone https://github.com/OSGeo/proj.4.git
+git clone https://github.com/libspatialindex/libspatialindex.git
+
+# popd
+
+# End
