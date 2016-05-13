@@ -117,6 +117,7 @@ QcMapViewLayer::update_scene()
     m_east_visible_tiles.clear();
     m_visible_tiles.clear();
     m_layer_scene->set_visible_tiles(m_visible_tiles, m_east_visible_tiles, m_middle_visible_tiles, m_west_visible_tiles);
+    emit scene_graph_changed();
   } else {
     // qInfo() << "Normalised Mercator polygon interval [m]"
     //         << "[" << (int) interval.x().inf() << ", " << (int) interval.x().sup() << "]"
@@ -141,10 +142,6 @@ QcMapViewLayer::update_scene()
     // bool new_tiles_introduced = !m_visible_tiles.contains(visible_tiles);
     m_visible_tiles = visible_tiles;
 
-    // Skip tiles
-    // emit scene_graph_changed();
-    // return;
-
     // Fixme: better ?
     m_layer_scene->set_visible_tiles(m_visible_tiles, m_west_visible_tiles, m_middle_visible_tiles, m_east_visible_tiles);
 
@@ -159,7 +156,7 @@ QcMapViewLayer::update_scene()
     }
   }
 
-  // Fixme: viewport_changed -> scene_graph_changed
+  // Fixme: else pan doesn't work
   emit scene_graph_changed();
 }
 
@@ -172,7 +169,8 @@ QcMapView::QcMapView()
 {
   // Fixme: need to pass fake state
   QcGeoCoordinatePseudoWebMercator coordinate_origin(0, 0);
-  int tile_size = 256; // map can have different tile size !
+  int tile_size = 256; // map can have different tile size ! Use the most common ?
+  // map_size = EQUATORIAL_PERIMETER here
   QcTiledZoomLevel tiled_zoom_level(EQUATORIAL_PERIMETER, tile_size, 0);
   QcViewportState viewport_state(coordinate_origin, tiled_zoom_level, 0);
   QSize viewport_size(0, 0);
@@ -189,16 +187,15 @@ QcMapView::~QcMapView()
 {
   for (auto * layer : m_layers)
     layer->deleteLater(); // Fixme: delete ?
+  delete m_viewport;
+  delete m_map_scene;
 }
 
 QcMapViewLayer *
 QcMapView::get_layer(const QcWmtsPluginLayer * plugin_layer)
 {
   QString name = plugin_layer->hash_name();
-  if (m_layer_map.contains(name))
-    return m_layer_map[name];
-  else
-    return nullptr;
+  return m_layer_map.value(name, nullptr);
 }
 
 void
@@ -208,12 +205,11 @@ QcMapView::add_layer(const QcWmtsPluginLayer * plugin_layer)
   if (!m_layer_map.contains(name)) {
     QcMapLayerScene * layer_scene = m_map_scene->add_layer(plugin_layer);
     QcMapViewLayer * layer = new QcMapViewLayer(plugin_layer, m_viewport, layer_scene);
-    // Fixme:
-    // connect(layer, SIGNAL(scene_graph_changed()),
-    //         this, SLOT(scene_graph_changed()),
-    //         Qt::QueuedConnection);
     m_layers << layer;
     m_layer_map.insert(name, layer);
+    connect(layer, SIGNAL(scene_graph_changed()),
+            this, SIGNAL(scene_graph_changed()),
+            Qt::QueuedConnection);
   }
 }
 
@@ -222,10 +218,12 @@ QcMapView::remove_layer(const QcWmtsPluginLayer * plugin_layer)
 {
   QcMapViewLayer * layer = get_layer(plugin_layer);
   if (layer) {
-    m_layers.removeOne(layer);
-    layer->deleteLater();
-    // Fixme: deconnect ?
     m_map_scene->remove_layer(plugin_layer);
+    m_layers.removeOne(layer);
+    QString name = plugin_layer->hash_name();
+    m_layer_map.remove(name);
+    layer->deleteLater();
+    // Fixme: disconnect scene_graph_changed ?
   }
 }
 
@@ -262,9 +260,6 @@ QcMapView::update_scene()
   qInfo();
   for (auto * layer : m_layers)
     layer->update_scene();
-
-  // Fixme: else black at startup
-  emit scene_graph_changed();
 }
 
 /**************************************************************************************************/

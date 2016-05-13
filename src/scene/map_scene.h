@@ -33,6 +33,12 @@
 
 /**************************************************************************************************/
 
+#include "cache/file_tile_cache.h"
+#include "map/viewport.h"
+#include "wmts/tile_matrix_set.h"
+#include "wmts/tile_spec.h"
+#include "wmts/wmts_plugin.h"
+
 #include <QHash>
 #include <QObject>
 #include <QQuickWindow>
@@ -46,14 +52,6 @@
 #include <QSGSimpleTextureNode>
 #include <QSGTransformNode>
 #include <QtDebug>
-
-/**************************************************************************************************/
-
-#include "cache/file_tile_cache.h"
-#include "map/viewport.h"
-#include "wmts/tile_matrix_set.h"
-#include "wmts/tile_spec.h"
-#include "wmts/wmts_plugin.h"
 
 /**************************************************************************************************/
 
@@ -93,6 +91,9 @@ public:
   void update_scene_graph(QcMapLayerRootNode * map_root_node, QQuickWindow * window);
   bool build_geometry(const QcTileSpec & tile_spec, QSGGeometry::TexturedPoint2D * vertices, const QcPolygon & polygon);
 
+  // Fixme: protected
+  QcMapLayerRootNode * scene_graph_node() { return m_scene_graph_node; }
+
 private:
   void remove_tiles(const QcTileSpecSet & old_tiles);
 
@@ -111,6 +112,8 @@ private:
   QcTileSpecSet m_east_visible_tiles;
 
   float m_opacity;
+
+  QcMapLayerRootNode * m_scene_graph_node;
 };
 
 /**************************************************************************************************/
@@ -134,6 +137,7 @@ private:
   const QcViewport * m_viewport; // Fixme: &
   QList<QcMapLayerScene *> m_layers;
   QHash<QString, QcMapLayerScene *> m_layer_map;
+  QList<QSGNode *> m_scene_graph_nodes_to_remove;
 };
 
 /**************************************************************************************************/

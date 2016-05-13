@@ -60,6 +60,8 @@ QcMapScene::remove_layer(const QcWmtsPluginLayer * plugin_layer)
   if (m_layer_map.contains(name)) {
     QcMapLayerScene * layer = m_layer_map[name];
     m_layers.removeOne(layer);
+    m_layer_map.remove(name);
+    m_scene_graph_nodes_to_remove << layer->scene_graph_node();
     layer->deleteLater();
   }
 }
@@ -102,6 +104,10 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
   map_root_node->root->setMatrix(item_space_matrix);
   qInfo() << "item_space_matrix" << item_space_matrix;
 
+  // Remove disabled layers
+  for (auto * node : m_scene_graph_nodes_to_remove)
+    map_root_node->root->removeChildNode(node);
+  m_scene_graph_nodes_to_remove.clear();
   for (auto * layer : m_layers) {
     QcMapLayerRootNode * layer_node = nullptr;
     QString name = layer->name();
@@ -114,6 +120,7 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
     }
     layer->update_scene_graph(layer_node, window);
   }
+
   // Fixme: map_root_node->grid_node->update();
 
   return map_root_node;

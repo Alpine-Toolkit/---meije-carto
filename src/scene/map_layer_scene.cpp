@@ -55,7 +55,7 @@ QcMapLayerRootNode::QcMapLayerRootNode(const QcTileMatrixSet & tile_matrix_set, 
 {
   qInfo();
 
-  setOpacity(.5);
+  setOpacity(1.);
 
   // middle_map_node->appendChildNode(grid_node); // Fixme:
   appendChildNode(west_map_node);
@@ -163,7 +163,8 @@ QcMapLayerScene::QcMapLayerScene(const QcWmtsPluginLayer * plugin_layer, const Q
     m_plugin_layer(plugin_layer),
     m_viewport(viewport),
     m_tile_matrix_set(plugin_layer->plugin()->tile_matrix_set()),
-    m_opacity(1.)
+    m_opacity(1.),
+    m_scene_graph_node(nullptr)
 {
   qInfo();
 }
@@ -250,7 +251,8 @@ QcMapLayerScene::build_geometry(const QcTileSpec & tile_spec, QSGGeometry::Textu
 QcMapLayerRootNode *
 QcMapLayerScene::make_node()
 {
-  return new QcMapLayerRootNode(m_tile_matrix_set, m_viewport);
+  m_scene_graph_node = new QcMapLayerRootNode(m_tile_matrix_set, m_viewport);
+  return m_scene_graph_node;
 }
 
 void
