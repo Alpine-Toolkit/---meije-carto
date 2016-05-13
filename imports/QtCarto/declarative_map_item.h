@@ -52,6 +52,31 @@
 
 /**************************************************************************************************/
 
+class QcWmtsPluginData
+{
+  Q_GADGET
+  Q_PROPERTY(QString name READ name CONSTANT)
+  Q_PROPERTY(QString title READ title CONSTANT)
+
+public:
+  QcWmtsPluginData();
+  QcWmtsPluginData(const QString & name, const QString & title);
+  QcWmtsPluginData(const QcWmtsPluginData & other);
+
+  QcWmtsPluginData & operator=(const QcWmtsPluginData & other);
+
+  const QString & name() const { return m_name; }
+  const QString & title() const { return m_title; }
+
+private:
+  QString m_name;
+  QString m_title;
+};
+
+Q_DECLARE_METATYPE(QcWmtsPluginData)
+
+/**************************************************************************************************/
+
 class QcWmtsPluginLayerData : public QObject
 {
   Q_OBJECT
@@ -99,7 +124,7 @@ class QcMapItem : public QQuickItem
   Q_PROPERTY(QGeoCoordinate center READ center WRITE set_center NOTIFY centerChanged)
   Q_PROPERTY(QcMapGestureArea * gesture READ gesture CONSTANT)
   Q_PROPERTY(QColor color READ color WRITE set_color NOTIFY colorChanged)
-  Q_PROPERTY(QStringList plugin_names READ plugin_names CONSTANT)
+  // Q_PROPERTY(QVariantList plugins READ plugins CONSTANT)
 
 public:
   QcMapItem(QQuickItem *parent = 0);
@@ -126,8 +151,8 @@ public:
 
   Q_INVOKABLE void prefetch_data(); // optional hint for prefetch
 
-  Q_INVOKABLE QStringList plugin_names() const;
-  Q_INVOKABLE QVariantList plugin_layers(const QString & plugin);
+  Q_INVOKABLE QVariantList plugins() const;
+  Q_INVOKABLE QVariantList plugin_layers(const QString & plugin_name);
 
   bool childMouseEventFilter(QQuickItem * item, QEvent * event) Q_DECL_OVERRIDE ;
 
@@ -135,10 +160,6 @@ signals:
   void zoom_levelChanged(int zoom_level);
   void centerChanged(const QGeoCoordinate & coordinate);
   void colorChanged(const QColor & color);
-
-private slots:
-  void layer_status_changed(bool status);
-  void layer_opacity_changed(float opacity);
 
 protected:
   void mouseMoveEvent(QMouseEvent * event) Q_DECL_OVERRIDE ;
@@ -155,6 +176,10 @@ protected:
   void componentComplete() Q_DECL_OVERRIDE ;
   void geometryChanged(const QRectF & new_geometry, const QRectF & old_geometry) Q_DECL_OVERRIDE ;
   QSGNode * updatePaintNode(QSGNode * old_node, UpdatePaintNodeData *) Q_DECL_OVERRIDE ;
+
+private slots:
+  void layer_status_changed(bool status);
+  void layer_opacity_changed(float opacity);
 
 private:
   bool is_interactive();

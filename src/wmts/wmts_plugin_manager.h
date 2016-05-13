@@ -59,6 +59,7 @@ public:
   QcWmtsPluginManager(QcWmtsPluginManager &&) = delete;                  // Move construct
   QcWmtsPluginManager & operator=(QcWmtsPluginManager &&) = delete;      // Move assign
 
+  QList<QcWmtsPlugin *> plugins() const { return m_plugins.values(); }
   const QList<QString> & plugin_names() const { return m_plugin_names; }
 
   QcWmtsPlugin * operator[](const QString & name);

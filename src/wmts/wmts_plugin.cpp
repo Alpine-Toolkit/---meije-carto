@@ -36,7 +36,8 @@ QcWmtsPluginLayer::QcWmtsPluginLayer(QcWmtsPlugin * plugin,
                                      const QString & title,
                                      const QString & name,
                                      const QString & image_format)
-  : m_plugin(plugin),
+  : // QObject(),
+    m_plugin(plugin),
     m_map_id(map_id),
     m_position(position),
     m_title(title),
@@ -91,8 +92,10 @@ QcWmtsPluginLayer::create_tile_spec(int level, int x, int y) const
 
 /**************************************************************************************************/
 
-QcWmtsPlugin::QcWmtsPlugin(const QString & name, size_t number_of_levels, size_t tile_size)
-  : m_name(name),
+QcWmtsPlugin::QcWmtsPlugin(const QString & name, const QString & title, size_t number_of_levels, size_t tile_size)
+  : // QObject(),
+    m_name(name),
+    m_title(title),
     m_tile_matrix_set(name, number_of_levels, tile_size),
     m_wmts_manager(name)
 {}

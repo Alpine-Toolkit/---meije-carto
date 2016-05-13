@@ -48,8 +48,13 @@ class QcWmtsPlugin;
 
 /**************************************************************************************************/
 
-class QcWmtsPluginLayer
+class QcWmtsPluginLayer // : public QObject
 {
+  // Q_GADGET
+  // Q_OBJECT
+  // Q_PROPERTY(QString name READ name CONSTANT)
+  // Q_PROPERTY(QString title READ title CONSTANT)
+
 public:
   QcWmtsPluginLayer(QcWmtsPlugin * plugin,
                     int map_id,
@@ -72,6 +77,7 @@ public:
 
   QString hash_name() const;
   QcTileSpec create_tile_spec(int level, int x, int y) const;
+
   virtual QUrl url(const QcTileSpec & tile_spec) const = 0;
 
 private:
@@ -83,15 +89,25 @@ private:
   QString m_image_format;
 };
 
+// Q_DECLARE_METATYPE(QcWmtsPluginLayer) // abstract
+
 /**************************************************************************************************/
 
-class QcWmtsPlugin
+class QcWmtsPlugin // : public QObject
 {
+  // Q_GADGET
+  // Q_OBJECT
+  // Q_PROPERTY(QString name READ name CONSTANT)
+  // Q_PROPERTY(QString title READ title CONSTANT)
+
+  // Q_DISABLE_COPY(QcWmtsPlugin)
+
 public:
-  QcWmtsPlugin(const QString & name, size_t number_of_levels, size_t tile_size);
+  QcWmtsPlugin(const QString & name, const QString & title, size_t number_of_levels, size_t tile_size);
   ~QcWmtsPlugin();
 
-  const QString & name() const { return m_name; };
+  const QString & name() const { return m_name; }
+  const QString & title() const { return m_title; }
   QcTileMatrixSet & tile_matrix_set() { return m_tile_matrix_set; } // Fixme: const ?
   QcWmtsManager * wmts_manager() { return &m_wmts_manager; }  // Fixme: & or *
 
@@ -111,11 +127,14 @@ public:
 
 private:
   QString m_name;
+  QString m_title;
   QList<const QcWmtsPluginLayer *> m_layers;
   QHash<int, const QcWmtsPluginLayer *> m_layer_map;
   QcTileMatrixSet m_tile_matrix_set;
   QcWmtsManager m_wmts_manager;
 };
+
+// Q_DECLARE_METATYPE(QcWmtsPlugin)
 
 /**************************************************************************************************/
 

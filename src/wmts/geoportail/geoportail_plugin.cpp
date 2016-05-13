@@ -118,11 +118,12 @@ QcGeoportailLayer::url(const QcTileSpec & tile_spec) const
 /**************************************************************************************************/
 
 const QString QcGeoportailPlugin::PLUGIN_NAME = "geoportail";
+const QString PLUGIN_TITLE = "Géoportail";
 constexpr size_t NUMBER_OF_LEVELS = 20;
 constexpr size_t TILE_SIZE = 256;
 
 QcGeoportailPlugin::QcGeoportailPlugin(const QcGeoportailWmtsLicense & license)
-  : QcWmtsPlugin(PLUGIN_NAME, NUMBER_OF_LEVELS, TILE_SIZE),
+  : QcWmtsPlugin(PLUGIN_NAME, PLUGIN_TITLE, NUMBER_OF_LEVELS, TILE_SIZE),
     m_license(license),
     m_tile_fetcher(this)
 {

@@ -9,6 +9,8 @@ import QtPositioning 5.5
 import QtCarto 1.0 // fr.alpine_toolkit.
 
 QcMapItem {
+    id: map
+
     property bool position_locked: false
     property bool bearing_locked: false
 
@@ -26,6 +28,10 @@ QcMapItem {
 
     // opacity: 1.
 
+    Component.onCompleted: {
+        map.plugin_layers('osm')[0].status = true
+    }
+
     center {
         // latitude: 0
         // longitude: 0
@@ -35,7 +41,7 @@ QcMapItem {
         longitude: 6.311
     }
     // zoomLevel: (maximum_zoom_level - minimum_zoom_level) / 2
-    zoom_level: 16 // 3 10 16
+    zoom_level: 10
 
     PositionSource {
         id: position_source

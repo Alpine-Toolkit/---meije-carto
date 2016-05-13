@@ -8,26 +8,27 @@ import QtQuick.Controls 2.0
 Pane {
     id: layer_pane
 
+    // Fixme: width, vertical slider, title
     Column {
         anchors.fill: parent
 
         Repeater {
-            model: map.plugin_names
+            model: map.plugins()
 
             Column {
-                property string plugin_name: modelData
+                property var plugin_data: modelData
 
                 Text {
                     font.pixelSize: 20
                     font.bold: true
-                    text: plugin_name
+                    text: plugin_data.title
                 }
 
                 Column {
                     width: layer_pane.width
 
                     Repeater {
-                        model: map.plugin_layers(plugin_name)
+                        model: map.plugin_layers(plugin_data.name)
 
                         Row {
                             property var plugin_layer: modelData

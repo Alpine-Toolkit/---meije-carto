@@ -51,6 +51,34 @@
 
 /**************************************************************************************************/
 
+QcWmtsPluginData::QcWmtsPluginData()
+  : m_name(),
+    m_title()
+{}
+
+QcWmtsPluginData::QcWmtsPluginData(const QString & name, const QString & title)
+  : m_name(name),
+    m_title(title)
+{}
+
+QcWmtsPluginData::QcWmtsPluginData(const QcWmtsPluginData & other)
+  : m_name(other.m_name),
+    m_title(other.m_title)
+{}
+
+QcWmtsPluginData &
+QcWmtsPluginData::operator=(const QcWmtsPluginData & other)
+{
+  if (this != &other) {
+    m_name = other.m_name;
+    m_title = other.m_title;
+  }
+
+  return *this;
+}
+
+/**************************************************************************************************/
+
 QcWmtsPluginLayerData::QcWmtsPluginLayerData()
   : QObject(),
     m_plugin_layer(nullptr),
@@ -87,7 +115,6 @@ QcWmtsPluginLayerData::operator=(const QcWmtsPluginLayerData & other)
 void
 QcWmtsPluginLayerData::set_status(bool status)
 {
-  qInfo() << status;
   if (m_status != status) {
     m_status = status;
     emit statusChanged(status);
@@ -97,7 +124,6 @@ QcWmtsPluginLayerData::set_status(bool status)
 void
 QcWmtsPluginLayerData::set_opacity(float opacity)
 {
-  qInfo() << opacity;
   if (m_opacity != opacity) {
     m_opacity = opacity;
     emit opacityChanged(opacity);
@@ -171,10 +197,13 @@ QcMapItem::make_plugin_layers(const QString & plugin_name)
   return plugin_layers;
 }
 
-QStringList
-QcMapItem::plugin_names() const
+QVariantList
+QcMapItem::plugins() const
 {
-  return m_plugin_manager.plugin_names();
+  QVariantList plugins;
+  for (auto * plugin : m_plugin_manager.plugins())
+    plugins << QVariant::fromValue(QcWmtsPluginData(plugin->name(), plugin->title()));
+  return plugins;
 }
 
 QVariantList
@@ -191,7 +220,6 @@ QcMapItem::layer_status_changed(bool status)
 {
   QcWmtsPluginLayerData * layer_data = qobject_cast<QcWmtsPluginLayerData *>(QObject::sender());
   const QcWmtsPluginLayer * plugin_layer = layer_data->plugin_layer();
-  qInfo() << plugin_layer->hash_name() << status;
   if (status)
     m_map_view->add_layer(plugin_layer);
   else
@@ -204,7 +232,6 @@ QcMapItem::layer_opacity_changed(float opacity)
 {
   QcWmtsPluginLayerData * layer_data = qobject_cast<QcWmtsPluginLayerData *>(QObject::sender());
   const QcWmtsPluginLayer * plugin_layer = layer_data->plugin_layer();
-  qInfo() << plugin_layer->hash_name() << opacity;
   if (layer_data->status()) {
     m_map_view->set_opacity(plugin_layer, opacity);
     update();
