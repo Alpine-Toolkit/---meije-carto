@@ -26,17 +26,16 @@
 
 /**************************************************************************************************/
 
+#include "math/qc_math.h"
+
+#include "geo_coordinate.h"
+
 #include <cmath>
 
 #include <QDataStream>
 #include <QDebug>
 #include <QtMath>
 #include <qnumeric.h>
-
-/**************************************************************************************************/
-
-#include "math/qc_math.h"
-#include "geo_coordinate.h"
 
 /**************************************************************************************************/
 
@@ -75,7 +74,7 @@ QcGeoSexagesimalAngle::QcGeoSexagesimalAngle(int degrees, int minutes, double se
 }
 
 QcGeoSexagesimalAngle::QcGeoSexagesimalAngle(const QcGeoSexagesimalAngle & other)
-: m_degrees(other.m_degrees), m_minutes(other.m_minutes), m_seconds(other.m_seconds)
+  : m_degrees(other.m_degrees), m_minutes(other.m_minutes), m_seconds(other.m_seconds)
 {}
 
 QcGeoSexagesimalAngle::~QcGeoSexagesimalAngle()
@@ -561,7 +560,7 @@ QcGeoCoordinatePseudoWebMercator::QcGeoCoordinatePseudoWebMercator(double x, dou
 
   // Adjust coordinate if outside domain
   m_x = x_interval().wrap(x);
-  qInfo() << x << m_x;
+  // qInfo() << x << m_x;
   m_y = y_interval().truncate(y);
 }
 

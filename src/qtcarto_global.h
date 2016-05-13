@@ -40,7 +40,7 @@
 #define QTCARTO_VERSION_MINOR 0
 #define QTCARTO_VERSION_PATCH 0
 
-// Can be used like #if (QTCARTO_VERSION >= QTCARTO_VERSION_CHECK(4, 4, 0))
+// Can be used like #if (QTCARTO_VERSION >= QTCARTO_VERSION_CHECK(1, 1, 0))
 #define QTCARTO_VERSION_CHECK(major, minor, patch) ((major<<16)|(minor<<8)|(patch))
 // QTCARTO_VERSION is (major << 16) + (minor << 8) + patch.
 #define QTCARTO_VERSION QTCARTO_VERSION_CHECK(QTCARTO_VERSION_MAJOR, QTCARTO_VERSION_MINOR, QTCARTO_VERSION_PATCH)

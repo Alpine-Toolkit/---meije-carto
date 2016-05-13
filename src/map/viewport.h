@@ -36,10 +36,10 @@
 #include <QObject>
 #include <QSize>
 
+#include "qtcarto_global.h"
 #include "coordinate/geo_coordinate.h"
 #include "geometry/polygon.h"
 #include "math/interval.h"
-#include "qtcarto_global.h"
 
 /**************************************************************************************************/
 
@@ -52,6 +52,7 @@
  * Zoom factor unit is [m/px]
  *
  */
+// Fixme: QcZoomFactor -> QcMapResolution ?
 class QC_EXPORT QcZoomFactor
 {
  public:
@@ -252,7 +253,7 @@ class QC_EXPORT QcViewport : public QObject
 
  private:
   QcViewportState m_state;
-  QSize m_viewport_size; // QcVectorInt ?
+  QSize m_viewport_size; // Fixme: QcVectorInt ?
   QcVectorDouble m_area_size_m;
   QcVectorDouble m_half_diagonal_m;
   QcPolygon m_west_polygon;

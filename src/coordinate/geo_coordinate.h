@@ -31,23 +31,20 @@
 
 /**************************************************************************************************/
 
-#ifndef GEO_COORDINATE_H
-#define GEO_COORDINATE_H
+#ifndef __GEO_COORDINATE_H__
+#define __GEO_COORDINATE_H__
 
 /**************************************************************************************************/
 
-#include <QGeoCoordinate>
-#include <QString>
-#include <QtCore/QMetaType>
+#include "qtcarto_global.h"
 
 #include "earth.h"
 #include "geometry/vector.h"
 #include "math/interval.h"
-#include "qtcarto_global.h"
 
-/**************************************************************************************************/
-
-// QC_BEGIN_NAMESPACE
+#include <QGeoCoordinate>
+#include <QString>
+#include <QtCore/QMetaType>
 
 #ifdef WITH_PROJ4
 #include "proj_api.h"
@@ -61,6 +58,10 @@ class QDataStream;
 class QcGeoCoordinateWebMercator;
 class QcGeoCoordinatePseudoWebMercator;
 class QcGeoCoordinateNormalisedWebMercator;
+
+/**************************************************************************************************/
+
+// QC_BEGIN_NAMESPACE
 
 /**************************************************************************************************/
 
@@ -285,7 +286,7 @@ class QC_EXPORT QcGeoCoordinateWGS84 : public QcGeoCoordinate
   Q_INVOKABLE double azimuth_to(const QcGeoCoordinateWGS84 & other) const;
   Q_INVOKABLE QcGeoCoordinateWGS84 at_distance_and_azimuth(double distance, double azimuth) const;
 
-  /* Q_INVOKABLE QString toString(CoordinateFormat format = DegreesMinutesSecondsWithHemisphere) const; */
+  // Q_INVOKABLE QString toString(CoordinateFormat format = DegreesMinutesSecondsWithHemisphere) const;
 
  private:
   // double[2] coordinates
@@ -312,7 +313,7 @@ class QC_EXPORT QcGeoCoordinateWebMercator : public QcGeoCoordinate
 
   Q_PROPERTY(double x READ x WRITE set_x)
   Q_PROPERTY(double y READ y WRITE set_y)
-  /* Q_PROPERTY(bool isValid READ isValid) */
+  // Q_PROPERTY(bool isValid READ isValid)
 
  public:
   inline const char *srid() {
@@ -413,7 +414,7 @@ class QC_EXPORT QcGeoCoordinatePseudoWebMercator : public QcGeoCoordinate
 
   Q_PROPERTY(double x READ x WRITE set_x)
   Q_PROPERTY(double y READ y WRITE set_y)
-  /* Q_PROPERTY(bool isValid READ isValid) */
+  // Q_PROPERTY(bool isValid READ isValid)
 
  public:
   inline const char *srid() { return ""; };
@@ -496,7 +497,7 @@ class QC_EXPORT QcGeoCoordinateNormalisedWebMercator : public QcGeoCoordinate
 
   Q_PROPERTY(double x READ x WRITE set_x)
   Q_PROPERTY(double y READ y WRITE set_y)
-  /* Q_PROPERTY(bool isValid READ isValid) */
+  // Q_PROPERTY(bool isValid READ isValid)
 
  public:
   inline const char *srid() {
@@ -602,7 +603,7 @@ class QC_EXPORT QcGeoElevationCoordinateWGS84 : public QcGeoCoordinateWGS84, pub
   Q_PROPERTY(double longitude READ longitude WRITE set_longitude)
   Q_PROPERTY(double latitude READ latitude WRITE set_latitude)
   Q_PROPERTY(double elevation READ elevation WRITE set_elevation)
-  /* Q_PROPERTY(bool isValid READ isValid) */
+  // Q_PROPERTY(bool isValid READ isValid)
 
  public:
   QcGeoElevationCoordinateWGS84();
@@ -636,7 +637,7 @@ QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcGeoElevationCoordinate
 
 /**************************************************************************************************/
 
-#endif // GEO_COORDINATE_H
+#endif // __GEO_COORDINATE_H__
 
 /***************************************************************************************************
  *

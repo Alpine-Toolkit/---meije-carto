@@ -159,21 +159,13 @@ class QC_EXPORT QcInterval2D
 
   QcInterval2D<T> & operator=(const QcInterval2D<T> & other);
 
-  inline QcInterval<T> & x() {
-    return m_x;
-  }
+  inline QcInterval<T> & x() { return m_x; }
 
-  inline QcInterval<T> & y() {
-    return m_y;
-  }
+  inline QcInterval<T> & y() { return m_y; }
 
-  inline const QcInterval<T> & x() const {
-    return m_x;
-  }
+  inline const QcInterval<T> & x() const { return m_x; }
 
-  inline const QcInterval<T> & y() const {
-    return m_y;
-  }
+  inline const QcInterval<T> & y() const { return m_y; }
 
   bool is_empty() const;
 
