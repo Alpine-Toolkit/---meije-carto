@@ -59,7 +59,7 @@ class QC_EXPORT QcPolygon : public QcPath
 {
  public:
   QcPolygon();
-  // QcPolygon(size_t number_of_vertexes);
+  // QcPolygon(int number_of_vertexes);
   QcPolygon(const VertexListType & vertexes);
   QcPolygon(const QVector<Type> & coordinates);
   QcPolygon(const QcPolygon & polygon);

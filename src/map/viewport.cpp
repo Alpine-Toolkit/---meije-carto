@@ -324,7 +324,7 @@ QcViewport::pan(const QcVectorDouble & translation)
 void
 QcViewport::update_area()
 {
-  const QcInterval2DDouble & current_interval = middle_interval();
+  // const QcInterval2DDouble & current_interval = middle_interval();
   // qInfo() << "Current Pseudo Mercator polygon interval [m]"
   //         << "[" << (int) current_interval.x().inf() << ", " << (int) current_interval.x().sup() << "]"
   //         << "x"

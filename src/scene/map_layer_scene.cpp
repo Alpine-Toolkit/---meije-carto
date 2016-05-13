@@ -117,7 +117,7 @@ QcMapLayerRootNode::update_tiles(QcMapLayerScene * map_scene,
           vertexes[0].y == vertexes[3].y) { // top-left == bottom-right => invalid => remove
         ok = false;
       } else {
-        // void *memcpy(void *dest, const void *src, size_t n);
+        // void *memcpy(void *dest, const void *src, int n);
         // qInfo() << "update geometry" << tile_spec;
         memcpy(texture_node->geometry()->vertexData(), vertexes, 4 * sizeof(QSGGeometry::TexturedPoint2D));
         dirty_bits |= QSGNode::DirtyGeometry;

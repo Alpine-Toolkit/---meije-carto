@@ -48,7 +48,7 @@ QcPath::QcPath()
 }
 
 /*
-QcPath::QcPath(size_t number_of_vertexes)
+QcPath::QcPath(int number_of_vertexes)
   : m_vertexes(number_of_vertexes), m_edges(0)
 {
   if (number_of_vertexes > 1)
@@ -62,11 +62,11 @@ QcPath::QcPath(const VertexListType & vertexes, bool closed)
     m_interval(),
     m_closed(closed)
 {
-  size_t _number_of_vertexes = number_of_vertexes();
+  int _number_of_vertexes = number_of_vertexes();
 
   if (_number_of_vertexes) {
     m_interval = m_vertexes[0].to_interval();
-    for (size_t i = 1; i < _number_of_vertexes; i++) {
+    for (int i = 1; i < _number_of_vertexes; i++) {
       const VertexType & vertex = m_vertexes[i];
       m_interval |= vertex.to_interval();
       m_edges << EdgeType(vertex, m_vertexes[i-1]);
@@ -80,11 +80,11 @@ QcPath::QcPath(const QVector<Type> & coordinates, bool closed)
     m_interval(),
     m_closed(closed)
 {
-  size_t number_of_coordinates = coordinates.size();
+  int number_of_coordinates = coordinates.size();
   if (number_of_coordinates % 2 == 1)
     throw std::invalid_argument("Odd number of coordinates");
 
-  for (size_t i = 0; i < number_of_coordinates; i += 2) {
+  for (int i = 0; i < number_of_coordinates; i += 2) {
     add_vertex(VertexType(coordinates[i], coordinates[i+1]));
   }
 }
@@ -141,7 +141,7 @@ void
 QcPath::add_vertex(const VertexType & vertex)
 {
   IntervalType vertex_interval = vertex.to_interval();
-  size_t _number_of_vertexes = number_of_vertexes();
+  int _number_of_vertexes = number_of_vertexes();
   if (! _number_of_vertexes)
     m_interval = vertex_interval;
   else {

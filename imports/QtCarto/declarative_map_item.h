@@ -120,7 +120,7 @@ class QcMapItem : public QQuickItem
 {
   Q_OBJECT
   Q_INTERFACES(QQmlParserStatus)
-  Q_PROPERTY(int zoom_level READ zoom_level WRITE set_zoom_level NOTIFY zoom_levelChanged)
+  Q_PROPERTY(unsigned int zoom_level READ zoom_level WRITE set_zoom_level NOTIFY zoom_levelChanged)
   Q_PROPERTY(QGeoCoordinate center READ center WRITE set_center NOTIFY centerChanged)
   Q_PROPERTY(QcMapGestureArea * gesture READ gesture CONSTANT)
   Q_PROPERTY(QColor color READ color WRITE set_color NOTIFY colorChanged)
@@ -135,8 +135,8 @@ public:
   void set_color(const QColor & color);
   QColor color() const;
 
-  void set_zoom_level(int zoom_level);
-  int zoom_level() const;
+  void set_zoom_level(unsigned int zoom_level);
+  unsigned int zoom_level() const;
 
   void set_center(const QGeoCoordinate & center);
   QGeoCoordinate center() const;

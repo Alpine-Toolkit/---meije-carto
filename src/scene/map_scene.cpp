@@ -69,11 +69,11 @@ QcMapScene::remove_layer(const QcWmtsPluginLayer * plugin_layer)
 QSGNode *
 QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
 {
-  qreal device_pixel_ratio = window->devicePixelRatio();
+  // qreal device_pixel_ratio = window->devicePixelRatio();
 
   // qInfo() << old_node << "device pixel ratio" << device_pixel_ratio;
 
-  QSize viewport_size = m_viewport->viewport_size();
+  // QSize viewport_size = m_viewport->viewport_size();
   float width = m_viewport->width();
   float height = m_viewport->height();
   // qInfo() << "viewport size" << viewport_size;

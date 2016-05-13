@@ -105,7 +105,7 @@ inline void QcVector<T>::set_y(T value)
 
 template <typename T>
 T &
-QcVector<T>::operator[](size_t i)
+QcVector<T>::operator[](int i)
 {
   if (i == 0)
     return m_x;
@@ -117,7 +117,7 @@ QcVector<T>::operator[](size_t i)
 
 template <typename T>
 T
-QcVector<T>::operator[](size_t i) const
+QcVector<T>::operator[](int i) const
 {
   if (i == 0)
     return m_x;

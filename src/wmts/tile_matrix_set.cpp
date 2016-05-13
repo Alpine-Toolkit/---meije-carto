@@ -32,7 +32,7 @@
 
 /**************************************************************************************************/
 
-QcTileMatrixSetIterator::QcTileMatrixSetIterator (const QcTileMatrixSet * tile_matrix_set, size_t position)
+QcTileMatrixSetIterator::QcTileMatrixSetIterator (const QcTileMatrixSet * tile_matrix_set, int position)
   : m_position(position), m_tile_matrix_set(tile_matrix_set)
 {}
 
@@ -49,17 +49,17 @@ QcTileMatrixSet::resolution_for_level(double map_size, int tile_size, int zoom_l
   return map_size / double(tile_size * (1 << zoom_level)); // unit is m/px
 }
 
-QcTileMatrixSet::QcTileMatrixSet(QString name, size_t number_of_levels, size_t tile_size)
+QcTileMatrixSet::QcTileMatrixSet(QString name, int number_of_levels, int tile_size)
   : m_name(name),
     m_number_of_levels(number_of_levels),
     m_tile_size(tile_size),
     m_root_resolution(EQUATORIAL_PERIMETER / tile_size)
 {
-  for (size_t level = 0; level < number_of_levels; level++)
+  for (int level = 0; level < number_of_levels; level++)
     m_tile_matrix_set.emplace_back(*this, level);
 }
 
-size_t
+int
 QcTileMatrixSet::closest_level(double resolution) const
 {
   return rint(log(m_root_resolution / resolution) / log(2));
@@ -67,7 +67,7 @@ QcTileMatrixSet::closest_level(double resolution) const
 
 /**************************************************************************************************/
 
-QcTileMatrix::QcTileMatrix(QcTileMatrixSet & tile_matrix_set, size_t level)
+QcTileMatrix::QcTileMatrix(QcTileMatrixSet & tile_matrix_set, int level)
   : m_tile_matrix_set(tile_matrix_set),
     m_level(level),
     m_mosaic_size(1 << level),
@@ -85,8 +85,8 @@ QcTileMatrix::mercator_to_matrix_index(const QcGeoCoordinateWebMercator & coordi
   double xm = coordinate.x() - QcTileMatrixSet::x_offset;
   double ym = QcTileMatrixSet::y_offset - coordinate.y();
 
-  size_t x = int(xm / m_tile_length_m);
-  size_t y = int(ym / m_tile_length_m);
+  int x = int(xm / m_tile_length_m);
+  int y = int(ym / m_tile_length_m);
 
   if (x < m_mosaic_size and y < m_mosaic_size)
     return QcTileMatrixIndex(x, y);
@@ -97,8 +97,8 @@ QcTileMatrix::mercator_to_matrix_index(const QcGeoCoordinateWebMercator & coordi
 QcTileMatrixIndex
 QcTileMatrix::mercator_to_matrix_index(const QcGeoCoordinateNormalisedWebMercator & coordinate) const
 {
-  size_t x = int(coordinate.x() * m_mosaic_size);
-  size_t y = int(coordinate.x() * m_mosaic_size);
+  int x = int(coordinate.x() * m_mosaic_size);
+  int y = int(coordinate.x() * m_mosaic_size);
 
   if (x < m_mosaic_size and y < m_mosaic_size)
     return QcTileMatrixIndex(x, y);

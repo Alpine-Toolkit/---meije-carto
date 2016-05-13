@@ -30,7 +30,7 @@
 
 /**************************************************************************************************/
 
-QcTileMatrixIndex::QcTileMatrixIndex(size_t x, size_t y)
+QcTileMatrixIndex::QcTileMatrixIndex(int x, int y)
   : m_x(x), m_y(y)
 {}
 

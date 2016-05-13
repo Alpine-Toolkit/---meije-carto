@@ -84,7 +84,7 @@ QcMapViewLayer::intersec_polygon_with_grid(const QcPolygon & polygon, double til
   QcTiledPolygon tiled_polygon = polygon.intersec_with_grid(tile_length_m);
   for (const QcTiledPolygonRun & run: tiled_polygon.runs()) {
     const QcIntervalInt & run_interval = run.interval();
-    size_t y = run.y();
+    int y = run.y();
     // qInfo() << "Run " << run.y() << " [" << run_interval.inf() << ", " << run_interval.sup() << "]";
     for (int x = run_interval.inf(); x <= run_interval.sup(); x++)
       visible_tiles.insert(m_plugin_layer->create_tile_spec(zoom_level, x, y));

@@ -72,8 +72,8 @@ class QC_EXPORT QcVector
   void set_x(T value);
   void set_y(T value);
 
-  T & operator[](size_t i);
-  T operator[](size_t i) const;
+  T & operator[](int i);
+  T operator[](int i) const;
 
   T magnitude_square() const;
   T magnitude() const;

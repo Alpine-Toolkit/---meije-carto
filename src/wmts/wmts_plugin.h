@@ -89,8 +89,8 @@ private:
 class QcWmtsPlugin
 {
 public:
-  QcWmtsPlugin(const QString & name, const QString & title, size_t number_of_levels, size_t tile_size);
-  ~QcWmtsPlugin();
+  QcWmtsPlugin(const QString & name, const QString & title, int number_of_levels, int tile_size);
+  virtual ~QcWmtsPlugin();
 
   const QString & name() const { return m_name; }
   const QString & title() const { return m_title; }

@@ -70,8 +70,8 @@ QcGridNode::update()
   int y_grid_inf = ceil(y_inf_m / tile_length_m);
   int x_grid_sup = ceil(interval.x().sup() / tile_length_m);
   int y_grid_sup = ceil(interval.y().sup() / tile_length_m);
-  size_t number_of_vertical_lines = x_grid_sup - x_grid_inf +1;
-  size_t number_of_horizontal_lines = y_grid_sup - y_grid_inf +1;
+  int number_of_vertical_lines = x_grid_sup - x_grid_inf +1;
+  int number_of_horizontal_lines = y_grid_sup - y_grid_inf +1;
 
   const int vertex_count = 2*(number_of_horizontal_lines + number_of_vertical_lines);
   QSGGeometry * grid_geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), vertex_count);
@@ -85,14 +85,14 @@ QcGridNode::update()
   double y_offset = y_grid_inf * tile_size - y_inf_px;
   int width = m_viewport->width();
   int height = m_viewport->height();
-  size_t vertex_index = 0;
-  for (size_t i = 0; i < number_of_vertical_lines; i++) {
+  int vertex_index = 0;
+  for (int i = 0; i < number_of_vertical_lines; i++) {
     float x = i * tile_size + x_offset;
     vertices[vertex_index].set(x, 0);
     vertices[vertex_index +1].set(x, height);
     vertex_index += 2;
   }
-  for (size_t i = 0; i < number_of_horizontal_lines; i++) {
+  for (int i = 0; i < number_of_horizontal_lines; i++) {
     float y = i * tile_size + y_offset;
     vertices[vertex_index].set(0, y);
     vertices[vertex_index +1].set(width, y);

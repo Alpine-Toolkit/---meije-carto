@@ -63,7 +63,7 @@ class QC_EXPORT QcPath
 
  public:
   QcPath();
-  // QcPath(size_t number_of_vertexes);
+  // QcPath(int number_of_vertexes);
   QcPath(const VertexListType & vertexes, bool closed = false);
   QcPath(const QVector<Type> & coordinates, bool closed = false);
   QcPath(const QcPath & path);

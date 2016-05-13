@@ -58,7 +58,7 @@ class QcTileMatrixSet;
 class QC_EXPORT QcTileMatrixSetIterator
 {
  public:
-  QcTileMatrixSetIterator (const QcTileMatrixSet * tile_matrix_set, size_t position);
+  QcTileMatrixSetIterator (const QcTileMatrixSet * tile_matrix_set, int position);
 
   inline bool operator!= (const QcTileMatrixSetIterator & other) const {
     return m_position != other.m_position;
@@ -72,7 +72,7 @@ class QC_EXPORT QcTileMatrixSetIterator
   const QcTileMatrix & operator* () const;
 
  private:
-  size_t m_position;
+  int m_position;
   const QcTileMatrixSet * m_tile_matrix_set;
 };
 
@@ -92,21 +92,21 @@ class QC_EXPORT QcTileMatrixSet
   static constexpr double y_offset =  HALF_EQUATORIAL_PERIMETER;
 
  public:
-  // Fixme: std::size_t ???
-  QcTileMatrixSet(QString name, size_t number_of_level, size_t tile_size);
+  // Fixme: std::int ???
+  QcTileMatrixSet(QString name, int number_of_level, int tile_size);
 
   inline QString name() const { return m_name; }
 
-  inline size_t number_of_levels() const { return m_number_of_levels; }
+  inline int number_of_levels() const { return m_number_of_levels; }
 
   // unit [px]
-  inline size_t tile_size() const { return m_tile_size; }
+  inline int tile_size() const { return m_tile_size; }
 
   // unit [m/px]
   inline double root_resolution() const { return m_root_resolution; }
 
   // Return the resolution of the given level [m/px].
-  inline double level_resolution(size_t level) const {
+  inline double level_resolution(int level) const {
     return m_root_resolution / double(1 << level);
   }
 
@@ -116,9 +116,9 @@ class QC_EXPORT QcTileMatrixSet
   }
 
   // Return the closest level for the given resolution.
-  size_t closest_level(double resolution) const;
+  int closest_level(double resolution) const;
 
-  inline const QcTileMatrix & operator[](size_t level) const {
+  inline const QcTileMatrix & operator[](int level) const {
     return m_tile_matrix_set[level];
   };
 
@@ -138,8 +138,8 @@ class QC_EXPORT QcTileMatrixSet
 
  private:
   QString m_name;
-  size_t m_number_of_levels;
-  size_t m_tile_size;
+  int m_number_of_levels;
+  int m_tile_size;
   double m_root_resolution;
   std::vector<QcTileMatrix> m_tile_matrix_set;
 };
@@ -149,30 +149,30 @@ class QC_EXPORT QcTileMatrixSet
 class QC_EXPORT QcTileMatrix
 {
  public:
-  QcTileMatrix(QcTileMatrixSet & tile_matrix_set, size_t level);
+  QcTileMatrix(QcTileMatrixSet & tile_matrix_set, int level);
 
   inline const QcTileMatrixSet & tile_matrix_set() const { return m_tile_matrix_set; }
 
   // pyramid level
-  inline size_t level() const { return m_level; }
+  inline int level() const { return m_level; }
 
   // Size of the mosaic, unit [tile]
-  inline size_t mosaic_size() const { return m_mosaic_size; }
+  inline int mosaic_size() const { return m_mosaic_size; }
 
   inline double resolution() const { return m_resolution; }
 
   inline double tile_length_m() const { return m_tile_length_m; }
 
   // unit [px]
-  inline size_t tile_size() const { return m_tile_matrix_set.tile_size(); }
+  inline int tile_size() const { return m_tile_matrix_set.tile_size(); }
 
   QcTileMatrixIndex mercator_to_matrix_index(const QcGeoCoordinateWebMercator & coordinate) const;
   QcTileMatrixIndex mercator_to_matrix_index(const QcGeoCoordinateNormalisedWebMercator & coordinate) const;
 
  private:
   QcTileMatrixSet & m_tile_matrix_set;
-  size_t m_level;
-  size_t m_mosaic_size;
+  int m_level;
+  int m_mosaic_size;
   double m_resolution;
   double m_tile_length_m;
 };

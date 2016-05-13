@@ -160,7 +160,7 @@ QcMapItem::QcMapItem(QQuickItem * parent)
 
   // Fixme: remove
   // Set default viewport center and zoom level
-  size_t level = 10;
+  int level = 10;
   double longitude =  2.3491; // Paris Notre-Dame
   double latitude  = 48.8533;
   QcGeoCoordinateWGS84 coordinate(longitude, latitude);
@@ -386,7 +386,7 @@ QcMapItem::prefetch_data()
 }
 
 void
-QcMapItem::set_zoom_level(int zoom_level)
+QcMapItem::set_zoom_level(unsigned int zoom_level)
 {
   // qInfo() << zoom_level;
 
@@ -402,7 +402,7 @@ QcMapItem::set_zoom_level(int zoom_level)
   emit zoom_levelChanged(zoom_level);
 }
 
-int
+unsigned int
 QcMapItem::zoom_level() const
 {
   return m_viewport->zoom_level();

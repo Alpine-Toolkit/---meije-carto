@@ -44,7 +44,7 @@ QcPolygon::QcPolygon()
 }
 
 /*
-QcPolygon::QcPolygon(size_t number_of_vertexes)
+QcPolygon::QcPolygon(int number_of_vertexes)
   : m_vertexes(number_of_vertexes), m_edges(0)
 {
   if (number_of_vertexes > 1)
@@ -73,8 +73,8 @@ QcPolygon::~QcPolygon()
   @param n entries count
   @param current current index
 */
-inline size_t
-get_next_index(size_t number_of_items, size_t current)
+inline int
+get_next_index(int number_of_items, int current)
 {
   return current == number_of_items - 1 ? 0 : current + 1;
 }
@@ -88,7 +88,7 @@ bool
 QcPolygon::contains(const VertexType & test_point) const
 {
   // Fixme: check code for API
-  size_t _number_of_vertexes = number_of_vertexes();
+  int _number_of_vertexes = number_of_vertexes();
 
   // Initial start point
   const VertexType origin(0, 0);
@@ -105,7 +105,7 @@ QcPolygon::contains(const VertexType & test_point) const
   // Move polygon to 0|0
   // Enlarge axes
   VertexListType vertexes;
-  for (size_t i = 0; i < _number_of_vertexes; i++) {
+  for (int i = 0; i < _number_of_vertexes; i++) {
     const VertexType & vertex = vertex_at(i); // [i]
     if (test_point == vertex)
       return true;
@@ -136,7 +136,7 @@ QcPolygon::contains(const VertexType & test_point) const
   EdgeType edge;
 
   // Is test_point on an edge?
-  for (size_t i = 0; i < _number_of_vertexes; i++) {
+  for (int i = 0; i < _number_of_vertexes; i++) {
     edge.set_p1(vertexes[i]);
     // Get correct index of successor edge
     edge.set_p2(vertexes[get_next_index(_number_of_vertexes, i)]);
@@ -152,13 +152,13 @@ QcPolygon::contains(const VertexType & test_point) const
   }
 
   unsigned int count = 0;
-  size_t seen_points = 0;
-  size_t i = start_node_position;
+  int seen_points = 0;
+  int i = start_node_position;
 
   // Consider all edges
   while (seen_points < _number_of_vertexes) {
 
-    size_t saved_index = get_next_index(_number_of_vertexes, i);
+    int saved_index = get_next_index(_number_of_vertexes, i);
     int saved_x = vertexes[saved_index].x();
 
     // Move to next point which is not on the x-axis
@@ -305,7 +305,7 @@ QVector<QcTileMatrixIndex>
 QcTiledPolygonRun::tile_indexes() const
 {
   QVector<QcTileMatrixIndex> _tile_indexes(m_interval.length());
-  size_t i;
+  int i;
   int x;
   for (i = 0, x = m_interval.inf(); x <= m_interval.sup(); x++, i++)
     _tile_indexes[i] = QcTileMatrixIndex(x, m_y);
@@ -326,13 +326,13 @@ QcTiledPolygon::QcTiledPolygon(const QcPolygon & polygon, double grid_step)
 				   to_grid(polygon_interval.y().sup(), grid_step));
 
   int Y_min = interval_on_grid.y().inf();
-  size_t number_of_rows = interval_on_grid.y().length();
+  int number_of_rows = interval_on_grid.y().length();
   QVector<QList<OpenInterval>> rows(number_of_rows);
 
-  size_t number_of_vertexes = vertexes.size();
-  for (size_t i = 0; i < number_of_vertexes; i++) {
+  int number_of_vertexes = vertexes.size();
+  for (int i = 0; i < number_of_vertexes; i++) {
     const QcPolygon::VertexType & p0 = vertexes[i];
-    size_t ii = i + 1;
+    int ii = i + 1;
     if (ii == number_of_vertexes)
       ii = 0;
     const QcPolygon::VertexType & p1 = vertexes[ii];
@@ -347,7 +347,7 @@ QcTiledPolygon::QcTiledPolygon(const QcPolygon & polygon, double grid_step)
 
     if (Y1 > Y0) {
       rows[Y0 - Y_min].push_back(OpenInterval(X0, 1));
-      for (size_t Y = Y0 +1; Y < Y1 +1; Y++) {
+      for (int Y = Y0 +1; Y < Y1 +1; Y++) {
 	double y = Y * grid_step;
 	double x = line.get_x_from_y(y);
 	int X = to_grid(x, grid_step);
@@ -361,7 +361,7 @@ QcTiledPolygon::QcTiledPolygon(const QcPolygon & polygon, double grid_step)
     }
     else if (Y1 < Y0) {
       rows[Y1 - Y_min].push_back(OpenInterval(X1, -1));
-      for (size_t Y = Y1 +1; Y < Y0 +1; Y++) {
+      for (int Y = Y1 +1; Y < Y0 +1; Y++) {
 	double y = Y * grid_step;
 	double x = line.get_x_from_y(y);
 	double X = to_grid(x, grid_step);
@@ -376,7 +376,7 @@ QcTiledPolygon::QcTiledPolygon(const QcPolygon & polygon, double grid_step)
   }
   // qinfo() << "OpenInterval built";
 
-  for (size_t i = 0; i < number_of_rows; i++) {
+  for (int i = 0; i < number_of_rows; i++) {
     QList<OpenInterval> & row = rows[i];
     if (!row.size()) // Fixme: check
       continue;
@@ -386,9 +386,9 @@ QcTiledPolygon::QcTiledPolygon(const QcPolygon & polygon, double grid_step)
     double x_inf = previous_interval.x;
     QList<QcIntervalInt> intervals;
     intervals.push_back(QcIntervalInt(x_inf, x_inf));
-    size_t number_of_intervals = row.size();
+    int number_of_intervals = row.size();
     if (number_of_intervals > 1)
-      for (size_t j = 1; j < number_of_intervals; j++) {
+      for (int j = 1; j < number_of_intervals; j++) {
  	const OpenInterval & open_interval = row[j];
 	// qinfo() << "i,j: " << i << j << open_interval.x << open_interval.direction;
 	if (open_interval.is_gap(previous_interval)) {
@@ -419,7 +419,7 @@ QcTiledPolygon::diff(const QcTiledPolygon & old_tiled_polygon)
 
   for (const QcTiledPolygonRun & new_run : m_runs) {
     bool has_intersection = false;
-    size_t i = 0;
+    int i = 0;
     for (const QcTiledPolygonRun & old_run : old_runs) {
       if (new_run.cut(old_run, intersection, left, right, exchanged)) {
 	int y = new_run.y();

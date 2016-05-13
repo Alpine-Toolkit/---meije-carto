@@ -75,8 +75,8 @@ QcOsmLayer::url(const QcTileSpec & tile_spec) const
 
 const QString QcOsmPlugin::PLUGIN_NAME = "osm";
 const QString PLUGIN_TITLE = "Open Street Map";
-constexpr size_t NUMBER_OF_LEVELS = 20;
-constexpr size_t TILE_SIZE = 256;
+constexpr int NUMBER_OF_LEVELS = 20;
+constexpr int TILE_SIZE = 256;
 
 QcOsmPlugin::QcOsmPlugin()
   : QcWmtsPlugin(PLUGIN_NAME, PLUGIN_TITLE, NUMBER_OF_LEVELS, TILE_SIZE),

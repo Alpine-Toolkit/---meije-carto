@@ -47,7 +47,7 @@ class QC_EXPORT QcTileMatrixIndex
 {
  public:
   QcTileMatrixIndex();
-  QcTileMatrixIndex(size_t x, size_t y);
+  QcTileMatrixIndex(int x, int y);
   QcTileMatrixIndex(const QcTileMatrixIndex & other);
   ~QcTileMatrixIndex();
 
@@ -58,23 +58,23 @@ class QC_EXPORT QcTileMatrixIndex
     return !operator==(other);
   }
 
-  inline void set_x(size_t x) {
+  inline void set_x(int x) {
     m_x = x;
   }
-  inline size_t x() const {
+  inline int x() const {
     return m_x;
   }
 
-  inline void set_y(size_t y) {
+  inline void set_y(int y) {
     m_y = y;
   }
-  inline size_t y() const {
+  inline int y() const {
     return m_y;
   }
 
  private:
-  size_t m_x; // column
-  size_t m_y; // row
+  int m_x; // column
+  int m_y; // row
 };
 
 #ifndef QT_NO_DEBUG_STREAM
