@@ -88,9 +88,6 @@ QcMapLayerRootNode::update_tiles(QcMapLayerScene * map_scene,
   QcTileSpecSet to_remove = tiles_in_scene - visible_tiles;
   QcTileSpecSet to_add = visible_tiles - tiles_in_scene;
 
-  // QcTileSpecSet to_remove = tiles_in_scene;
-  // QcTileSpecSet to_add = visible_tiles;
-
   qInfo() << "Offset" << offset
           << "tiles_in_scene" << tiles_in_scene
           << "\nvisible_tiles" << visible_tiles
