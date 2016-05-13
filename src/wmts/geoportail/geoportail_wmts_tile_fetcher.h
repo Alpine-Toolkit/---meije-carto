@@ -56,6 +56,7 @@ class QcGeoportailWmtsTileFetcher : public QcWmtsTileFetcher
 
 public:
   QcGeoportailWmtsTileFetcher(const QcGeoportailPlugin * plugin);
+  ~QcGeoportailWmtsTileFetcher();
 
   void set_user_agent(const QByteArray & user_agent) { m_user_agent = user_agent; }
 

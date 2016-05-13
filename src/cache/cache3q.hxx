@@ -99,7 +99,7 @@ QcCache3Q<Key, T, EvictionPolicy>::print_stats()
 
 template <class Key, class T, class EvictionPolicy>
 QcCache3Q<Key,T,EvictionPolicy>::QcCache3Q(int max_cost, int min_recent, int max_old_popular)
-  : m_q1(new Queue), m_q2(new Queue), m_q3(new Queue), m_q1_evicted(new Queue),
+  : m_q1(new Queue), m_q2(new Queue), m_q3(new Queue), m_q1_evicted(new Queue), // Fixme: delete ?
     m_max_cost(max_cost), m_min_recent(min_recent), m_max_old_popular(max_old_popular),
     m_hit_count(0), m_miss_count(0), m_promote(0)
 {

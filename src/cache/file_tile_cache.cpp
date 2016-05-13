@@ -161,13 +161,14 @@ QcFileTileCache::QcFileTileCache(const QString & directory)
 
   load_tiles();
 
-  // Fixme: delete m_offline_cache
   QString offline_cache_directory = m_directory + QDir::separator() + QLatin1Literal("offline");
   m_offline_cache = new QcOfflineTileCache(offline_cache_directory);
 }
 
 QcFileTileCache::~QcFileTileCache()
 {
+  qInfo() << "Serialize cache queue";
+
   // For each disk cache queue write the list of filenames to a file
   QDir directory(m_directory);
   for (int i = 1; i <= NUMBER_OF_QUEUES; i++) {
@@ -191,6 +192,8 @@ QcFileTileCache::~QcFileTileCache()
 
     file.close();
   }
+
+  delete m_offline_cache;
 }
 
 QString

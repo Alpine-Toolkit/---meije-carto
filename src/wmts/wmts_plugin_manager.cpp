@@ -44,7 +44,10 @@ QcWmtsPluginManager::QcWmtsPluginManager()
 }
 
 QcWmtsPluginManager::~QcWmtsPluginManager()
-{}
+{
+  for (auto * plugin : m_plugins.values())
+    delete plugin;
+}
 
 QcWmtsPlugin *
 QcWmtsPluginManager::operator[](const QString & name)

@@ -56,6 +56,7 @@ class QcOsmWmtsTileFetcher : public QcWmtsTileFetcher
 
 public:
   QcOsmWmtsTileFetcher(const QcOsmPlugin * plugin);
+  ~QcOsmWmtsTileFetcher();
 
   void set_user_agent(const QByteArray & user_agent) { m_user_agent = user_agent; }
 

@@ -77,8 +77,8 @@
 QcWmtsManager::QcWmtsManager(const QString & plugin_name)
   : QObject(),
     m_plugin_name(plugin_name),
-    m_tile_cache(nullptr), // must call set_tile_fetcher() !!!
-    m_tile_fetcher(nullptr) // created by a call to tile_cache()
+    m_tile_cache(nullptr), // created by a call to tile_cache()
+    m_tile_fetcher(nullptr) // must call set_tile_fetcher() !!!
 {}
 
 /*!

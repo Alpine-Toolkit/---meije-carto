@@ -46,8 +46,8 @@ QcMapViewLayer::QcMapViewLayer(const QcWmtsPluginLayer * plugin_layer, QcViewpor
 
 QcMapViewLayer::~QcMapViewLayer()
 {
-  if (m_request_manager)
-    delete m_request_manager;
+  // if (m_request_manager)
+  delete m_request_manager;
 }
 
 float
@@ -187,8 +187,8 @@ QcMapView::~QcMapView()
 {
   for (auto * layer : m_layers)
     layer->deleteLater(); // Fixme: delete ?
-  delete m_viewport;
   delete m_map_scene;
+  delete m_viewport;
 }
 
 QcMapViewLayer *

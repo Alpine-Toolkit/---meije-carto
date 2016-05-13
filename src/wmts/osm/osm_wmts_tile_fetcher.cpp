@@ -49,6 +49,11 @@ QcOsmWmtsTileFetcher::QcOsmWmtsTileFetcher(const QcOsmPlugin * plugin)
     m_user_agent("QtCarto based application")
 {}
 
+QcOsmWmtsTileFetcher::~QcOsmWmtsTileFetcher()
+{
+  delete m_network_manager;
+}
+
 QcWmtsReply *
 QcOsmWmtsTileFetcher::get_tile_image(const QcTileSpec & tile_spec)
 {

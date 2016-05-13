@@ -108,6 +108,7 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
   for (auto * node : m_scene_graph_nodes_to_remove)
     map_root_node->root->removeChildNode(node);
   m_scene_graph_nodes_to_remove.clear();
+
   for (auto * layer : m_layers) {
     QcMapLayerRootNode * layer_node = nullptr;
     QString name = layer->name();

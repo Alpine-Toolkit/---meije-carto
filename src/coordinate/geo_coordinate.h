@@ -158,7 +158,7 @@ class QC_EXPORT QcGeoCoordinate
  public:
   inline QcProjection & projection() {
     if (!m_projection)
-      m_projection = new QcProjection(proj4_definition());
+      m_projection = new QcProjection(proj4_definition()); // Fixme: never deleted ?
 
     return *m_projection;
   }

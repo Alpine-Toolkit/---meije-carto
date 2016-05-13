@@ -99,7 +99,10 @@ QcWmtsPlugin::QcWmtsPlugin(const QString & name, const QString & title, size_t n
 {}
 
 QcWmtsPlugin::~QcWmtsPlugin()
-{}
+{
+  for (auto * layer : m_layers)
+    delete layer;
+}
 
 void
 QcWmtsPlugin::add_layer(const QcWmtsPluginLayer * layer)

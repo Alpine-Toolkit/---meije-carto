@@ -52,6 +52,11 @@ QcGeoportailWmtsTileFetcher::QcGeoportailWmtsTileFetcher(const QcGeoportailPlugi
 	  SLOT(on_authentication_request_slot(QNetworkReply*, QAuthenticator*)));
 }
 
+QcGeoportailWmtsTileFetcher::~QcGeoportailWmtsTileFetcher()
+{
+  delete m_network_manager;
+}
+
 QcWmtsReply *
 QcGeoportailWmtsTileFetcher::get_tile_image(const QcTileSpec & tile_spec)
 {
