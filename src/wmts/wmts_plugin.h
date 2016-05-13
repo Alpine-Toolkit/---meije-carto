@@ -48,13 +48,8 @@ class QcWmtsPlugin;
 
 /**************************************************************************************************/
 
-class QcWmtsPluginLayer // : public QObject
+class QcWmtsPluginLayer
 {
-  // Q_GADGET
-  // Q_OBJECT
-  // Q_PROPERTY(QString name READ name CONSTANT)
-  // Q_PROPERTY(QString title READ title CONSTANT)
-
 public:
   QcWmtsPluginLayer(QcWmtsPlugin * plugin,
                     int map_id,
@@ -89,19 +84,10 @@ private:
   QString m_image_format;
 };
 
-// Q_DECLARE_METATYPE(QcWmtsPluginLayer) // abstract
-
 /**************************************************************************************************/
 
-class QcWmtsPlugin // : public QObject
+class QcWmtsPlugin
 {
-  // Q_GADGET
-  // Q_OBJECT
-  // Q_PROPERTY(QString name READ name CONSTANT)
-  // Q_PROPERTY(QString title READ title CONSTANT)
-
-  // Q_DISABLE_COPY(QcWmtsPlugin)
-
 public:
   QcWmtsPlugin(const QString & name, const QString & title, size_t number_of_levels, size_t tile_size);
   ~QcWmtsPlugin();
@@ -133,8 +119,6 @@ private:
   QcTileMatrixSet m_tile_matrix_set;
   QcWmtsManager m_wmts_manager;
 };
-
-// Q_DECLARE_METATYPE(QcWmtsPlugin)
 
 /**************************************************************************************************/
 
