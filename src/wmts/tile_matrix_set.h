@@ -28,21 +28,21 @@
 
 /**************************************************************************************************/
 
-#ifndef TILE_MATRIX_SET_H
-#define TILE_MATRIX_SET_H
+#ifndef __TILE_MATRIX_SET_H__
+#define __TILE_MATRIX_SET_H__
 
 /**************************************************************************************************/
+
+#include "qtcarto_global.h"
+#include "coordinate/geo_coordinate.h"
+#include "earth.h"
+#include "wmts/tile_matrix_index.h"
 
 #include <vector>
 
 #include <QtCore/QMetaType>
 #include <QDebug>
 #include <QString>
-
-#include "coordinate/geo_coordinate.h"
-#include "earth.h"
-#include "qtcarto_global.h"
-#include "wmts/tile_matrix_index.h"
 
 /**************************************************************************************************/
 
@@ -52,6 +52,8 @@
 
 class QcTileMatrix;
 class QcTileMatrixSet;
+
+/**************************************************************************************************/
 
 class QC_EXPORT QcTileMatrixSetIterator
 {
@@ -74,11 +76,17 @@ class QC_EXPORT QcTileMatrixSetIterator
   const QcTileMatrixSet * m_tile_matrix_set;
 };
 
+/**************************************************************************************************/
+
 // Fixme: subclass QVector ?
 class QC_EXPORT QcTileMatrixSet
 {
  public:
+  static double resolution_for_level(double map_size, int tile_size, int zoom_level);
+
+ public:
   // Fixme: ???
+  // Fixme: generalise, map_size
   static constexpr char const * projection = "epsg:3857";
   static constexpr double x_offset = -HALF_EQUATORIAL_PERIMETER;
   static constexpr double y_offset =  HALF_EQUATORIAL_PERIMETER;
@@ -87,23 +95,15 @@ class QC_EXPORT QcTileMatrixSet
   // Fixme: std::size_t ???
   QcTileMatrixSet(QString name, size_t number_of_level, size_t tile_size);
 
-  inline QString name() const {
-    return m_name;
-  }
+  inline QString name() const { return m_name; }
 
-  inline size_t number_of_levels() const {
-    return m_number_of_levels;
-  }
+  inline size_t number_of_levels() const { return m_number_of_levels; }
 
   // unit [px]
-  inline size_t tile_size() const {
-    return m_tile_size;
-  }
+  inline size_t tile_size() const { return m_tile_size; }
 
   // unit [m/px]
-  inline double root_resolution() const {
-    return m_root_resolution;
-  }
+  inline double root_resolution() const { return m_root_resolution; }
 
   // Return the resolution of the given level [m/px].
   inline double level_resolution(size_t level) const {
@@ -127,7 +127,7 @@ class QC_EXPORT QcTileMatrixSet
   }
 
   QcTileMatrixSetIterator end() const {
-    return QcTileMatrixSetIterator(this,  m_number_of_levels);
+    return QcTileMatrixSetIterator(this, m_number_of_levels);
   }
 
   // public:
@@ -151,32 +151,20 @@ class QC_EXPORT QcTileMatrix
  public:
   QcTileMatrix(QcTileMatrixSet & tile_matrix_set, size_t level);
 
-  inline const QcTileMatrixSet & tile_matrix_set() const {
-    return m_tile_matrix_set;
-  }
+  inline const QcTileMatrixSet & tile_matrix_set() const { return m_tile_matrix_set; }
 
   // pyramid level
-  inline size_t level() const {
-    return m_level;
-  }
+  inline size_t level() const { return m_level; }
 
   // Size of the mosaic, unit [tile]
-  inline size_t mosaic_size() const {
-    return m_mosaic_size;
-  }
+  inline size_t mosaic_size() const { return m_mosaic_size; }
 
-  inline double resolution() const {
-    return m_resolution;
-  }
+  inline double resolution() const { return m_resolution; }
 
-  inline double tile_length_m() const {
-    return m_tile_length_m;
-  }
+  inline double tile_length_m() const { return m_tile_length_m; }
 
   // unit [px]
-  inline size_t tile_size() const {
-    return m_tile_matrix_set.tile_size();
-  }
+  inline size_t tile_size() const { return m_tile_matrix_set.tile_size(); }
 
   QcTileMatrixIndex mercator_to_matrix_index(const QcGeoCoordinateWebMercator & coordinate) const;
   QcTileMatrixIndex mercator_to_matrix_index(const QcGeoCoordinateNormalisedWebMercator & coordinate) const;
@@ -189,11 +177,13 @@ class QC_EXPORT QcTileMatrix
   double m_tile_length_m;
 };
 
+/**************************************************************************************************/
+
 // QT_END_NAMESPACE
 
 /**************************************************************************************************/
 
-#endif // TILE_MATRIX_SET_H
+#endif // __TILE_MATRIX_SET_H__
 
 /***************************************************************************************************
  *

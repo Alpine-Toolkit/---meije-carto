@@ -26,9 +26,9 @@
 
 /**************************************************************************************************/
 
-#include <cmath>
-
 #include "tile_matrix_set.h"
+
+#include <cmath>
 
 /**************************************************************************************************/
 
@@ -42,6 +42,12 @@ QcTileMatrixSetIterator::operator* () const {
 }
 
 /**************************************************************************************************/
+
+double
+QcTileMatrixSet::resolution_for_level(double map_size, int tile_size, int zoom_level)
+{
+  return map_size / double(tile_size * (1 << zoom_level)); // unit is m/px
+}
 
 QcTileMatrixSet::QcTileMatrixSet(QString name, size_t number_of_levels, size_t tile_size)
   : m_name(name),

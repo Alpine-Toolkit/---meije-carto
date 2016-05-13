@@ -26,17 +26,15 @@
 
 /**************************************************************************************************/
 
+#include "math/qc_math.h"
+#include "map/viewport.h"
+
 #include <cmath>
 
 #include <QDataStream>
 #include <QDebug>
 #include <QtMath>
 #include <qnumeric.h>
-
-/**************************************************************************************************/
-
-#include "math/qc_math.h"
-#include "map/viewport.h"
 
 /**************************************************************************************************/
 
@@ -128,15 +126,14 @@ void
 QcTiledZoomLevel::set_zoom_level(unsigned int zoom_level)
 {
   m_zoom_level = zoom_level;
-  size_t mosaic_size = 1 << zoom_level;
-  unsigned int map_size_px = m_tile_size * mosaic_size;
-  double zoom_factor = m_map_size / double(map_size_px); // unit is m/px
+  double zoom_factor = QcTileMatrixSet::resolution_for_level(m_map_size, m_tile_size, zoom_level); // unit is m/px
   set_zoom_factor(zoom_factor);
-  qInfo() << "set_zoom_level" << zoom_level << map_size_px;
+  // qInfo() << "set_zoom_level" << zoom_level << map_size_px;
 }
 
 /**************************************************************************************************/
 
+// Fixme: move ?
 QcInterval2DDouble
 interval_from_center_and_radius(const QcVectorDouble & center, const QcVectorDouble & radius)
 {
