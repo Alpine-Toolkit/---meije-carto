@@ -51,87 +51,6 @@
 
 /**************************************************************************************************/
 
-QcWmtsPluginData::QcWmtsPluginData()
-  : m_name(),
-    m_title()
-{}
-
-QcWmtsPluginData::QcWmtsPluginData(const QString & name, const QString & title)
-  : m_name(name),
-    m_title(title)
-{}
-
-QcWmtsPluginData::QcWmtsPluginData(const QcWmtsPluginData & other)
-  : m_name(other.m_name),
-    m_title(other.m_title)
-{}
-
-QcWmtsPluginData &
-QcWmtsPluginData::operator=(const QcWmtsPluginData & other)
-{
-  if (this != &other) {
-    m_name = other.m_name;
-    m_title = other.m_title;
-  }
-
-  return *this;
-}
-
-/**************************************************************************************************/
-
-QcWmtsPluginLayerData::QcWmtsPluginLayerData()
-  : QObject(),
-    m_plugin_layer(nullptr),
-    m_status(false),
-    m_opacity(1.)
-{}
-
-QcWmtsPluginLayerData::QcWmtsPluginLayerData(const QcWmtsPluginLayer * plugin_layer)
-  : QObject(),
-    m_plugin_layer(plugin_layer),
-    m_status(false),
-    m_opacity(1.)
-{}
-
-QcWmtsPluginLayerData::QcWmtsPluginLayerData(const QcWmtsPluginLayerData & other)
-  : QObject(),
-    m_plugin_layer(other.m_plugin_layer),
-    m_status(other.m_status),
-    m_opacity(other.m_opacity)
-{}
-
-QcWmtsPluginLayerData &
-QcWmtsPluginLayerData::operator=(const QcWmtsPluginLayerData & other)
-{
-  if (this != &other) {
-    m_plugin_layer = other.m_plugin_layer;
-    m_status = other.m_status;
-    m_opacity = other.m_opacity;
-  }
-
-  return *this;
-}
-
-void
-QcWmtsPluginLayerData::set_status(bool status)
-{
-  if (m_status != status) {
-    m_status = status;
-    emit statusChanged(status);
-  }
-}
-
-void
-QcWmtsPluginLayerData::set_opacity(float opacity)
-{
-  if (m_opacity != opacity) {
-    m_opacity = opacity;
-    emit opacityChanged(opacity);
-  }
-}
-
-/**************************************************************************************************/
-
 QcMapItem::QcMapItem(QQuickItem * parent)
   : QQuickItem(parent),
     m_color(),
@@ -174,84 +93,6 @@ QcMapItem::~QcMapItem()
 }
 
 void
-QcMapItem::componentComplete()
-{
-  // qInfo();
-  // m_component_completed = true;
-  // m_gesture_area->set_map(this);
-  QQuickItem::componentComplete();
-}
-
-QVariantList
-QcMapItem::make_plugin_layers(const QString & plugin_name)
-{
-  QVariantList plugin_layers;
-  const QcWmtsPlugin * plugin = m_plugin_manager[plugin_name];
-  if (plugin)
-    for (const auto * layer : plugin->layers()) {
-      QcWmtsPluginLayerData * layer_data = new QcWmtsPluginLayerData(layer);
-      connect(layer_data, &QcWmtsPluginLayerData::statusChanged, this, &QcMapItem::layer_status_changed);
-      connect(layer_data, &QcWmtsPluginLayerData::opacityChanged, this, &QcMapItem::layer_opacity_changed);
-      plugin_layers << QVariant::fromValue(layer_data);
-    }
-  return plugin_layers;
-}
-
-QVariantList
-QcMapItem::plugins() const
-{
-  QVariantList plugins;
-  for (auto * plugin : m_plugin_manager.plugins())
-    plugins << QVariant::fromValue(QcWmtsPluginData(plugin->name(), plugin->title()));
-  return plugins;
-}
-
-QVariantList
-QcMapItem::plugin_layers(const QString & plugin_name)
-{
-  if (m_plugin_layers.contains(plugin_name))
-    return m_plugin_layers[plugin_name];
-  else
-    return QVariantList();
-}
-
-void
-QcMapItem::layer_status_changed(bool status)
-{
-  QcWmtsPluginLayerData * layer_data = qobject_cast<QcWmtsPluginLayerData *>(QObject::sender());
-  const QcWmtsPluginLayer * plugin_layer = layer_data->plugin_layer();
-  if (status)
-    m_map_view->add_layer(plugin_layer);
-  else
-    m_map_view->remove_layer(plugin_layer);
-  update();
-}
-
-void
-QcMapItem::layer_opacity_changed(float opacity)
-{
-  QcWmtsPluginLayerData * layer_data = qobject_cast<QcWmtsPluginLayerData *>(QObject::sender());
-  const QcWmtsPluginLayer * plugin_layer = layer_data->plugin_layer();
-  if (layer_data->status()) {
-    m_map_view->set_opacity(plugin_layer, opacity);
-    update();
-  }
-}
-
-/*!
-  \qmlproperty MapGestureArea QtLocation::Map::gesture
-
-  Contains the MapGestureArea created with the Map. This covers pan, flick and pinch gestures.
-  Use \c{gesture.enabled: true} to enable basic gestures, or see \l{MapGestureArea} for
-  further details.
-*/
-QcMapGestureArea *
-QcMapItem::gesture()
-{
-  return m_gesture_area;
-}
-
-void
 QcMapItem::set_color(const QColor & color)
 {
   if (color != m_color) {
@@ -261,11 +102,26 @@ QcMapItem::set_color(const QColor & color)
   }
 }
 
-QColor
-QcMapItem::color() const
+void
+QcMapItem::componentComplete()
 {
-  return m_color;
+  // qInfo();
+  // m_component_completed = true;
+  // m_gesture_area->set_map(this);
+  QQuickItem::componentComplete();
 }
+
+/**************************************************************************************************/
+
+/*!
+  \qmlproperty MapGestureArea QtLocation::Map::gesture
+
+  Contains the MapGestureArea created with the Map. This covers pan, flick and pinch gestures.
+  Use \c{gesture.enabled: true} to enable basic gestures, or see \l{MapGestureArea} for
+  further details.
+*/
+
+/**************************************************************************************************/
 
 bool
 QcMapItem::is_interactive()
@@ -345,154 +201,6 @@ QcMapItem::wheelEvent(QWheelEvent * event)
     m_gesture_area->handle_wheel_event(event);
   else
     QQuickItem::wheelEvent(event);
-}
-
-/*!
-    \qmlmethod coordinate QtLocation::Map::to_coordinate(QPointF position, bool clipToViewPort)
-
-    Returns the coordinate which corresponds to the \a position relative to the map item.
-
-    If \a cliptoViewPort is \c true, or not supplied then returns an invalid coordinate if
-    \a position is not within the current viewport.
-*/
-QGeoCoordinate
-QcMapItem::to_coordinate(const QVector2D & position_px, bool clip_to_viewport) const
-{
-  QcVectorDouble _position_px(position_px.x(), position_px.y());
-  QcGeoCoordinateWGS84 coordinate = m_viewport->to_coordinate(_position_px, clip_to_viewport).wgs84();
-  return coordinate.to_qt();
-}
-
-/*!
-    \qmlmethod point QtLocation::Map::from_coordinate(coordinate coordinate, bool clipToViewPort)
-
-    Returns the position relative to the map item which corresponds to the \a coordinate.
-
-    If \a cliptoViewPort is \c true, or not supplied then returns an invalid QPointF if
-    \a coordinate is not within the current viewport.
-*/
-QVector2D
-QcMapItem::from_coordinate(const QGeoCoordinate & coordinate, bool clip_to_viewport) const
-{
-  QcGeoCoordinateWGS84 _coordinate(coordinate);
-  QcVectorDouble position_px = m_viewport->from_coordinate(_coordinate, clip_to_viewport);
-  return QVector2D(position_px.x(), position_px.y());
-}
-
-void
-QcMapItem::prefetch_data()
-{
-  // qInfo();
-}
-
-void
-QcMapItem::set_zoom_level(unsigned int zoom_level)
-{
-  // qInfo() << zoom_level;
-
-  if (zoom_level == m_viewport->zoom_level())
-    return;
-
-  // Fixme: check range
-  if (zoom_level < 0 || zoom_level > 18)
-    return;
-
-  m_viewport->set_zoom_level(zoom_level);
-  // update(); // Fixme: signal
-  emit zoom_levelChanged(zoom_level);
-}
-
-unsigned int
-QcMapItem::zoom_level() const
-{
-  return m_viewport->zoom_level();
-}
-
-void
-QcMapItem::set_center(const QGeoCoordinate & center)
-{
-  // Fixme: check latitude
-
-  // qInfo() << "WGS84 " << center;
-
-  QcGeoCoordinateWGS84 coordinate(center);
-  if (coordinate == m_viewport->wgs84())
-    return;
-
-  if (!center.isValid())
-    return;
-  // coordinate.setLatitude(qBound(-m_maximumViewportLatitude, center.latitude(), m_maximumViewportLatitude));
-
-  m_viewport->set_coordinate(coordinate);
-  // update(); // Fixme: signal
-  emit centerChanged(center);
-
-  // QcGeoCoordinateMercator mercator_coordinate = m_viewport->mercator();
-  // qInfo() << "mercator " << mercator_coordinate.x() << mercator_coordinate.y();
-  // QcGeoCoordinateNormalisedMercator normalised_mercator_coordinate = m_viewport->normalised_mercator();
-  // qInfo() << "normalised mercator " << normalised_mercator_coordinate.x() << normalised_mercator_coordinate.y();
-}
-
-QGeoCoordinate
-QcMapItem::center() const
-{
-  return m_viewport->wgs84().to_qt();
-}
-
-void
-QcMapItem::pan(int dx, int dy)
-{
-  // qInfo() << dx << dy;
-  m_viewport->pan(dx, dy); // Fixme: unit is m
-  update(); // Fixme: signal
-}
-
-void
-QcMapItem::stable_zoom(QPointF position_px, int zoom_level)
-{
-  QcVectorDouble _position_px(position_px.x(), position_px.y());
-  m_viewport->stable_zoom(_position_px, zoom_level);
-}
-
-void
-QcMapItem::stable_zoom_by_increment(QPointF position_px, int zoom_increment)
-{
-  stable_zoom(position_px, zoom_level() + zoom_increment);
-}
-
-void
-QcMapItem::geometryChanged(const QRectF & new_geometry, const QRectF & old_geometry)
-{
-  // qInfo() << old_geometry << "->" << new_geometry;
-  QQuickItem::geometryChanged(new_geometry, old_geometry);
-  QSize viewport_size(new_geometry.width(), new_geometry.height()); // Fixme: QSizeF size()
-  m_viewport->set_viewport_size(viewport_size);
-}
-
-QSGNode *
-QcMapItem::updatePaintNode(QSGNode * old_node, UpdatePaintNodeData *)
-{
-  // qInfo() << old_node;
-
-  // if (!m_map) {
-  //   delete old_node;
-  //   return nullptr;
-  // }
-
-  QSGSimpleRectNode * root = static_cast<QSGSimpleRectNode *>(old_node);
-  if (!root)
-    root = new QSGSimpleRectNode(boundingRect(), m_color);
-  else {
-    root->setRect(boundingRect());
-    root->setColor(m_color);
-  }
-
-  QSGNode * content = root->childCount() ? root->firstChild() : 0;
-  content = m_map_view->update_scene_graph(content, window());
-  if (content && root->childCount() == 0)
-    root->appendChildNode(content);
-
-  return root;
 }
 
 bool
@@ -647,6 +355,220 @@ QcMapItem::send_touch_event(QTouchEvent * event)
   }
 
   return false;
+}
+
+/**************************************************************************************************/
+
+void
+QcMapItem::set_zoom_level(unsigned int zoom_level)
+{
+  // qInfo() << zoom_level;
+
+  if (zoom_level == m_viewport->zoom_level())
+    return;
+
+  // Fixme: check range
+  if (zoom_level < 0 || zoom_level > 18)
+    return;
+
+  m_viewport->set_zoom_level(zoom_level);
+  // update(); // Fixme: signal
+  emit zoom_levelChanged(zoom_level);
+}
+
+unsigned int
+QcMapItem::zoom_level() const
+{
+  return m_viewport->zoom_level();
+}
+
+void
+QcMapItem::set_center(const QGeoCoordinate & center)
+{
+  // Fixme: check latitude
+
+  // qInfo() << "WGS84 " << center;
+
+  QcGeoCoordinateWGS84 coordinate(center);
+  if (coordinate == m_viewport->wgs84())
+    return;
+
+  if (!center.isValid())
+    return;
+  // coordinate.setLatitude(qBound(-m_maximumViewportLatitude, center.latitude(), m_maximumViewportLatitude));
+
+  m_viewport->set_coordinate(coordinate);
+  // update(); // Fixme: signal
+  emit centerChanged(center);
+
+  // QcGeoCoordinateMercator mercator_coordinate = m_viewport->mercator();
+  // qInfo() << "mercator " << mercator_coordinate.x() << mercator_coordinate.y();
+  // QcGeoCoordinateNormalisedMercator normalised_mercator_coordinate = m_viewport->normalised_mercator();
+  // qInfo() << "normalised mercator " << normalised_mercator_coordinate.x() << normalised_mercator_coordinate.y();
+}
+
+QGeoCoordinate
+QcMapItem::center() const
+{
+  return m_viewport->wgs84().to_qt();
+}
+
+void
+QcMapItem::pan(int dx, int dy)
+{
+  // qInfo() << dx << dy;
+  m_viewport->pan(dx, dy); // Fixme: unit is m
+  update(); // Fixme: signal
+}
+
+void
+QcMapItem::stable_zoom(QPointF position_px, int zoom_level)
+{
+  QcVectorDouble _position_px(position_px.x(), position_px.y());
+  m_viewport->stable_zoom(_position_px, zoom_level);
+}
+
+void
+QcMapItem::stable_zoom_by_increment(QPointF position_px, int zoom_increment)
+{
+  stable_zoom(position_px, zoom_level() + zoom_increment);
+}
+
+/**************************************************************************************************/
+
+void
+QcMapItem::geometryChanged(const QRectF & new_geometry, const QRectF & old_geometry)
+{
+  // qInfo() << old_geometry << "->" << new_geometry;
+  QQuickItem::geometryChanged(new_geometry, old_geometry);
+  QSize viewport_size(new_geometry.width(), new_geometry.height()); // Fixme: QSizeF size()
+  m_viewport->set_viewport_size(viewport_size);
+}
+
+QSGNode *
+QcMapItem::updatePaintNode(QSGNode * old_node, UpdatePaintNodeData *)
+{
+  // qInfo() << old_node;
+
+  // if (!m_map) {
+  //   delete old_node;
+  //   return nullptr;
+  // }
+
+  QSGSimpleRectNode * root = static_cast<QSGSimpleRectNode *>(old_node);
+  if (!root)
+    root = new QSGSimpleRectNode(boundingRect(), m_color);
+  else {
+    root->setRect(boundingRect());
+    root->setColor(m_color);
+  }
+
+  QSGNode * content = root->childCount() ? root->firstChild() : 0;
+  content = m_map_view->update_scene_graph(content, window());
+  if (content && root->childCount() == 0)
+    root->appendChildNode(content);
+
+  return root;
+}
+
+/**************************************************************************************************/
+
+/*!
+    \qmlmethod coordinate QtLocation::Map::to_coordinate(QPointF position, bool clipToViewPort)
+
+    Returns the coordinate which corresponds to the \a position relative to the map item.
+
+    If \a cliptoViewPort is \c true, or not supplied then returns an invalid coordinate if
+    \a position is not within the current viewport.
+*/
+QGeoCoordinate
+QcMapItem::to_coordinate(const QVector2D & position_px, bool clip_to_viewport) const
+{
+  QcVectorDouble _position_px(position_px.x(), position_px.y());
+  QcGeoCoordinateWGS84 coordinate = m_viewport->to_coordinate(_position_px, clip_to_viewport).wgs84();
+  return coordinate.to_qt();
+}
+
+/*!
+    \qmlmethod point QtLocation::Map::from_coordinate(coordinate coordinate, bool clipToViewPort)
+
+    Returns the position relative to the map item which corresponds to the \a coordinate.
+
+    If \a cliptoViewPort is \c true, or not supplied then returns an invalid QPointF if
+    \a coordinate is not within the current viewport.
+*/
+QVector2D
+QcMapItem::from_coordinate(const QGeoCoordinate & coordinate, bool clip_to_viewport) const
+{
+  QcGeoCoordinateWGS84 _coordinate(coordinate);
+  QcVectorDouble position_px = m_viewport->from_coordinate(_coordinate, clip_to_viewport);
+  return QVector2D(position_px.x(), position_px.y());
+}
+
+/**************************************************************************************************/
+
+QVariantList
+QcMapItem::make_plugin_layers(const QString & plugin_name)
+{
+  QVariantList plugin_layers;
+  const QcWmtsPlugin * plugin = m_plugin_manager[plugin_name];
+  if (plugin)
+    for (const auto * layer : plugin->layers()) {
+      QcWmtsPluginLayerData * layer_data = new QcWmtsPluginLayerData(layer);
+      connect(layer_data, &QcWmtsPluginLayerData::statusChanged, this, &QcMapItem::layer_status_changed);
+      connect(layer_data, &QcWmtsPluginLayerData::opacityChanged, this, &QcMapItem::layer_opacity_changed);
+      plugin_layers << QVariant::fromValue(layer_data);
+    }
+  return plugin_layers;
+}
+
+QVariantList
+QcMapItem::plugins() const
+{
+  QVariantList plugins;
+  for (auto * plugin : m_plugin_manager.plugins())
+    plugins << QVariant::fromValue(QcWmtsPluginData(plugin->name(), plugin->title()));
+  return plugins;
+}
+
+QVariantList
+QcMapItem::plugin_layers(const QString & plugin_name)
+{
+  if (m_plugin_layers.contains(plugin_name))
+    return m_plugin_layers[plugin_name];
+  else
+    return QVariantList();
+}
+
+void
+QcMapItem::layer_status_changed(bool status)
+{
+  QcWmtsPluginLayerData * layer_data = qobject_cast<QcWmtsPluginLayerData *>(QObject::sender());
+  const QcWmtsPluginLayer * plugin_layer = layer_data->plugin_layer();
+  if (status)
+    m_map_view->add_layer(plugin_layer);
+  else
+    m_map_view->remove_layer(plugin_layer);
+  update();
+}
+
+void
+QcMapItem::layer_opacity_changed(float opacity)
+{
+  QcWmtsPluginLayerData * layer_data = qobject_cast<QcWmtsPluginLayerData *>(QObject::sender());
+  const QcWmtsPluginLayer * plugin_layer = layer_data->plugin_layer();
+  if (layer_data->status()) {
+    m_map_view->set_opacity(plugin_layer, opacity);
+    update();
+  }
+}
+
+/**************************************************************************************************/
+
+void
+QcMapItem::prefetch_data()
+{
+  // qInfo();
 }
 
 /**************************************************************************************************/

@@ -33,6 +33,13 @@
 
 /**************************************************************************************************/
 
+#include "map_gesture_area.h"
+#include "plugin_data.h"
+
+#include "map/map_view.h"
+#include "map/viewport.h"
+#include "wmts/wmts_plugin_manager.h"
+
 #include <QColor>
 #include <QGeoCoordinate>
 #include <QHash>
@@ -40,79 +47,7 @@
 
 /**************************************************************************************************/
 
-#include "map/map_view.h"
-#include "map/viewport.h"
-#include "wmts/wmts_plugin_manager.h"
-
-#include "map_gesture_area.h"
-
-/**************************************************************************************************/
-
 // QC_BEGIN_NAMESPACE
-
-/**************************************************************************************************/
-
-class QcWmtsPluginData
-{
-  Q_GADGET
-  Q_PROPERTY(QString name READ name CONSTANT)
-  Q_PROPERTY(QString title READ title CONSTANT)
-
-public:
-  QcWmtsPluginData();
-  QcWmtsPluginData(const QString & name, const QString & title);
-  QcWmtsPluginData(const QcWmtsPluginData & other);
-
-  QcWmtsPluginData & operator=(const QcWmtsPluginData & other);
-
-  const QString & name() const { return m_name; }
-  const QString & title() const { return m_title; }
-
-private:
-  QString m_name;
-  QString m_title;
-};
-
-Q_DECLARE_METATYPE(QcWmtsPluginData)
-
-/**************************************************************************************************/
-
-class QcWmtsPluginLayerData : public QObject
-{
-  Q_OBJECT
-  Q_PROPERTY(QString plugin READ plugin CONSTANT)
-  Q_PROPERTY(QString title READ title CONSTANT)
-  Q_PROPERTY(bool status READ status WRITE set_status NOTIFY statusChanged)
-  Q_PROPERTY(float opacity READ opacity WRITE set_opacity NOTIFY opacityChanged)
-
-public:
-  QcWmtsPluginLayerData();
-  QcWmtsPluginLayerData(const QcWmtsPluginLayer * plugin_layer);
-  QcWmtsPluginLayerData(const QcWmtsPluginLayerData & other);
-
-  QcWmtsPluginLayerData & operator=(const QcWmtsPluginLayerData & other);
-
-  const QcWmtsPluginLayer * plugin_layer() const { return m_plugin_layer; }
-  QString plugin() const { return m_plugin_layer->plugin_name(); }
-  QString title() const { return m_plugin_layer->title(); }
-
-  bool status() const { return m_status; }
-  float opacity() const { return m_opacity; }
-
-  void set_status(bool status);
-  void set_opacity(float opacity);
-
-signals:
-  void statusChanged(bool status);
-  void opacityChanged(float opacity);
-
-private:
-  const QcWmtsPluginLayer * m_plugin_layer;
-  bool m_status;
-  float m_opacity;
-};
-
-Q_DECLARE_METATYPE(QcWmtsPluginLayerData)
 
 /**************************************************************************************************/
 
@@ -120,20 +55,20 @@ class QcMapItem : public QQuickItem
 {
   Q_OBJECT
   Q_INTERFACES(QQmlParserStatus)
+  Q_PROPERTY(QColor color READ color WRITE set_color NOTIFY colorChanged)
+  Q_PROPERTY(QcMapGestureArea * gesture READ gesture CONSTANT)
   Q_PROPERTY(unsigned int zoom_level READ zoom_level WRITE set_zoom_level NOTIFY zoom_levelChanged)
   Q_PROPERTY(QGeoCoordinate center READ center WRITE set_center NOTIFY centerChanged)
-  Q_PROPERTY(QcMapGestureArea * gesture READ gesture CONSTANT)
-  Q_PROPERTY(QColor color READ color WRITE set_color NOTIFY colorChanged)
-  // Q_PROPERTY(QVariantList plugins READ plugins CONSTANT)
+  Q_PROPERTY(QVariantList plugins READ plugins CONSTANT)
 
 public:
   QcMapItem(QQuickItem *parent = 0);
   ~QcMapItem();
 
-  QcMapGestureArea * gesture();
+  QcMapGestureArea * gesture() { return m_gesture_area; }
 
   void set_color(const QColor & color);
-  QColor color() const;
+  QColor color() const { return m_color; }
 
   void set_zoom_level(unsigned int zoom_level);
   unsigned int zoom_level() const;
@@ -151,15 +86,15 @@ public:
 
   Q_INVOKABLE void prefetch_data(); // optional hint for prefetch
 
-  Q_INVOKABLE QVariantList plugins() const;
+  QVariantList plugins() const;
   Q_INVOKABLE QVariantList plugin_layers(const QString & plugin_name);
 
   bool childMouseEventFilter(QQuickItem * item, QEvent * event) Q_DECL_OVERRIDE ;
 
 signals:
+  void colorChanged(const QColor & color);
   void zoom_levelChanged(int zoom_level);
   void centerChanged(const QGeoCoordinate & coordinate);
-  void colorChanged(const QColor & color);
 
 protected:
   void mouseMoveEvent(QMouseEvent * event) Q_DECL_OVERRIDE ;

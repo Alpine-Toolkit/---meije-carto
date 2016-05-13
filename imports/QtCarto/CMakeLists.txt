@@ -18,6 +18,7 @@ set(qtcarto_files
   declarative_map_item.cpp
   geo_coordinate_animation.cpp
   map_gesture_area.cpp
+  plugin_data.cpp
   qtcarto.cpp
 )
 add_library(qmlqtcartoplugin SHARED ${qtcarto_files})
