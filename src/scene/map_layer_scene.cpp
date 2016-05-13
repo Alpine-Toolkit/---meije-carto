@@ -85,11 +85,11 @@ QcMapLayerRootNode::update_tiles(QcMapLayerScene * map_scene,
   qInfo() << "map side space matrix" << space_matrix;
 
   QcTileSpecSet tiles_in_scene = QcTileSpecSet::fromList(map_side_node->texture_nodes.keys()); // Fixme: cf. textured_tiles
-  // QcTileSpecSet to_remove = tiles_in_scene - visible_tiles;
-  // QcTileSpecSet to_add = visible_tiles - tiles_in_scene;
+  QcTileSpecSet to_remove = tiles_in_scene - visible_tiles;
+  QcTileSpecSet to_add = visible_tiles - tiles_in_scene;
 
-  QcTileSpecSet to_remove = tiles_in_scene;
-  QcTileSpecSet to_add = visible_tiles;
+  // QcTileSpecSet to_remove = tiles_in_scene;
+  // QcTileSpecSet to_add = visible_tiles;
 
   qInfo() << "Offset" << offset
           << "tiles_in_scene" << tiles_in_scene
