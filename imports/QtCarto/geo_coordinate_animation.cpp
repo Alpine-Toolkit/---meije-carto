@@ -272,7 +272,7 @@ QcGeoCoordinateAnimation::direction() const
 void
 QcGeoCoordinateAnimation::setDirection(QcGeoCoordinateAnimation::Direction direction)
 {
-  qInfo() << direction;
+  // qInfo() << direction;
   Q_D(QcGeoCoordinateAnimation);
   if (d->m_direction == direction)
     return;

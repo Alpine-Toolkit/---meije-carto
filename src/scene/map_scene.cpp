@@ -71,12 +71,12 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
 {
   qreal device_pixel_ratio = window->devicePixelRatio();
 
-  qInfo() << old_node << "device pixel ratio" << device_pixel_ratio;
+  // qInfo() << old_node << "device pixel ratio" << device_pixel_ratio;
 
   QSize viewport_size = m_viewport->viewport_size();
   float width = m_viewport->width();
   float height = m_viewport->height();
-  qInfo() << "viewport size" << viewport_size;
+  // qInfo() << "viewport size" << viewport_size;
   // Check viewport has a rectangular shape
   if (width <= 0 || height <= 0) {
     delete old_node;
@@ -85,7 +85,7 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
 
   QcMapRootNode * map_root_node = static_cast<QcMapRootNode *>(old_node);
   if (!map_root_node) {
-    qInfo() << "map_root_node is null";
+    // qInfo() << "map_root_node is null";
     map_root_node = new QcMapRootNode(m_viewport);
   }
 
@@ -102,7 +102,7 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
   item_space_matrix.scale(width/2, height/2);
   item_space_matrix.translate(1, 1);
   map_root_node->root->setMatrix(item_space_matrix);
-  qInfo() << "item_space_matrix" << item_space_matrix;
+  // qInfo() << "item_space_matrix" << item_space_matrix;
 
   // Remove disabled layers
   for (auto * node : m_scene_graph_nodes_to_remove)
@@ -135,7 +135,7 @@ QcMapRootNode::QcMapRootNode(const QcViewport * viewport)
     root(new QSGTransformNode()),
     location_circle_root_node(new QSGOpacityNode())
 {
-  qInfo();
+  // qInfo();
   setIsRectangular(true);
   setGeometry(&geometry);
   appendChildNode(root);
@@ -177,7 +177,7 @@ QcMapRootNode::update_clip_rect()
   int width = m_viewport->width();
   int height = m_viewport->height();
   QRect rect = QRect(0, 0, width, height);
-  qInfo() << rect;
+  // qInf() << rect;
   if (rect != m_clip_rect) {
     QSGGeometry::updateRectGeometry(&geometry, rect);
     QSGClipNode::setClipRect(rect);

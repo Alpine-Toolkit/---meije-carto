@@ -68,7 +68,7 @@ QcZoomFactor::operator=(const QcZoomFactor & other)
 void
 QcZoomFactor::set_zoom_factor(double zoom_factor)
 {
-  qInfo() << "set_zoom_factor" << zoom_factor;
+  // qInfo() << "set_zoom_factor" << zoom_factor;
   if (zoom_factor > 0)
     m_zoom_factor = zoom_factor;
   else
@@ -280,7 +280,7 @@ QcViewport::set_zoom_factor(double zoom_factor)
 void
 QcViewport::zoom_at(const QcGeoCoordinatePseudoWebMercator & coordinate, unsigned int zoom_level)
 {
-  qInfo() << "zoom_at" << coordinate << zoom_level;
+  // qInfo() << "zoom_at" << coordinate << zoom_level;
   if (zoom_level != m_state.zoom_level())
     m_state.set_zoom_level(zoom_level);
   set_coordinate(coordinate); // move and scale polygon
@@ -325,10 +325,10 @@ void
 QcViewport::update_area()
 {
   const QcInterval2DDouble & current_interval = middle_interval();
-  qInfo() << "Current Pseudo Mercator polygon interval [m]"
-          << "[" << (int) current_interval.x().inf() << ", " << (int) current_interval.x().sup() << "]"
-          << "x"
-          << "[" << (int) current_interval.y().inf() << ", " << (int) current_interval.y().sup() << "]";
+  // qInfo() << "Current Pseudo Mercator polygon interval [m]"
+  //         << "[" << (int) current_interval.x().inf() << ", " << (int) current_interval.x().sup() << "]"
+  //         << "x"
+  //         << "[" << (int) current_interval.y().inf() << ", " << (int) current_interval.y().sup() << "]";
 
   // Use pseudo mercator to match the origin to the top-left corner
   QcVectorDouble center = pseudo_web_mercator().vector();
@@ -360,7 +360,7 @@ QcViewport::update_area()
 
   const QcInterval2DDouble & _interval = polygon.interval();
   m_cross_date_line = !_interval.is_included_in(QcGeoCoordinatePseudoWebMercator::domain());
-  qInfo() << "Cross date line" << m_cross_date_line;
+  // qInfo() << "Cross date line" << m_cross_date_line;
   if (m_cross_date_line) {
     if (_bearing) {
       // Fixme: bearing and date line crossing
@@ -390,18 +390,18 @@ QcViewport::update_area()
         east_interval.y() = _interval.y();
         m_east_polygon = interval_to_polygon(east_interval);
       }
-      qInfo() << "West interval [m]"
-              << "[" << (int) west_interval.x().inf() << ", " << (int) west_interval.x().sup() << "]"
-              << "x"
-              << "[" << (int) west_interval.y().inf() << ", " << (int) west_interval.y().sup() << "]"
-              << "Middle interval [m]"
-              << "[" << (int) middle_interval.x().inf() << ", " << (int) middle_interval.x().sup() << "]"
-              << "x"
-              << "[" << (int) middle_interval.y().inf() << ", " << (int) middle_interval.y().sup() << "]"
-              << "East interval [m]"
-              << "[" << (int) east_interval.x().inf() << ", " << (int) east_interval.x().sup() << "]"
-              << "x"
-              << "[" << (int) east_interval.y().inf() << ", " << (int) east_interval.y().sup() << "]";
+      // qInfo() << "West interval [m]"
+      //         << "[" << (int) west_interval.x().inf() << ", " << (int) west_interval.x().sup() << "]"
+      //         << "x"
+      //         << "[" << (int) west_interval.y().inf() << ", " << (int) west_interval.y().sup() << "]"
+      //         << "Middle interval [m]"
+      //         << "[" << (int) middle_interval.x().inf() << ", " << (int) middle_interval.x().sup() << "]"
+      //         << "x"
+      //         << "[" << (int) middle_interval.y().inf() << ", " << (int) middle_interval.y().sup() << "]"
+      //         << "East interval [m]"
+      //         << "[" << (int) east_interval.x().inf() << ", " << (int) east_interval.x().sup() << "]"
+      //         << "x"
+      //         << "[" << (int) east_interval.y().inf() << ", " << (int) east_interval.y().sup() << "]";
       m_middle_polygon = interval_to_polygon(middle_interval);
     }
   } else {
@@ -409,10 +409,10 @@ QcViewport::update_area()
     m_middle_polygon = polygon;
     m_east_polygon.clear();
 
-    qInfo() << "Updated Pseudo Mercator polygon interval [m]"
-            << "[" << (int) _interval.x().inf() << ", " << (int) _interval.x().sup() << "]"
-            << "x"
-            << "[" << (int) _interval.y().inf() << ", " << (int) _interval.y().sup() << "]";
+    // qInfo() << "Updated Pseudo Mercator polygon interval [m]"
+    //         << "[" << (int) _interval.x().inf() << ", " << (int) _interval.x().sup() << "]"
+    //         << "x"
+    //         << "[" << (int) _interval.y().inf() << ", " << (int) _interval.y().sup() << "]";
   }
 
   emit viewport_changed();
@@ -438,7 +438,7 @@ QcViewport::to_coordinate(const QcVectorDouble & position_px, bool clip_to_viewp
 {
   // Fixme: if cross datum
 
-  qInfo() << position_px << clip_to_viewport;
+  // qInfo() << position_px << clip_to_viewport;
 
   if (clip_to_viewport) {
     // Fixme: use interval, int versus double
@@ -468,7 +468,7 @@ QcViewport::from_coordinate(const QcGeoCoordinatePseudoWebMercator & coordinate,
 {
   // Fixme: if cross datum
 
-  qInfo() << coordinate << clip_to_viewport;
+  // qInfo() << coordinate << clip_to_viewport;
 
   QcVectorDouble position_px = (coordinate.vector() - inf_point()) / zoom_factor();
 
@@ -481,7 +481,7 @@ QcViewport::from_coordinate(const QcGeoCoordinatePseudoWebMercator & coordinate,
       return QcVectorDouble(qQNaN(), qQNaN());
   }
 
-  qInfo() << position_px;
+  // qInfo() << position_px;
   // Fixme: return QPointF(qQNaN(), qQNaN());
   return position_px;
 }

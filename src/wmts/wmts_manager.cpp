@@ -226,14 +226,14 @@ QcWmtsManager::update_tile_requests(QcMapViewLayer * map_view_layer,
   			    // Qt::QueuedConnection,
   			    Q_ARG(QSet<QcTileSpec>, requested_tiles), // QcTileSpecSet
   			    Q_ARG(QSet<QcTileSpec>, canceled_tiles));
-  qInfo() << "end of";
+  // qInfo() << "end of";
 }
 
 // Fixme: name
 void
 QcWmtsManager::fetcher_tile_finished(const QcTileSpec & tile_spec, const QByteArray & bytes, const QString & format)
 {
-  qInfo();
+  // qInfo();
   // Is tile requested by a map view ?
   if (m_tile_hash.contains(tile_spec)) {
     QcMapViewLayerPointerSet map_view_layers = m_tile_hash.value(tile_spec);
@@ -241,14 +241,15 @@ QcWmtsManager::fetcher_tile_finished(const QcTileSpec & tile_spec, const QByteAr
     tile_cache()->insert(tile_spec, bytes, format);
     for (QcMapViewLayer * map_view_layer : map_view_layers)
       map_view_layer->request_manager()->tile_fetched(tile_spec);
-  } else
-    qInfo() << "any client" << tile_spec;
+  }
+  // else
+  //   qInfo() << "any client" << tile_spec;
 }
 
 void
 QcWmtsManager::fetcher_tile_error(const QcTileSpec & tile_spec, const QString & error_string)
 {
-  qInfo();
+  // qInfo();
   QcMapViewLayerPointerSet map_view_layers = m_tile_hash.value(tile_spec);
   remove_tile_spec(tile_spec);
 

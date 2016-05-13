@@ -53,7 +53,7 @@ QcMapLayerRootNode::QcMapLayerRootNode(const QcTileMatrixSet & tile_matrix_set, 
     middle_map_node(new QcMapSideNode()),
     east_map_node(new QcMapSideNode())
 {
-  qInfo();
+  // qInfo();
 
   setOpacity(1.);
 
@@ -82,17 +82,17 @@ QcMapLayerRootNode::update_tiles(QcMapLayerScene * map_scene,
   space_matrix.scale(2/width, 2/height);
   space_matrix.translate(-width/2 + offset, -height/2);
   map_side_node->setMatrix(space_matrix);
-  qInfo() << "map side space matrix" << space_matrix;
+  // qInfo() << "map side space matrix" << space_matrix;
 
   QcTileSpecSet tiles_in_scene = QcTileSpecSet::fromList(map_side_node->texture_nodes.keys()); // Fixme: cf. textured_tiles
   QcTileSpecSet to_remove = tiles_in_scene - visible_tiles;
   QcTileSpecSet to_add = visible_tiles - tiles_in_scene;
 
-  qInfo() << "Offset" << offset
-          << "tiles_in_scene" << tiles_in_scene
-          << "\nvisible_tiles" << visible_tiles
-          << "\nto_remove" << to_remove
-          << "\nto_add" << to_add;
+   // qInfo() << "Offset" << offset
+   //         << "tiles_in_scene" << tiles_in_scene
+   //         << "\nvisible_tiles" << visible_tiles
+   //         << "\nto_remove" << to_remove
+   //         << "\nto_add" << to_add;
 
   for (const auto & tile_spec : to_remove)
     delete map_side_node->texture_nodes.take(tile_spec);
@@ -103,7 +103,7 @@ QcMapLayerRootNode::update_tiles(QcMapLayerScene * map_scene,
        it != map_side_node->texture_nodes.end(); ) {
     const QcTileSpec & tile_spec = it.key();
     QSGSimpleTextureNode * texture_node = it.value();
-    qInfo() << "texture nodes loop" << tile_spec;
+    // qInfo() << "texture nodes loop" << tile_spec;
 
     // Compute new geometry
     QSGGeometry visual_geometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 4);
@@ -118,7 +118,7 @@ QcMapLayerRootNode::update_tiles(QcMapLayerScene * map_scene,
         ok = false;
       } else {
         // void *memcpy(void *dest, const void *src, size_t n);
-        qInfo() << "update geometry" << tile_spec;
+        // qInfo() << "update geometry" << tile_spec;
         memcpy(texture_node->geometry()->vertexData(), vertexes, 4 * sizeof(QSGGeometry::TexturedPoint2D));
         dirty_bits |= QSGNode::DirtyGeometry;
       }
@@ -137,9 +137,9 @@ QcMapLayerRootNode::update_tiles(QcMapLayerScene * map_scene,
   for (const auto & tile_spec : to_add) {
     // Fixme: code !!!
     QcTileTexture * tile_texture = map_scene->m_tile_textures.value(tile_spec).data(); // Fixme: m_tile_textures public
-    qInfo() << "texture to add" << tile_spec << tile_texture;
+    // qInfo() << "texture to add" << tile_spec << tile_texture;
     if (tile_texture && !tile_texture->image.isNull()) {
-      qInfo() << "create texture" << tile_spec;
+      // qInfo() << "create texture" << tile_spec;
       QSGSimpleTextureNode * tile_node = new QSGSimpleTextureNode();
       // note: setTexture will update coordinates so do it here, before we buildGeometry
       tile_node->setTexture(textures.value(tile_spec));
@@ -163,7 +163,7 @@ QcMapLayerScene::QcMapLayerScene(const QcWmtsPluginLayer * plugin_layer, const Q
     m_opacity(1.),
     m_scene_graph_node(nullptr)
 {
-  qInfo();
+  // qInfo();
 }
 
 QcMapLayerScene::~QcMapLayerScene()
@@ -174,10 +174,10 @@ QcMapLayerScene::add_tile(const QcTileSpec & tile_spec, QSharedPointer<QcTileTex
 {
   if (m_visible_tiles.contains(tile_spec)) { // Don't add the geometry if it isn't visible
     m_tile_textures.insert(tile_spec, texture);
-    qInfo() << "add_tile" << tile_spec << "inserted";
+    // qInfo() << "add_tile" << tile_spec << "inserted";
   }
-  else
-    qInfo() << "add_tile" << tile_spec << "already there";
+  // else
+  //   qInfo() << "add_tile" << tile_spec << "already there";
 }
 
 void
@@ -199,7 +199,7 @@ QcMapLayerScene::set_visible_tiles(const QcTileSpecSet & tile_specs,
 void
 QcMapLayerScene::remove_tiles(const QcTileSpecSet & old_tiles)
 {
-  qInfo() << old_tiles;
+  // qInfo() << old_tiles;
   for (auto tile_spec : old_tiles)
     m_tile_textures.remove(tile_spec);
 }
@@ -240,7 +240,7 @@ QcMapLayerScene::build_geometry(const QcTileSpec & tile_spec, QSGGeometry::Textu
   vertices[2].set(x2, y1, 1, 0);
   vertices[3].set(x2, y2, 1, 1);
 
-  qInfo() << "geometry" << tile_spec << "x" << x1 << x2 << "  y" << y1 << y2;
+  // qInfo() << "geometry" << tile_spec << "x" << x1 << x2 << "  y" << y1 << y2;
 
   return true;
 }
@@ -255,7 +255,7 @@ QcMapLayerScene::make_node()
 void
 QcMapLayerScene::update_scene_graph(QcMapLayerRootNode * map_root_node, QQuickWindow * window)
 {
-  qInfo();
+  // qInfo();
 
   if (map_root_node->opacity() != m_opacity)
     map_root_node->setOpacity(m_opacity);
@@ -265,15 +265,15 @@ QcMapLayerScene::update_scene_graph(QcMapLayerRootNode * map_root_node, QQuickWi
   QcTileSpecSet textures_in_scene = QcTileSpecSet::fromList(map_root_node->textures.keys()); // cf. textured_tiles
   QcTileSpecSet to_remove = textures_in_scene - m_visible_tiles;
   QcTileSpecSet to_add = m_visible_tiles - textures_in_scene;
-  qInfo() << "textures in scene" << textures_in_scene
-          << "to remove:" << to_remove
-          << "to add" << to_add;
+   // qInfo() << "textures in scene" << textures_in_scene
+   //         << "to remove:" << to_remove
+   //         << "to add" << to_add;
   for (const auto & tile_spec : to_remove)
     map_root_node->textures.take(tile_spec)->deleteLater();
   for (const auto & tile_spec : to_add) {
     QcTileTexture * tile_texture = m_tile_textures.value(tile_spec).data();
     if (tile_texture && !tile_texture->image.isNull()) {
-      qInfo() << "create texture from image" << tile_spec;
+      // qInfo() << "create texture from image" << tile_spec;
       QSGTexture * texture = window->createTextureFromImage(tile_texture->image);
       map_root_node->textures.insert(tile_spec, texture);
     }

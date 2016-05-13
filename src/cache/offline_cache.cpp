@@ -101,7 +101,7 @@ QcOfflineTileCache::load_tiles()
   for (int level = 0; level < 20; level++) {
     QDir directory(m_directory + QDir::separator() + QString::number(level));
     QStringList files = directory.entryList(formats, QDir::Files);
-    qInfo() << "level" << level << "Number of tiles" << files.size();
+    // qInfo() << "level" << level << "Number of tiles" << files.size();
 
     for (const auto & relative_filename : files) {
       QcTileSpec tile_spec = filename_to_tile_spec(relative_filename);

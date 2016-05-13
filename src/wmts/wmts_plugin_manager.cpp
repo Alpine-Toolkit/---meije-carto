@@ -78,7 +78,7 @@ QcWmtsPluginManager::create_plugin_geoportail()
 
   // Fixme: Hide license
   QString json_path = QDir(config.application_user_directory()).filePath(QLatin1Literal("geoportail-license.json"));
-  qInfo() << "Geoportail license json" << json_path;
+  // qInfo() << "Geoportail license json" << json_path;
   QcGeoportailWmtsLicense geoportail_license(json_path);
 
   return new QcGeoportailPlugin(geoportail_license);

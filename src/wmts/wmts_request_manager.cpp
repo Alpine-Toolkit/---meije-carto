@@ -131,7 +131,7 @@ QcWmtsRequestManager::request_tiles(const QcTileSpecSet & tile_specs)
   m_requested -= canceled_tiles;
   m_requested += requested_tiles;
 
-  qInfo() << "currently requested" << m_requested << "\ncached" << cached_tiles << "\n+" << requested_tiles << "\n-" << canceled_tiles;
+  // qInfo() << "currently requested" << m_requested << "\ncached" << cached_tiles << "\n+" << requested_tiles << "\n-" << canceled_tiles;
 
   if ((!requested_tiles.isEmpty() || !canceled_tiles.isEmpty())
       && (!m_wmts_manager.isNull())) {
@@ -155,7 +155,7 @@ QcWmtsRequestManager::request_tiles(const QcTileSpecSet & tile_specs)
 void
 QcWmtsRequestManager::tile_fetched(const QcTileSpec & tile_spec)
 {
-  qInfo();
+  // qInfo();
   m_map_view_layer->update_tile(tile_spec);
   m_requested.remove(tile_spec);
   m_retries.remove(tile_spec);
@@ -168,7 +168,7 @@ QcWmtsRequestManager::tile_fetched(const QcTileSpec & tile_spec)
 void
 QcWmtsRequestManager::tile_error(const QcTileSpec & tile_spec, const QString & error_string)
 {
-  qInfo();
+  // qInfo();
   if (m_requested.contains(tile_spec)) {
     int count = m_retries.value(tile_spec, 0);
     m_retries.insert(tile_spec, count + 1);

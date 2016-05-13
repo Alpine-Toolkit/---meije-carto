@@ -67,7 +67,7 @@ QcMapViewLayer::set_opacity(float opacity)
 void
 QcMapViewLayer::update_tile(const QcTileSpec & tile_spec)
 {
-  qInfo() << tile_spec;
+  // qInfo() << tile_spec;
   if (m_visible_tiles.contains(tile_spec)) {
     QSharedPointer<QcTileTexture> texture = m_request_manager->tile_texture(tile_spec);
     if (!texture.isNull()) {
@@ -85,7 +85,7 @@ QcMapViewLayer::intersec_polygon_with_grid(const QcPolygon & polygon, double til
   for (const QcTiledPolygonRun & run: tiled_polygon.runs()) {
     const QcIntervalInt & run_interval = run.interval();
     size_t y = run.y();
-    qInfo() << "Run " << run.y() << " [" << run_interval.inf() << ", " << run_interval.sup() << "]";
+    // qInfo() << "Run " << run.y() << " [" << run_interval.inf() << ", " << run_interval.sup() << "]";
     for (int x = run_interval.inf(); x <= run_interval.sup(); x++)
       visible_tiles.insert(m_plugin_layer->create_tile_spec(zoom_level, x, y));
   }
@@ -95,7 +95,7 @@ QcMapViewLayer::intersec_polygon_with_grid(const QcPolygon & polygon, double til
 void
 QcMapViewLayer::update_scene()
 {
-  qInfo();
+  // qInfo();
 
   // Fixme: if layers share the same tile matrix ?
 
@@ -133,11 +133,11 @@ QcMapViewLayer::update_scene()
     else
       m_east_visible_tiles.clear();
     QcTileSpecSet visible_tiles = m_east_visible_tiles + m_middle_visible_tiles + m_west_visible_tiles;
-    qInfo() << "visible west tiles: " << m_west_visible_tiles << '\n'
-            << "visible middle tiles: " << m_middle_visible_tiles << '\n'
-            << "visible east tiles: " << m_east_visible_tiles << '\n'
-            << "visible tiles: " << visible_tiles << '\n'
-            << "new visible tiles: " << visible_tiles - m_visible_tiles;
+    // qInfo() << "visible west tiles: " << m_west_visible_tiles << '\n'
+    //         << "visible middle tiles: " << m_middle_visible_tiles << '\n'
+    //         << "visible east tiles: " << m_east_visible_tiles << '\n'
+    //         << "visible tiles: " << visible_tiles << '\n'
+    //         << "new visible tiles: " << visible_tiles - m_visible_tiles;
 
     // bool new_tiles_introduced = !m_visible_tiles.contains(visible_tiles);
     m_visible_tiles = visible_tiles;
@@ -257,7 +257,7 @@ QcMapView::set_opacity(const QcWmtsPluginLayer * plugin_layer, float opacity)
 void
 QcMapView::update_scene()
 {
-  qInfo();
+  // qInfo();
   for (auto * layer : m_layers)
     layer->update_scene();
 }

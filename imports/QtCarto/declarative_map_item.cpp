@@ -140,7 +140,7 @@ QcMapItem::QcMapItem(QQuickItem * parent)
     m_map_view(nullptr),
     m_viewport(nullptr)
 {
-  qInfo();
+  // qInfo();
   setAcceptHoverEvents(false);
   setAcceptedMouseButtons(Qt::LeftButton);
   setFlags(QQuickItem::ItemHasContents | QQuickItem::ItemClipsChildrenToShape);
@@ -169,14 +169,14 @@ QcMapItem::QcMapItem(QQuickItem * parent)
 
 QcMapItem::~QcMapItem()
 {
-  qInfo();
+  // qInfo();
   // delete m_plugin, m_viewport
 }
 
 void
 QcMapItem::componentComplete()
 {
-  qInfo();
+  // qInfo();
   // m_component_completed = true;
   // m_gesture_area->set_map(this);
   QQuickItem::componentComplete();
@@ -276,7 +276,7 @@ QcMapItem::is_interactive()
 void
 QcMapItem::mousePressEvent(QMouseEvent *event)
 {
-  qInfo();
+  // qInfo();
   if (is_interactive())
     m_gesture_area->handle_mouse_press_event(event);
   else
@@ -285,7 +285,7 @@ QcMapItem::mousePressEvent(QMouseEvent *event)
 
 void QcMapItem::mouseMoveEvent(QMouseEvent *event)
 {
-  qInfo();
+  // qInfo();
   if (is_interactive())
     m_gesture_area->handle_mouse_move_event(event);
   else
@@ -294,7 +294,7 @@ void QcMapItem::mouseMoveEvent(QMouseEvent *event)
 
 void QcMapItem::mouseReleaseEvent(QMouseEvent *event)
 {
-  qInfo();
+  // qInfo();
   if (is_interactive()) {
     m_gesture_area->handle_mouse_release_event(event);
     ungrabMouse();
@@ -305,7 +305,7 @@ void QcMapItem::mouseReleaseEvent(QMouseEvent *event)
 
 void QcMapItem::mouseUngrabEvent()
 {
-  qInfo();
+  // qInfo();
   if (is_interactive())
     m_gesture_area->handle_mouse_ungrab_event();
   else
@@ -314,7 +314,7 @@ void QcMapItem::mouseUngrabEvent()
 
 void QcMapItem::touchUngrabEvent()
 {
-  qInfo();
+  // qInfo();
   if (is_interactive())
     m_gesture_area->handle_touch_ungrab_event();
   else
@@ -324,7 +324,7 @@ void QcMapItem::touchUngrabEvent()
 void
 QcMapItem::touchEvent(QTouchEvent * event)
 {
-  qInfo();
+  // qInfo();
   if (is_interactive()) {
     m_gesture_area->handle_touch_event(event);
     if (event->type() == QEvent::TouchEnd ||
@@ -340,7 +340,7 @@ QcMapItem::touchEvent(QTouchEvent * event)
 void
 QcMapItem::wheelEvent(QWheelEvent * event)
 {
-  qInfo();
+  // qInfo();
   if (is_interactive())
     m_gesture_area->handle_wheel_event(event);
   else
@@ -382,13 +382,13 @@ QcMapItem::from_coordinate(const QGeoCoordinate & coordinate, bool clip_to_viewp
 void
 QcMapItem::prefetch_data()
 {
-  qInfo();
+  // qInfo();
 }
 
 void
 QcMapItem::set_zoom_level(int zoom_level)
 {
-  qInfo() << zoom_level;
+  // qInfo() << zoom_level;
 
   if (zoom_level == m_viewport->zoom_level())
     return;
@@ -413,7 +413,7 @@ QcMapItem::set_center(const QGeoCoordinate & center)
 {
   // Fixme: check latitude
 
-  qInfo() << "WGS84 " << center;
+  // qInfo() << "WGS84 " << center;
 
   QcGeoCoordinateWGS84 coordinate(center);
   if (coordinate == m_viewport->wgs84())
@@ -442,7 +442,7 @@ QcMapItem::center() const
 void
 QcMapItem::pan(int dx, int dy)
 {
-  qInfo() << dx << dy;
+  // qInfo() << dx << dy;
   m_viewport->pan(dx, dy); // Fixme: unit is m
   update(); // Fixme: signal
 }
@@ -463,7 +463,7 @@ QcMapItem::stable_zoom_by_increment(QPointF position_px, int zoom_increment)
 void
 QcMapItem::geometryChanged(const QRectF & new_geometry, const QRectF & old_geometry)
 {
-  qInfo() << old_geometry << "->" << new_geometry;
+  // qInfo() << old_geometry << "->" << new_geometry;
   QQuickItem::geometryChanged(new_geometry, old_geometry);
   QSize viewport_size(new_geometry.width(), new_geometry.height()); // Fixme: QSizeF size()
   m_viewport->set_viewport_size(viewport_size);
@@ -472,7 +472,7 @@ QcMapItem::geometryChanged(const QRectF & new_geometry, const QRectF & old_geome
 QSGNode *
 QcMapItem::updatePaintNode(QSGNode * old_node, UpdatePaintNodeData *)
 {
-  qInfo() << old_node;
+  // qInfo() << old_node;
 
   // if (!m_map) {
   //   delete old_node;
@@ -501,7 +501,7 @@ QcMapItem::childMouseEventFilter(QQuickItem * item, QEvent * event)
   Q_UNUSED(item);
 
   // item is QQuickMouseArea
-  qInfo() << item << "\n" << event;
+  // qInfo() << item << "\n" << event;
 
   if (!isVisible() || !isEnabled() || !is_interactive())
     return QQuickItem::childMouseEventFilter(item, event);
@@ -554,7 +554,7 @@ QcMapItem::send_mouse_event(QMouseEvent * event)
   bool steal_event = m_gesture_area->is_active();
 
   // grabber is QQuickMouseArea
-  qInfo() << event << "\ngrabber" << grabber << "\nsteal_event" << steal_event;
+  // qInfo() << event << "\ngrabber" << grabber << "\nsteal_event" << steal_event;
 
   if ((steal_event || contains(local_position)) && (!grabber || !grabber->keepMouseGrab())) {
     QScopedPointer<QMouseEvent> mouseEvent(QQuickWindowPrivate::cloneMouseEvent(event, &local_position));
@@ -579,7 +579,7 @@ QcMapItem::send_mouse_event(QMouseEvent * event)
     grabber = _window ? _window->mouseGrabberItem() : nullptr;
 
     if (grabber && steal_event && !grabber->keepMouseGrab() && grabber != this) {
-      qInfo() << "grab mouse";
+      // qInfo() << "grab mouse";
       grabMouse();
     }
 
@@ -594,7 +594,7 @@ QcMapItem::send_mouse_event(QMouseEvent * event)
 
   if (event->type() == QEvent::MouseButtonRelease) {
     if (_window && _window->mouseGrabberItem() == this) {
-      qInfo() << "ungrab mouse";
+      // qInfo() << "ungrab mouse";
       ungrabMouse();
     }
   }

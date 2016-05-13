@@ -62,7 +62,7 @@ QcGeoportailWmtsTileFetcher::get_tile_image(const QcTileSpec & tile_spec)
 {
   const QcWmtsPluginLayer * layer = m_plugin->layer(tile_spec);
   QUrl url = layer->url(tile_spec);
-  qInfo() << url;
+  // qInfo() << url;
 
   QNetworkRequest request;
   request.setRawHeader("User-Agent", m_user_agent);
@@ -80,7 +80,7 @@ QcGeoportailWmtsTileFetcher::on_authentication_request_slot(QNetworkReply *reply
 							    QAuthenticator *authenticator)
 {
   Q_UNUSED(reply);
-  qInfo() << "on_authentication_request_slot";
+  // qInfo() << "on_authentication_request_slot";
   const QcGeoportailWmtsLicense & _license = m_plugin->license();
   authenticator->setUser(_license.user());
   authenticator->setPassword(_license.password());

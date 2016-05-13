@@ -167,7 +167,7 @@ QcFileTileCache::QcFileTileCache(const QString & directory)
 
 QcFileTileCache::~QcFileTileCache()
 {
-  qInfo() << "Serialize cache queue";
+  // qInfo() << "Serialize cache queue";
 
   // For each disk cache queue write the list of filenames to a file
   QDir directory(m_directory);
@@ -206,13 +206,13 @@ QcFileTileCache::base_cache_directory()
   // /data/user/11/org.qtproject.example.mapviewer_atk/cache/QtCarto/
 #ifdef ANDROID
   QString generic_data_location_path = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
-  qInfo() << "GenericDataLocation:" << generic_data_location_path;
+  // qInfo() << "GenericDataLocation:" << generic_data_location_path;
   QString application_user_directory_path = QDir(generic_data_location_path).filePath("alpine-toolkit");
   QString directory = application_user_directory_path + QDir::separator() + QLatin1Literal("cache");
 #else
   QString directory = QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation);
 #endif
-  qInfo() << "base_cache_directory" << directory;
+  // qInfo() << "base_cache_directory" << directory;
 
   // Check we can write on the cache directory
   if (!directory.isEmpty()) {
@@ -238,7 +238,7 @@ QcFileTileCache::base_cache_directory()
     directory += QLatin1Char('/');
   directory += QLatin1Literal("QtCarto/");
 
-  qInfo() << "base_cache_directory" << directory;
+  // qInfo() << "base_cache_directory" << directory;
   return directory;
 }
 
@@ -293,7 +293,7 @@ QcFileTileCache::load_tiles()
       if (directory.exists(filename)){
 	files.removeOne(filename);
 	QcTileSpec tile_spec = filename_to_tile_spec(filename);
-	qInfo() << "Load" << tile_spec;
+	// qInfo() << "Load" << tile_spec;
 	if (tile_spec.level() == -1) // Fixme: when ?
 	  continue;
 	QSharedPointer<QcCachedTileDisk> tile_disk(new QcCachedTileDisk);
@@ -427,7 +427,7 @@ QcFileTileCache::get(const QcTileSpec & tile_spec)
   // if (offline_tile) {
   if (m_offline_cache->contains(tile_spec)) {
     QcOfflineCachedTileDisk offline_tile = m_offline_cache->get(tile_spec);
-    qInfo() << "In offline cache" << tile_spec;
+    // qInfo() << "In offline cache" << tile_spec;
     // return load_from_disk(offline_tile->tile_spec, offline_tile->filename);
     return load_from_disk(offline_tile.tile_spec, offline_tile.filename);
   }
