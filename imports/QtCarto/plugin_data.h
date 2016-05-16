@@ -64,7 +64,7 @@ private:
   QString m_title;
 };
 
-Q_DECLARE_METATYPE(QcWmtsPluginData)
+// Q_DECLARE_METATYPE(QcWmtsPluginData)
 
 /**************************************************************************************************/
 

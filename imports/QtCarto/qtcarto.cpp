@@ -69,6 +69,8 @@ class QtCartoDeclarativeModule : public QQmlExtensionPlugin
                                                         QStringLiteral("QcWmtsPluginData is not intended instantiable by developer."));
       qmlRegisterUncreatableType<QcWmtsPluginLayerData>(uri, major, minor, "WmtsPluginLayerData",
                                                         QStringLiteral("QcWmtsPluginLayerData is not intended instantiable by developer."));
+      qmlRegisterUncreatableType<QcMapScale>(uri, major, minor, "QcMapScale",
+                                             QStringLiteral("QcMapScale is not intended instantiable by developer."));
 
       // registrations below are version independent
     } else {

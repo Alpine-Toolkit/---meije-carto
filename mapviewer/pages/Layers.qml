@@ -13,7 +13,7 @@ Pane {
         anchors.fill: parent
 
         Repeater {
-            model: map.plugins()
+            model: map.plugins
 
             Column {
                 property var plugin_data: modelData
@@ -50,6 +50,7 @@ Pane {
                                 enabled: checkbox.checked
                                 value: plugin_layer.opacity
                             }
+                            // QML Binding: Binding loop detected for property "value"
                             Binding { target: plugin_layer; property: "opacity"; value: slider.value }
                         }
                     }

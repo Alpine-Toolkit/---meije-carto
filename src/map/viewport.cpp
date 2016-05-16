@@ -38,39 +38,39 @@
 
 /**************************************************************************************************/
 
-QcZoomFactor::QcZoomFactor()
-  : QcZoomFactor(1.)
+QcMapResolution::QcMapResolution()
+  : QcMapResolution(1.)
 {}
 
-QcZoomFactor::QcZoomFactor(double zoom_factor)
-  : m_zoom_factor(qQNaN())
+QcMapResolution::QcMapResolution(double resolution)
+  : m_resolution(qQNaN())
 {
-  set_zoom_factor(zoom_factor);
+  set_resolution(resolution);
 }
 
-QcZoomFactor::QcZoomFactor(const QcZoomFactor & other)
-  : m_zoom_factor(other.m_zoom_factor)
+QcMapResolution::QcMapResolution(const QcMapResolution & other)
+  : m_resolution(other.m_resolution)
 {}
 
-QcZoomFactor::~QcZoomFactor()
+QcMapResolution::~QcMapResolution()
 {}
 
-QcZoomFactor &
-QcZoomFactor::operator=(const QcZoomFactor & other)
+QcMapResolution &
+QcMapResolution::operator=(const QcMapResolution & other)
 {
   if (this != &other) {
-    m_zoom_factor = other.m_zoom_factor;
+    m_resolution = other.m_resolution;
   }
 
   return *this;
 }
 
 void
-QcZoomFactor::set_zoom_factor(double zoom_factor)
+QcMapResolution::set_resolution(double resolution)
 {
-  // qInfo() << "set_zoom_factor" << zoom_factor;
-  if (zoom_factor > 0)
-    m_zoom_factor = zoom_factor;
+  // qInfo() << "set_resolution" << resolution;
+  if (resolution > 0)
+    m_resolution = resolution;
   else
     throw std::invalid_argument("Invalid zoom factor must be > 0");
 }
@@ -82,7 +82,7 @@ QcTiledZoomLevel::QcTiledZoomLevel()
 {}
 
 QcTiledZoomLevel::QcTiledZoomLevel(double map_size, unsigned int tile_size, unsigned int zoom_level)
-  : QcZoomFactor(),
+  : QcMapResolution(),
     m_tile_size(tile_size),
     m_zoom_level(0),
     m_map_size(map_size)
@@ -91,7 +91,7 @@ QcTiledZoomLevel::QcTiledZoomLevel(double map_size, unsigned int tile_size, unsi
 }
 
 QcTiledZoomLevel::QcTiledZoomLevel(const QcTiledZoomLevel & other)
-  : QcZoomFactor(other),
+  : QcMapResolution(other),
     m_tile_size(other.m_tile_size),
     m_zoom_level(other.m_zoom_level),
     m_map_size(other.m_map_size)
@@ -107,7 +107,7 @@ QcTiledZoomLevel::operator=(const QcTiledZoomLevel & other)
     m_tile_size = other.m_tile_size;
     m_zoom_level = other.m_zoom_level;
     m_map_size = other.m_map_size;
-    set_zoom_factor(other.zoom_factor());
+    set_resolution(other.resolution());
   }
 
   return *this;
@@ -119,15 +119,15 @@ QcTiledZoomLevel::operator==(const QcTiledZoomLevel & other) const
   return ((m_map_size == other.m_map_size) &&
 	  (m_tile_size == other.m_tile_size) &&
 	  (m_zoom_level == other.m_zoom_level) &&
-	  QcZoomFactor::operator==(other));
+	  QcMapResolution::operator==(other));
 }
 
 void
 QcTiledZoomLevel::set_zoom_level(unsigned int zoom_level)
 {
   m_zoom_level = zoom_level;
-  double zoom_factor = QcTileMatrixSet::resolution_for_level(m_map_size, m_tile_size, zoom_level); // unit is m/px
-  set_zoom_factor(zoom_factor);
+  double resolution = QcTileMatrixSet::resolution_for_level(m_map_size, m_tile_size, zoom_level); // unit is m/px
+  set_resolution(resolution);
   // qInfo() << "set_zoom_level" << zoom_level << map_size_px;
 }
 
@@ -230,7 +230,7 @@ void
 QcViewport::update_area_size()
 {
   QcVectorDouble viewport_size = QcVectorDouble(m_viewport_size.width(), m_viewport_size.height());
-  m_area_size_m = viewport_size * zoom_factor(); // [px] * [m/px]
+  m_area_size_m = from_px(viewport_size);
   m_half_diagonal_m = m_area_size_m * .5;
 }
 
@@ -270,12 +270,14 @@ QcViewport::set_zoom_level(unsigned int zoom_level)
   }
 }
 
+/*
 void
-QcViewport::set_zoom_factor(double zoom_factor)
+QcViewport::set_resolution(double resolution)
 {
   // Fixme: !!!
   // require to compute zoom level
 }
+*/
 
 void
 QcViewport::zoom_at(const QcGeoCoordinatePseudoWebMercator & coordinate, unsigned int zoom_level)
@@ -314,7 +316,7 @@ QcViewport::pan(const QcVectorDouble & translation)
 {
   // Fixme: x are px
   QcVectorDouble position = pseudo_web_mercator().vector();
-  position += translation * zoom_factor(); // zoom_factor is m/px
+  position += from_px(translation);
   // qInfo() << x << "px" << x_m << "m";
   // Ctor will adjust position if it is outside the valid domain
   QcGeoCoordinatePseudoWebMercator new_coordinate(position.x(), position.y());
@@ -334,7 +336,9 @@ QcViewport::update_area()
   QcVectorDouble center = pseudo_web_mercator().vector();
 
   // qInfo() << "viewport_size" << viewport_size;
-  // qInfo() << "zoom_factor" << zoom_factor() << "m/px";
+  qInfo() << "resolution" << resolution() << "m/px";
+  QcMapScale map_scale = make_scale(width() * .9);
+  qInfo() << "map scale" << width() << "/" << map_scale.length_px() << "px" << map_scale.length() << "m";
   // qInfo() << "area_size" << m_area_size << "m";
   // qInfo() << "center as pseudo mercator" << (int) center.x() << (int) center.y();
 
@@ -450,7 +454,7 @@ QcViewport::to_coordinate(const QcVectorDouble & position_px, bool clip_to_viewp
   }
 
   QcVectorDouble position_m = inf_point();
-  position_m += position_px * zoom_factor();
+  position_m += from_px(position_px);
 
   return QcGeoCoordinatePseudoWebMercator(position_m.x(), position_m.y());
 }
@@ -470,7 +474,7 @@ QcViewport::from_coordinate(const QcGeoCoordinatePseudoWebMercator & coordinate,
 
   // qInfo() << coordinate << clip_to_viewport;
 
-  QcVectorDouble position_px = (coordinate.vector() - inf_point()) / zoom_factor();
+  QcVectorDouble position_px = to_px(coordinate.vector() - inf_point());
 
   if (clip_to_viewport) {
     int w = width();
@@ -484,6 +488,34 @@ QcViewport::from_coordinate(const QcGeoCoordinatePseudoWebMercator & coordinate,
   // qInfo() << position_px;
   // Fixme: return QPointF(qQNaN(), qQNaN());
   return position_px;
+}
+
+double
+find_scale_digit(double x)
+{
+  // 1 <= x < 10
+  if (5 <= x)
+    return 5.;
+  else if (2 <= x)
+    return 2.;
+  else
+    return 1.;
+}
+
+QcMapScale
+QcViewport::make_scale(unsigned int max_length_px)
+{
+  double max_length = from_px(max_length_px);
+
+  int number_of_digits = trunc(log(max_length)/log(10.));
+  // Fixme: number_of_digits == 0 ?
+  double power_10 = pow(10., number_of_digits);
+  double normalised_max_length = max_length / power_10;
+  double digit = find_scale_digit(normalised_max_length);
+  qInfo() << max_length_px << max_length << number_of_digits << normalised_max_length << digit;
+  double length = digit * power_10;
+
+  return QcMapScale(length, ceil(to_px(length)));
 }
 
 /**************************************************************************************************/

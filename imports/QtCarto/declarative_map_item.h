@@ -59,6 +59,8 @@ class QcMapItem : public QQuickItem
   Q_PROPERTY(QcMapGestureArea * gesture READ gesture CONSTANT)
   Q_PROPERTY(unsigned int zoom_level READ zoom_level WRITE set_zoom_level NOTIFY zoom_levelChanged)
   Q_PROPERTY(QGeoCoordinate center READ center WRITE set_center NOTIFY centerChanged)
+  Q_PROPERTY(double bearing READ bearing WRITE set_bearing NOTIFY bearingChanged)
+  Q_PROPERTY(double gps_horizontal_precision READ gps_horizontal_precision WRITE set_gps_horizontal_precision NOTIFY gps_horizontal_precisionChanged)
   Q_PROPERTY(QVariantList plugins READ plugins CONSTANT)
 
 public:
@@ -71,17 +73,25 @@ public:
   QColor color() const { return m_color; }
 
   void set_zoom_level(unsigned int zoom_level);
-  unsigned int zoom_level() const;
+  unsigned int zoom_level() const { return m_viewport->zoom_level(); }
 
   void set_center(const QGeoCoordinate & center);
   QGeoCoordinate center() const;
+
+  void set_bearing(double bearing);
+  double bearing() const;
+
+  void set_gps_horizontal_precision(double horizontal_precision);
+  double gps_horizontal_precision() const;
+
+  Q_INVOKABLE QVariant make_scale(unsigned int max_length_px) const;
 
   // QDoubleVector2D / QVector2D use float ...
   Q_INVOKABLE QGeoCoordinate to_coordinate(const QVector2D & position, bool clip_to_viewport = true) const;
   Q_INVOKABLE QVector2D from_coordinate(const QGeoCoordinate & coordinate, bool clip_to_viewport = true) const;
 
   Q_INVOKABLE void pan(int dx, int dy);
-  Q_INVOKABLE void stable_zoom(QPointF position_px, int zoom_level);
+  Q_INVOKABLE void stable_zoom(QPointF position_px, unsigned int zoom_level);
   Q_INVOKABLE void stable_zoom_by_increment(QPointF position_px, int zoom_increment);
 
   Q_INVOKABLE void prefetch_data(); // optional hint for prefetch
@@ -95,6 +105,8 @@ signals:
   void colorChanged(const QColor & color);
   void zoom_levelChanged(int zoom_level);
   void centerChanged(const QGeoCoordinate & coordinate);
+  void bearingChanged(double bearing);
+  void gps_horizontal_precisionChanged(double horizontal_precision);
 
 protected:
   void mouseMoveEvent(QMouseEvent * event) Q_DECL_OVERRIDE ;

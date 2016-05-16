@@ -360,26 +360,20 @@ QcMapItem::send_touch_event(QTouchEvent * event)
 /**************************************************************************************************/
 
 void
-QcMapItem::set_zoom_level(unsigned int zoom_level)
+QcMapItem::set_zoom_level(unsigned int new_zoom_level)
 {
-  // qInfo() << zoom_level;
+  // qInfo() << new_zoom_level;
 
-  if (zoom_level == m_viewport->zoom_level())
+  if (new_zoom_level == zoom_level())
     return;
 
   // Fixme: check range
-  if (zoom_level < 0 || zoom_level > 18)
+  if (new_zoom_level < 0 || new_zoom_level > 18)
     return;
 
-  m_viewport->set_zoom_level(zoom_level);
+  m_viewport->set_zoom_level(new_zoom_level);
   // update(); // Fixme: signal
-  emit zoom_levelChanged(zoom_level);
-}
-
-unsigned int
-QcMapItem::zoom_level() const
-{
-  return m_viewport->zoom_level();
+  emit zoom_levelChanged(new_zoom_level);
 }
 
 void
@@ -422,16 +416,25 @@ QcMapItem::pan(int dx, int dy)
 }
 
 void
-QcMapItem::stable_zoom(QPointF position_px, int zoom_level)
+QcMapItem::stable_zoom(QPointF position_px, unsigned int new_zoom_level)
 {
+  if (new_zoom_level == zoom_level())
+    return;
+
+  // Fixme: check range
+  if (new_zoom_level < 0 || new_zoom_level > 18)
+    return;
+
   QcVectorDouble _position_px(position_px.x(), position_px.y());
-  m_viewport->stable_zoom(_position_px, zoom_level);
+  m_viewport->stable_zoom(_position_px, new_zoom_level);
+  emit zoom_levelChanged(new_zoom_level);
 }
 
 void
 QcMapItem::stable_zoom_by_increment(QPointF position_px, int zoom_increment)
 {
-  stable_zoom(position_px, zoom_level() + zoom_increment);
+  int new_zoom_level = zoom_level() + zoom_increment;
+  stable_zoom(position_px, new_zoom_level);
 }
 
 /**************************************************************************************************/
@@ -561,6 +564,37 @@ QcMapItem::layer_opacity_changed(float opacity)
     m_map_view->set_opacity(plugin_layer, opacity);
     update();
   }
+}
+
+/**************************************************************************************************/
+
+void
+QcMapItem::set_bearing(double bearing)
+{
+  m_viewport->set_bearing(bearing);
+}
+
+double
+QcMapItem::bearing() const
+{
+  return 0.; // Fixme:
+}
+
+void
+QcMapItem::set_gps_horizontal_precision(double horizontal_precision)
+{
+}
+
+double
+QcMapItem::gps_horizontal_precision() const
+{
+  return 0.; // Fixme:
+}
+
+QVariant
+QcMapItem::make_scale(unsigned int max_length_px) const
+{
+  return QVariant::fromValue(m_viewport->make_scale(max_length_px));
 }
 
 /**************************************************************************************************/
