@@ -68,8 +68,7 @@ QcMapScene::remove_layer(const QcWmtsPluginLayer * plugin_layer)
 QSGNode *
 QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
 {
-  // qreal device_pixel_ratio = window->devicePixelRatio();
-
+  qreal device_pixel_ratio = window->devicePixelRatio();
   // qInfo() << old_node << "device pixel ratio" << device_pixel_ratio;
 
   // QSize viewport_size = m_viewport->viewport_size();
@@ -97,9 +96,10 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
    *   diagonal is set (1, 1)
    */
   QMatrix4x4 item_space_matrix;
-  // item_space_matrix.scale(1/device_pixel_ratio, 1/device_pixel_ratio);
-  item_space_matrix.scale(width/2, height/2);
-  item_space_matrix.translate(1, 1);
+  item_space_matrix.setToIdentity();
+  // item_space_matrix.scale(1/device_pixel_ratio, 1/device_pixel_ratio); // fix scale but clipping ?
+  // item_space_matrix.scale(width/2, height/2);
+  // item_space_matrix.translate(1, 1);
   map_root_node->root->setMatrix(item_space_matrix);
   // qInfo() << "item_space_matrix" << item_space_matrix;
 
@@ -132,7 +132,8 @@ QcMapRootNode::QcMapRootNode(const QcViewport * viewport)
   : m_viewport(viewport),
     geometry(QSGGeometry::defaultAttributes_Point2D(), 4),
     root(new QSGTransformNode()),
-    location_circle_node(new QcLocationCircleNode())
+    location_circle_node(new QcLocationCircleNode(viewport)),
+    path_node(new QcPathNode(viewport))
 {
   // qInfo();
   setIsRectangular(true);
@@ -140,6 +141,7 @@ QcMapRootNode::QcMapRootNode(const QcViewport * viewport)
   appendChildNode(root);
 
   root->appendChildNode(location_circle_node);
+  root->appendChildNode(path_node);
 }
 
 QcMapRootNode::~QcMapRootNode()

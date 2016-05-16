@@ -38,8 +38,9 @@
 
 /**************************************************************************************************/
 
-QcLocationCircleNode::QcLocationCircleNode()
-  : QSGOpacityNode()
+QcLocationCircleNode::QcLocationCircleNode(const QcViewport * viewport)
+  : QSGOpacityNode(),
+    m_viewport(viewport)
 {
   setOpacity(.25); // 1. black
 
@@ -52,23 +53,24 @@ QcLocationCircleNode::QcLocationCircleNode()
   geometry_node->setGeometry(location_circle_geometry);
   geometry_node->setFlag(QSGNode::OwnsGeometry);
 
-  QSGGeometry::TexturedPoint2D * location_circle_vertices = location_circle_geometry->vertexDataAsTexturedPoint2D();
-  float radius = 110. / 500.;
-  location_circle_vertices[0].set(-radius, -radius, -110, -110);
-  location_circle_vertices[1].set(-radius, radius, -110, 110);
-  location_circle_vertices[2].set(radius, -radius, 110, -110);
-  location_circle_vertices[3].set(radius, radius, 110, 110);
+  QSGGeometry::TexturedPoint2D * vertices = location_circle_geometry->vertexDataAsTexturedPoint2D();
+  float x = .5 * m_viewport->width(); // Fixme: vector
+  float y = .5 * m_viewport->height();
+  float radius = 110.;
+  vertices[0].set(x - radius, y - radius, -110, -110);
+  vertices[1].set(x - radius, y + radius, -110, 110);
+  vertices[2].set(x + radius, y - radius, 110, -110);
+  vertices[3].set(x + radius, y + radius, 110, 110);
 
-  // Fixme: black instead of white
-  QSGSimpleMaterial<QcLocationCircleMaterialShaderState> * location_circle_material = QcLocationCircleMaterialShader::createMaterial();
-  location_circle_material->state()->r = 0;
-  location_circle_material->state()->g = 0;
-  location_circle_material->state()->b = 1;
-  location_circle_material->state()->a = 1.;
-  // QSGFlatColorMaterial * location_circle_material = new QSGFlatColorMaterial();
-  // location_circle_material->setColor(QColor("black"));
-  location_circle_material->setFlag(QSGMaterial::Blending);
-  geometry_node->setMaterial(location_circle_material);
+  QSGSimpleMaterial<QcLocationCircleMaterialShaderState> * material = QcLocationCircleMaterialShader::createMaterial();
+  material->state()->r = 0;
+  material->state()->g = 0;
+  material->state()->b = 1;
+  material->state()->a = 1.;
+  // QSGFlatColorMaterial * material = new QSGFlatColorMaterial();
+  // material->setColor(QColor("black"));
+  material->setFlag(QSGMaterial::Blending);
+  geometry_node->setMaterial(material);
   geometry_node->setFlag(QSGNode::OwnsMaterial);
 
   appendChildNode(geometry_node);

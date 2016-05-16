@@ -13,6 +13,8 @@ argument_parser.add_argument('shader_prefix', metavar='ShaderPrefix',
 
 args = argument_parser.parse_args()
 
+shader_prefix = args.shader_prefix
+
 ####################################################################################################
 
 def format_shader_for_c_string(shader_source):
@@ -23,16 +25,18 @@ def format_shader_for_c_string(shader_source):
 
 ####################################################################################################
 
-with open(args.shader_prefix + '_vertex_shader.glsl', 'r') as f:
+with open(shader_prefix + '_vertex_shader.glsl', 'r') as f:
     vertex_shader_source = f.read()
 
-with open(args.shader_prefix + '_fragment_shader.glsl', 'r') as f:
+with open(shader_prefix + '_fragment_shader.glsl', 'r') as f:
     fragment_shader_source = f.read()
 
-with open(args.shader_prefix + '_shader.h', 'w') as f:
-    f.write('const char * vertex_shader =\n' + format_shader_for_c_string(vertex_shader_source) + '\n;\n')
+with open(shader_prefix + '_shader.h', 'w') as f:
+    f.write('const char * vertex_shader_{} =\n'.format(shader_prefix)
+            + format_shader_for_c_string(vertex_shader_source) + '\n;\n')
     f.write('\n')
-    f.write('const char * fragment_shader =\n' + format_shader_for_c_string(fragment_shader_source) + '\n;\n')
+    f.write('const char * fragment_shader_{} =\n'.format(shader_prefix)
+            + format_shader_for_c_string(fragment_shader_source) + '\n;\n')
 
 ####################################################################################################
 #

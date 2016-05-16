@@ -1,3 +1,4 @@
+
 // -*- mode: c++ -*-
 
 /***************************************************************************************************
@@ -28,8 +29,8 @@
 
 /**************************************************************************************************/
 
-#ifndef __LOCATION_CIRCLE_NODE_H__
-#define __LOCATION_CIRCLE_NODE_H__
+#ifndef __PATH_NODE_H__
+#define __PATH_NODE_H__
 
 /**************************************************************************************************/
 
@@ -43,12 +44,12 @@
 
 /**************************************************************************************************/
 
-class QcLocationCircleNode : public QSGOpacityNode
+class QcPathNode : public QSGOpacityNode
 {
 public:
-  QcLocationCircleNode(const QcViewport * viewport);
+  QcPathNode(const QcViewport * viewport);
 
-  void update();
+  // void update();
 
 private:
   const QcViewport * m_viewport; // Fixme: &
@@ -60,7 +61,7 @@ private:
 
 /**************************************************************************************************/
 
-#endif /* __LOCATION_CIRCLE_NODE_H__ */
+#endif /* __PATH_NODE_H__ */
 
 /***************************************************************************************************
  *

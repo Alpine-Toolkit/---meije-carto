@@ -402,17 +402,34 @@ QcVector<T>::projection_on(const QcVector<T> & direction) const
   return dot(direction) / direction.magnitude();
 }
 
-//  Return the sinus of  with other
+// Return the sinus of  with other
 template <typename T>
 T
 QcVector<T>::sin_with(const QcVector<T> & direction) const
 {
-  //turn from direction to
+  // turn from direction to
   T sin = direction.cross(*this) / (direction.magnitude() * magnitude());
   return trignometric_clamp(sin);
 }
 
-//  Return the deviation of  with other
+// Return the tan of  with other
+template <typename T>
+T
+QcVector<T>::tan_with(const QcVector<T> & direction) const
+{
+  // Fixme: direction <-> this
+  return direction.cross(*this) / direction.dot(*this);
+}
+
+// Return the atan of  with other
+template <typename T>
+T
+QcVector<T>::atan_with(const QcVector<T> & direction) const
+{
+  return atan(tan_with(direction));
+}
+
+// Return the deviation of  with other
 template <typename T>
 T
 QcVector<T>::deviation_with(const QcVector<T> & direction) const
@@ -422,7 +439,7 @@ QcVector<T>::deviation_with(const QcVector<T> & direction) const
 
 template <typename T>
 T
-QcVector<T>::orientation_with(const QcVector<T> & direction) const
+QcVector<T>::radians_with(const QcVector<T> & direction) const
 {
   // Fixme: check all cases
   // -> angle_with
@@ -431,7 +448,14 @@ QcVector<T>::orientation_with(const QcVector<T> & direction) const
   T angle = acos(cos_with(direction));
   T angle_sign = sign(sin_with(direction));
 
-  return angle_sign * qRadiansToDegrees(angle);
+  return angle_sign * angle;
+}
+
+template <typename T>
+T
+QcVector<T>::orientation_with(const QcVector<T> & direction) const
+{
+  return qRadiansToDegrees(radians_with(direction));
 }
 
 template <typename T>

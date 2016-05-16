@@ -39,13 +39,13 @@
 const char *
 QcLocationCircleMaterialShader::vertexShader() const
 {
-  return vertex_shader;
+  return vertex_shader_location_circle;
 }
 
 const char *
 QcLocationCircleMaterialShader::fragmentShader() const
 {
-  return fragment_shader;
+  return fragment_shader_location_circle;
 }
 
 QList<QByteArray>

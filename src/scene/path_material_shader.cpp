@@ -1,5 +1,3 @@
-// -*- mode: c++ -*-
-
 /***************************************************************************************************
  **
  ** $QTCARTO_BEGIN_LICENSE:GPL3$
@@ -28,12 +26,7 @@
 
 /**************************************************************************************************/
 
-#ifndef __LOCATION_CIRCLE_MATERIAL_SHADER_H__
-#define __LOCATION_CIRCLE_MATERIAL_SHADER_H__
-
-/**************************************************************************************************/
-
-#include <QSGSimpleMaterialShader>
+#include "path_material_shader.h"
 
 /**************************************************************************************************/
 
@@ -41,26 +34,36 @@
 
 /**************************************************************************************************/
 
-struct QcLocationCircleMaterialShaderState
-{
-    float r, g, b, a;
-};
+#include "shaders/path_shader.h"
 
-class QcLocationCircleMaterialShader : public QSGSimpleMaterialShader<QcLocationCircleMaterialShaderState>
+const char *
+QcPathMaterialShader::vertexShader() const
 {
-    QSG_DECLARE_SIMPLE_SHADER(QcLocationCircleMaterialShader, QcLocationCircleMaterialShaderState)
+  return vertex_shader_path;
+}
 
-public:
-  const char * vertexShader() const Q_DECL_OVERRIDE ;
-  const char * fragmentShader() const Q_DECL_OVERRIDE ;
-  QList<QByteArray> attributes() const Q_DECL_OVERRIDE ;
-  void updateState(const QcLocationCircleMaterialShaderState * color,
-                   const QcLocationCircleMaterialShaderState *) Q_DECL_OVERRIDE ;
-};
+const char *
+QcPathMaterialShader::fragmentShader() const
+{
+  return fragment_shader_path;
+}
+
+QList<QByteArray>
+QcPathMaterialShader::attributes() const
+{
+  return QList<QByteArray>() << "a_vertex" << "a_tex_coord"
+                             << "a_line_length" << "a_line_width"
+                             << "a_cap";
+}
+
+void
+QcPathMaterialShader::updateState(const QcPathMaterialShaderState * state,
+                                  const QcPathMaterialShaderState *)
+{
+  program()->setUniformValue("colour", state->r, state->g, state->b, state->a);
+}
 
 // QC_END_NAMESPACE
-
-#endif /* __LOCATION_CIRCLE_MATERIAL_SHADER_H__ */
 
 /***************************************************************************************************
  *

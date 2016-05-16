@@ -117,18 +117,29 @@ class QC_EXPORT QcVector
   T dot(const QcVector<T> & other) const;
   // Return the cross product of  with other
   T cross(const QcVector<T> & other) const;
+
+  // Return the projection of  on direction
+  T projection_on(const QcVector<T> & direction) const;
+
   // is parallel with other
   bool is_parallel(const QcVector<T> & other) const;
   // is orthogonal with other
   bool is_orthogonal(const QcVector<T> & other) const;
+
   // Return the cosinus of  with direction
   T cos_with(const QcVector<T> & direction) const;
-  //  Return the projection of  on direction
-  T projection_on(const QcVector<T> & direction) const;
-  //  Return the sinus of  with other
+  // Return the sinus of  with other
   T sin_with(const QcVector<T> & direction) const;
+  // Return the tan of  with other
+  T tan_with(const QcVector<T> & direction) const;
+
   //  Return the deviation of  with other
   T deviation_with(const QcVector<T> & direction) const;
+
+  // Fixme: name
+  // Return the atan of  with other
+  T atan_with(const QcVector<T> & direction) const;
+  T radians_with(const QcVector<T> & direction) const;
   T orientation_with(const QcVector<T> & direction) const;
 
   QcInterval2D<T> to_interval() const;

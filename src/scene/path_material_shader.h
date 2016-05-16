@@ -28,13 +28,12 @@
 
 /**************************************************************************************************/
 
-#ifndef MAP_SCENE_PRIVATE_H
-#define MAP_SCENE_PRIVATE_H
+#ifndef __PATH_MATERIAL_SHADER_H__
+#define __PATH_MATERIAL_SHADER_H__
 
 /**************************************************************************************************/
 
-#include "location_circle_node.h"
-#include "path_node.h"
+#include <QSGSimpleMaterialShader>
 
 /**************************************************************************************************/
 
@@ -42,67 +41,28 @@
 
 /**************************************************************************************************/
 
-class QcMapSideNode : public QSGTransformNode
+struct QcPathMaterialShaderState
 {
-public:
-  void add_child(const QcTileSpec & tile_spec, QSGSimpleTextureNode * node);
-
-  QHash<QcTileSpec, QSGSimpleTextureNode *> texture_nodes;
+    float r, g, b, a;
 };
 
-/**************************************************************************************************/
-
-class QcMapLayerRootNode : public QSGOpacityNode
+class QcPathMaterialShader : public QSGSimpleMaterialShader<QcPathMaterialShaderState>
 {
-public:
-  QcMapLayerRootNode(const QcTileMatrixSet & tile_matrix_set, const QcViewport * viewport);
-  ~QcMapLayerRootNode();
-
-  void update_tiles(QcMapLayerScene * map_scene,
-                    QcMapSideNode * map_side_node, const QcTileSpecSet & visible_tiles, const QcPolygon & polygon,
-                    double offset);
-
-private:
-  const QcTileMatrixSet & m_tile_matrix_set;
-  const QcViewport * m_viewport;
+    QSG_DECLARE_SIMPLE_SHADER(QcPathMaterialShader, QcPathMaterialShaderState)
 
 public:
-  // QcGridNode * grid_node;
-  QcMapSideNode * west_map_node;
-  QcMapSideNode * middle_map_node;
-  QcMapSideNode * east_map_node;
-  QHash<QcTileSpec, QSGTexture *> textures;
+  const char * vertexShader() const Q_DECL_OVERRIDE ;
+  const char * fragmentShader() const Q_DECL_OVERRIDE ;
+  QList<QByteArray> attributes() const Q_DECL_OVERRIDE ;
+  void updateState(const QcPathMaterialShaderState * state,
+                   const QcPathMaterialShaderState *) Q_DECL_OVERRIDE ;
 };
-
-/**************************************************************************************************/
-
-class QcMapRootNode : public QSGClipNode
-{
-public:
-  QcMapRootNode(const QcViewport * viewport);
-  ~QcMapRootNode();
-
-  void update_clip_rect();
-
-private:
-  const QcViewport * m_viewport;
-  QRect m_clip_rect;
-
-public:
-  QSGGeometry geometry;
-  QSGTransformNode * root;
-  QcLocationCircleNode * location_circle_node;
-  QcPathNode * path_node;
-  QHash<QString, QcMapLayerRootNode *> layers;
-};
-
-/**************************************************************************************************/
 
 // QC_END_NAMESPACE
 
 /**************************************************************************************************/
 
-#endif // MAP_SCENE_PRIVATE_H
+#endif /* __PATH_MATERIAL_SHADER_H__ */
 
 /***************************************************************************************************
  *

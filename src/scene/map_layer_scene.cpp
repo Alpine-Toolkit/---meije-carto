@@ -79,8 +79,8 @@ QcMapLayerRootNode::update_tiles(QcMapLayerScene * map_scene,
   float height = map_scene->height();
 
   QMatrix4x4 space_matrix;
-  space_matrix.scale(2/width, 2/height);
-  space_matrix.translate(-width/2 + offset, -height/2);
+  space_matrix.setToIdentity();
+  space_matrix.translate(offset, .0);
   map_side_node->setMatrix(space_matrix);
   // qInfo() << "map side space matrix" << space_matrix;
 
