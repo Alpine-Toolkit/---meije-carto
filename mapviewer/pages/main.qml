@@ -137,15 +137,16 @@ ApplicationWindow {
         }
     }
 
-
     MapComponent {
         id: map
+        // focus: true
         // anchors.fill: parent
     }
 
     StackView {
         id: stack_view
         anchors.fill: parent
+        // focus: true
 
         // initialItem: null
         initialItem: map
