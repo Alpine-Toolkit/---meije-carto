@@ -58,7 +58,7 @@ public:
                     const QString & name,
                     const QString & image_format);
   QcWmtsPluginLayer(const QcWmtsPluginLayer & other);
-  ~QcWmtsPluginLayer();
+  virtual ~QcWmtsPluginLayer();
 
   QcWmtsPluginLayer & operator=(const QcWmtsPluginLayer & other);
 
@@ -90,7 +90,7 @@ class QcWmtsPlugin
 {
 public:
   QcWmtsPlugin(const QString & name, const QString & title, int number_of_levels, int tile_size);
-  virtual ~QcWmtsPlugin();
+  ~QcWmtsPlugin();
 
   const QString & name() const { return m_name; }
   const QString & title() const { return m_title; }
