@@ -1,3 +1,5 @@
+/**************************************************************************************************/
+
 #version 120
 
 const float antialias = 1.0;
@@ -7,6 +9,10 @@ const float SQRT_2 = 1.4142135623730951;
 
 uniform lowp float qt_Opacity;
 uniform lowp vec4 color;
+
+varying highp vec2 tex_coord;
+
+/**************************************************************************************************/
 
 vec4
 stroke(float distance, float linewidth, float antialias, vec4 stroke)
@@ -48,10 +54,14 @@ filled(float distance, float linewidth, float antialias, vec4 fill)
   else
     // Outside shape
     if (border_distance > (linewidth/2.0 + antialias))
-      frag_color = vec4(0, 0, 0, 0); //discard;
+      discard;
+      // frag_color = vec4(0, 0, 0, 0);
     else { // Line stroke exterior border
-      // frag_color = vec4(1, 0, 0, 0);
-      frag_color = vec4(fill.rgb*alpha, 1.0);
+      if (alpha == .0)
+        discard;
+      else
+        // frag_color = vec4(fill.rgb*alpha, 1.);
+        frag_color = vec4(fill.rgb*alpha, alpha);
     }
 
   return frag_color;
@@ -89,12 +99,21 @@ outline(float distance, float linewidth, float antialias, vec4 stroke, vec4 fill
 float
 marker_ring(vec2 P)
 {
-  return 100*length(P - vec2(.5, .5)) - 90/2.;
+  return length(P) - 100.;
 }
+
+/**************************************************************************************************/
 
 void
 main() {
-  float d = marker_ring(gl_PointCoord);
+  // float d = marker_ring(gl_PointCoord);
+  float d = marker_ring(tex_coord);
   vec4 frag_color = filled(d, linewidth, antialias, color);
   gl_FragColor = frag_color * qt_Opacity;
 }
+
+/***************************************************************************************************
+ *
+ * End
+ *
+ **************************************************************************************************/

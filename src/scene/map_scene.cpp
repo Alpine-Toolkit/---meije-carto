@@ -28,7 +28,6 @@
 
 #include "map_scene.h"
 #include "map_scene_private.h"
-#include "location_circle_material_shader.h"
 
 /**************************************************************************************************/
 
@@ -117,7 +116,7 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
     else {
       layer_node = layer->make_node();
       map_root_node->layers.insert(name, layer_node);
-      map_root_node->root->insertChildNodeBefore(layer_node, map_root_node->location_circle_root_node);
+      map_root_node->root->insertChildNodeBefore(layer_node, map_root_node->location_circle_node);
     }
     layer->update_scene_graph(layer_node, window);
   }
@@ -133,39 +132,14 @@ QcMapRootNode::QcMapRootNode(const QcViewport * viewport)
   : m_viewport(viewport),
     geometry(QSGGeometry::defaultAttributes_Point2D(), 4),
     root(new QSGTransformNode()),
-    location_circle_root_node(new QSGOpacityNode())
+    location_circle_node(new QcLocationCircleNode())
 {
   // qInfo();
   setIsRectangular(true);
   setGeometry(&geometry);
   appendChildNode(root);
 
-#ifndef ANDROID
-  location_circle_root_node->setOpacity(.25); // 1. black
-
-  QSGGeometryNode * location_circle_node = new QSGGeometryNode();
-  QSGGeometry * location_circle_geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 1);
-  location_circle_geometry->setLineWidth(100); // point size
-  location_circle_geometry->setDrawingMode(GL_POINTS);
-  location_circle_node->setGeometry(location_circle_geometry);
-  location_circle_node->setFlag(QSGNode::OwnsGeometry);
-
-  // Fixme: black instead of white
-  QSGSimpleMaterial<QcLocationCircleMaterialShaderState> * location_circle_material = QcLocationCircleMaterialShader::createMaterial();
-  location_circle_material->state()->r = 0;
-  location_circle_material->state()->g = 0;
-  location_circle_material->state()->b = 1;
-  location_circle_material->state()->a = 1.;
-  location_circle_node->setMaterial(location_circle_material);
-  location_circle_node->setFlag(QSGNode::OwnsMaterial);
-
-  QSGGeometry::Point2D * location_circle_vertices = location_circle_geometry->vertexDataAsPoint2D();
-  location_circle_vertices[0].set(0, 0);
-
-  location_circle_root_node->appendChildNode(location_circle_node);
-  // root->appendChildNode(location_circle_node);
-  root->appendChildNode(location_circle_root_node);
-#endif
+  root->appendChildNode(location_circle_node);
 }
 
 QcMapRootNode::~QcMapRootNode()

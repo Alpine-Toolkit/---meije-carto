@@ -33,6 +33,10 @@
 
 /**************************************************************************************************/
 
+#include "location_circle_node.h"
+
+/**************************************************************************************************/
+
 // QC_BEGIN_NAMESPACE
 
 /**************************************************************************************************/
@@ -86,7 +90,7 @@ private:
 public:
   QSGGeometry geometry;
   QSGTransformNode * root;
-  QSGOpacityNode * location_circle_root_node;
+  QcLocationCircleNode * location_circle_node;
   QHash<QString, QcMapLayerRootNode *> layers;
 };
 

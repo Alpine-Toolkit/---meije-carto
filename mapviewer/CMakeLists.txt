@@ -13,7 +13,15 @@
 #
 
 add_executable(mapviewer main.cpp mapviewer.qrc)
-target_link_libraries(mapviewer Qt5::Core Qt5::Gui Qt5::Qml Qt5::Quick qtcarto) # for logger
+target_link_libraries(mapviewer
+  Qt5::Core
+  Qt5::Gui
+  Qt5::Qml
+  Qt5::Quick
+  Qt5::QuickWidgets
+  Qt5::Svg
+  qtcarto # for logger
+  )
 
 ####################################################################################################
 #

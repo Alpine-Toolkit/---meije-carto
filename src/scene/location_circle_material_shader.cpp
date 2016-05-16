@@ -51,7 +51,7 @@ QcLocationCircleMaterialShader::fragmentShader() const
 QList<QByteArray>
 QcLocationCircleMaterialShader::attributes() const
 {
-  return QList<QByteArray>() << "vertex";
+  return QList<QByteArray>() << "a_vertex" << "a_tex_coord";
 }
 
 void
