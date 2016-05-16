@@ -117,9 +117,13 @@ if(NOT ANDROID)
   find_package(Qt5Network REQUIRED)
   find_package(Qt5Positioning REQUIRED)
   find_package(Qt5Qml REQUIRED)
-  find_package(Qt5Quick REQUIRED) # QtQuickWidgets
+  find_package(Qt5Quick REQUIRED)
+  find_package(Qt5QuickWidgets REQUIRED)
   find_package(Qt5Sensors REQUIRED)
+  find_package(Qt5Sql REQUIRED)
+  find_package(Qt5Svg REQUIRED)
   find_package(Qt5Test REQUIRED)
+
   # find_package(Qt5Xml REQUIRED)
   # find_package(Qt5WebView REQUIRED)
 
@@ -164,7 +168,7 @@ endif(NOT ANDROID)
 
 if(NOT ANDROID)
   add_subdirectory(tools)
-  add_subdirectory(test)
+  # add_subdirectory(test)
 endif(NOT ANDROID)
 
 ####################################################################################################
