@@ -445,7 +445,8 @@ QcMapItem::geometryChanged(const QRectF & new_geometry, const QRectF & old_geome
   // qInfo() << old_geometry << "->" << new_geometry;
   QQuickItem::geometryChanged(new_geometry, old_geometry);
   QSize viewport_size(new_geometry.width(), new_geometry.height()); // Fixme: QSizeF size()
-  m_viewport->set_viewport_size(viewport_size);
+  // Fixme: pass devicePixelRatio here ?
+  m_viewport->set_viewport_size(viewport_size, window()->devicePixelRatio());
 }
 
 QSGNode *

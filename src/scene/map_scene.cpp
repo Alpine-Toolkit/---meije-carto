@@ -68,8 +68,7 @@ QcMapScene::remove_layer(const QcWmtsPluginLayer * plugin_layer)
 QSGNode *
 QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
 {
-  qreal device_pixel_ratio = window->devicePixelRatio();
-  // qInfo() << old_node << "device pixel ratio" << device_pixel_ratio;
+  // qInfo() << old_node;
 
   // QSize viewport_size = m_viewport->viewport_size();
   float width = m_viewport->width();
@@ -90,16 +89,13 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
   // Fixme: ok ?
   map_root_node->update_clip_rect();
 
-  /* Setup model matrix
-   *   origin at center
-   *   y downward
-   *   diagonal is set (1, 1)
+  /* Reset matrix to physical pixel
+   * | 2S/W   0     -1 |
+   * |  0    2S/H   -1 |
    */
   QMatrix4x4 item_space_matrix;
-  item_space_matrix.setToIdentity();
-  // item_space_matrix.scale(1/device_pixel_ratio, 1/device_pixel_ratio); // fix scale but clipping ?
-  // item_space_matrix.scale(width/2, height/2);
-  // item_space_matrix.translate(1, 1);
+  qreal device_pixel_ratio_inverse = 1. / window->devicePixelRatio();
+  item_space_matrix.scale(device_pixel_ratio_inverse, device_pixel_ratio_inverse);
   map_root_node->root->setMatrix(item_space_matrix);
   // qInfo() << "item_space_matrix" << item_space_matrix;
 
@@ -153,7 +149,7 @@ QcMapRootNode::update_clip_rect()
   int width = m_viewport->width();
   int height = m_viewport->height();
   QRect rect = QRect(0, 0, width, height);
-  // qInf() << rect;
+  // qInfo() << "clip rect" << rect;
   if (rect != m_clip_rect) {
     QSGGeometry::updateRectGeometry(&geometry, rect);
     QSGClipNode::setClipRect(rect);

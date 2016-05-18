@@ -229,7 +229,7 @@ class QC_EXPORT QcViewport : public QObject
   QSize viewport_size() const { return m_viewport_size; }
   int width() const  { return m_viewport_size.width(); }
   int height() const  { return m_viewport_size.height(); }
-  void set_viewport_size(const QSize & size);
+  void set_viewport_size(const QSize & size, float device_pixel_ratio);
 
   QcVectorDouble area_size_m() const { return m_area_size_m; }
 
@@ -290,7 +290,8 @@ class QC_EXPORT QcViewport : public QObject
 
  private:
   QcViewportState m_state;
-  QSize m_viewport_size; // Fixme: QcVectorInt ?
+  QSize m_viewport_size; // px   Fixme: QcVectorInt ?
+  float m_device_pixel_ratio;
   QcVectorDouble m_area_size_m;
   QcVectorDouble m_half_diagonal_m;
   QcPolygon m_west_polygon;

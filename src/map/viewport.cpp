@@ -235,9 +235,11 @@ QcViewport::update_area_size()
 }
 
 void
-QcViewport::set_viewport_size(const QSize & size)
+QcViewport::set_viewport_size(const QSize & size, float device_pixel_ratio)
 {
-  m_viewport_size = size;
+  qInfo() << "viewport size" << size << device_pixel_ratio;
+  m_viewport_size = size* device_pixel_ratio;
+  m_device_pixel_ratio = device_pixel_ratio;
   update_area_size();
   update_area();
 }
@@ -336,9 +338,7 @@ QcViewport::update_area()
   QcVectorDouble center = pseudo_web_mercator().vector();
 
   // qInfo() << "viewport_size" << viewport_size;
-  qInfo() << "resolution" << resolution() << "m/px";
-  QcMapScale map_scale = make_scale(width() * .9);
-  qInfo() << "map scale" << width() << "/" << map_scale.length_px() << "px" << map_scale.length() << "m";
+  // qInfo() << "resolution" << resolution() << "m/px";
   // qInfo() << "area_size" << m_area_size << "m";
   // qInfo() << "center as pseudo mercator" << (int) center.x() << (int) center.y();
 
@@ -505,6 +505,7 @@ find_scale_digit(double x)
 QcMapScale
 QcViewport::make_scale(unsigned int max_length_px)
 {
+  max_length_px *= m_device_pixel_ratio;
   double max_length = from_px(max_length_px);
 
   int number_of_digits = trunc(log(max_length)/log(10.));
@@ -515,7 +516,7 @@ QcViewport::make_scale(unsigned int max_length_px)
   qInfo() << max_length_px << max_length << number_of_digits << normalised_max_length << digit;
   double length = digit * power_10;
 
-  return QcMapScale(length, ceil(to_px(length)));
+  return QcMapScale(length, ceil(to_px(length) / m_device_pixel_ratio));
 }
 
 /**************************************************************************************************/

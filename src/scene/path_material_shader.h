@@ -54,6 +54,7 @@ public:
   const char * vertexShader() const Q_DECL_OVERRIDE ;
   const char * fragmentShader() const Q_DECL_OVERRIDE ;
   QList<QByteArray> attributes() const Q_DECL_OVERRIDE ;
+  // void updateState(const RenderState & state, QSGMaterial * new_material, QSGMaterial * old_material) Q_DECL_OVERRIDE;
   void updateState(const QcPathMaterialShaderState * state,
                    const QcPathMaterialShaderState *) Q_DECL_OVERRIDE ;
 };
