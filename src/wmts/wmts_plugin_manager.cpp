@@ -28,7 +28,7 @@
 
 #include "wmts_plugin_manager.h"
 
-#include "config.h"
+#include "configuration/configuration.h"
 #include "geoportail/geoportail_plugin.h"
 #include "osm/osm_plugin.h"
 

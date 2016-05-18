@@ -29,44 +29,19 @@
 #include <cstdio>
 #include <cstdlib>
 
-#include <QDateTime>
-#include <QDir>
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQuickWindow>
-#include <QQuickView>
 #include <QStandardPaths>
 #include <QSurfaceFormat>
 #include <QtDebug>
 
 /**************************************************************************************************/
 
+#include "configuration/configuration.h"
+#include "tools/debug_data.h"
 #include "tools/logger.h"
-
-/**************************************************************************************************/
-
-QDir
-create_user_application_directory()
-{
-  // on Android
-  //   DataLocation = /data/data/org.alpine_toolkit
-  //   GenericDataLocation = <USER> = /storage/emulated/0 = user land root
-  // on Linux
-  //   GenericDataLocation = /home/fabrice/.local/share
-  QString generic_data_location_path = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
-  qInfo() << "GenericDataLocation:" << generic_data_location_path;
-  // /storage/emulated/0/Android/data/org.xxx/files Alarms Download Notifications cache
-
-  QString application_user_directory_path = QDir(generic_data_location_path).filePath("alpine-toolkit");
-  QDir application_user_directory(application_user_directory_path);
-  if (! application_user_directory.exists()) {
-    if (!application_user_directory.mkpath(application_user_directory.absolutePath())) {
-      qWarning() << "Cannot create application user directory";
-    }
-  }
-
-  return application_user_directory;
-}
+#include "tools/platform.h"
 
 /**************************************************************************************************/
 
@@ -74,14 +49,16 @@ int
 main(int argc, char *argv[])
 {
 #ifndef ANDROID
-  qInstallMessageHandler(message_handler);
+  // qInstallMessageHandler(message_handler);
 #endif
 
   // QGuiApplication::setApplicationDisplayName(QCoreApplication::translate("main", "Alpine Toolkit "));
   QGuiApplication::setApplicationName("Alpine Toolkit");
   QGuiApplication::setOrganizationName("FabriceSalvaire"); // overridden ???
   // QGuiApplication::setOrganizationDomain("fabrice-salvaire.fr")
-  // QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#ifdef ANDROID
+  QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#endif
 
   QGuiApplication application(argc, argv);
 
@@ -89,7 +66,12 @@ main(int argc, char *argv[])
   // surface_format.setSamples(4); // max is 8 ?
   QSurfaceFormat::setDefaultFormat(surface_format);
 
-  create_user_application_directory();
+  QcConfig & config = QcConfig::instance();
+  config.init();
+
+  QcDebugData debug_data;
+  debug_data.write_json(config.join_application_user_directory(QLatin1Literal("debug_data.json")));
+  qInfo() << debug_data.to_json();
 
   QUrl main_page("qrc:/pages/main.qml");
 

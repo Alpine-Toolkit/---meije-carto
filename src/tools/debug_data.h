@@ -28,11 +28,12 @@
 
 /**************************************************************************************************/
 
-#ifndef __CONFIG_H__
-#define __CONFIG_H__
+#ifndef __DEBUG_DATA_H__
+#define __DEBUG_DATA_H__
 
 /**************************************************************************************************/
 
+#include <QByteArray>
 #include <QString>
 
 /**************************************************************************************************/
@@ -41,36 +42,25 @@
 
 /**************************************************************************************************/
 
-class QcConfig
+class QcDebugData
 {
 public:
-  static QcConfig & instance() {
-    // Thread-safe in C++11
-    static QcConfig m_instance;
-    return m_instance;
-  }
+  QcDebugData();
+  ~QcDebugData();
 
-  // Delete copy and move constructors and assign operators
-  QcConfig(QcConfig const &) = delete;             // Copy construct
-  QcConfig & operator=(QcConfig const &) = delete; // Copy assign
-  QcConfig(QcConfig &&) = delete;                  // Move construct
-  QcConfig & operator=(QcConfig &&) = delete;      // Move assign
-
-  const QString & application_user_directory() const { return m_application_user_directory; }
+  QByteArray to_json() const;
+  bool write_json(const QString & json_path) const;
 
 private:
-  ~QcConfig();
-  QcConfig();
-
-private:
-  QString m_application_user_directory;
 };
 
 /**************************************************************************************************/
 
 // QC_END_NAMESPACE
 
-#endif /* __CONFIG_H__ */
+/**************************************************************************************************/
+
+#endif /* __DEBUG_DATA_H__ */
 
 /***************************************************************************************************
  *

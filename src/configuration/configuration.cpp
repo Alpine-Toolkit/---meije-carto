@@ -26,10 +26,11 @@
 
 /**************************************************************************************************/
 
-#include "config.h"
+#include "configuration.h"
 
 #include <QDir>
 #include <QStandardPaths>
+#include <QtDebug>
 
 /**************************************************************************************************/
 
@@ -38,13 +39,45 @@
 /**************************************************************************************************/
 
 QcConfig::QcConfig()
+  : m_initialised(false)
 {
+  // on Android
+  //   DataLocation = /data/data/org.alpine_toolkit
+  //   GenericDataLocation = <USER> = /storage/emulated/0 = user land root
+  // on Linux
+  //   GenericDataLocation = /home/fabrice/.local/share
   QString generic_data_location_path = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
   m_application_user_directory = QDir(generic_data_location_path).filePath(QLatin1Literal("alpine-toolkit"));
 }
 
 QcConfig::~QcConfig()
 {}
+
+void
+QcConfig::init()
+{
+  if (m_initialised)
+    return;
+
+  create_user_application_directory();
+
+  m_initialised = true;
+}
+
+void
+QcConfig::create_user_application_directory() const
+{
+  QDir directory = m_application_user_directory;
+  if (! directory.exists())
+    if (!directory.mkpath(directory.absolutePath()))
+      qWarning() << "Cannot create application user directory" << m_application_user_directory;
+}
+
+const QString
+QcConfig::join_application_user_directory(const QString & path)
+{
+  return QDir(m_application_user_directory).absoluteFilePath(path);
+}
 
 /**************************************************************************************************/
 

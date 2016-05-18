@@ -28,31 +28,42 @@ add_custom_command (
 
 set(qtcarto_files
   # map/shaders/location_circle_shader.h
+
   cache/file_tile_cache.cpp
   cache/offline_cache.cpp
   cache/tile_image.cpp
-  config.cpp
+
+  configuration/configuration.cpp
+
   coordinate/geo_coordinate.cpp
+
   geo_data_format/gpx.cpp
   geo_data_format/route.cpp
   geo_data_format/waypoint.cpp
   geo_data_format/xml_reader.cpp
+
   geometry/line.cpp
   geometry/path.cpp
   geometry/polygon.cpp
   geometry/vector.cpp
+
   map/map_view.cpp
   map/viewport.cpp
   math/interval.cpp
   math/qc_math.cpp
   math/rational.cpp
+
   scene/location_circle_material_shader.cpp
   scene/location_circle_node.cpp
   scene/path_material_shader.cpp
   scene/path_node.cpp
   scene/map_layer_scene.cpp
   scene/map_scene.cpp
+
+  tools/debug_data.cpp
   tools/logger.cpp
+  tools/platform.cpp
+
   wmts/geoportail/geoportail_license.cpp
   wmts/geoportail/geoportail_plugin.cpp
   wmts/geoportail/geoportail_wmts_reply.cpp

@@ -69,6 +69,23 @@ set(QTCARTO_VERSION ${QTCARTO_VERSION_MAJOR}.${QTCARTO_VERSION_MINOR}.${QTCARTO_
 
 ####################################################################################################
 #
+# Target Platform
+#
+
+if(ANDROID)
+ ADD_DEFINITIONS(-DON_ANDROID)
+endif(ANDROID)
+
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+  ADD_DEFINITIONS(-DON_LINUX)
+endif(CMAKE_SYSTEM_NAME MATCHES "Linux")
+
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+  ADD_DEFINITIONS(-DON_WINDOWS)
+endif(CMAKE_SYSTEM_NAME MATCHES "Windows")
+
+####################################################################################################
+#
 # Compiler Options
 #
 
@@ -146,6 +163,11 @@ if(NOT ANDROID)
     INCLUDE_DIRECTORIES(PROJ4_INCLUDE_DIR)
   endif(PROJ4_FOUND)
 endif(NOT ANDROID)
+
+####################################################################################################
+
+configure_file(config.h.in config.h @ONLY)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 ####################################################################################################
 #
