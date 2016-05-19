@@ -30,6 +30,7 @@
 
 #include "earth.h"
 #include "coordinate/geo_coordinate.h"
+#include "map/map_path_editor.h"
 #include "wmts/geoportail/geoportail_plugin.h"
 #include "wmts/osm/osm_plugin.h"
 
@@ -73,6 +74,9 @@ QcMapItem::QcMapItem(QQuickItem * parent)
   // Fixme:
   m_gesture_area->set_minimum_zoom_level(0);
   m_gesture_area->set_maximum_zoom_level(20);
+
+  // Fixme: direct ptr
+  m_map_event_router.register_client(QcMapEventRouter::ClientSharedPointer(new QcMapPathEditor()));
 
   for (const auto & plugin_name : m_plugin_manager.plugin_names())
     m_plugin_layers.insert(plugin_name, make_plugin_layers(plugin_name));
@@ -131,7 +135,7 @@ QcMapItem::is_interactive()
 }
 
 void
-QcMapItem::mousePressEvent(QMouseEvent *event)
+QcMapItem::mousePressEvent(QMouseEvent * event)
 {
   // Never called when a child (MouseArea) should receive th event
   // qInfo();
@@ -141,7 +145,8 @@ QcMapItem::mousePressEvent(QMouseEvent *event)
     QQuickItem::mousePressEvent(event);
 }
 
-void QcMapItem::mouseMoveEvent(QMouseEvent *event)
+void
+QcMapItem::mouseMoveEvent(QMouseEvent * event)
 {
   // Called when mouse is grabbed
   // qInfo();
@@ -151,7 +156,8 @@ void QcMapItem::mouseMoveEvent(QMouseEvent *event)
     QQuickItem::mouseMoveEvent(event);
 }
 
-void QcMapItem::mouseReleaseEvent(QMouseEvent *event)
+void
+QcMapItem::mouseReleaseEvent(QMouseEvent * event)
 {
   // Called when mouse is grabbed
   // qInfo();
@@ -162,7 +168,8 @@ void QcMapItem::mouseReleaseEvent(QMouseEvent *event)
     QQuickItem::mouseReleaseEvent(event);
 }
 
-void QcMapItem::mouseUngrabEvent()
+void
+QcMapItem::mouseUngrabEvent()
 {
   // qInfo();
   if (is_interactive())
@@ -171,7 +178,8 @@ void QcMapItem::mouseUngrabEvent()
     QQuickItem::mouseUngrabEvent();
 }
 
-void QcMapItem::touchUngrabEvent()
+void
+QcMapItem::touchUngrabEvent()
 {
   // qInfo();
   if (is_interactive())

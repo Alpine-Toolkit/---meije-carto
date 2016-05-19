@@ -49,13 +49,14 @@ int
 main(int argc, char *argv[])
 {
 #ifndef ANDROID
-  // qInstallMessageHandler(message_handler);
+  qInstallMessageHandler(message_handler);
 #endif
 
   // QGuiApplication::setApplicationDisplayName(QCoreApplication::translate("main", "Alpine Toolkit "));
   QGuiApplication::setApplicationName("Alpine Toolkit");
   QGuiApplication::setOrganizationName("FabriceSalvaire"); // overridden ???
   // QGuiApplication::setOrganizationDomain("fabrice-salvaire.fr")
+  // Fixme:
 #ifdef ANDROID
   QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif

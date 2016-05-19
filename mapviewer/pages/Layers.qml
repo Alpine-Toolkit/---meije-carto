@@ -7,6 +7,7 @@ import QtQuick.Controls 2.0
 
 Pane {
     id: layer_pane
+    width: application_window.width / 2
 
     // Fixme: width, vertical slider, title
     Column {
@@ -36,9 +37,9 @@ Pane {
                             CheckBox {
                                 id: checkbox
                                 anchors.verticalCenter: parent.verticalCenter
-                                checked: plugin_layer.status
+                                Component.onCompleted: checked = plugin_layer.status
+                                onCheckedChanged: plugin_layer.status = checked
                             }
-                            Binding { target: plugin_layer; property: "status"; value: checkbox.checked }
                             Text {
                                 anchors.verticalCenter: parent.verticalCenter
                                 width: layer_pane.width / 3
@@ -48,10 +49,9 @@ Pane {
                                 id: slider
                                 anchors.verticalCenter: parent.verticalCenter
                                 enabled: checkbox.checked
-                                value: plugin_layer.opacity
+                                Component.onCompleted: value = plugin_layer.opacity
+                                onValueChanged: plugin_layer.opacity = value
                             }
-                            // QML Binding: Binding loop detected for property "value"
-                            Binding { target: plugin_layer; property: "opacity"; value: slider.value }
                         }
                     }
                 }

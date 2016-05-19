@@ -21,6 +21,7 @@ QcMapItem {
     property int jitter_threshold : 30
 
     color: "white"
+    // opacity: 1.
 
     // Enable pan, flick, and pinch gestures to zoom in and out
     gesture.accepted_gestures: MapGestureArea.PanGesture | MapGestureArea.FlickGesture | MapGestureArea.PinchGesture
@@ -28,7 +29,20 @@ QcMapItem {
     gesture.enabled: true
     focus: true
 
-    // opacity: 1.
+    function enter_measure_state() {
+        console.info("Enter Measure state")
+        map.map_event_router.push_client("path-editor")
+    }
+
+    states: [
+    State {
+        name: "Measure"
+        StateChangeScript {
+            name: "enter_measure_state"
+            script: enter_measure_state()
+        }
+    }
+    ]
 
     Component.onCompleted: {
         map.plugin_layers('osm')[0].status = true
@@ -110,100 +124,6 @@ QcMapItem {
         text: ""
     }
 
-    Image {
-        enabled: true
-        // anchors.horizontalCenter: map.horizontalCenter
-        // anchors.verticalCenter: map.verticalCenter
-        x: 400
-        y: 600
-        width: 300
-        height: 300
-        antialiasing : true
-        z: 10
-        opacity: .2
-        rotation: -25
-
-        // fillMode: Image.Pad
-        horizontalAlignment: Image.AlignHCenter
-        verticalAlignment: Image.AlignVCenter
-        source: "qrc:/images/location-bearing.svg"
-    }
-
-    Canvas {
-        id: canvas
-        x: 200
-        y: 200
-        width: 200
-        height: 200
-        antialiasing: true
-        // transformOrigin: Item.Center
-        opacity: .5
-        renderStrategy: Canvas.Threaded // Immediate Cooperative
-        renderTarget: Canvas.FramebufferObject // Canvas.Image
-        onPaint: {
-            var ctx = getContext("2d");
-            ctx.reset();
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.translate(canvas.width / 2, canvas.height / 2);
-            var canvas_radius = canvas.width / 2;
-            ctx.fillStyle = 'blue';
-            // ctx.globalAlpha = 0.1;
-            ctx.beginPath();
-            ctx.arc(0, 0, .3 * canvas_radius, 0, 2*Math.PI, true);
-            ctx.fill();
-            var angle = Math.PI/6
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.arc(0, 0, canvas_radius, -angle, Math.PI + angle, true);
-            ctx.fill();
-        }
-    }
-
-    ShaderEffect {
-        enabled: false
-        x: 200
-        y: 400
-        width: 100
-        height: 100
-        opacity: .5
-        z: 10
-        blending: true
-        antialiasing : true
-        rotation: 25
-
-        property color disc_color: "red";
-
-        vertexShader: "
-        uniform highp mat4 qt_Matrix;
-        attribute highp vec4 qt_Vertex;
-        attribute highp vec2 qt_MultiTexCoord0;
-        varying highp vec2 v_texcoord;
-        void main() {
-            v_texcoord = qt_MultiTexCoord0 - vec2(.5);
-            gl_Position = qt_Matrix * qt_Vertex;
-        }"
-
-        fragmentShader: "
-        uniform lowp float qt_Opacity;
-        uniform lowp vec4 disc_color;
-        varying highp vec2 v_texcoord;
-        void main() {
-            float radius = dot(v_texcoord, v_texcoord);
-            if (radius > .01) {
-                if (v_texcoord.y > .0) {
-                    discard;
-                }
-                if ((abs(v_texcoord.y) / abs(v_texcoord.x)) < 1.) {
-                    discard;
-                }
-                if (radius > .25) {
-                    discard;
-                }
-            }
-            gl_FragColor = vec4(disc_color.rgb, qt_Opacity);
-        }"
-    }
-
     Keys.onPressed: {
         console.log(event)
         if (event.key == Qt.Key_Left) {
@@ -271,6 +191,11 @@ QcMapItem {
             if (Math.abs(press_x - mouse.x ) < jitter_threshold
             &&  Math.abs(press_y - mouse.y ) < jitter_threshold) {
                 console.info("onPressAndHold", last_coordinate)
+                // var map_event1 = new QcMapEvent(mouse.button, mouse.buttons, mouse.modifiers, mouse.wasHeld, last_coordinate)
+                // console.info(map_event1)
+                var map_event = map.map_event_router.create_map_event(mouse.button, mouse.buttons, mouse.modifiers, mouse.wasHeld, last_coordinate)
+                console.info(map_event)
+                map.map_event_router.handle_mouse_press_and_hold_event(map_event)
             }
         }
     }
@@ -278,7 +203,7 @@ QcMapItem {
     ToolBar {
         anchors.top: parent.top
         anchors.right: parent.right
-        RowLayout {
+        ColumnLayout {
             ToolButton {
                 id: bearing_lock_icon
                 // background: Rectangle {
@@ -309,6 +234,19 @@ QcMapItem {
                     source: position_locked ? "qrc:/icons/gps-fixed-black.png" : "qrc:/icons/gps-not-fixed-black.png"
                 }
                 onClicked: position_locked = !position_locked
+            }
+            ToolButton {
+                id: ruler_tool_icon
+                checkable: true
+                contentItem: Image {
+                    fillMode: Image.Pad
+                    horizontalAlignment: Image.AlignHCenter
+                    verticalAlignment: Image.AlignVCenter
+                    source: "qrc:/icons/svg/ruler-black.png"
+                }
+                onClicked: {
+                    map.state = "Measure"
+                }
             }
         }
     }

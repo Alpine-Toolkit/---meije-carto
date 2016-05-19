@@ -632,8 +632,10 @@ QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcGeoElevationCoordinate
 
 // QT_END_NAMESPACE
 
-// Q_DECLARE_METATYPE(QcGeoCoordinateWGS84)
-// Q_DECLARE_METATYPE(QcGeoCoordinateNormalisedWebMercator)
+Q_DECLARE_METATYPE(QcGeoCoordinateWGS84)
+Q_DECLARE_METATYPE(QcGeoCoordinateWebMercator)
+Q_DECLARE_METATYPE(QcGeoCoordinatePseudoWebMercator)
+Q_DECLARE_METATYPE(QcGeoCoordinateNormalisedWebMercator)
 
 /**************************************************************************************************/
 

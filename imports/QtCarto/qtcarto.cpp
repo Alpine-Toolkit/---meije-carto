@@ -34,6 +34,10 @@
 #include "declarative_map_item.h"
 #include "map_gesture_area.h"
 
+// Fixme:
+#include "coordinate/geo_coordinate.h"
+#include "map/map_event_router.h"
+
 // QC_BEGIN_NAMESPACE
 
 /**************************************************************************************************/
@@ -57,6 +61,15 @@ class QtCartoDeclarativeModule : public QQmlExtensionPlugin
 
       // Register the 1.0 types
 
+      // qRegisterAnimationInterpolator<QGeoCoordinate>(q_coordinateInterpolator);
+      qRegisterMetaType<QcGeoCoordinateWGS84>();
+      QMetaType::registerEqualsComparator<QcGeoCoordinateWGS84>();
+      qRegisterMetaType<QcGeoCoordinateWebMercator>();
+      QMetaType::registerEqualsComparator<QcGeoCoordinateWebMercator>();
+      qRegisterMetaType<QcGeoCoordinatePseudoWebMercator>();
+      QMetaType::registerEqualsComparator<QcGeoCoordinatePseudoWebMercator>();
+      qRegisterMetaType<QcGeoCoordinateNormalisedWebMercator>();
+
       // QDeclarativeGeoMap
       qmlRegisterType<QcMapItem>(uri, major, minor, "QcMapItem");
 
@@ -66,11 +79,19 @@ class QtCartoDeclarativeModule : public QQmlExtensionPlugin
                                                    QStringLiteral("(Map)GestureArea is not intended instantiable by developer."));
 
       qmlRegisterUncreatableType<QcWmtsPluginData>(uri, major, minor, "WmtsPluginData",
-                                                        QStringLiteral("QcWmtsPluginData is not intended instantiable by developer."));
+                                                   QStringLiteral("QcWmtsPluginData is not intended instantiable by developer."));
       qmlRegisterUncreatableType<QcWmtsPluginLayerData>(uri, major, minor, "WmtsPluginLayerData",
                                                         QStringLiteral("QcWmtsPluginLayerData is not intended instantiable by developer."));
       qmlRegisterUncreatableType<QcMapScale>(uri, major, minor, "QcMapScale",
                                              QStringLiteral("QcMapScale is not intended instantiable by developer."));
+
+       qRegisterMetaType<QcMapEvent>();
+       // qmlRegisterType<QcMapEvent>(uri, major, minor, "QcMapEvent");
+       // qmlRegisterUncreatableType<QcMapEvent>(uri, major, minor, "QcMapEvent",
+       //                                        QStringLiteral("QcMapEvent is not intended instantiable by developer."));
+
+      qmlRegisterUncreatableType<QcMapEventRouter>(uri, major, minor, "QcMapEventRouter",
+                                                   QStringLiteral("QcMapEventRouter is not intended instantiable by developer."));
 
       // registrations below are version independent
     } else {

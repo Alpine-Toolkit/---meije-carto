@@ -47,8 +47,11 @@ set(qtcarto_files
   geometry/polygon.cpp
   geometry/vector.cpp
 
+  map/map_event_router.cpp
+  map/map_path_editor.cpp
   map/map_view.cpp
   map/viewport.cpp
+
   math/interval.cpp
   math/qc_math.cpp
   math/rational.cpp

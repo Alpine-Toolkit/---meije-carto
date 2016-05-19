@@ -9,15 +9,16 @@ import QtQuick.Controls 2.0
 ApplicationWindow {
     id: application_window
     visible: true
-    width: 1000 // set window size for desktop test
-    height: 1000
+    width: 1280 // set window size for desktop test
+    height: 800
     title: "Alpine Toolkit"
 
-    // Component.onCompleted: {
-    //     console.info(Screen.height, Screen.width,
-    //                  Screen.desktopAvailableHeight, Screen.desktopAvailableWidth,
-    //                  Screen.pixelDensity, Screen.devicePixelRatio);
-    // }
+    Component.onCompleted: {
+        console.info("screen",
+                     Screen.height, Screen.width,
+                     Screen.desktopAvailableHeight, Screen.desktopAvailableWidth,
+                     Screen.pixelDensity, Screen.devicePixelRatio);
+    }
 
     header: ToolBar {
         id: app_bar
@@ -114,12 +115,12 @@ ApplicationWindow {
                 highlighted: ListView.isCurrentItem
                 onClicked: {
                     // if (list_view.currentIndex != index) {
-                        list_view.currentIndex = index
-                        app_bar.state == "BACK"
-                        back_icon.visible = true
-                        nav_icon.visible = false
-                        title_label.text = model.title
-                        stack_view.push(model.source)
+                    list_view.currentIndex = index
+                    app_bar.state == "BACK"
+                    back_icon.visible = true
+                    nav_icon.visible = false
+                    title_label.text = model.title
+                    stack_view.push(model.source)
                     // }
                     drawer.close()
                 }
@@ -139,21 +140,27 @@ ApplicationWindow {
 
     MapComponent {
         id: map
-        // focus: true
-        // anchors.fill: parent
+        anchors.fill: parent // anchored on header bottom
+        focus: true
+
+        // Component.onCompleted: {
+        //     console.info(application_window.width, application_window.height, header.height)
+        //    console.info(map.x, map.y, map.width, map.height)
+        // }
     }
 
     StackView {
         id: stack_view
         anchors.fill: parent
-        // focus: true
+        focus: true
 
         // initialItem: null
-        initialItem: map
-
-        // Pane {
-        //     id: pane
-        // }
+        // Fixme: hack
+        initialItem: Pane {
+            id: pane
+            width: 0
+            height: 0
+        }
 
         // Map {
         //     id: map
@@ -172,7 +179,6 @@ ApplicationWindow {
         y: application_window.height / 6
         width: Math.min(application_window.width, application_window.height) / 3 * 2
         contentHeight: about_column.height
-        // closePolicy: Popup.OnEscape | Popup.OnPressOutside
 
         Column {
             id: about_column

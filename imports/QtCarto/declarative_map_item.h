@@ -36,6 +36,7 @@
 #include "map_gesture_area.h"
 #include "plugin_data.h"
 
+#include "map/map_event_router.h"
 #include "map/map_view.h"
 #include "map/viewport.h"
 #include "wmts/wmts_plugin_manager.h"
@@ -62,6 +63,7 @@ class QcMapItem : public QQuickItem
   Q_PROPERTY(double bearing READ bearing WRITE set_bearing NOTIFY bearingChanged)
   Q_PROPERTY(double gps_horizontal_precision READ gps_horizontal_precision WRITE set_gps_horizontal_precision NOTIFY gps_horizontal_precisionChanged)
   Q_PROPERTY(QVariantList plugins READ plugins CONSTANT)
+  Q_PROPERTY(QcMapEventRouter * map_event_router READ map_event_router CONSTANT)
 
 public:
   QcMapItem(QQuickItem *parent = 0);
@@ -98,6 +100,8 @@ public:
 
   QVariantList plugins() const;
   Q_INVOKABLE QVariantList plugin_layers(const QString & plugin_name);
+
+  QcMapEventRouter * map_event_router() { return &m_map_event_router; }
 
   bool childMouseEventFilter(QQuickItem * item, QEvent * event) Q_DECL_OVERRIDE ;
 
@@ -138,6 +142,7 @@ private:
   QColor m_color;
   QcMapGestureArea * m_gesture_area;
   QcWmtsPluginManager & m_plugin_manager;
+  QcMapEventRouter m_map_event_router;
   QcMapView * m_map_view;
   QcViewport * m_viewport; // ???
   QHash<QString, QVariantList> m_plugin_layers;
