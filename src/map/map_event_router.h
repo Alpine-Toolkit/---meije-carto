@@ -56,10 +56,11 @@ class QDebug;
 
 /**************************************************************************************************/
 
-class QcMapEvent // : public QObject
+// Fixme: QML here ???
+
+class QcMapEvent
 {
   Q_GADGET
-  // Q_OBJECT
   Q_PROPERTY(int buttons READ buttons CONSTANT)
   Q_PROPERTY(int button READ button CONSTANT)
   Q_PROPERTY(int modifiers READ modifiers CONSTANT)
@@ -97,7 +98,6 @@ private:
 QC_EXPORT QDebug operator<<(QDebug, const QcMapEvent &);
 #endif
 
-// QML_DECLARE_TYPE(QcMapEvent)
 Q_DECLARE_METATYPE(QcMapEvent)
 
 /**************************************************************************************************/
@@ -127,8 +127,6 @@ private:
 };
 
 /**************************************************************************************************/
-
-// Fixme: QML here ???
 
 class QcMapEventRouter : public QObject
 {
@@ -173,8 +171,6 @@ private:
   QList<ClientWeakPointer> m_client_stack;
   ClientSharedPointer m_current_client;
 };
-
-QML_DECLARE_TYPE(QcMapEventRouter)
 
 /**************************************************************************************************/
 

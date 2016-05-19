@@ -37,8 +37,7 @@
 /**************************************************************************************************/
 
 QcMapEvent::QcMapEvent()
-  : // QObject(),
-    m_button(),
+  : m_button(),
     m_buttons(),
     m_modifiers(),
     m_was_held(),
@@ -59,8 +58,7 @@ QcMapEvent::QcMapEvent(int button, int buttons, int modifiers, int was_held,
 
 QcMapEvent::QcMapEvent(int button, int buttons, int modifiers, int was_held,
                        const QGeoCoordinate & coordinate)
-  : // QObject(),
-    m_button(button),
+  : m_button(button),
     m_buttons(buttons),
     m_modifiers(modifiers),
     m_was_held(was_held),
@@ -68,8 +66,7 @@ QcMapEvent::QcMapEvent(int button, int buttons, int modifiers, int was_held,
 {}
 
 QcMapEvent::QcMapEvent(const QcMapEvent & other)
-  : // QObject(),
-    m_button(other.m_button),
+  : m_button(other.m_button),
     m_buttons(other.m_buttons),
     m_modifiers(other.m_modifiers),
     m_was_held(other.m_was_held),
