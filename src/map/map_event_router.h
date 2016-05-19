@@ -37,7 +37,6 @@
 
 #include "coordinate/geo_coordinate.h"
 
-#include <QGeoCoordinate>
 #include <QMap>
 #include <QMetaType>
 #include <QMouseEvent>
@@ -65,15 +64,12 @@ class QcMapEvent
   Q_PROPERTY(int button READ button CONSTANT)
   Q_PROPERTY(int modifiers READ modifiers CONSTANT)
   Q_PROPERTY(bool was_held READ was_held CONSTANT)
-  // Q_PROPERTY(QcGeoCoordinateWGS84 coordinate READ coordinate CONSTANT)
-  Q_PROPERTY(QGeoCoordinate coordinate READ qt_coordinate CONSTANT)
+  Q_PROPERTY(QcGeoCoordinateWGS84 coordinate READ coordinate CONSTANT)
 
 public:
   QcMapEvent();
-  // QcMapEvent(int button, int buttons, int modifiers, int was_held,
-  //            const QcGeoCoordinateWGS84 & coordinate);
   QcMapEvent(int button, int buttons, int modifiers, int was_held,
-             const QGeoCoordinate & coordinate);
+             const QcGeoCoordinateWGS84 & coordinate);
   QcMapEvent(const QcMapEvent & other);
   ~QcMapEvent();
 
@@ -84,7 +80,6 @@ public:
   int modifiers() const { return m_modifiers; }
   bool was_held() const { return m_was_held; }
   const QcGeoCoordinateWGS84 & coordinate() const { return m_coordinate; }
-  QGeoCoordinate qt_coordinate() const { return m_coordinate.to_qt(); }
 
 private:
   int m_button;
@@ -142,7 +137,7 @@ public:
   ~QcMapEventRouter();
 
   Q_INVOKABLE QcMapEvent create_map_event(int button, int buttons, int modifiers, int was_held,
-                                          const QGeoCoordinate & coordinate);
+                                          const QcGeoCoordinateWGS84 & coordinate);
 
   Q_INVOKABLE void handle_mouse_press_event(const QcMapEvent & event);
   Q_INVOKABLE void handle_mouse_move_event(const QcMapEvent & event);

@@ -65,13 +65,16 @@ QcMapItem {
         active: position_locked
 
         onPositionChanged: {
-            center = position_source.position.coordinate
+            var coordinate = position_source.position.coordinate
+            if (coordinate.isValid()) {
+                center = map.cast_QGeoCoordinate()
+            }
         }
     }
 
     onCenterChanged: {
         if (position_locked) {
-            if (center != position_source.position.coordinate) {
+            if (center != map.cast_QGeoCoordinate(position_source.position.coordinate)) {
                 position_locked = false
             }
         }
@@ -97,7 +100,7 @@ QcMapItem {
 
     onZoom_levelChanged: {
         // if (position_locked) {
-        //     center = position_source.position.coordinate
+        //     center = map.cast_QGeoCoordinate(position_source.position.coordinate)
         // }
         set_scale()
     }

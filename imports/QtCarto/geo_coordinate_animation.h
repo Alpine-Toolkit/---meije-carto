@@ -48,7 +48,8 @@
 
 /**************************************************************************************************/
 
-#include <QGeoCoordinate>
+// #include <QGeoCoordinate>
+#include "coordinate/geo_coordinate.h"
 
 // Fixme: Use QtQuick Private API !!!
 #include <private/qquickanimation_p.h>
@@ -64,8 +65,8 @@ class QcGeoCoordinateAnimation : public QQuickPropertyAnimation
 {
   Q_OBJECT
   Q_DECLARE_PRIVATE(QcGeoCoordinateAnimation)
-  Q_PROPERTY(QGeoCoordinate from READ from WRITE setFrom)
-  Q_PROPERTY(QGeoCoordinate to READ to WRITE setTo)
+  Q_PROPERTY(QcGeoCoordinateWGS84 from READ from WRITE setFrom)
+  Q_PROPERTY(QcGeoCoordinateWGS84 to READ to WRITE setTo)
   Q_PROPERTY(Direction direction READ direction WRITE setDirection NOTIFY directionChanged)
 
 public:
@@ -79,11 +80,11 @@ public:
   QcGeoCoordinateAnimation(QObject * parent = 0);
   ~QcGeoCoordinateAnimation();
 
-  QGeoCoordinate from() const;
-  void setFrom(const QGeoCoordinate &);
+  QcGeoCoordinateWGS84 from() const;
+  void setFrom(const QcGeoCoordinateWGS84 &);
 
-  QGeoCoordinate to() const;
-  void setTo(const QGeoCoordinate &);
+  QcGeoCoordinateWGS84 to() const;
+  void setTo(const QcGeoCoordinateWGS84 &);
 
   Direction direction() const;
   void setDirection(Direction direction);
@@ -101,7 +102,7 @@ public:
   QcGeoCoordinateAnimation::Direction m_direction;
 };
 
-// QVariant coordinate_interpolator(const QGeoCoordinate & from, const QGeoCoordinate & to, qreal progress);
+// QVariant coordinate_interpolator(const QcGeoCoordinateWGS84 & from, const QcGeoCoordinateWGS84 & to, qreal progress);
 
 // QC_END_NAMESPACE
 

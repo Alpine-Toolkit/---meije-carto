@@ -38,6 +38,8 @@
 // #include <QtCore/QMetaType>
 #include <QtMath>
 #include <QDebug>
+#include <QPointF>
+#include <QVector2D>
 
 #include "qtcarto_global.h"
 #include "math/qc_math.h"
@@ -63,6 +65,8 @@ class QC_EXPORT QcVector
   QcVector();
   QcVector(T x, T y);
   QcVector(const QcVector<T> & other);
+  QcVector(const QPointF & other);
+  QcVector(const QVector2D & other);
   ~QcVector();
 
   QcVector<T> & operator=(const QcVector<T> & other);

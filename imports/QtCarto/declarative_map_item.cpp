@@ -383,29 +383,8 @@ QcMapItem::set_zoom_level(unsigned int new_zoom_level)
 }
 
 void
-QcMapItem::set_center_qt(const QGeoCoordinate & center)
-{
-  // qInfo() << "WGS84 " << center;
-
-  QcGeoCoordinateWGS84 coordinate(center);
-  if (coordinate == m_viewport->wgs84())
-    return;
-
-  // Fixme: check latitude
-  if (!center.isValid())
-    return;
-  // coordinate.setLatitude(qBound(-m_maximumViewportLatitude, center.latitude(), m_maximumViewportLatitude));
-
-  m_viewport->set_coordinate(coordinate);
-  // update(); // Fixme: signal
-  emit centerChanged(center);
-}
-
-/*
-void
 QcMapItem::set_center_qt(const QGeoCoordinate & coordinate)
 {
-  // qInfo() << "WGS84 " << coordinate;
   set_center(QcGeoCoordinateWGS84(coordinate));
 }
 
@@ -425,14 +404,7 @@ QcMapItem::set_center(const QcGeoCoordinateWGS84 & coordinate)
   m_viewport->set_coordinate(coordinate);
   // update(); // Fixme: signal
 
-  emit centerChanged(coordinate.to_qt()); // Fixme
-}
-*/
-
-void
-QcMapItem::set_center(const QcGeoCoordinateWGS84 & coordinate)
-{
-  set_center_qt(coordinate.to_qt());
+  emit centerChanged(coordinate);
 }
 
 QcGeoCoordinateWGS84

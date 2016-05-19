@@ -59,8 +59,7 @@ class QcMapItem : public QQuickItem
   Q_PROPERTY(QColor color READ color WRITE set_color NOTIFY colorChanged)
   Q_PROPERTY(QcMapGestureArea * gesture READ gesture CONSTANT)
   Q_PROPERTY(unsigned int zoom_level READ zoom_level WRITE set_zoom_level NOTIFY zoom_levelChanged)
-  Q_PROPERTY(QGeoCoordinate center READ center_qt WRITE set_center_qt NOTIFY centerChanged)
-  // Q_PROPERTY(QcGeoCoordinateWGS84 center READ center WRITE set_center NOTIFY centerChanged)
+  Q_PROPERTY(QcGeoCoordinateWGS84 center READ center WRITE set_center NOTIFY centerChanged)
   Q_PROPERTY(double bearing READ bearing WRITE set_bearing NOTIFY bearingChanged)
   Q_PROPERTY(double gps_horizontal_precision READ gps_horizontal_precision WRITE set_gps_horizontal_precision NOTIFY gps_horizontal_precisionChanged)
   Q_PROPERTY(QVariantList plugins READ plugins CONSTANT)
@@ -71,7 +70,11 @@ public:
     return QcGeoCoordinateWGS84(coordinate);
   }
 
-  Q_INVOKABLE static QcVectorDouble cast_QGeoCoordinate(const QVector2D & vector) {
+  Q_INVOKABLE static QcVectorDouble cast_QVector2D(const QVector2D & vector) {
+    return QcVectorDouble(vector.x(), vector.y());
+  }
+
+  Q_INVOKABLE static QcVectorDouble cast_QPointF(const QPointF & vector) {
     return QcVectorDouble(vector.x(), vector.y());
   }
 
@@ -103,6 +106,9 @@ public:
 
   // Fixme: QVector2D use float ...
   Q_INVOKABLE QcGeoCoordinateWGS84 to_coordinate(const QcVectorDouble & position, bool clip_to_viewport = true) const;
+  Q_INVOKABLE QcGeoCoordinateWGS84 to_coordinate(const QPointF & position, bool clip_to_viewport = true) const {
+    return to_coordinate(QcVectorDouble(position), clip_to_viewport);
+  }
   Q_INVOKABLE QcVectorDouble from_coordinate(const QcGeoCoordinateWGS84 & coordinate, bool clip_to_viewport = true) const;
   Q_INVOKABLE QGeoCoordinate to_coordinate_qt(const QVector2D & position, bool clip_to_viewport = true) const;
   Q_INVOKABLE QVector2D from_coordinate_qt(const QGeoCoordinate & coordinate, bool clip_to_viewport = true) const;
@@ -123,8 +129,7 @@ public:
 signals:
   void colorChanged(const QColor & color);
   void zoom_levelChanged(int zoom_level);
-  void centerChanged(const QGeoCoordinate & coordinate);
-  // void centerChanged(const QcGeoCoordinateWGS84 & coordinate);
+  void centerChanged(const QcGeoCoordinateWGS84 & coordinate);
   void bearingChanged(double bearing);
   void gps_horizontal_precisionChanged(double horizontal_precision);
 

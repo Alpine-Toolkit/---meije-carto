@@ -100,7 +100,7 @@ QcGeoSexagesimalAngle::operator==(const QcGeoSexagesimalAngle & other) const
   bool minutes_equal = m_minutes == other.m_minutes;
   bool seconds_equal = qFuzzyCompare(m_seconds, other.m_seconds);
 
-  return (degrees_equal && minutes_equal && seconds_equal);
+  return (degrees_equal and minutes_equal and seconds_equal);
 }
 
 void
@@ -177,11 +177,10 @@ QcGeoCoordinate::transform(QcGeoCoordinate & other)
 QcGeoCoordinateWGS84::QcGeoCoordinateWGS84(double longitude, double latitude)
   : m_longitude(qQNaN()), m_latitude(qQNaN())
 {
-  if (is_valid_longitude(longitude) && is_valid_latitude(latitude)) {
+  if (is_valid_longitude(longitude) and is_valid_latitude(latitude)) {
     m_longitude = longitude;
     m_latitude = latitude;
-  }
-  else
+  } else
     throw std::invalid_argument("Invalid coordinate");
 }
 
@@ -215,16 +214,16 @@ QcGeoCoordinateWGS84::operator=(const QcGeoCoordinateWGS84 & other)
 bool
 QcGeoCoordinateWGS84::operator==(const QcGeoCoordinateWGS84 & other) const
 {
-  bool longitude_equal = ((qIsNaN(m_longitude) && qIsNaN(other.m_longitude))
+  bool longitude_equal = ((qIsNaN(m_longitude) and qIsNaN(other.m_longitude))
 			  || qFuzzyCompare(m_longitude, other.m_longitude));
-  bool latitude_equal = ((qIsNaN(m_latitude) && qIsNaN(other.m_latitude))
+  bool latitude_equal = ((qIsNaN(m_latitude) and qIsNaN(other.m_latitude))
 			 || qFuzzyCompare(m_latitude, other.m_latitude));
 
   // Fixme: compact
-  if (!qIsNaN(m_longitude) && ((m_latitude == 90.0) || (m_latitude == -90.0)))
+  if (!qIsNaN(m_longitude) and ((m_latitude == 90.0) || (m_latitude == -90.0)))
     longitude_equal = true;
 
-  return (longitude_equal && latitude_equal);
+  return (longitude_equal and latitude_equal);
 }
 
 QcGeoCoordinateWebMercator
@@ -435,7 +434,7 @@ QDataStream &operator>>(QDataStream & stream, QcGeoCoordinateWGS84 & coordinate)
 QcGeoCoordinateWebMercator::QcGeoCoordinateWebMercator(double x, double y)
   : m_x(qQNaN()), m_y(qQNaN())
 {
-  if (is_valid_x(x) && is_valid_x(y)) {
+  if (is_valid_x(x) and is_valid_x(y)) {
     m_x = x;
     m_y = y;
   }
@@ -469,7 +468,7 @@ QcGeoCoordinateWebMercator::operator==(const QcGeoCoordinateWebMercator & other)
   bool x_equal = qFuzzyCompare(m_x, other.m_x);
   bool y_equal = qFuzzyCompare(m_y, other.m_y);
 
-  return (x_equal && y_equal);
+  return (x_equal and y_equal);
 }
 
 QcGeoCoordinateWGS84
@@ -552,7 +551,7 @@ QcGeoCoordinatePseudoWebMercator::QcGeoCoordinatePseudoWebMercator(double x, dou
 {
   // Fixme: right or in viewport ???
   /*
-  if (is_valid_x(x) && is_valid_x(y)) {
+  if (is_valid_x(x) and is_valid_x(y)) {
     m_x = x;
     m_y = y;
   }
@@ -592,7 +591,7 @@ QcGeoCoordinatePseudoWebMercator::operator==(const QcGeoCoordinatePseudoWebMerca
   bool x_equal = qFuzzyCompare(m_x, other.m_x);
   bool y_equal = qFuzzyCompare(m_y, other.m_y);
 
-  return (x_equal && y_equal);
+  return (x_equal and y_equal);
 }
 
 QcGeoCoordinateWGS84
@@ -668,7 +667,7 @@ QDataStream &operator>>(QDataStream & stream, QcGeoCoordinatePseudoWebMercator &
 QcGeoCoordinateNormalisedWebMercator::QcGeoCoordinateNormalisedWebMercator(double x, double y)
   : m_x(qQNaN()), m_y(qQNaN())
 {
-  if (is_valid_x(x) && is_valid_x(y)) {
+  if (is_valid_x(x) and is_valid_x(y)) {
     m_x = x;
     m_y = y;
   }
@@ -702,7 +701,7 @@ QcGeoCoordinateNormalisedWebMercator::operator==(const QcGeoCoordinateNormalised
   bool x_equal = qFuzzyCompare(m_x, other.m_x);
   bool y_equal = qFuzzyCompare(m_y, other.m_y);
 
-  return (x_equal && y_equal);
+  return (x_equal and y_equal);
 }
 
 QcGeoCoordinateWebMercator

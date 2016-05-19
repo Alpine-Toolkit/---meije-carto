@@ -69,13 +69,14 @@
 
 /**************************************************************************************************/
 
-#include <QDebug> // QtDebug ???
+#include "geo_coordinate_animation.h"
+#include "coordinate/geo_coordinate.h"
+#include "geometry/vector.h"
+
+#include <QDebug> // Fixme: QtDebug ???
 #include <QElapsedTimer>
-#include <QGeoCoordinate>
 #include <QTouchEvent>
 #include <QtQuick/QQuickItem>
-
-#include "geo_coordinate_animation.h"
 
 /**************************************************************************************************/
 
@@ -332,8 +333,8 @@ private:
 
   // only set when two points in contact
   QPointF m_scene_start_point2;
-  QGeoCoordinate m_start_coord;
-  QGeoCoordinate m_touch_center_coord;
+  QcGeoCoordinateWGS84 m_start_coord;
+  QcGeoCoordinateWGS84 m_touch_center_coord;
   qreal m_two_touch_angle;
   qreal m_distance_between_touch_points;
   QPointF m_scene_center;

@@ -44,20 +44,8 @@ QcMapEvent::QcMapEvent()
     m_coordinate()
 {}
 
-/*
 QcMapEvent::QcMapEvent(int button, int buttons, int modifiers, int was_held,
                        const QcGeoCoordinateWGS84 & coordinate)
-  : QObject(),
-    m_button(button),
-    m_buttons(buttons),
-    m_modifiers(modifiers),
-    m_was_held(was_held),
-    m_coordinate(coordinate)
-{}
-*/
-
-QcMapEvent::QcMapEvent(int button, int buttons, int modifiers, int was_held,
-                       const QGeoCoordinate & coordinate)
   : m_button(button),
     m_buttons(buttons),
     m_modifiers(modifiers),
@@ -135,7 +123,7 @@ QcMapEventRouter::~QcMapEventRouter()
 
 QcMapEvent
 QcMapEventRouter::create_map_event(int button, int buttons, int modifiers, int was_held,
-                                   const QGeoCoordinate & coordinate)
+                                   const QcGeoCoordinateWGS84 & coordinate)
 {
   return QcMapEvent(button, buttons, modifiers, was_held, coordinate);
 }
