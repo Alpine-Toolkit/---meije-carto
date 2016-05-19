@@ -260,10 +260,10 @@ QcMapItem::send_mouse_event(QMouseEvent * event)
   QPointF local_position = mapFromScene(event->windowPos());
   QQuickWindow * _window = window();
   QQuickItem * grabber = _window ? _window->mouseGrabberItem() : nullptr;
-  bool steal_event = m_gesture_area->is_active();
+  bool steal_event = m_gesture_area->is_active(); // means pan or pinch is active
 
-  // grabber is QQuickMouseArea
-  // qInfo() << event << "\ngrabber" << grabber << "\nsteal_event" << steal_event;
+  // grabber is QQuickMouseArea, steal_event is false first then true
+  qInfo() << event << "\ngrabber" << grabber << "\nsteal_event" << steal_event;
 
   if ((steal_event or contains(local_position)) and (!grabber or !grabber->keepMouseGrab())) {
     QScopedPointer<QMouseEvent> mouseEvent(QQuickWindowPrivate::cloneMouseEvent(event, &local_position));
@@ -283,25 +283,30 @@ QcMapItem::send_mouse_event(QMouseEvent * event)
       break;
     }
 
+    steal_event = m_gesture_area->is_active(); // recheck value
+    // Fixme: duplicated code ???
+    grabber = _window ? _window->mouseGrabberItem() : nullptr;
+    qInfo() << "grabber" << grabber << "\nsteal_event" << steal_event;
+
     if (grabber and steal_event and !grabber->keepMouseGrab() and grabber != this) {
       // qInfo() << "grab mouse";
       grabMouse();
     }
 
     if (steal_event) {
-      // do not deliver
       event->setAccepted(true);
-      return true;
+      return true; // do not deliver event
     } else
-      return false;
-  }
+      return false; // deliver event
 
-  if (event->type() == QEvent::MouseButtonRelease)
-    if (_window and _window->mouseGrabberItem() == this)
+  } else {
+    // ungrab if necessary and deliver event
+    if (event->type() == QEvent::MouseButtonRelease
+        and (_window and _window->mouseGrabberItem() == this))
       // qInfo() << "ungrab mouse";
       ungrabMouse();
-
-  return false;
+    return false; // deliver event
+  }
 }
 
 bool
@@ -321,8 +326,9 @@ QcMapItem::send_touch_event(QTouchEvent * event)
     touch_event->setAccepted(false);
 
     m_gesture_area->handle_touch_event(touch_event.data());
-    // Fixme: duplicated code ?
-    steal_event = m_gesture_area->is_active();
+
+    steal_event = m_gesture_area->is_active(); // recheck value
+    // Fixme: duplicated code ???
     grabber = _window ? _window->itemForTouchPointId.value(point.id()) : nullptr;
 
     if (grabber and steal_event and !grabber->keepTouchGrab() and grabber != this) {
@@ -339,13 +345,14 @@ QcMapItem::send_touch_event(QTouchEvent * event)
       return true;
     } else
       return false;
-  }
 
-  if (event->type() == QEvent::TouchEnd)
-    if (_window and _window->itemForTouchPointId.value(point.id()) == this)
+  } else {
+    // ungrab if necessary and deliver event
+    if (event->type() == QEvent::TouchEnd
+        and (_window and _window->itemForTouchPointId.value(point.id()) == this))
       ungrabTouchPoints();
-
-  return false;
+    return false;
+  }
 }
 
 /**************************************************************************************************/
