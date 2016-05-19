@@ -767,7 +767,7 @@ QcMapGestureArea::touch_point_state_machine()
     if (m_all_points.count() == 0) {
       m_touch_point_state = TouchPoints0;
     } else if (m_all_points.count() == 2) {
-      m_touch_center_coord = m_map->to_coordinate(QVector2D(m_scene_center), false);
+      m_touch_center_coord = m_map->to_coordinate_qt(QVector2D(m_scene_center), false);
       start_two_touch_points();
       m_touch_point_state = TouchPoints2;
     }
@@ -777,7 +777,7 @@ QcMapGestureArea::touch_point_state_machine()
     if (m_all_points.count() == 0) {
       m_touch_point_state = TouchPoints0;
     } else if (m_all_points.count() == 1) {
-      m_touch_center_coord = m_map->to_coordinate(QVector2D(m_scene_center), false);
+      m_touch_center_coord = m_map->to_coordinate_qt(QVector2D(m_scene_center), false);
       start_one_touch_point();
       m_touch_point_state = TouchPoints1;
     }
@@ -804,7 +804,7 @@ QcMapGestureArea::start_one_touch_point()
   m_scene_start_point1 = mapFromScene(m_all_points.at(0).scenePos());
   m_last_pos = m_scene_start_point1;
   m_last_pos_time.start();
-  QGeoCoordinate start_coord = m_map->to_coordinate(QVector2D(m_scene_start_point1), false);
+  QGeoCoordinate start_coord = m_map->to_coordinate_qt(QVector2D(m_scene_start_point1), false);
   // ensures a smooth transition for panning
   m_start_coord.setLongitude(m_start_coord.longitude() + start_coord.longitude() - m_touch_center_coord.longitude());
   m_start_coord.setLatitude(m_start_coord.latitude() + start_coord.latitude() - m_touch_center_coord.latitude());
@@ -827,7 +827,7 @@ QcMapGestureArea::start_two_touch_points()
   QPointF start_pos = (m_scene_start_point1 + m_scene_start_point2) * .5; // Fixme: middle
   m_last_pos = start_pos;
   m_last_pos_time.start();
-  QGeoCoordinate start_coord = m_map->to_coordinate(QVector2D(start_pos), false);
+  QGeoCoordinate start_coord = m_map->to_coordinate_qt(QVector2D(start_pos), false);
   m_start_coord.setLongitude(m_start_coord.longitude() + start_coord.longitude() - m_touch_center_coord.longitude());
   m_start_coord.setLatitude(m_start_coord.latitude() + start_coord.latitude() - m_touch_center_coord.latitude());
 }
@@ -1018,7 +1018,7 @@ QcMapGestureArea::pan_state_machine()
   case FlickInactive:
     if (can_start_pan()) {
       // Update startCoord_ to ensure smooth start for panning when going over startDragDistance
-      QGeoCoordinate new_start_coord = m_map->to_coordinate(QVector2D(m_scene_center), false);
+      QGeoCoordinate new_start_coord = m_map->to_coordinate_qt(QVector2D(m_scene_center), false);
       m_start_coord.setLongitude(new_start_coord.longitude());
       m_start_coord.setLatitude(new_start_coord.latitude());
       m_map->setKeepMouseGrab(true);
@@ -1094,13 +1094,13 @@ void
 QcMapGestureArea::update_pan()
 {
   // qInfo();
-  QPointF start_point = m_map->from_coordinate(m_start_coord, false).toPointF();
+  QPointF start_point = m_map->from_coordinate_qt(m_start_coord, false).toPointF();
   int dx = static_cast<int>(m_scene_center.x() - start_point.x());
   int dy = static_cast<int>(m_scene_center.y() - start_point.y());
   QPointF map_center_point;
   map_center_point.setX(m_map->width() / 2.0 - dx);
   map_center_point.setY(m_map->height() / 2.0  - dy);
-  QGeoCoordinate animation_start_coordinate = m_map->to_coordinate(QVector2D(map_center_point), false);
+  QGeoCoordinate animation_start_coordinate = m_map->to_coordinate_qt(QVector2D(map_center_point), false);
   m_map->set_center(animation_start_coordinate);
 }
 
@@ -1154,11 +1154,11 @@ QcMapGestureArea::start_flick(int dx, int dy, int time_ms)
   if (time_ms < 0)
     return;
 
-  QGeoCoordinate animation_start_coordinate = m_map->center();
+  QGeoCoordinate animation_start_coordinate = m_map->center_qt();
 
   if (m_flick.m_animation->isRunning())
     m_flick.m_animation->stop();
-  QGeoCoordinate animation_end_coordinate = m_map->center();
+  QGeoCoordinate animation_end_coordinate = m_map->center_qt();
   m_flick.m_animation->setDuration(time_ms);
 
   double zoom = pow(2.0, m_map->zoom_level());

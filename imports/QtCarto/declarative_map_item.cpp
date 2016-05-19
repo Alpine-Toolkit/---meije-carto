@@ -383,16 +383,15 @@ QcMapItem::set_zoom_level(unsigned int new_zoom_level)
 }
 
 void
-QcMapItem::set_center(const QGeoCoordinate & center)
+QcMapItem::set_center_qt(const QGeoCoordinate & center)
 {
-  // Fixme: check latitude
-
   // qInfo() << "WGS84 " << center;
 
   QcGeoCoordinateWGS84 coordinate(center);
   if (coordinate == m_viewport->wgs84())
     return;
 
+  // Fixme: check latitude
   if (!center.isValid())
     return;
   // coordinate.setLatitude(qBound(-m_maximumViewportLatitude, center.latitude(), m_maximumViewportLatitude));
@@ -400,17 +399,52 @@ QcMapItem::set_center(const QGeoCoordinate & center)
   m_viewport->set_coordinate(coordinate);
   // update(); // Fixme: signal
   emit centerChanged(center);
+}
 
-  // QcGeoCoordinateMercator mercator_coordinate = m_viewport->mercator();
-  // qInfo() << "mercator " << mercator_coordinate.x() << mercator_coordinate.y();
-  // QcGeoCoordinateNormalisedMercator normalised_mercator_coordinate = m_viewport->normalised_mercator();
-  // qInfo() << "normalised mercator " << normalised_mercator_coordinate.x() << normalised_mercator_coordinate.y();
+/*
+void
+QcMapItem::set_center_qt(const QGeoCoordinate & coordinate)
+{
+  // qInfo() << "WGS84 " << coordinate;
+  set_center(QcGeoCoordinateWGS84(coordinate));
+}
+
+void
+QcMapItem::set_center(const QcGeoCoordinateWGS84 & coordinate)
+{
+  // qInfo() << "WGS84 " << coordinate;
+
+  if (coordinate == m_viewport->wgs84())
+    return;
+
+  // Fixme: check latitude
+  // if (!center.isValid())
+  //   return;
+  // coordinate.setLatitude(qBound(-m_maximumViewportLatitude, center.latitude(), m_maximumViewportLatitude));
+
+  m_viewport->set_coordinate(coordinate);
+  // update(); // Fixme: signal
+
+  emit centerChanged(coordinate.to_qt()); // Fixme
+}
+*/
+
+void
+QcMapItem::set_center(const QcGeoCoordinateWGS84 & coordinate)
+{
+  set_center_qt(coordinate.to_qt());
+}
+
+QcGeoCoordinateWGS84
+QcMapItem::center() const
+{
+  return m_viewport->wgs84();
 }
 
 QGeoCoordinate
-QcMapItem::center() const
+QcMapItem::center_qt() const
 {
-  return m_viewport->wgs84().to_qt();
+  return center().to_qt();
 }
 
 void
@@ -491,12 +525,17 @@ QcMapItem::updatePaintNode(QSGNode * old_node, UpdatePaintNodeData *)
     If \a cliptoViewPort is \c true, or not supplied then returns an invalid coordinate if
     \a position is not within the current viewport.
 */
+QcGeoCoordinateWGS84
+QcMapItem::to_coordinate(const QcVectorDouble & position_px, bool clip_to_viewport) const
+{
+  return m_viewport->to_coordinate(position_px, clip_to_viewport).wgs84();
+}
+
 QGeoCoordinate
-QcMapItem::to_coordinate(const QVector2D & position_px, bool clip_to_viewport) const
+QcMapItem::to_coordinate_qt(const QVector2D & position_px, bool clip_to_viewport) const
 {
   QcVectorDouble _position_px(position_px.x(), position_px.y());
-  QcGeoCoordinateWGS84 coordinate = m_viewport->to_coordinate(_position_px, clip_to_viewport).wgs84();
-  return coordinate.to_qt();
+  return to_coordinate(_position_px, clip_to_viewport).to_qt();
 }
 
 /*!
@@ -507,11 +546,17 @@ QcMapItem::to_coordinate(const QVector2D & position_px, bool clip_to_viewport) c
     If \a cliptoViewPort is \c true, or not supplied then returns an invalid QPointF if
     \a coordinate is not within the current viewport.
 */
+QcVectorDouble
+QcMapItem::from_coordinate(const QcGeoCoordinateWGS84 & coordinate, bool clip_to_viewport) const
+{
+  return m_viewport->from_coordinate(coordinate, clip_to_viewport);
+}
+
 QVector2D
-QcMapItem::from_coordinate(const QGeoCoordinate & coordinate, bool clip_to_viewport) const
+QcMapItem::from_coordinate_qt(const QGeoCoordinate & coordinate, bool clip_to_viewport) const
 {
   QcGeoCoordinateWGS84 _coordinate(coordinate);
-  QcVectorDouble position_px = m_viewport->from_coordinate(_coordinate, clip_to_viewport);
+  QcVectorDouble position_px = from_coordinate(_coordinate, clip_to_viewport);
   return QVector2D(position_px.x(), position_px.y());
 }
 
@@ -598,10 +643,10 @@ QcMapItem::gps_horizontal_precision() const
   return 0.; // Fixme:
 }
 
-QVariant
+QcMapScale
 QcMapItem::make_scale(unsigned int max_length_px) const
 {
-  return QVariant::fromValue(m_viewport->make_scale(max_length_px));
+  return m_viewport->make_scale(max_length_px);
 }
 
 /**************************************************************************************************/

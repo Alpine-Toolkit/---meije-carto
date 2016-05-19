@@ -59,11 +59,21 @@ class QcMapItem : public QQuickItem
   Q_PROPERTY(QColor color READ color WRITE set_color NOTIFY colorChanged)
   Q_PROPERTY(QcMapGestureArea * gesture READ gesture CONSTANT)
   Q_PROPERTY(unsigned int zoom_level READ zoom_level WRITE set_zoom_level NOTIFY zoom_levelChanged)
-  Q_PROPERTY(QGeoCoordinate center READ center WRITE set_center NOTIFY centerChanged)
+  Q_PROPERTY(QGeoCoordinate center READ center_qt WRITE set_center_qt NOTIFY centerChanged)
+  // Q_PROPERTY(QcGeoCoordinateWGS84 center READ center WRITE set_center NOTIFY centerChanged)
   Q_PROPERTY(double bearing READ bearing WRITE set_bearing NOTIFY bearingChanged)
   Q_PROPERTY(double gps_horizontal_precision READ gps_horizontal_precision WRITE set_gps_horizontal_precision NOTIFY gps_horizontal_precisionChanged)
   Q_PROPERTY(QVariantList plugins READ plugins CONSTANT)
   Q_PROPERTY(QcMapEventRouter * map_event_router READ map_event_router CONSTANT)
+
+public:
+  Q_INVOKABLE static QcGeoCoordinateWGS84 cast_QGeoCoordinate(const QGeoCoordinate & coordinate) {
+    return QcGeoCoordinateWGS84(coordinate);
+  }
+
+  Q_INVOKABLE static QcVectorDouble cast_QGeoCoordinate(const QVector2D & vector) {
+    return QcVectorDouble(vector.x(), vector.y());
+  }
 
 public:
   QcMapItem(QQuickItem *parent = 0);
@@ -77,8 +87,11 @@ public:
   void set_zoom_level(unsigned int zoom_level);
   unsigned int zoom_level() const { return m_viewport->zoom_level(); }
 
-  void set_center(const QGeoCoordinate & center);
-  QGeoCoordinate center() const;
+  void set_center(const QcGeoCoordinateWGS84 & center);
+  QcGeoCoordinateWGS84 center() const;
+
+  Q_INVOKABLE QGeoCoordinate center_qt() const;
+  Q_INVOKABLE void set_center_qt(const QGeoCoordinate & center);
 
   void set_bearing(double bearing);
   double bearing() const;
@@ -86,11 +99,13 @@ public:
   void set_gps_horizontal_precision(double horizontal_precision);
   double gps_horizontal_precision() const;
 
-  Q_INVOKABLE QVariant make_scale(unsigned int max_length_px) const;
+  Q_INVOKABLE QcMapScale make_scale(unsigned int max_length_px) const;
 
-  // QDoubleVector2D / QVector2D use float ...
-  Q_INVOKABLE QGeoCoordinate to_coordinate(const QVector2D & position, bool clip_to_viewport = true) const;
-  Q_INVOKABLE QVector2D from_coordinate(const QGeoCoordinate & coordinate, bool clip_to_viewport = true) const;
+  // Fixme: QVector2D use float ...
+  Q_INVOKABLE QcGeoCoordinateWGS84 to_coordinate(const QcVectorDouble & position, bool clip_to_viewport = true) const;
+  Q_INVOKABLE QcVectorDouble from_coordinate(const QcGeoCoordinateWGS84 & coordinate, bool clip_to_viewport = true) const;
+  Q_INVOKABLE QGeoCoordinate to_coordinate_qt(const QVector2D & position, bool clip_to_viewport = true) const;
+  Q_INVOKABLE QVector2D from_coordinate_qt(const QGeoCoordinate & coordinate, bool clip_to_viewport = true) const;
 
   Q_INVOKABLE void pan(int dx, int dy);
   Q_INVOKABLE void stable_zoom(QPointF position_px, unsigned int zoom_level);
@@ -109,6 +124,7 @@ signals:
   void colorChanged(const QColor & color);
   void zoom_levelChanged(int zoom_level);
   void centerChanged(const QGeoCoordinate & coordinate);
+  // void centerChanged(const QcGeoCoordinateWGS84 & coordinate);
   void bearingChanged(double bearing);
   void gps_horizontal_precisionChanged(double horizontal_precision);
 
