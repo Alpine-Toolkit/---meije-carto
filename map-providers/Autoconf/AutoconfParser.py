@@ -73,7 +73,7 @@ class AutoconfParser(XmlParser):
         #         self._xml_parser.skipCurrentElement()
         #         self._raise()
         
-        while not self._read_match_end_element('Capabilities'):
+        while not self._read_match_end_element('ViewContext'):
             if self._xml_parser.isStartElement():
                 ename = self._xml_parser.name()
                 if ename == 'General':

@@ -33,6 +33,17 @@ class XmlParser(object):
     def __init__(self):
 
         self._xml_parser = None
+        self._element_stack = []
+
+    ##############################################
+
+    def push(self, name):
+        self._element_stack.append(name)
+
+    ##############################################
+
+    def pop(self):
+        self._element_stack.pop()
 
     ##############################################
 
@@ -46,11 +57,24 @@ class XmlParser(object):
 
     ##############################################
 
+    def _handle_unknown_element(self, name):
+
+        print("Warning: unknown element", name, self._element_stack)
+        self._read_until_end_of(name)
+
+    ##############################################
+
     def _read_match_start_element(self, name):
 
         xml_parser = self._xml_parser
         return (xml_parser.readNext() == QXmlStreamReader.StartElement
                 and xml_parser.name() == name)
+        # if xml_parser.readNext() == QXmlStreamReader.StartElement:
+        #     ename = xml_parser.name()
+        #     self._element_stack.append(ename)
+        #     return ename == name
+        # else:
+        #     return False
 
     ##############################################
 
@@ -59,12 +83,20 @@ class XmlParser(object):
         xml_parser = self._xml_parser
         return (xml_parser.readNext() == QXmlStreamReader.EndElement
                 and xml_parser.name() == name)
+        # if xml_parser.readNext() == QXmlStreamReader.EndElement:
+        #     ename = xml_parser.name()
+        #     self._element_stack.pop()
+        #     return ename == name
+        # else:
+        #     return False
 
     ##############################################
 
     def _match_start_element(self, name):
 
         xml_parser = self._xml_parser
+        # if xml_parser.tokenType() == QXmlStreamReader.StartElement:
+        #     self._element_stack.append(xml_parser.name())
         return (xml_parser.tokenType() == QXmlStreamReader.StartElement
                 and xml_parser.name() == name)
 
