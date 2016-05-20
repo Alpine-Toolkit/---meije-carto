@@ -155,7 +155,8 @@ QcWmtsReply::~QcWmtsReply()
   function. If an error occurred, QcWmtsReply::setError() should be used
   instead.
 */
-void QcWmtsReply::set_finished(bool finished)
+void
+QcWmtsReply::set_finished(bool finished)
 {
   m_is_finished = finished;
   if (m_is_finished)

@@ -37,6 +37,7 @@
 #include <QString>
 #include <QUrl>
 
+#include "coordinate/geo_coordinate.h"
 #include "wmts/tile_matrix_set.h"
 #include "wmts/wmts_manager.h"
 
@@ -86,8 +87,10 @@ private:
 
 /**************************************************************************************************/
 
-class QcWmtsPlugin
+class QcWmtsPlugin : public QObject
 {
+  Q_OBJECT
+
 public:
   QcWmtsPlugin(const QString & name, const QString & title, int number_of_levels, int tile_size);
   ~QcWmtsPlugin();
@@ -110,6 +113,13 @@ public:
   }
   // Fixme: usefull ?
   QUrl make_layer_url(const QcTileSpec & tile_spec) const;
+
+  virtual bool has_coordinate_elevation_service() { return false; }
+  virtual bool has_sampling_elevation_service() { return false; }
+  // virtual QVector<QcGeoElevationCoordinateWGS84> coordinate_elevations(QVector<QcGeoCoordinateWGS84> coordinates) const {
+  //   Q_UNUSED(coordinates);
+  //   return QVector<QcGeoElevationCoordinateWGS84>();
+  // };
 
 private:
   QString m_name;

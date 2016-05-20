@@ -92,7 +92,8 @@ QcWmtsPluginLayer::create_tile_spec(int level, int x, int y) const
 /**************************************************************************************************/
 
 QcWmtsPlugin::QcWmtsPlugin(const QString & name, const QString & title, int number_of_levels, int tile_size)
-  : m_name(name),
+  : QObject(),
+    m_name(name),
     m_title(title),
     m_tile_matrix_set(name, number_of_levels, tile_size),
     m_wmts_manager(name)

@@ -67,6 +67,7 @@ set(qtcarto_files
   tools/logger.cpp
   tools/platform.cpp
 
+  wmts/geoportail/geoportail_elevation_reply.cpp
   wmts/geoportail/geoportail_license.cpp
   wmts/geoportail/geoportail_plugin.cpp
   wmts/geoportail/geoportail_wmts_reply.cpp

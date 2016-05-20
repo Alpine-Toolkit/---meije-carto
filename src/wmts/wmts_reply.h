@@ -94,6 +94,7 @@ class QC_EXPORT QcWmtsReply : public QObject
     UnknownError
   };
 
+ public:
   QcWmtsReply(const QcTileSpec & tile_spec);
   QcWmtsReply(Error error, const QString & error_string);
   virtual ~QcWmtsReply();

@@ -32,7 +32,6 @@
 #include "geoportail_wmts_reply.h"
 #include "wmts/wmts_plugin.h"
 
-#include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QDebug>
 
@@ -42,20 +41,11 @@
 
 QcGeoportailWmtsTileFetcher::QcGeoportailWmtsTileFetcher(const QcGeoportailPlugin * plugin)
   : QcWmtsTileFetcher(),
-    m_plugin(plugin),
-    m_network_manager(new QNetworkAccessManager(this)),
-    m_user_agent("QtCarto based application")
-{
-  connect(m_network_manager,
-	  SIGNAL(authenticationRequired(QNetworkReply*, QAuthenticator*)),
-	  this,
-	  SLOT(on_authentication_request_slot(QNetworkReply*, QAuthenticator*)));
-}
+    m_plugin(plugin)
+{}
 
 QcGeoportailWmtsTileFetcher::~QcGeoportailWmtsTileFetcher()
-{
-  delete m_network_manager;
-}
+{}
 
 QcWmtsReply *
 QcGeoportailWmtsTileFetcher::get_tile_image(const QcTileSpec & tile_spec)
@@ -64,26 +54,9 @@ QcGeoportailWmtsTileFetcher::get_tile_image(const QcTileSpec & tile_spec)
   QUrl url = layer->url(tile_spec);
   // qInfo() << url;
 
-  QNetworkRequest request;
-  request.setRawHeader("User-Agent", m_user_agent);
-  request.setUrl(url);
-
-  QNetworkReply *reply = m_network_manager->get(request);
-  if (reply->error() != QNetworkReply::NoError)
-    qWarning() << __FUNCTION__ << reply->errorString();
+  QNetworkReply * reply = m_plugin->get(url);
 
   return new QcGeoportailWmtsReply(reply, tile_spec, layer->image_format());
-}
-
-void
-QcGeoportailWmtsTileFetcher::on_authentication_request_slot(QNetworkReply *reply,
-							    QAuthenticator *authenticator)
-{
-  Q_UNUSED(reply);
-  // qInfo() << "on_authentication_request_slot";
-  const QcGeoportailWmtsLicense & _license = m_plugin->license();
-  authenticator->setUser(_license.user());
-  authenticator->setPassword(_license.password());
 }
 
 /**************************************************************************************************/

@@ -33,13 +33,17 @@
 
 /**************************************************************************************************/
 
-#include <QObject>
-#include <QList>
-#include <QHash>
-
+#include "wmts/geoportail/geoportail_elevation_reply.h"
 #include "wmts/geoportail/geoportail_license.h"
 #include "wmts/geoportail/geoportail_wmts_tile_fetcher.h" // Fixme: circular
 #include "wmts/wmts_plugin.h"
+
+#include <QAuthenticator>
+#include <QHash>
+#include <QList>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QUrl>
 
 /**************************************************************************************************/
 
@@ -76,6 +80,8 @@ private:
 
 class QcGeoportailPlugin : public QcWmtsPlugin
 {
+  Q_OBJECT
+
 public:
   static const QString PLUGIN_NAME;
 
@@ -88,9 +94,24 @@ public:
   // Fixme: private ?
   QcGeoportailWmtsTileFetcher * tile_fetcher() { return &m_tile_fetcher; }
 
+  bool has_coordinate_elevation_service() override { return true; }
+  bool has_sampling_elevation_service() override { return true; }
+  QcGeoportailElevationReply * coordinate_elevations(const QVector<QcGeoCoordinateWGS84> & coordinates) const;
+
+  void set_user_agent(const QByteArray & user_agent) { m_user_agent = user_agent; }
+
+  // Fixme: protect ?
+  QNetworkReply * get(const QUrl & url) const;
+
+private Q_SLOTS:
+  void on_authentication_request_slot(QNetworkReply * reply, QAuthenticator * authenticator);
+
 private:
   QcGeoportailWmtsLicense m_license;
+  QNetworkAccessManager * m_network_manager;
+  QByteArray m_user_agent;
   QcGeoportailWmtsTileFetcher m_tile_fetcher;
+  QcGeoportailElevationReply * m_elevation_reply = nullptr;
 };
 
 // QC_END_NAMESPACE

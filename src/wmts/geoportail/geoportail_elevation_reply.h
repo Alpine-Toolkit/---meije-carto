@@ -28,76 +28,75 @@
 
 /**************************************************************************************************/
 
-#ifndef __OSM_PLUGIN_H__
-#define __OSM_PLUGIN_H__
+#ifndef __GEOPORTAIL_ELEVATION_REPLY_H__
+#define __GEOPORTAIL_ELEVATION_REPLY_H__
 
 /**************************************************************************************************/
 
-#include "wmts/wmts_plugin.h"
-#include "wmts/osm/osm_wmts_tile_fetcher.h"
+#include "coordinate/geo_coordinate.h"
 
-#include <QObject>
-#include <QString>
-
-/**************************************************************************************************/
-
-class QcOsmPlugin;
-
-/**************************************************************************************************/
-
-class QcOsmLayer : public QcWmtsPluginLayer
-{
-public:
-  QcOsmLayer(QcOsmPlugin * plugin,
-             int map_id,
-             int position,
-             const QString & title,
-             const QString & name,
-             const QString & image_format,
-             const QString & base);
-  QcOsmLayer(const QcOsmLayer & other);
-  ~QcOsmLayer();
-
-  QcOsmLayer & operator=(const QcOsmLayer & other);
-
-  const QString & base() const { return m_base; }
-
-  QUrl url(const QcTileSpec & tile_spec) const;
-
-private:
-  QString m_base;
-};
+#include <QNetworkReply>
+#include <QPointer>
 
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
 
-class QcOsmPlugin : public QcWmtsPlugin
+class QcGeoportailElevationReply : public QObject // QcElevationReply
 {
   Q_OBJECT
 
 public:
-  static const QString PLUGIN_NAME;
+  enum Error { // Fixme: check
+    NoError,
+    CommunicationError,
+    ParseError,
+    UnknownError
+  };
 
 public:
-  QcOsmPlugin();
-  ~QcOsmPlugin();
+  explicit QcGeoportailElevationReply(QNetworkReply * reply, const QVector<QcGeoCoordinateWGS84> & coordinates);
+  ~QcGeoportailElevationReply();
 
-  QcOsmWmtsTileFetcher * tile_fetcher() {
-    return &m_tile_fetcher;
-  }
+  const QVector<QcGeoElevationCoordinateWGS84> & elevations() const { return m_elevations; }
 
-  // off-line cache : load tiles from a polygon
+  bool is_finished() const;
+  Error error() const;
+  QString error_string() const;
+
+  virtual void abort();
+
+  QNetworkReply * network_reply() const; // Fixme: ???
+
+signals:
+  void finished();
+  void error(Error error, const QString & error_string = QString());
+
+protected:
+  void set_error(Error error, const QString & error_string);
+  void set_finished(bool finished);
 
 private:
-  QcOsmWmtsTileFetcher m_tile_fetcher;
+  Q_DISABLE_COPY(QcGeoportailElevationReply);
+
+private slots:
+  void network_reply_finished();
+  void network_reply_error(QNetworkReply::NetworkError error);
+
+private:
+  QPointer<QNetworkReply> m_reply;
+  const QVector<QcGeoCoordinateWGS84> & m_coordinates;
+  QVector<QcGeoElevationCoordinateWGS84> m_elevations;
+  Error m_error;
+  QString m_error_string;
+  bool m_is_finished;
 };
 
 // QC_END_NAMESPACE
 
 /**************************************************************************************************/
 
-#endif /* __OSM_PLUGIN_H__ */
+#endif /* __GEOPORTAIL_ELEVATION_REPLY_H__ */
 
 /***************************************************************************************************
  *

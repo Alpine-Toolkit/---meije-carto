@@ -29,6 +29,7 @@
 #include "geoportail_plugin.h"
 #include "geoportail_wmts_tile_fetcher.h"
 
+#include <QNetworkAccessManager>
 #include <QString>
 
 /**************************************************************************************************/
@@ -125,8 +126,15 @@ constexpr int TILE_SIZE = 256;
 QcGeoportailPlugin::QcGeoportailPlugin(const QcGeoportailWmtsLicense & license)
   : QcWmtsPlugin(PLUGIN_NAME, PLUGIN_TITLE, NUMBER_OF_LEVELS, TILE_SIZE),
     m_license(license),
+    m_network_manager(new QNetworkAccessManager()),
+    m_user_agent("QtCarto based application"),
     m_tile_fetcher(this)
 {
+  connect(m_network_manager,
+          SIGNAL(authenticationRequired(QNetworkReply*, QAuthenticator*)),
+	  this,
+	  SLOT(on_authentication_request_slot(QNetworkReply*, QAuthenticator*)));
+
   wmts_manager()->set_tile_fetcher(&m_tile_fetcher);
   wmts_manager()->tile_cache(); // create a file tile cache
 
@@ -174,10 +182,74 @@ QcGeoportailPlugin::QcGeoportailPlugin(const QcGeoportailWmtsLicense & license)
                                   QLatin1Literal("png"),
                                   QLatin1Literal("bdparcellaire")
                                   ));
+
+  QVector<QcGeoCoordinateWGS84> coordinates;
+  coordinates << QcGeoCoordinateWGS84(0.23, 48.05);
+  coordinates << QcGeoCoordinateWGS84(2.15, 46.60);
+  coordinates << QcGeoCoordinateWGS84(4.39, 43.91);
+  m_elevation_reply = coordinate_elevations(coordinates);
 }
 
 QcGeoportailPlugin::~QcGeoportailPlugin()
-{}
+{
+  delete m_network_manager;
+}
+
+QNetworkReply *
+QcGeoportailPlugin::get(const QUrl & url) const
+{
+  QNetworkRequest request;
+  request.setRawHeader("User-Agent", m_user_agent);
+  request.setUrl(url);
+
+  QNetworkReply * reply = m_network_manager->get(request);
+  if (reply->error() != QNetworkReply::NoError)
+    qWarning() << __FUNCTION__ << reply->errorString();
+
+  return reply;
+}
+
+void
+QcGeoportailPlugin::on_authentication_request_slot(QNetworkReply * reply,
+                                                   QAuthenticator * authenticator)
+{
+  Q_UNUSED(reply);
+  // qInfo() << "on_authentication_request_slot";
+  authenticator->setUser(m_license.user());
+  authenticator->setPassword(m_license.password());
+}
+
+QcGeoportailElevationReply *
+QcGeoportailPlugin::coordinate_elevations(const QVector<QcGeoCoordinateWGS84> & coordinates) const
+{
+  QStringList longitudes;
+  QStringList latitudes;
+  for (const auto & coordinate : coordinates) {
+    longitudes << QString::number(coordinate.longitude());
+    latitudes  << QString::number(coordinate.latitude());
+  }
+
+  // https://wxs.ign.fr/<API_KEY>/alti/rest/elevation.json?lon=0.2367|2.1570|4.3907&lat=48.0551|46.6077|43.91
+  // https://wxs.ign.fr/<API_KEY>/alti/rest/elevationLine.json?sampling=10&lon=0.2367|2.1570|4.3907&lat=48.0551|46.6077|43.91
+
+  // ==========================================================
+  // WARNING: USE GEOPORTAIL KEY FOR TEST PURPOSE ONLY
+  // QString api_key = m_license.api_key();
+  QString api_key = QStringLiteral("j5tcdln4ya4xggpdu4j0f0cn");
+  // ==========================================================
+
+  QUrl url = QStringLiteral("https://wxs.ign.fr/") +
+    api_key +
+    QStringLiteral("/alti/rest/elevation.json?") +
+    QStringLiteral("lon=") + longitudes.join(QString('|')) +
+    QStringLiteral("&lat=") + latitudes.join(QString('|'))
+    ;
+  // qInfo() << url;
+
+  QNetworkReply * reply = get(url);
+
+  return new QcGeoportailElevationReply(reply, coordinates);
+}
 
 /**************************************************************************************************/
 

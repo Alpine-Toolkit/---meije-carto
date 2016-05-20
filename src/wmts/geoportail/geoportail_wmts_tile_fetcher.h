@@ -35,11 +35,6 @@
 
 #include "wmts/wmts_tile_fetcher.h"
 
-#include <QAuthenticator>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-
-#include "wmts/geoportail/geoportail_license.h"
 // #include "map/geoportail/geoportail_plugin.h" // Fixme: circular
 
 /**************************************************************************************************/
@@ -58,18 +53,11 @@ public:
   QcGeoportailWmtsTileFetcher(const QcGeoportailPlugin * plugin);
   ~QcGeoportailWmtsTileFetcher();
 
-  void set_user_agent(const QByteArray & user_agent) { m_user_agent = user_agent; }
-
-private Q_SLOTS:
-  void on_authentication_request_slot(QNetworkReply * reply, QAuthenticator * authenticator);
-
 private:
   QcWmtsReply * get_tile_image(const QcTileSpec & tile_spec);
 
 private:
   const QcGeoportailPlugin * m_plugin;
-  QNetworkAccessManager * m_network_manager;
-  QByteArray m_user_agent;
 };
 
 // QC_END_NAMESPACE
