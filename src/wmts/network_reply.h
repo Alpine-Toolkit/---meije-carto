@@ -64,61 +64,92 @@
 
 /**************************************************************************************************/
 
-#ifndef __WMTS_REPLY_H__
-#define __WMTS_REPLY_H__
+#ifndef __NETWORK_REPLY_H__
+#define __NETWORK_REPLY_H__
 
 /**************************************************************************************************/
 
 #include "qtcarto_global.h"
-#include "wmts/network_reply.h"
-#include "wmts/tile_spec.h"
 
-#include <QByteArray>
-#include <QObject>
 #include <QString>
+#include <QObject>
 
 // QC_BEGIN_NAMESPACE
 
 /**************************************************************************************************/
 
-// QcWmtsReply is a kind of future
+// QcNetworkReply is a kind of future
 
-class QC_EXPORT QcWmtsReply : public QcNetworkReply
+class QC_EXPORT QcNetworkReply : public QObject
 {
   Q_OBJECT
 
  public:
-  QcWmtsReply(const QcTileSpec & tile_spec);
-  virtual ~QcWmtsReply();
+  enum Error { // Fixme: check
+    NoError,
+    CommunicationError,
+    ParseError,
+    UnknownError
+  };
 
-  //! Returns the request which corresponds to this reply.
-  QcTileSpec tile_spec() const { return m_tile_spec; }
+ public:
+  QcNetworkReply();
+  QcNetworkReply(Error error, const QString & error_string);
+  virtual ~QcNetworkReply();
 
-  //!   Returns the tile image data.
-  QByteArray map_image_data() const { return m_map_image_data; }
-  // Returns the format of the tile image.
-  QString map_image_format() const { return m_map_image_format; }
+  /*! Return true if the operation completed successfully or
+    encountered an error which cause the operation to come to a halt.
+  */
+  bool is_finished() const { return m_is_finished; }
+
+  /*! Returns the error state of this reply.
+
+    If the result is QcNetworkReply::NoError then no error has occurred.
+  */
+  Error error() const { return m_error; }
+  /*! Returns the textual representation of the error state of this reply.
+
+    If no error has occurred this will return an empty string.  It is
+    possible that an error occurred which has no associated textual
+    representation, in which case this will also return an empty
+    string.
+
+    To determine whether an error has occurred, check to see if
+    QcNetworkReply::error() is equal to QcNetworkReply::NoError.
+  */
+  QString error_string() const { return m_error_string; }
+
+  //! Returns whether the reply is coming from a cache.
+  bool is_cached() const { return m_is_cached; }
+
+  virtual void abort();
+
+ signals:
+  void finished();
+  void error(Error error, const QString & error_string = QString());
 
  protected:
-  //! Sets the tile image data to \a data.
-  void set_map_image_data(const QByteArray & data) { m_map_image_data = data; }
-  //! Sets the format of the tile image to \a format.
-  void set_map_image_format(const QString & format) { m_map_image_format = format; }
+  void set_error(Error error, const QString & error_string);
+  void set_finished(bool finished);
+
+  //! Sets whether the reply is coming from a cache to \a cached.
+  void set_cached(bool cached) { m_is_cached = cached; }
 
  private:
-  Q_DISABLE_COPY(QcWmtsReply);
+  Q_DISABLE_COPY(QcNetworkReply);
 
  private:
-  QcTileSpec m_tile_spec;
-  QByteArray m_map_image_data;
-  QString m_map_image_format;
+  Error m_error;
+  QString m_error_string;
+  bool m_is_finished;
+  bool m_is_cached; // Fixme: purpose ?
 };
 
 // QC_END_NAMESPACE
 
 /**************************************************************************************************/
 
-#endif /* __WMTS_REPLY_H__ */
+#endif /* __NETWORK_REPLY_H__ */
 
 /***************************************************************************************************
  *

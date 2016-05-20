@@ -34,6 +34,7 @@
 /**************************************************************************************************/
 
 #include "coordinate/geo_coordinate.h"
+#include "wmts/network_reply.h"
 
 #include <QNetworkReply>
 #include <QPointer>
@@ -42,17 +43,9 @@
 
 // QC_BEGIN_NAMESPACE
 
-class QcGeoportailElevationReply : public QObject // QcElevationReply
+class QcGeoportailElevationReply : public QcNetworkReply // QcElevationReply
 {
   Q_OBJECT
-
-public:
-  enum Error { // Fixme: check
-    NoError,
-    CommunicationError,
-    ParseError,
-    UnknownError
-  };
 
 public:
   explicit QcGeoportailElevationReply(QNetworkReply * reply, const QVector<QcGeoCoordinateWGS84> & coordinates);
@@ -60,24 +53,7 @@ public:
 
   const QVector<QcGeoElevationCoordinateWGS84> & elevations() const { return m_elevations; }
 
-  bool is_finished() const;
-  Error error() const;
-  QString error_string() const;
-
   virtual void abort();
-
-  QNetworkReply * network_reply() const; // Fixme: ???
-
-signals:
-  void finished();
-  void error(Error error, const QString & error_string = QString());
-
-protected:
-  void set_error(Error error, const QString & error_string);
-  void set_finished(bool finished);
-
-private:
-  Q_DISABLE_COPY(QcGeoportailElevationReply);
 
 private slots:
   void network_reply_finished();
@@ -87,9 +63,6 @@ private:
   QPointer<QNetworkReply> m_reply;
   const QVector<QcGeoCoordinateWGS84> & m_coordinates;
   QVector<QcGeoElevationCoordinateWGS84> m_elevations;
-  Error m_error;
-  QString m_error_string;
-  bool m_is_finished;
 };
 
 // QC_END_NAMESPACE

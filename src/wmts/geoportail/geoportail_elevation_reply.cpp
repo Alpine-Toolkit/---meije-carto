@@ -54,38 +54,11 @@ QcGeoportailElevationReply::~QcGeoportailElevationReply()
   }
 }
 
-/**************************************************************************************************/
-
-void
-QcGeoportailElevationReply::set_finished(bool finished)
-{
-  m_is_finished = finished;
-  if (m_is_finished)
-    emit this->finished();
-}
-
-void
-QcGeoportailElevationReply::set_error(QcGeoportailElevationReply::Error error, const QString & error_string)
-{
-  m_error = error;
-  m_error_string = error_string;
-  emit this->error(error, error_string);
-  set_finished(true);
-}
-
-/**************************************************************************************************/
-
 void
 QcGeoportailElevationReply::abort()
 {
   if (m_reply)
     m_reply->abort();
-}
-
-QNetworkReply *
-QcGeoportailElevationReply::network_reply() const
-{
-  return m_reply;
 }
 
 // Handle a successful request : store image data

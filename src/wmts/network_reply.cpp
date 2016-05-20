@@ -62,44 +62,38 @@
 
 /**************************************************************************************************/
 
-#include "wmts_reply.h"
+#include "network_reply.h"
+
+#include <QDebug>
 
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
 
 /*!
-    \class QcWmtsReply
-    \inmodule QtLocation
-    \ingroup QtLocation-impl
-    \since 5.6
-    \internal
+    \class QcNetworkReply
 
-    \brief The QcWmtsReply class manages a tile fetch operation started
-    by an instance of QGeoTiledManagerEngine.
+    \brief The QcNetworkReply class manages a ...
 
-    Instances of QcWmtsReply manage the state and results of these
+    Instances of QcNetworkReply manage the state and results of these
     operations.
 
     The isFinished(), error() and errorString() methods provide information
     on whether the operation has completed and if it completed successfully.
 
-    The finished() and error(QcWmtsReply::Error,QString)
+    The finished() and error(QcNetworkReply::Error,QString)
     signals can be used to monitor the progress of the operation.
 
-    It is possible that a newly created QcWmtsReply may be in a finished
+    It is possible that a newly created QcNetworkReply may be in a finished
     state, most commonly because an error has occurred. Since such an instance
     will never emit the finished() or
-    error(QcWmtsReply::Error,QString) signals, it is
+    error(QcNetworkReply::Error,QString) signals, it is
     important to check the result of isFinished() before making the connections
     to the signals.
-
-    If the operation completes successfully the results are accessed by
-    mapImageData() and mapImageFormat().
 */
 
 /*!
-    \enum QcWmtsReply::Error
+    \enum QcNetworkReply::Error
 
     Describes an error which prevented the completion of the operation.
 
@@ -117,20 +111,80 @@
 /*!
     Constructs a tiled map reply object based on \a request,  with parent \a parent.
 */
-QcWmtsReply::QcWmtsReply(const QcTileSpec & tile_spec)
-  : QcNetworkReply(),
-    m_tile_spec(tile_spec)
+QcNetworkReply::QcNetworkReply()
+  : QObject(),
+    m_error(QcNetworkReply::NoError),
+    m_is_finished(false),
+    m_is_cached(false)
+{}
+
+/*!
+  Constructs a tiled map reply object with a given \a error and \a errorString and the specified \a parent.
+*/
+QcNetworkReply::QcNetworkReply(Error error, const QString & error_string)
+  : QObject(),
+    m_error(error),
+    m_error_string(error_string),
+    m_is_finished(true),
+    m_is_cached(false)
 {}
 
 /*!
   Destroys this tiled map reply object.
 */
-QcWmtsReply::~QcWmtsReply()
+QcNetworkReply::~QcNetworkReply()
 {}
+
+/*!
+  Sets whether or not this reply has finished to \a finished.
+
+  If \a finished is true, this will cause the finished() signal to be
+  emitted.
+
+  If the operation completed successfully,
+  QcNetworkReply::setMapImageData() should be called before this
+  function. If an error occurred, QcNetworkReply::setError() should be used
+  instead.
+*/
+void
+QcNetworkReply::set_finished(bool finished)
+{
+  m_is_finished = finished;
+  if (m_is_finished)
+    emit this->finished();
+}
+
+/*!
+  Sets the error state of this reply to \a error and the textual
+  representation of the error to \a errorString.
+
+  This will also cause error() and finished() signals to be emitted, in that
+  order.
+*/
+void
+QcNetworkReply::set_error(QcNetworkReply::Error error, const QString & error_string)
+{
+  m_error = error;
+  m_error_string = error_string;
+  emit this->error(error, error_string);
+  set_finished(true);
+}
+
+/*!
+  Cancels the operation immediately.
+
+  This will do nothing if the reply is finished.
+*/
+void
+QcNetworkReply::abort()
+{
+  if (!is_finished())
+    set_finished(true);
+}
 
 /**************************************************************************************************/
 
-// #include "wmts_reply.moc"
+// #include "network_reply.moc"
 
 // QC_END_NAMESPACE
 

@@ -42,6 +42,8 @@
 
 // QC_BEGIN_NAMESPACE
 
+// Fixme: check implementation versus QcWmtsReply / QcNetworkReply ... 
+
 class QcGeoportailWmtsReply : public QcWmtsReply
 {
   Q_OBJECT
@@ -50,9 +52,9 @@ public:
   explicit QcGeoportailWmtsReply(QNetworkReply * reply, const QcTileSpec & spec, const QString & format);
   ~QcGeoportailWmtsReply();
 
-  void abort();
+  void abort() override;
 
-  QNetworkReply * network_reply() const;
+  // QNetworkReply * network_reply() const { return m_reply; } // Fixme: purpose ???
 
 private slots:
   void network_reply_finished();

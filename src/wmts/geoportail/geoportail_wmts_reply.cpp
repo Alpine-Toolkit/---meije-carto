@@ -33,7 +33,9 @@
 QcGeoportailWmtsReply::QcGeoportailWmtsReply(QNetworkReply * reply,
 					     const QcTileSpec & tile_spec,
 					     const QString & format)
-  : QcWmtsReply(tile_spec), m_reply(reply), m_format(format)
+  : QcWmtsReply(tile_spec),
+    m_reply(reply),
+    m_format(format)
 {
   connect(m_reply, SIGNAL(finished()),
 	  this, SLOT(network_reply_finished()));
@@ -55,12 +57,6 @@ QcGeoportailWmtsReply::abort()
 {
   if (m_reply)
     m_reply->abort();
-}
-
-QNetworkReply *
-QcGeoportailWmtsReply::network_reply() const
-{
-  return m_reply;
 }
 
 // Handle a successful request : store image data
