@@ -67,7 +67,7 @@ QcMapItem {
         onPositionChanged: {
             var coordinate = position_source.position.coordinate
             if (coordinate.isValid()) {
-                center = map.cast_QGeoCoordinate()
+                center = map.cast_QGeoCoordinate(coordinate)
             }
         }
     }
