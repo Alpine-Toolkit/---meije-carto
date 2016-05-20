@@ -111,7 +111,6 @@ private:
   QNetworkAccessManager * m_network_manager;
   QByteArray m_user_agent;
   QcGeoportailWmtsTileFetcher m_tile_fetcher;
-  QcGeoportailElevationReply * m_elevation_reply = nullptr;
 };
 
 // QC_END_NAMESPACE

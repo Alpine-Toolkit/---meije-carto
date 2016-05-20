@@ -182,12 +182,6 @@ QcGeoportailPlugin::QcGeoportailPlugin(const QcGeoportailWmtsLicense & license)
                                   QLatin1Literal("png"),
                                   QLatin1Literal("bdparcellaire")
                                   ));
-
-  QVector<QcGeoCoordinateWGS84> coordinates;
-  coordinates << QcGeoCoordinateWGS84(0.23, 48.05);
-  coordinates << QcGeoCoordinateWGS84(2.15, 46.60);
-  coordinates << QcGeoCoordinateWGS84(4.39, 43.91);
-  m_elevation_reply = coordinate_elevations(coordinates);
 }
 
 QcGeoportailPlugin::~QcGeoportailPlugin()
