@@ -55,7 +55,7 @@ class QcTiledPolygonDiff;
 
 typedef QList<QcTiledPolygonRun> QcTiledPolygonRunList;
 
-class QC_EXPORT QcPolygon : public QcPath
+class QC_EXPORT QcPolygon : public QcPathDouble
 {
  public:
   QcPolygon();

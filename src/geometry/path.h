@@ -51,21 +51,22 @@
 
 /**************************************************************************************************/
 
+template <typename T, template<typename T> class Vector = QcVector>
 class QC_EXPORT QcPath
 {
  public:
-  typedef double Type;
-  typedef QcVector<Type> VertexType;
+  typedef T Type;
+  typedef Vector<T> VertexType;
   typedef QList<VertexType> VertexListType;
-  typedef QcSegment<Type> EdgeType;
+  typedef QcSegment<T> EdgeType; // segment is 2D
   typedef QList<EdgeType> EdgeListType;
-  typedef QcInterval2D<Type> IntervalType;
+  typedef typename VertexType::IntervalType IntervalType;
 
  public:
   QcPath();
   // QcPath(int number_of_vertexes);
   QcPath(const VertexListType & vertexes, bool closed = false);
-  QcPath(const QVector<Type> & coordinates, bool closed = false);
+  QcPath(const QVector<T> & coordinates, bool closed = false);
   QcPath(const QcPath & path);
   ~QcPath();
 
@@ -89,7 +90,7 @@ class QC_EXPORT QcPath
   inline bool closed() const { return m_closed; };
   inline void set_closed(bool value) { m_closed = value; };
 
-  Type length() const;
+  T length() const;
 
   int number_of_edges() const;
   // EdgeType edge(int start_index) const;
@@ -97,8 +98,8 @@ class QC_EXPORT QcPath
   EdgeType closing_edge() const { return EdgeType(m_vertexes.constLast(), m_vertexes.constFirst()); }
 
   VertexType barycenter() const;
-  VertexType nearest_vertex(const VertexType & point, Type & distance) const;
-  EdgeType nearest_edge(const VertexType & point, Type & distance, Type & abscissa) const;
+  VertexType nearest_vertex(const VertexType & point, T & distance) const;
+  EdgeType nearest_edge(const VertexType & point, T & distance, T & abscissa) const;
 
   bool is_self_intersecting() const;
 
@@ -109,6 +110,18 @@ class QC_EXPORT QcPath
   IntervalType m_interval;
   bool m_closed;
 };
+
+typedef QcPath<double> QcPathDouble;
+template<> QcPathDouble::QcPath(const QVector<double> & coordinates, bool closed);
+
+typedef QcPath<double, QcVector3D> QcPath3DDouble;
+template<> QcPath3DDouble::QcPath(const QVector<double> & coordinates, bool closed);
+
+/**************************************************************************************************/
+
+#ifndef QC_MANUAL_INSTANTIATION
+#include "path.hxx"
+#endif
 
 /**************************************************************************************************/
 

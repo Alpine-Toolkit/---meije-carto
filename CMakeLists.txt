@@ -190,7 +190,7 @@ endif(NOT ANDROID)
 
 if(NOT ANDROID)
   add_subdirectory(tools)
-  # add_subdirectory(test)
+  add_subdirectory(test)
 endif(NOT ANDROID)
 
 ####################################################################################################

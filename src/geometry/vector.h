@@ -62,6 +62,12 @@ template <typename T>
 class QC_EXPORT QcVector
 {
  public:
+  typedef QcInterval2D<T> IntervalType;
+
+ public:
+  static constexpr int dimension() { return 2; }
+
+ public:
   QcVector();
   QcVector(T x, T y);
   QcVector(const QcVector<T> & other);
@@ -146,7 +152,7 @@ class QC_EXPORT QcVector
   T radians_with(const QcVector<T> & direction) const;
   T orientation_with(const QcVector<T> & direction) const;
 
-  QcInterval2D<T> to_interval() const;
+  IntervalType to_interval() const;
 
  private:
   T m_x;
@@ -177,6 +183,12 @@ template <typename T> QcVector3D<T> operator/(const QcVector3D<T> & vector, T fa
 template <typename T>
 class QC_EXPORT QcVector3D : public QcVector<T>
 {
+ public:
+  typedef QcInterval3D<T> IntervalType;
+
+ public:
+  static constexpr int dimension() { return 3; }
+
  public:
   QcVector3D();
   QcVector3D(T x, T y, T z);
@@ -264,7 +276,7 @@ class QC_EXPORT QcVector3D : public QcVector<T>
   T orientation_with(const QcVector3D<T> & direction) const;
   */
 
-  QcInterval3D<T> to_interval() const;
+  IntervalType to_interval() const;
 
  private:
   T m_z;
