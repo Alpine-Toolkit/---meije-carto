@@ -306,6 +306,12 @@ operator|(const QcInterval<T> & interval1, const QcInterval<T> & interval2)
 
 /**************************************************************************************************/
 
+template<> inline int QcIntervalInt::length() const {
+  return m_sup - m_inf +1;
+}
+
+/**************************************************************************************************/
+
 template <typename T>
 QcInterval2D<T>::QcInterval2D()
   : m_x(), m_y()
@@ -441,10 +447,143 @@ QcInterval2D<T>::operator|=(const QcInterval2D<T> & other)
   }
 */
 
+/**************************************************************************************************/
 
-template<> inline int QcIntervalInt::length() const {
-  return m_sup - m_inf +1;
+template <typename T>
+QcInterval3D<T>::QcInterval3D()
+  : QcInterval2D<T>(),
+    m_z()
+{}
+
+template <typename T>
+QcInterval3D<T>::QcInterval3D(T x_inf, T x_sup, T y_inf, T y_sup, T z_inf, T z_sup)
+  : QcInterval2D<T>(x_inf, x_sup, y_inf, y_sup),
+    m_z(z_inf, z_sup)
+{}
+
+template <typename T>
+QcInterval3D<T>::QcInterval3D(const QcInterval<T> & x, const QcInterval<T> & y, const QcInterval<T> & z)
+  : QcInterval2D<T>(x, y),
+    m_z(z)
+{}
+
+template <typename T>
+QcInterval3D<T>::QcInterval3D(const QcInterval3D<T> & other)
+  : QcInterval2D<T>(other),
+    m_z(other.m_z)
+{}
+
+template <typename T>
+QcInterval2D<T>
+QcInterval3D<T>::to_2d() const
+{
+  return QcInterval2D<T>(this->x(), this->y());
 }
+
+template <typename T>
+QcInterval3D<T> &
+QcInterval3D<T>::operator=(const QcInterval3D<T> & other)
+{
+  if (this != &other) {
+    QcInterval2D<T>::operator=(other);
+    m_z = other.m_z;
+  }
+
+  return *this;
+}
+
+template <typename T>
+inline bool
+QcInterval3D<T>::is_empty() const {
+  return QcInterval2D<T>::is_empty() or m_z.is_empty();
+}
+
+template <typename T>
+bool
+QcInterval3D<T>::operator==(const QcInterval3D<T> & other) const {
+  return QcInterval2D<T>::operator=(other) and (m_z == other.m_z);
+}
+
+template <typename T>
+inline bool
+QcInterval3D<T>::operator!=(const QcInterval3D<T> & other) const
+{
+  return !operator==(other);
+}
+
+template <typename T>
+void
+QcInterval3D<T>::enlarge(T dx)
+{
+  QcInterval2D<T>::enlarge(dx);
+  m_z.enlarge(dx);
+}
+
+// Test if x is in the interval?
+template <typename T>
+bool
+QcInterval3D<T>::contains(T x, T y, T z) const
+{
+  return QcInterval2D<T>::contains(x, y) and m_z.contains(z);
+}
+
+// Test whether the interval intersects with i2?
+template <typename T>
+bool
+QcInterval3D<T>::intersect(const QcInterval3D<T> & other) const
+{
+  return QcInterval2D<T>::intersect(other) and m_z.intersect(other.m_z);
+}
+
+// Test whether the interval is included in i1?
+template <typename T>
+bool
+QcInterval3D<T>::is_included_in(const QcInterval3D<T> & other) const
+{
+  return QcInterval2D<T>::is_included_in(other) and m_z.is_included_in(other.m_z);
+}
+
+// Test whether the interval is outside of i2?
+template <typename T>
+bool
+QcInterval3D<T>::is_outside_of(const QcInterval3D<T> & other) const
+{
+  return QcInterval2D<T>::is_outside_of(other) and m_z.is_outside_of(other.m_z);
+}
+
+// Intersection
+template <typename T>
+QcInterval3D<T> &
+QcInterval3D<T>::operator&=(const QcInterval3D<T> & other)
+{
+  QcInterval2D<T>::operator&=(other);
+  m_z &= other.m_z;
+  return *this;
+}
+
+/*
+  QcInterval3D<T> operator&(const QcInterval3D<T> & interval1, const QcInterval3D<T> & T interval2) {
+  if (interval1.intersect(interval2)) {
+  return QcInterval3D(interval1.m_x & interval2.m_x,
+  interval1.m_y & interval2.m_y);
+  }
+  else {
+  return QcInterval3D();
+  }
+  }
+*/
+
+// Union
+template <typename T>
+QcInterval3D<T> &
+QcInterval3D<T>::operator|=(const QcInterval3D<T> & other)
+{
+  QcInterval2D<T>::operator&=(other);
+  m_z |= other.m_z;
+  return *this;
+}
+
+/**************************************************************************************************/
 
 // QT_END_NAMESPACE
 

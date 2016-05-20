@@ -35,10 +35,27 @@ QC_EXPORT QDebug operator<<(QDebug debug, const QcVectorDouble & vector)
 {
   QDebugStateSaver saver(debug); // Fixme: ???
 
-  debug.nospace() << "QcVectorDouble(";
+  debug.nospace() << QLatin1Literal("QcVectorDouble(");
   debug << vector.x();
-  debug << ", ";
+  debug << QLatin1Literal(", ");
   debug << vector.y();
+  debug << ')';
+
+  return debug;
+}
+#endif
+
+#ifndef QT_NO_DEBUG_STREAM
+QC_EXPORT QDebug operator<<(QDebug debug, const QcVector3DDouble & vector)
+{
+  QDebugStateSaver saver(debug); // Fixme: ???
+
+  debug.nospace() << QLatin1Literal("QcVector3DDouble(");
+  debug << vector.x();
+  debug << QLatin1Literal(", ");
+  debug << vector.y();
+  debug << QLatin1Literal(", ");
+  debug << vector.z();
   debug << ')';
 
   return debug;

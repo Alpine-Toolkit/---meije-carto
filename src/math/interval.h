@@ -160,11 +160,9 @@ class QC_EXPORT QcInterval2D
   QcInterval2D<T> & operator=(const QcInterval2D<T> & other);
 
   inline QcInterval<T> & x() { return m_x; }
-
   inline QcInterval<T> & y() { return m_y; }
 
   inline const QcInterval<T> & x() const { return m_x; }
-
   inline const QcInterval<T> & y() const { return m_y; }
 
   bool is_empty() const;
@@ -206,6 +204,65 @@ QC_EXPORT QDebug operator<<(QDebug debug, const QcInterval2DDouble & interval);
 // QC_EXPORT QDataStream &operator<<(QDataStream & stream, const QcInterval2DInt & interval);
 // QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcInterval2DInt & interval);
 // #endif
+
+/**************************************************************************************************/
+
+template <typename T>
+class QC_EXPORT QcInterval3D : public QcInterval2D<T>
+{
+ public:
+  QcInterval3D();
+  QcInterval3D(T x_inf, T x_sup, T y_inf, T y_sup, T z_inf, T z_sup);
+  QcInterval3D(const QcInterval<T> & x, const QcInterval<T> & y, const QcInterval<T> & z);
+  QcInterval3D(const QcInterval3D<T> & other);
+
+  QcInterval3D<T> & operator=(const QcInterval3D<T> & other);
+
+  QcInterval2D<T> to_2d() const;
+
+  inline QcInterval<T> & z() { return m_z; }
+  inline const QcInterval<T> & z() const { return m_z; }
+
+  bool is_empty() const;
+
+  bool operator==(const QcInterval3D<T> & other) const;
+  bool operator!=(const QcInterval3D<T> & other) const;
+
+  void enlarge(T dx);
+
+  // Test if x is in the interval?
+  bool contains(T x, T y, T z) const;
+  // Test whether the interval intersects with i2?
+  bool intersect(const QcInterval3D<T> & other) const;
+  // Test whether the interval is included in i1?
+  bool is_included_in(const QcInterval3D<T> & other) const;
+  // Test whether the interval is outside of i2?
+  bool is_outside_of(const QcInterval3D<T> & other) const;
+
+  // Intersection
+  QcInterval3D<T> & operator&=(const QcInterval3D<T> & other);
+
+  // Union
+  QcInterval3D<T> & operator|=(const QcInterval3D<T> & other);
+
+ private:
+  QcInterval<T> m_z;
+};
+
+typedef QcInterval3D<int> QcInterval3DInt;
+typedef QcInterval3D<double> QcInterval3DDouble;
+
+#ifndef QT_NO_DEBUG_STREAM
+QC_EXPORT QDebug operator<<(QDebug debug, const QcInterval3DInt & interval);
+QC_EXPORT QDebug operator<<(QDebug debug, const QcInterval3DDouble & interval);
+#endif
+
+// #ifndef QT_NO_DATASTREAM
+// QC_EXPORT QDataStream &operator<<(QDataStream & stream, const QcInterval3DInt & interval);
+// QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcInterval3DInt & interval);
+// #endif
+
+/**************************************************************************************************/
 
 // QT_END_NAMESPACE
 

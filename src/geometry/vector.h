@@ -167,6 +167,123 @@ QC_EXPORT QDebug operator<<(QDebug debug, const QcVectorDouble & vector);
 
 /**************************************************************************************************/
 
+template <typename T> class QcVector3D;
+
+template <typename T> QcVector3D<T> operator+(const QcVector3D<T> & vector1, const QcVector3D<T> & vector2);
+template <typename T> QcVector3D<T> operator-(const QcVector3D<T> & vector1, const QcVector3D<T> & vector2);
+template <typename T> QcVector3D<T> operator*(const QcVector3D<T> & vector, T factor);
+template <typename T> QcVector3D<T> operator/(const QcVector3D<T> & vector, T factor);
+
+template <typename T>
+class QC_EXPORT QcVector3D : public QcVector<T>
+{
+ public:
+  QcVector3D();
+  QcVector3D(T x, T y, T z);
+  QcVector3D(const QcVector3D<T> & other);
+  ~QcVector3D();
+
+  QcVector3D<T> & operator=(const QcVector3D<T> & other);
+
+  QcVector<T> to_2d() const;
+
+  T z() const;
+  void set_z(T value);
+
+  T & operator[](int i);
+  T operator[](int i) const;
+
+  T magnitude_square() const;
+  T magnitude() const;
+  void normalise();
+  QcVector3D<T> normalised() const;
+  bool is_null() const;
+
+  bool operator==(const QcVector3D<T> & other) const;
+  bool operator!=(const QcVector3D<T> & other) const;
+
+  QcVector3D<T> & operator+=(const QcVector3D<T> & other);
+  QcVector3D<T> & operator-=(const QcVector3D<T> & other);
+  QcVector3D<T> & operator*=(T factor);
+  QcVector3D<T> & operator/=(T factor);
+
+  friend QcVector3D<T> operator+<>(const QcVector3D<T> & vector1, const QcVector3D<T> & vector2);
+  friend QcVector3D<T> operator-<>(const QcVector3D<T> & vector1, const QcVector3D<T> & vector2);
+  friend QcVector3D<T> operator*<>(const QcVector3D<T> & vector, T factor);
+  friend QcVector3D<T> operator/<>(const QcVector3D<T> & vector, T factor);
+
+  /*
+  // Return the orientation in degree
+  T orientation() const;
+  // Return a new vector equal to self rotated of angle degree in the counter clockwise direction
+  QcVector3D<T> rotate_counter_clockwise(T angle) const;
+  // Return a new vector equal to self rotated of 90 degree in the counter clockwise direction
+  QcVector3D<T> rotate_counter_clockwise_90() const;
+  // Return a new vector equal to  rotated of 90 degree in the clockwise direction
+  QcVector3D<T> rotate_clockwise_90() const;
+  // Return a new vector equal to  rotated of 180 degree
+  // parity
+  QcVector3D<T> rotate_180() const;
+  QcVector3D<T> mirror_x() const;
+  QcVector3D<T> mirror_y() const;
+
+  // Return the tangent
+  T tan() const;
+  // Return the inverse tangent
+  T inverse_tan() const;
+  */
+
+  // Return the dot product of  with other
+  T dot(const QcVector3D<T> & other) const;
+  // Return the cross product of  with other
+  QcVector3D<T> cross(const QcVector3D<T> & other) const;
+
+  /*
+  // Return the projection of  on direction
+  T projection_on(const QcVector3D<T> & direction) const;
+
+  // is parallel with other
+  bool is_parallel(const QcVector3D<T> & other) const;
+  // is orthogonal with other
+  bool is_orthogonal(const QcVector3D<T> & other) const;
+
+  // Return the cosinus of  with direction
+  T cos_with(const QcVector3D<T> & direction) const;
+  // Return the sinus of  with other
+  T sin_with(const QcVector3D<T> & direction) const;
+  // Return the tan of  with other
+  T tan_with(const QcVector3D<T> & direction) const;
+
+  //  Return the deviation of  with other
+  T deviation_with(const QcVector3D<T> & direction) const;
+
+  // Fixme: name
+  // Return the atan of  with other
+  T atan_with(const QcVector3D<T> & direction) const;
+  T radians_with(const QcVector3D<T> & direction) const;
+  T orientation_with(const QcVector3D<T> & direction) const;
+  */
+
+  QcInterval3D<T> to_interval() const;
+
+ private:
+  T m_z;
+};
+
+typedef QcVector3D<int> QcVector3DInt; // Fixme: double computation ???
+typedef QcVector3D<double> QcVector3DDouble;
+
+#ifndef QT_NO_DEBUG_STREAM
+QC_EXPORT QDebug operator<<(QDebug debug, const QcVector3DDouble & vector);
+#endif
+
+// #ifndef QT_NO_DATASTREAM
+// QC_EXPORT QDataStream &operator<<(QDataStream & stream, const QcVector3D & vector);
+// QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcVector3D & vector);
+// #endif
+
+/**************************************************************************************************/
+
 // QT_END_NAMESPACE
 
 /**************************************************************************************************/
