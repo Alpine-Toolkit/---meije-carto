@@ -32,9 +32,9 @@
 
 /**************************************************************************************************/
 
-#include "map/earth.h"
-#include "map/tile_matrix_set.h"
 #include "map/viewport.h"
+#include "wmts/earth.h"
+#include "wmts/tile_matrix_set.h"
 // #include "map/mosaic_painter.h"
 
 /***************************************************************************************************/

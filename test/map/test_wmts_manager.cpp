@@ -32,10 +32,10 @@
 /**************************************************************************************************/
 
 #include "map/map_view.h"
-#include "map/wmts_manager.h"
-#include "map/wmts_plugin.h"
-#include "map/wmts_reply.h"
-#include "map/wmts_tile_fetcher.h"
+#include "wmts/wmts_manager.h"
+#include "wmts/wmts_plugin.h"
+#include "wmts/wmts_reply.h"
+#include "wmts/wmts_tile_fetcher.h"
 
 /***************************************************************************************************/
 
