@@ -5,6 +5,9 @@
 # Customizable settings
 #
 
+# Generate compile_commands.json
+# -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
 # -D <var>:<type>=<value>: Create a cmake cache entry.
 
 # Ipl path
