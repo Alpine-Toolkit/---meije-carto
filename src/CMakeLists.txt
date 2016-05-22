@@ -72,6 +72,7 @@ set(qtcarto_files
   wmts/geoportail/geoportail_plugin.cpp
   wmts/geoportail/geoportail_wmts_reply.cpp
   wmts/geoportail/geoportail_wmts_tile_fetcher.cpp
+  wmts/network_reply.cpp
   wmts/osm/osm_plugin.cpp
   wmts/osm/osm_wmts_reply.cpp
   wmts/osm/osm_wmts_tile_fetcher.cpp
