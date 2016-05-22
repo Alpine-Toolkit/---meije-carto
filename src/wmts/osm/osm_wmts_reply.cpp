@@ -33,68 +33,20 @@
 QcOsmWmtsReply::QcOsmWmtsReply(QNetworkReply * reply,
                                const QcTileSpec & tile_spec,
                                const QString & format)
-  : QcWmtsReply(tile_spec), m_reply(reply), m_format(format)
+  : QcWmtsReply(reply, tile_spec),
+    m_format(format)
 {
-  connect(m_reply, SIGNAL(finished()),
-	  this, SLOT(network_reply_finished()));
-
-  connect(m_reply, SIGNAL(error(QNetworkReply::NetworkError)),
-	  this, SLOT(network_reply_error(QNetworkReply::NetworkError)));
 }
 
 QcOsmWmtsReply::~QcOsmWmtsReply()
-{
-  if (m_reply) {
-    m_reply->deleteLater();
-    m_reply = nullptr;
-  }
-}
-
-void
-QcOsmWmtsReply::abort()
-{
-  if (m_reply)
-    m_reply->abort();
-}
-
-QNetworkReply *
-QcOsmWmtsReply::network_reply() const
-{
-  return m_reply;
-}
+{}
 
 // Handle a successful request : store image data
 void
-QcOsmWmtsReply::network_reply_finished()
+QcOsmWmtsReply::process_payload()
 {
-  if (!m_reply)
-    return;
-
-  if (m_reply->error() != QNetworkReply::NoError) // Fixme: when ?
-    return;
-
-  set_map_image_data(m_reply->readAll());
+  set_map_image_data(network_reply()->readAll());
   set_map_image_format(m_format);
-
-  // Fixme: duplicated code
-  set_finished(true);
-  m_reply->deleteLater();
-  m_reply = nullptr;
-}
-
-// Handle an unsuccessful request : set error message
-void
-QcOsmWmtsReply::network_reply_error(QNetworkReply::NetworkError error)
-{
-  if (!m_reply)
-    return;
-
-  if (error != QNetworkReply::OperationCanceledError)
-    set_error(QcWmtsReply::CommunicationError, m_reply->errorString());
-
-  set_finished(true);
-  m_reply->deleteLater();
-  m_reply = nullptr;
 }
 
 /**************************************************************************************************/

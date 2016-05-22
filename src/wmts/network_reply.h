@@ -80,9 +80,9 @@
 
 /**************************************************************************************************/
 
-// QcNetworkReply is a kind of future
+// was QcNetworkReply
 
-class QC_EXPORT QcNetworkReply : public QObject
+class QC_EXPORT QcNetworkFuture : public QObject
 {
   Q_OBJECT
 
@@ -95,9 +95,9 @@ class QC_EXPORT QcNetworkReply : public QObject
   };
 
  public:
-  QcNetworkReply();
-  QcNetworkReply(Error error, const QString & error_string);
-  virtual ~QcNetworkReply();
+  QcNetworkFuture();
+  QcNetworkFuture(Error error, const QString & error_string);
+  virtual ~QcNetworkFuture();
 
   /*! Return true if the operation completed successfully or
     encountered an error which cause the operation to come to a halt.
@@ -106,7 +106,7 @@ class QC_EXPORT QcNetworkReply : public QObject
 
   /*! Returns the error state of this reply.
 
-    If the result is QcNetworkReply::NoError then no error has occurred.
+    If the result is QcNetworkFuture::NoError then no error has occurred.
   */
   Error error() const { return m_error; }
   /*! Returns the textual representation of the error state of this reply.
@@ -117,7 +117,7 @@ class QC_EXPORT QcNetworkReply : public QObject
     string.
 
     To determine whether an error has occurred, check to see if
-    QcNetworkReply::error() is equal to QcNetworkReply::NoError.
+    QcNetworkFuture::error() is equal to QcNetworkFuture::NoError.
   */
   QString error_string() const { return m_error_string; }
 
@@ -138,7 +138,7 @@ class QC_EXPORT QcNetworkReply : public QObject
   void set_cached(bool cached) { m_is_cached = cached; }
 
  private:
-  Q_DISABLE_COPY(QcNetworkReply);
+  Q_DISABLE_COPY(QcNetworkFuture);
 
  private:
   Error m_error;
@@ -149,17 +149,19 @@ class QC_EXPORT QcNetworkReply : public QObject
 
 /**************************************************************************************************/
 
-class QcNetworkReplyAbc : public QcNetworkReply
+class QcNetworkReply : public QcNetworkFuture
 {
   Q_OBJECT
 
 public:
-  explicit QcNetworkReplyAbc(QNetworkReply * reply);
-  ~QcNetworkReplyAbc();
+  explicit QcNetworkReply(QNetworkReply * reply);
+  ~QcNetworkReply();
 
   void abort() override;
 
-  // QNetworkReply * network_reply() const { return m_reply; } // Fixme: purpose ???
+  virtual void process_payload() = 0;
+
+  QNetworkReply * network_reply() const { return m_reply; }
 
 private slots:
   void network_reply_finished();

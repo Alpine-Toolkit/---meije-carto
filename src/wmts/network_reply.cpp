@@ -71,29 +71,29 @@
 // QC_BEGIN_NAMESPACE
 
 /*!
-    \class QcNetworkReply
+    \class QcNetworkFuture
 
-    \brief The QcNetworkReply class manages a ...
+    \brief The QcNetworkFuture class manages a ...
 
-    Instances of QcNetworkReply manage the state and results of these
+    Instances of QcNetworkFuture manage the state and results of these
     operations.
 
     The isFinished(), error() and errorString() methods provide information
     on whether the operation has completed and if it completed successfully.
 
-    The finished() and error(QcNetworkReply::Error,QString)
+    The finished() and error(QcNetworkFuture::Error,QString)
     signals can be used to monitor the progress of the operation.
 
-    It is possible that a newly created QcNetworkReply may be in a finished
+    It is possible that a newly created QcNetworkFuture may be in a finished
     state, most commonly because an error has occurred. Since such an instance
     will never emit the finished() or
-    error(QcNetworkReply::Error,QString) signals, it is
+    error(QcNetworkFuture::Error,QString) signals, it is
     important to check the result of isFinished() before making the connections
     to the signals.
 */
 
 /*!
-    \enum QcNetworkReply::Error
+    \enum QcNetworkFuture::Error
 
     Describes an error which prevented the completion of the operation.
 
@@ -111,9 +111,9 @@
 /*!
     Constructs a tiled map reply object based on \a request,  with parent \a parent.
 */
-QcNetworkReply::QcNetworkReply()
+QcNetworkFuture::QcNetworkFuture()
   : QObject(),
-    m_error(QcNetworkReply::NoError),
+    m_error(QcNetworkFuture::NoError),
     m_is_finished(false),
     m_is_cached(false)
 {}
@@ -121,7 +121,7 @@ QcNetworkReply::QcNetworkReply()
 /*!
   Constructs a tiled map reply object with a given \a error and \a errorString and the specified \a parent.
 */
-QcNetworkReply::QcNetworkReply(Error error, const QString & error_string)
+QcNetworkFuture::QcNetworkFuture(Error error, const QString & error_string)
   : QObject(),
     m_error(error),
     m_error_string(error_string),
@@ -132,7 +132,7 @@ QcNetworkReply::QcNetworkReply(Error error, const QString & error_string)
 /*!
   Destroys this tiled map reply object.
 */
-QcNetworkReply::~QcNetworkReply()
+QcNetworkFuture::~QcNetworkFuture()
 {}
 
 /*!
@@ -142,12 +142,12 @@ QcNetworkReply::~QcNetworkReply()
   emitted.
 
   If the operation completed successfully,
-  QcNetworkReply::setMapImageData() should be called before this
-  function. If an error occurred, QcNetworkReply::setError() should be used
+  QcNetworkFuture::setMapImageData() should be called before this
+  function. If an error occurred, QcNetworkFuture::setError() should be used
   instead.
 */
 void
-QcNetworkReply::set_finished(bool finished)
+QcNetworkFuture::set_finished(bool finished)
 {
   m_is_finished = finished;
   if (m_is_finished)
@@ -162,7 +162,7 @@ QcNetworkReply::set_finished(bool finished)
   order.
 */
 void
-QcNetworkReply::set_error(QcNetworkReply::Error error, const QString & error_string)
+QcNetworkFuture::set_error(QcNetworkFuture::Error error, const QString & error_string)
 {
   m_error = error;
   m_error_string = error_string;
@@ -176,7 +176,7 @@ QcNetworkReply::set_error(QcNetworkReply::Error error, const QString & error_str
   This will do nothing if the reply is finished.
 */
 void
-QcNetworkReply::abort()
+QcNetworkFuture::abort()
 {
   if (!is_finished())
     set_finished(true);
@@ -184,8 +184,8 @@ QcNetworkReply::abort()
 
 /**************************************************************************************************/
 
-QcNetworkReplyAbc::QcNetworkReplyAbc(QNetworkReply * reply)
-  : QcNetworkReply(),
+QcNetworkReply::QcNetworkReply(QNetworkReply * reply)
+  : QcNetworkFuture(),
     m_reply(reply)
 {
   connect(m_reply, SIGNAL(finished()),
@@ -195,7 +195,7 @@ QcNetworkReplyAbc::QcNetworkReplyAbc(QNetworkReply * reply)
 	  this, SLOT(network_reply_error(QNetworkReply::NetworkError)));
 }
 
-QcNetworkReplyAbc::~QcNetworkReplyAbc()
+QcNetworkReply::~QcNetworkReply()
 {
   if (m_reply) {
     m_reply->deleteLater();
@@ -204,14 +204,14 @@ QcNetworkReplyAbc::~QcNetworkReplyAbc()
 }
 
 void
-QcNetworkReplyAbc::abort()
+QcNetworkReply::abort()
 {
   if (m_reply)
     m_reply->abort();
 }
 
 void
-QcNetworkReplyAbc::cleanup()
+QcNetworkReply::cleanup()
 {
   set_finished(true);
   m_reply->deleteLater();
@@ -220,7 +220,7 @@ QcNetworkReplyAbc::cleanup()
 
 // Handle a successful request : store image data
 void
-QcNetworkReplyAbc::network_reply_finished()
+QcNetworkReply::network_reply_finished()
 {
   if (!m_reply)
     return;
@@ -228,15 +228,14 @@ QcNetworkReplyAbc::network_reply_finished()
   if (m_reply->error() != QNetworkReply::NoError) // Fixme: when ?
     return;
 
-  // Do someting with payload
-  // m_reply->readAll()
+  process_payload();
 
   cleanup();
 }
 
 // Handle an unsuccessful request : set error message
 void
-QcNetworkReplyAbc::network_reply_error(QNetworkReply::NetworkError error)
+QcNetworkReply::network_reply_error(QNetworkReply::NetworkError error)
 {
   if (!m_reply)
     return;

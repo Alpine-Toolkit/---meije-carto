@@ -36,43 +36,20 @@
 
 QcGeoportailElevationReply::QcGeoportailElevationReply(QNetworkReply * reply,
                                                        const QVector<QcGeoCoordinateWGS84> & coordinates)
-  : m_reply(reply),
+  : QcNetworkReply(reply),
     m_coordinates(coordinates)
 {
-  connect(m_reply, SIGNAL(finished()),
-	  this, SLOT(network_reply_finished()));
-
-  connect(m_reply, SIGNAL(error(QNetworkReply::NetworkError)),
-	  this, SLOT(network_reply_error(QNetworkReply::NetworkError)));
 }
 
 QcGeoportailElevationReply::~QcGeoportailElevationReply()
-{
-  if (m_reply) {
-    m_reply->deleteLater();
-    m_reply = nullptr;
-  }
-}
-
-void
-QcGeoportailElevationReply::abort()
-{
-  if (m_reply)
-    m_reply->abort();
-}
+{}
 
 // Handle a successful request : store image data
 void
-QcGeoportailElevationReply::network_reply_finished()
+QcGeoportailElevationReply::process_payload()
 {
-  if (!m_reply)
-    return;
-
-  if (m_reply->error() != QNetworkReply::NoError) // Fixme: when ?
-    return;
-
   QString ELEVATIONS = "elevations";
-  QByteArray json_data = m_reply->readAll();
+  QByteArray json_data = network_reply()->readAll();
   // { "elevations": [ { "lon": 0.23, "lat": 48.05, "z": 112.73, "acc": 2.5}, ... ] }
   // qInfo() << json_data;
   QJsonDocument json_document(QJsonDocument::fromJson(json_data));
@@ -89,26 +66,6 @@ QcGeoportailElevationReply::network_reply_finished()
     }
   }
   qInfo() << m_elevations;
-
-  // Fixme: duplicated code
-  set_finished(true);
-  m_reply->deleteLater();
-  m_reply = nullptr;
-}
-
-// Handle an unsuccessful request : set error message
-void
-QcGeoportailElevationReply::network_reply_error(QNetworkReply::NetworkError error)
-{
-  if (!m_reply)
-    return;
-
-  if (error != QNetworkReply::OperationCanceledError)
-    set_error(QcGeoportailElevationReply::CommunicationError, m_reply->errorString());
-
-  set_finished(true);
-  m_reply->deleteLater();
-  m_reply = nullptr;
 }
 
 /**************************************************************************************************/

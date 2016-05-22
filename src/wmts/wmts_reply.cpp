@@ -81,8 +81,8 @@
 /*!
     Constructs a tiled map reply object based on \a request,  with parent \a parent.
 */
-QcWmtsReply::QcWmtsReply(const QcTileSpec & tile_spec)
-  : QcNetworkReply(),
+QcWmtsReply::QcWmtsReply(QNetworkReply * reply, const QcTileSpec & tile_spec)
+  : QcNetworkReply(reply),
     m_tile_spec(tile_spec)
 {}
 

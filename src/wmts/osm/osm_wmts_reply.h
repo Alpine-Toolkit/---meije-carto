@@ -50,16 +50,9 @@ public:
   explicit QcOsmWmtsReply(QNetworkReply * reply, const QcTileSpec & spec, const QString & format);
   ~QcOsmWmtsReply();
 
-  void abort();
-
-  QNetworkReply * network_reply() const;
-
-private slots:
-  void network_reply_finished();
-  void network_reply_error(QNetworkReply::NetworkError error);
+  void process_payload();
 
 private:
-  QPointer<QNetworkReply> m_reply;
   QString m_format;
 };
 

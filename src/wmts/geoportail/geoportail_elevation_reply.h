@@ -53,14 +53,9 @@ public:
 
   const QVector<QcGeoElevationCoordinateWGS84> & elevations() const { return m_elevations; }
 
-  virtual void abort();
-
-private slots:
-  void network_reply_finished();
-  void network_reply_error(QNetworkReply::NetworkError error);
+  void process_payload();
 
 private:
-  QPointer<QNetworkReply> m_reply;
   const QVector<QcGeoCoordinateWGS84> & m_coordinates;
   QVector<QcGeoElevationCoordinateWGS84> m_elevations;
 };

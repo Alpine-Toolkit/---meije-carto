@@ -85,12 +85,12 @@
 
 // QcWmtsReply is a kind of future
 
-class QC_EXPORT QcWmtsReply : public QcNetworkReply
+class QC_EXPORT QcWmtsReply : public QcNetworkReply // QcNetworkFuture
 {
   Q_OBJECT
 
  public:
-  QcWmtsReply(const QcTileSpec & tile_spec);
+  QcWmtsReply(QNetworkReply * reply, const QcTileSpec & tile_spec);
   virtual ~QcWmtsReply();
 
   //! Returns the request which corresponds to this reply.
