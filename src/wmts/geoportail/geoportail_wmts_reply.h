@@ -42,7 +42,8 @@
 
 // QC_BEGIN_NAMESPACE
 
-// Fixme: check implementation versus QcWmtsReply / QcNetworkReply ... 
+// Fixme: check implementation versus QcWmtsReply / QcNetworkReply ...
+//   QcNetworkReply is decoupled from QNetworkReply
 
 class QcGeoportailWmtsReply : public QcWmtsReply
 {

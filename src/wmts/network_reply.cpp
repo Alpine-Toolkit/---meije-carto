@@ -184,6 +184,71 @@ QcNetworkReply::abort()
 
 /**************************************************************************************************/
 
+QcNetworkReplyAbc::QcNetworkReplyAbc(QNetworkReply * reply)
+  : QcNetworkReply(),
+    m_reply(reply)
+{
+  connect(m_reply, SIGNAL(finished()),
+	  this, SLOT(network_reply_finished()));
+
+  connect(m_reply, SIGNAL(error(QNetworkReply::NetworkError)),
+	  this, SLOT(network_reply_error(QNetworkReply::NetworkError)));
+}
+
+QcNetworkReplyAbc::~QcNetworkReplyAbc()
+{
+  if (m_reply) {
+    m_reply->deleteLater();
+    m_reply = nullptr;
+  }
+}
+
+void
+QcNetworkReplyAbc::abort()
+{
+  if (m_reply)
+    m_reply->abort();
+}
+
+void
+QcNetworkReplyAbc::cleanup()
+{
+  set_finished(true);
+  m_reply->deleteLater();
+  m_reply = nullptr;
+}
+
+// Handle a successful request : store image data
+void
+QcNetworkReplyAbc::network_reply_finished()
+{
+  if (!m_reply)
+    return;
+
+  if (m_reply->error() != QNetworkReply::NoError) // Fixme: when ?
+    return;
+
+  // Do someting with payload
+  // m_reply->readAll()
+
+  cleanup();
+}
+
+// Handle an unsuccessful request : set error message
+void
+QcNetworkReplyAbc::network_reply_error(QNetworkReply::NetworkError error)
+{
+  if (!m_reply)
+    return;
+
+  if (error != QNetworkReply::OperationCanceledError)
+    set_error(QcNetworkReply::CommunicationError, m_reply->errorString());
+
+  cleanup();
+}
+
+/**************************************************************************************************/
+
 // #include "network_reply.moc"
 
 // QC_END_NAMESPACE

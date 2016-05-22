@@ -71,8 +71,10 @@
 
 #include "qtcarto_global.h"
 
-#include <QString>
+#include <QNetworkReply>
 #include <QObject>
+#include <QPointer>
+#include <QString>
 
 // QC_BEGIN_NAMESPACE
 
@@ -144,6 +146,33 @@ class QC_EXPORT QcNetworkReply : public QObject
   bool m_is_finished;
   bool m_is_cached; // Fixme: purpose ?
 };
+
+/**************************************************************************************************/
+
+class QcNetworkReplyAbc : public QcNetworkReply
+{
+  Q_OBJECT
+
+public:
+  explicit QcNetworkReplyAbc(QNetworkReply * reply);
+  ~QcNetworkReplyAbc();
+
+  void abort() override;
+
+  // QNetworkReply * network_reply() const { return m_reply; } // Fixme: purpose ???
+
+private slots:
+  void network_reply_finished();
+  void network_reply_error(QNetworkReply::NetworkError error);
+
+private:
+  void cleanup();
+
+private:
+  QPointer<QNetworkReply> m_reply;
+};
+
+/**************************************************************************************************/
 
 // QC_END_NAMESPACE
 

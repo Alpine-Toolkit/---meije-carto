@@ -72,7 +72,7 @@ QcGeoportailWmtsReply::network_reply_finished()
   set_map_image_data(m_reply->readAll());
   set_map_image_format(m_format);
 
-  // Fixme: duplicated code
+  // Fixme: duplicated code, cf. network_reply_error
   set_finished(true);
   m_reply->deleteLater();
   m_reply = nullptr;
