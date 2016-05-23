@@ -1,3 +1,5 @@
+// -*- mode: c++ -*-
+
 /***************************************************************************************************
 **
 ** $QTCARTO_BEGIN_LICENSE:GPL3$
@@ -26,23 +28,41 @@
 
 /**************************************************************************************************/
 
-#include "elevation_reply.h"
+#ifndef __ELEVATION_SERVICE_REPLY_H__
+#define __ELEVATION_SERVICE_REPLY_H__
 
 /**************************************************************************************************/
 
-QcElevationReply::QcElevationReply(QNetworkReply * reply,
-                                   const QVector<QcGeoCoordinateWGS84> & coordinates)
-  : QcNetworkReply(reply),
-    m_coordinates(coordinates)
+#include "coordinate/geo_coordinate.h"
+#include "wmts/network_reply.h"
+
+/**************************************************************************************************/
+
+// QC_BEGIN_NAMESPACE
+
+class QcElevationServiceReply : public QcNetworkReply
 {
-}
+  Q_OBJECT
 
-QcElevationReply::~QcElevationReply()
-{}
+public:
+  explicit QcElevationServiceReply(QNetworkReply * reply, const QVector<QcGeoCoordinateWGS84> & coordinates);
+  ~QcElevationServiceReply();
+
+  const QVector<QcGeoElevationCoordinateWGS84> & elevations() const { return m_elevations; }
+
+protected:
+  QVector<QcGeoElevationCoordinateWGS84> & elevations() { return m_elevations; }
+
+private:
+  const QVector<QcGeoCoordinateWGS84> & m_coordinates;
+  QVector<QcGeoElevationCoordinateWGS84> m_elevations;
+};
+
+// QC_END_NAMESPACE
 
 /**************************************************************************************************/
 
-// #include "elevation_reply.moc"
+#endif /* __ELEVATION_SERVICE_REPLY_H__ */
 
 /***************************************************************************************************
  *

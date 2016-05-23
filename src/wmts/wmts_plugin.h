@@ -34,9 +34,11 @@
 /**************************************************************************************************/
 
 #include "coordinate/geo_coordinate.h"
+#include "wmts/elevation_service_reply.h"
+#include "wmts/location_service_query.h"
+#include "wmts/location_service_reply.h"
 #include "wmts/tile_matrix_set.h"
 #include "wmts/wmts_manager.h"
-#include "wmts/elevation_reply.h"
 
 #include <QObject>
 #include <QSharedPointer>
@@ -116,9 +118,13 @@ public:
   // Fixme: usefull ?
   QUrl make_layer_url(const QcTileSpec & tile_spec) const;
 
+  virtual bool has_location_service() { return false; }
+  virtual QSharedPointer<QcLocationServiceReply> geocode_request(const QcLocationServiceQuery & query) const;
+  virtual QSharedPointer<QcLocationServiceReverseReply> reverse_geocode_request(const QcLocationServiceReverseQuery & query) const;
+
   virtual bool has_coordinate_elevation_service() { return false; }
   virtual bool has_sampling_elevation_service() { return false; }
-  virtual QSharedPointer<QcElevationReply> coordinate_elevations(QVector<QcGeoCoordinateWGS84> coordinates) const;
+  virtual QSharedPointer<QcElevationServiceReply> coordinate_elevations(const QVector<QcGeoCoordinateWGS84> & coordinates) const;
 
 private:
   QString m_name;

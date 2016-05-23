@@ -33,8 +33,9 @@
 
 /**************************************************************************************************/
 
-#include "wmts/geoportail/geoportail_elevation_reply.h"
+#include "wmts/geoportail/geoportail_elevation_service_reply.h"
 #include "wmts/geoportail/geoportail_license.h"
+#include "wmts/geoportail/geoportail_location_service_reply.h"
 #include "wmts/geoportail/geoportail_wmts_tile_fetcher.h" // Fixme: circular
 #include "wmts/wmts_plugin.h"
 
@@ -94,14 +95,20 @@ public:
   // Fixme: private ?
   QcGeoportailWmtsTileFetcher * tile_fetcher() { return &m_tile_fetcher; }
 
+  bool has_location_service() override { return true; }
+  QSharedPointer<QcLocationServiceReply> geocode_request(const QcLocationServiceQuery & query) const override;
+  // virtual QSharedPointer<QcLocationServiceReply> inverse_geocode_request(const QcLocationServiceInverseQuery & query) const;
+
   bool has_coordinate_elevation_service() override { return true; }
   bool has_sampling_elevation_service() override { return true; }
-  QSharedPointer<QcElevationReply> coordinate_elevations(const QVector<QcGeoCoordinateWGS84> & coordinates) const;
+  QSharedPointer<QcElevationServiceReply> coordinate_elevations(const QVector<QcGeoCoordinateWGS84> & coordinates) const override;
+  QSharedPointer<QcLocationServiceReverseReply> reverse_geocode_request(const QcLocationServiceReverseQuery & query) const override;
 
   void set_user_agent(const QByteArray & user_agent) { m_user_agent = user_agent; }
 
   // Fixme: protect ?
   QNetworkReply * get(const QUrl & url) const;
+  QNetworkReply * post(const QUrl & url, const QByteArray & data) const;
 
 private Q_SLOTS:
   void on_authentication_request_slot(QNetworkReply * reply, QAuthenticator * authenticator);
@@ -111,6 +118,10 @@ private:
   QNetworkAccessManager * m_network_manager;
   QByteArray m_user_agent;
   QcGeoportailWmtsTileFetcher m_tile_fetcher;
+
+  QSharedPointer<QcLocationServiceReply> m_location_reply;
+  QSharedPointer<QcLocationServiceReverseReply> m_location_reverse_reply;
+  QSharedPointer<QcElevationServiceReply> m_elevation_reply;
 };
 
 // QC_END_NAMESPACE

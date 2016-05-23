@@ -67,11 +67,15 @@ set(qtcarto_files
   tools/logger.cpp
   tools/platform.cpp
 
-  wmts/geoportail/geoportail_elevation_reply.cpp
+  wmts/elevation_service_reply.cpp
+  wmts/geoportail/geoportail_elevation_service_reply.cpp
   wmts/geoportail/geoportail_license.cpp
+  wmts/geoportail/geoportail_location_service_reply.cpp
   wmts/geoportail/geoportail_plugin.cpp
   wmts/geoportail/geoportail_wmts_reply.cpp
   wmts/geoportail/geoportail_wmts_tile_fetcher.cpp
+  wmts/location_service_query.cpp
+  wmts/location_service_reply.cpp
   wmts/network_reply.cpp
   wmts/osm/osm_plugin.cpp
   wmts/osm/osm_wmts_reply.cpp

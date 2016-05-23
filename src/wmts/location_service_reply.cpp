@@ -26,49 +26,36 @@
 
 /**************************************************************************************************/
 
-#include "geoportail_elevation_reply.h"
-
-#include <QJsonDocument>
-#include <QJsonArray>
-#include <QJsonObject>
+#include "location_service_reply.h"
 
 /**************************************************************************************************/
 
-QcGeoportailElevationReply::QcGeoportailElevationReply(QNetworkReply * reply,
-                                                       const QVector<QcGeoCoordinateWGS84> & coordinates)
-  : QcElevationReply(reply, coordinates)
-{}
-
-QcGeoportailElevationReply::~QcGeoportailElevationReply()
-{}
-
-// Handle a successful request : store image data
-void
-QcGeoportailElevationReply::process_payload()
+QcLocationServiceReply::QcLocationServiceReply(QNetworkReply * reply,
+                                               const QcLocationServiceQuery & query)
+  : QcNetworkReply(reply),
+    m_query(query)
 {
-  QString ELEVATIONS = "elevations";
-  QByteArray json_data = network_reply()->readAll();
-  // { "elevations": [ { "lon": 0.23, "lat": 48.05, "z": 112.73, "acc": 2.5}, ... ] }
-  // qInfo() << json_data;
-  QJsonDocument json_document(QJsonDocument::fromJson(json_data));
-  const QJsonObject & json_root_object = json_document.object();
-  if (json_root_object.contains(ELEVATIONS)) {
-    QJsonArray json_array = json_root_object[ELEVATIONS].toArray();
-    for (const auto & json_ref : json_array) {
-      const QJsonObject & json_object = json_ref.toObject();
-      double longitude = json_object["lon"].toDouble();
-      double latitude = json_object["lat"].toDouble();
-      double elevation = json_object["z"].toDouble();
-      double elevation_accuracy = json_object["acc"].toDouble();
-      elevations() << QcGeoElevationCoordinateWGS84(longitude, latitude, elevation);
-    }
-  }
-  qInfo() << elevations();
 }
 
+QcLocationServiceReply::~QcLocationServiceReply()
+{}
+
 /**************************************************************************************************/
 
-// #include "geoportail_elevation_reply.moc"
+QcLocationServiceReverseReply::QcLocationServiceReverseReply(QNetworkReply * reply,
+                                                             const QcLocationServiceReverseQuery & query)
+  : QcNetworkReply(reply),
+    m_query(query)
+{
+}
+
+QcLocationServiceReverseReply::~QcLocationServiceReverseReply()
+{}
+
+/**************************************************************************************************/
+
+
+// #include "location_service_reply.moc"
 
 /***************************************************************************************************
  *

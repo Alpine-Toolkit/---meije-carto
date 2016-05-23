@@ -1,5 +1,3 @@
-// -*- mode: c++ -*-
-
 /***************************************************************************************************
 **
 ** $QTCARTO_BEGIN_LICENSE:GPL3$
@@ -28,41 +26,49 @@
 
 /**************************************************************************************************/
 
-#ifndef __ELEVATION_REPLY_H__
-#define __ELEVATION_REPLY_H__
+#include "geoportail_elevation_service_reply.h"
+
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
 
 /**************************************************************************************************/
 
-#include "coordinate/geo_coordinate.h"
-#include "wmts/network_reply.h"
+QcGeoportailElevationServiceReply::QcGeoportailElevationServiceReply(QNetworkReply * reply,
+                                                                     const QVector<QcGeoCoordinateWGS84> & coordinates)
+  : QcElevationServiceReply(reply, coordinates)
+{}
 
-/**************************************************************************************************/
+QcGeoportailElevationServiceReply::~QcGeoportailElevationServiceReply()
+{}
 
-// QC_BEGIN_NAMESPACE
-
-class QcElevationReply : public QcNetworkReply
+// Handle a successful request : store image data
+void
+QcGeoportailElevationServiceReply::process_payload()
 {
-  Q_OBJECT
-
-public:
-  explicit QcElevationReply(QNetworkReply * reply, const QVector<QcGeoCoordinateWGS84> & coordinates);
-  ~QcElevationReply();
-
-  const QVector<QcGeoElevationCoordinateWGS84> & elevations() const { return m_elevations; }
-
-protected:
-  QVector<QcGeoElevationCoordinateWGS84> & elevations() { return m_elevations; }
-
-private:
-  const QVector<QcGeoCoordinateWGS84> & m_coordinates;
-  QVector<QcGeoElevationCoordinateWGS84> m_elevations;
-};
-
-// QC_END_NAMESPACE
+  QString ELEVATIONS = "elevations";
+  QByteArray json_data = network_reply()->readAll();
+  // { "elevations": [ { "lon": 0.23, "lat": 48.05, "z": 112.73, "acc": 2.5}, ... ] }
+  // qInfo() << json_data;
+  QJsonDocument json_document(QJsonDocument::fromJson(json_data));
+  const QJsonObject & json_root_object = json_document.object();
+  if (json_root_object.contains(ELEVATIONS)) {
+    QJsonArray json_array = json_root_object[ELEVATIONS].toArray();
+    for (const auto & json_ref : json_array) {
+      const QJsonObject & json_object = json_ref.toObject();
+      double longitude = json_object["lon"].toDouble();
+      double latitude = json_object["lat"].toDouble();
+      double elevation = json_object["z"].toDouble();
+      double elevation_accuracy = json_object["acc"].toDouble();
+      elevations() << QcGeoElevationCoordinateWGS84(longitude, latitude, elevation);
+    }
+  }
+  qInfo() << elevations();
+}
 
 /**************************************************************************************************/
 
-#endif /* __ELEVATION_REPLY_H__ */
+// #include "geoportail_elevation_service_reply.moc"
 
 /***************************************************************************************************
  *

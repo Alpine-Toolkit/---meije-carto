@@ -1,8 +1,6 @@
-// -*- mode: c++ -*-
-
 /***************************************************************************************************
 **
-** $QTCARTO_BEGIN_LICENSE:GPL3$
+** $qtcarto_BEGIN_LICENSE:GPL3$
 **
 ** Copyright (C) 2016 Fabrice Salvaire
 ** Contact: http://www.fabrice-salvaire.fr
@@ -28,34 +26,45 @@
 
 /**************************************************************************************************/
 
-#ifndef __GEOPORTAIL_ELEVATION_REPLY_H__
-#define __GEOPORTAIL_ELEVATION_REPLY_H__
+#include "geoportail_location_service_reply.h"
 
 /**************************************************************************************************/
 
-#include "coordinate/geo_coordinate.h"
-#include "wmts/elevation_reply.h"
+QcGeoportailLocationServiceReply::QcGeoportailLocationServiceReply(QNetworkReply * reply,
+                                                                   const QcLocationServiceQuery & query)
+  : QcLocationServiceReply(reply, query)
+{}
 
-/**************************************************************************************************/
+QcGeoportailLocationServiceReply::~QcGeoportailLocationServiceReply()
+{}
 
-// QC_BEGIN_NAMESPACE
-
-class QcGeoportailElevationReply : public QcElevationReply
+// Handle a successful request : store image data
+void
+QcGeoportailLocationServiceReply::process_payload()
 {
-  Q_OBJECT
-
-public:
-  explicit QcGeoportailElevationReply(QNetworkReply * reply, const QVector<QcGeoCoordinateWGS84> & coordinates);
-  ~QcGeoportailElevationReply();
-
-  void process_payload();
-};
-
-// QC_END_NAMESPACE
+  qInfo() << network_reply()->readAll();
+}
 
 /**************************************************************************************************/
 
-#endif /* __GEOPORTAIL_ELEVATION_REPLY_H__ */
+QcGeoportailLocationServiceReverseReply::QcGeoportailLocationServiceReverseReply(QNetworkReply * reply,
+                                                                                 const QcLocationServiceReverseQuery & query)
+  : QcLocationServiceReverseReply(reply, query)
+{}
+
+QcGeoportailLocationServiceReverseReply::~QcGeoportailLocationServiceReverseReply()
+{}
+
+// Handle a successful request : store image data
+void
+QcGeoportailLocationServiceReverseReply::process_payload()
+{
+  qInfo() << network_reply()->readAll();
+}
+
+/**************************************************************************************************/
+
+// #include "geoportail_location_service_reply.moc"
 
 /***************************************************************************************************
  *

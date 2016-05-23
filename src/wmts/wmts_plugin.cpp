@@ -141,11 +141,25 @@ QcWmtsPlugin::make_layer_url(const QcTileSpec & tile_spec) const
   return layer(tile_spec)->url(tile_spec);
 }
 
-QSharedPointer<QcElevationReply>
-QcWmtsPlugin::coordinate_elevations(QVector<QcGeoCoordinateWGS84> coordinates) const
+QSharedPointer<QcLocationServiceReply>
+QcWmtsPlugin::geocode_request(const QcLocationServiceQuery & query) const
+{
+  Q_UNUSED(query);
+  return QSharedPointer<QcLocationServiceReply>(nullptr);
+}
+
+QSharedPointer<QcLocationServiceReverseReply>
+QcWmtsPlugin::reverse_geocode_request(const QcLocationServiceReverseQuery & query) const
+{
+  Q_UNUSED(query);
+  return QSharedPointer<QcLocationServiceReverseReply>(nullptr);
+}
+
+QSharedPointer<QcElevationServiceReply>
+QcWmtsPlugin::coordinate_elevations(const QVector<QcGeoCoordinateWGS84> & coordinates) const
 {
   Q_UNUSED(coordinates);
-  return QSharedPointer<QcElevationReply>(nullptr);
+  return QSharedPointer<QcElevationServiceReply>(nullptr);
 }
 
 /**************************************************************************************************/
