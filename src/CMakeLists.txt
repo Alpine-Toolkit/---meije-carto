@@ -10,14 +10,16 @@
 ####################################################################################################
 
 # Generate in source !
-add_custom_command (
-  OUTPUT map/shaders/location_circle_shader.h
-  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/map/shaders/make-shader location_circle
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/map/shaders
-  DEPENDS
-  map/shaders/location_circle_vertex_shader.glsl
-  map/shaders/location_circle_fragment_shader.glsl
-)
+foreach(shader_name location_circle path)
+  add_custom_command(
+    OUTPUT map/shaders/${shader_name}_shader.h
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/map/shaders/make-shader ${shader_name}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/map/shaders
+    DEPENDS
+    map/shaders/${shader_name}_vertex_shader.glsl
+    map/shaders/${shader_name}_fragment_shader.glsl
+    )
+endforeach(shader_name)
 
 ####################################################################################################
 #
@@ -27,8 +29,6 @@ add_custom_command (
 # geometry/polygon_seidler_triangulation.cpp
 
 set(qtcarto_files
-  # map/shaders/location_circle_shader.h
-
   cache/file_tile_cache.cpp
   cache/offline_cache.cpp
   cache/tile_image.cpp
