@@ -69,17 +69,17 @@
 
 /**************************************************************************************************/
 
+#include "qtcarto_global.h"
+#include "cache/file_tile_cache.h"
+#include "wmts/tile_spec.h"
+#include "wmts/wmts_manager.h"
+
 #include <QHash>
 #include <QObject>
 #include <QPointer>
 #include <QSet>
 #include <QSharedPointer>
 #include <QSize>
-
-#include "qtcarto_global.h"
-#include "cache/file_tile_cache.h"
-#include "wmts/tile_spec.h"
-#include "wmts/wmts_manager.h"
 
 /**************************************************************************************************/
 
@@ -113,7 +113,7 @@ class QcRetryFuture : public QObject
  */
 class QcWmtsRequestManager : public QObject
 {
-  Q_OBJECT
+  Q_OBJECT;
 
  public:
   explicit QcWmtsRequestManager(QcMapViewLayer * map_view_layer, QcWmtsManager * wmts_manager);
@@ -127,13 +127,14 @@ class QcWmtsRequestManager : public QObject
   QSharedPointer<QcTileTexture> tile_texture(const QcTileSpec & tile_spec);
 
  private:
+  Q_DISABLE_COPY(QcWmtsRequestManager)
+
+ private:
   QcMapViewLayer * m_map_view_layer;
   QPointer<QcWmtsManager> m_wmts_manager;
   QHash<QcTileSpec, int> m_retries;
   QHash<QcTileSpec, QSharedPointer<QcRetryFuture> > m_futures;
   QcTileSpecSet m_requested;
-
-  Q_DISABLE_COPY(QcWmtsRequestManager)
 };
 
 // QC_END_NAMESPACE

@@ -142,16 +142,16 @@ class QC_EXPORT QcWmtsManager : public QObject
  private:
   void remove_tile_spec(const QcTileSpec & tile_spec);
 
+  Q_DISABLE_COPY(QcWmtsManager);
+
+  friend class QcWmtsTileFetcher;
+
  private:
   QString m_plugin_name; // needed by cache directory
   QHash<QcMapViewLayer *, QcTileSpecSet > m_map_view_layer_hash;
   QHash<QcTileSpec, QcMapViewLayerPointerSet > m_tile_hash;
   QcFileTileCache * m_tile_cache;
   QcWmtsTileFetcher * m_tile_fetcher;
-
-  Q_DISABLE_COPY(QcWmtsManager);
-
-  friend class QcWmtsTileFetcher;
 };
 
 // Q_DECLARE_OPERATORS_FOR_FLAGS(QcWmtsManager::CacheAreas)
