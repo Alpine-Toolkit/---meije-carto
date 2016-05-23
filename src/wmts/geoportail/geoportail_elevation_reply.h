@@ -34,16 +34,13 @@
 /**************************************************************************************************/
 
 #include "coordinate/geo_coordinate.h"
-#include "wmts/network_reply.h"
-
-#include <QNetworkReply>
-#include <QPointer>
+#include "wmts/elevation_reply.h"
 
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
 
-class QcGeoportailElevationReply : public QcNetworkReply // QcElevationReply
+class QcGeoportailElevationReply : public QcElevationReply
 {
   Q_OBJECT
 
@@ -51,13 +48,7 @@ public:
   explicit QcGeoportailElevationReply(QNetworkReply * reply, const QVector<QcGeoCoordinateWGS84> & coordinates);
   ~QcGeoportailElevationReply();
 
-  const QVector<QcGeoElevationCoordinateWGS84> & elevations() const { return m_elevations; }
-
   void process_payload();
-
-private:
-  const QVector<QcGeoCoordinateWGS84> & m_coordinates;
-  QVector<QcGeoElevationCoordinateWGS84> m_elevations;
 };
 
 // QC_END_NAMESPACE

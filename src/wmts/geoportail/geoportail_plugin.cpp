@@ -213,7 +213,7 @@ QcGeoportailPlugin::on_authentication_request_slot(QNetworkReply * reply,
   authenticator->setPassword(m_license.password());
 }
 
-QcGeoportailElevationReply *
+QSharedPointer<QcElevationReply>
 QcGeoportailPlugin::coordinate_elevations(const QVector<QcGeoCoordinateWGS84> & coordinates) const
 {
   QStringList longitudes;
@@ -242,7 +242,7 @@ QcGeoportailPlugin::coordinate_elevations(const QVector<QcGeoCoordinateWGS84> & 
 
   QNetworkReply * reply = get(url);
 
-  return new QcGeoportailElevationReply(reply, coordinates);
+  return QSharedPointer<QcElevationReply>(new QcGeoportailElevationReply(reply, coordinates));
 }
 
 /**************************************************************************************************/

@@ -26,49 +26,23 @@
 
 /**************************************************************************************************/
 
-#include "geoportail_elevation_reply.h"
-
-#include <QJsonDocument>
-#include <QJsonArray>
-#include <QJsonObject>
+#include "elevation_reply.h"
 
 /**************************************************************************************************/
 
-QcGeoportailElevationReply::QcGeoportailElevationReply(QNetworkReply * reply,
-                                                       const QVector<QcGeoCoordinateWGS84> & coordinates)
-  : QcElevationReply(reply, coordinates)
-{}
-
-QcGeoportailElevationReply::~QcGeoportailElevationReply()
-{}
-
-// Handle a successful request : store image data
-void
-QcGeoportailElevationReply::process_payload()
+QcElevationReply::QcElevationReply(QNetworkReply * reply,
+                                   const QVector<QcGeoCoordinateWGS84> & coordinates)
+  : QcNetworkReply(reply),
+    m_coordinates(coordinates)
 {
-  QString ELEVATIONS = "elevations";
-  QByteArray json_data = network_reply()->readAll();
-  // { "elevations": [ { "lon": 0.23, "lat": 48.05, "z": 112.73, "acc": 2.5}, ... ] }
-  // qInfo() << json_data;
-  QJsonDocument json_document(QJsonDocument::fromJson(json_data));
-  const QJsonObject & json_root_object = json_document.object();
-  if (json_root_object.contains(ELEVATIONS)) {
-    QJsonArray json_array = json_root_object[ELEVATIONS].toArray();
-    for (const auto & json_ref : json_array) {
-      const QJsonObject & json_object = json_ref.toObject();
-      double longitude = json_object["lon"].toDouble();
-      double latitude = json_object["lat"].toDouble();
-      double elevation = json_object["z"].toDouble();
-      double elevation_accuracy = json_object["acc"].toDouble();
-      elevations() << QcGeoElevationCoordinateWGS84(longitude, latitude, elevation);
-    }
-  }
-  qInfo() << elevations();
 }
 
+QcElevationReply::~QcElevationReply()
+{}
+
 /**************************************************************************************************/
 
-// #include "geoportail_elevation_reply.moc"
+// #include "elevation_reply.moc"
 
 /***************************************************************************************************
  *

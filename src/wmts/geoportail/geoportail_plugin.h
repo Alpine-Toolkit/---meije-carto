@@ -96,7 +96,7 @@ public:
 
   bool has_coordinate_elevation_service() override { return true; }
   bool has_sampling_elevation_service() override { return true; }
-  QcGeoportailElevationReply * coordinate_elevations(const QVector<QcGeoCoordinateWGS84> & coordinates) const;
+  QSharedPointer<QcElevationReply> coordinate_elevations(const QVector<QcGeoCoordinateWGS84> & coordinates) const;
 
   void set_user_agent(const QByteArray & user_agent) { m_user_agent = user_agent; }
 

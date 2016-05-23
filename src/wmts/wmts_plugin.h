@@ -33,13 +33,15 @@
 
 /**************************************************************************************************/
 
-#include <QObject>
-#include <QString>
-#include <QUrl>
-
 #include "coordinate/geo_coordinate.h"
 #include "wmts/tile_matrix_set.h"
 #include "wmts/wmts_manager.h"
+#include "wmts/elevation_reply.h"
+
+#include <QObject>
+#include <QSharedPointer>
+#include <QString>
+#include <QUrl>
 
 /**************************************************************************************************/
 
@@ -116,10 +118,7 @@ public:
 
   virtual bool has_coordinate_elevation_service() { return false; }
   virtual bool has_sampling_elevation_service() { return false; }
-  // virtual QVector<QcGeoElevationCoordinateWGS84> coordinate_elevations(QVector<QcGeoCoordinateWGS84> coordinates) const {
-  //   Q_UNUSED(coordinates);
-  //   return QVector<QcGeoElevationCoordinateWGS84>();
-  // };
+  virtual QSharedPointer<QcElevationReply> coordinate_elevations(QVector<QcGeoCoordinateWGS84> coordinates) const;
 
 private:
   QString m_name;

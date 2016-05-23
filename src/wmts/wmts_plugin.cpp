@@ -141,6 +141,13 @@ QcWmtsPlugin::make_layer_url(const QcTileSpec & tile_spec) const
   return layer(tile_spec)->url(tile_spec);
 }
 
+QSharedPointer<QcElevationReply>
+QcWmtsPlugin::coordinate_elevations(QVector<QcGeoCoordinateWGS84> coordinates) const
+{
+  Q_UNUSED(coordinates);
+  return QSharedPointer<QcElevationReply>(nullptr);
+}
+
 /**************************************************************************************************/
 
 // #include "wmts_plugin.moc"
