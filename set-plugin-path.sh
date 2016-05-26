@@ -4,7 +4,7 @@
 #  qmldir
 #  libqmlqtcartoplugin.so
 
-cat >> imports/QtCarto/qmldir <<EOF
+cat > imports/QtCarto/qmldir <<EOF
 module QtCarto
 plugin qmlqtcartoplugin
 classname QtCartoDeclarativeModule
