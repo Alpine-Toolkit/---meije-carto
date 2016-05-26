@@ -66,36 +66,31 @@ QcMapItem {
 
         onPositionChanged: {
             var coordinate = position_source.position.coordinate
-            if (coordinate.isValid()) {
+            if (coordinate.isValid)
                 center = map.cast_QGeoCoordinate(coordinate)
-            }
         }
     }
 
     onCenterChanged: {
-        if (position_locked) {
-            if (center != map.cast_QGeoCoordinate(position_source.position.coordinate)) {
+        if (position_locked)
+            if (center != map.cast_QGeoCoordinate(position_source.position.coordinate))
                 position_locked = false
-            }
-        }
     }
 
     function set_scale() {
         var max_width = map.width
-        if (max_width > 500) {
+        if (max_width > 500)
             max_width = 2 / 3. * max_width
-        } else {
+        else
             max_width = .9 * max_width
-        }
         var map_scale = map.make_scale(max_width)
         console.info(map_scale)
         scale_rule.width = map_scale.length_px
         var length_m = map_scale.length
-        if (length_m >= 1000) {
+        if (length_m >= 1000)
             scale_text.text = length_m / 1000 + " km"
-        } else {
+        else
             scale_text.text = length_m + " m"
-        }
     }
 
     onZoom_levelChanged: {
@@ -178,11 +173,10 @@ QcMapItem {
             console.info("onDoubleClicked")
             var position_px = Qt.point(mouse.x, mouse.y);
             var zoom_increment = 0;
-            if (mouse.button === Qt.LeftButton) {
+            if (mouse.button === Qt.LeftButton)
                 zoom_increment = 1;
-            } else if (mouse.button === Qt.RightButton) {
+            else if (mouse.button === Qt.RightButton)
                 zoom_increment = -1;
-            }
             stable_zoom_by_increment(position_px, zoom_increment);
 
             last_x = -1;
