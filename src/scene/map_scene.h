@@ -129,6 +129,11 @@ public:
   QcMapLayerScene * add_layer(const QcWmtsPluginLayer * plugin_layer);
   void remove_layer(const QcWmtsPluginLayer * plugin_layer);
 
+  void update_path(const QcPathDouble & path) {
+    m_path = path;
+    m_dirty_path = true;
+  }
+
 private:
   float width() { return m_viewport->width(); }
   float height() { return m_viewport->height(); }
@@ -138,6 +143,9 @@ private:
   QList<QcMapLayerScene *> m_layers;
   QHash<QString, QcMapLayerScene *> m_layer_map;
   QList<QSGNode *> m_scene_graph_nodes_to_remove;
+
+  QcPathDouble m_path;
+  bool m_dirty_path;
 };
 
 /**************************************************************************************************/

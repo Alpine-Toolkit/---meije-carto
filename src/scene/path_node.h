@@ -34,6 +34,7 @@
 
 /**************************************************************************************************/
 
+#include "geometry/path.h"
 #include "map/viewport.h"
 
 #include <QSGOpacityNode>
@@ -49,10 +50,11 @@ class QcPathNode : public QSGOpacityNode
 public:
   QcPathNode(const QcViewport * viewport);
 
-  // void update();
+  void update(const QcPathDouble & path);
 
 private:
   const QcViewport * m_viewport; // Fixme: &
+  QSGGeometryNode * m_geometry_node;
 };
 
 /**************************************************************************************************/

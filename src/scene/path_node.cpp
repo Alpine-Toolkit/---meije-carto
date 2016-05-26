@@ -30,6 +30,7 @@
 #include "path_material_shader.h"
 
 #include <QSGFlatColorMaterial>
+#include <QtDebug>
 
 /**************************************************************************************************/
 
@@ -107,7 +108,7 @@ compute_offsets(const QcVectorDouble & dir1, const QcVectorDouble & dir2, double
   double cos = mitter.dot(normal1);
   double sin = mitter.cross(normal1);
   double tan = sin / cos;
-  double mitter_length = abs(half_width / cos);
+  double mitter_length = fabs(half_width / cos);
   u_offset = - half_width * tan; // Fixme: - ?
 
   return mitter * mitter_length;
@@ -117,55 +118,55 @@ compute_offsets(const QcVectorDouble & dir1, const QcVectorDouble & dir2, double
 
 QcPathNode::QcPathNode(const QcViewport * viewport)
   : QSGOpacityNode(),
-    m_viewport(viewport)
+    m_viewport(viewport),
+    m_geometry_node(new QSGGeometryNode())
 {
   setOpacity(1.); // 1. black
 
-  // Fixme: float ?
+  QSGGeometry * geometry = new QSGGeometry(PathPoint2D_AttributeSet, 0); // Fixme:
+  geometry->setDrawingMode(GL_TRIANGLE_STRIP);
+  m_geometry_node->setGeometry(geometry);
+  m_geometry_node->setFlag(QSGNode::OwnsGeometry);
+
+  QSGSimpleMaterial<QcPathMaterialShaderState> * material = QcPathMaterialShader::createMaterial();
+  material->state()->r = 0;
+  material->state()->g = 0;
+  material->state()->b = 1.;
+  material->state()->a = 1.;
+  material->setFlag(QSGMaterial::Blending);
+  m_geometry_node->setMaterial(material);
+  m_geometry_node->setFlag(QSGNode::OwnsMaterial);
+
+  appendChildNode(m_geometry_node);
+}
+
+void
+QcPathNode::update(const QcPathDouble & path)
+{
   QList<QcVectorDouble> path_vertexes;
-  // ok
-  // path_vertexes << QcVectorDouble(100, 300);
-  // path_vertexes << QcVectorDouble(400, 300);
-  // path_vertexes << QcVectorDouble(400, 600);
+  const QcInterval2DDouble & middle_interval = m_viewport->middle_interval();
+  QcVectorDouble inf(middle_interval.x().inf(), middle_interval.y().inf());
+  qInfo() << middle_interval << inf;
+  for (const auto & vertex : path.vertexes()) {
+    // qInfo() << vertex << inf << (vertex - inf);
+    path_vertexes << m_viewport->to_px(vertex - inf);
+  }
+  qInfo() << middle_interval << inf << path_vertexes;
 
-  // ok
-  // path_vertexes << QcVectorDouble(100, 300);
-  // path_vertexes << QcVectorDouble(400, 300);
-  // path_vertexes << QcVectorDouble(100, 600);
+  int number_of_path_vertexes = path_vertexes.size();
+  int number_of_segments = number_of_path_vertexes -1;
+  int number_of_vertexes = number_of_segments * 4;
 
-  // ok
-  // path_vertexes << QcVectorDouble(100, 300);
-  // path_vertexes << QcVectorDouble(400, 300);
-  // path_vertexes << QcVectorDouble(600, 600);
-
-  // ok
-  // path_vertexes << QcVectorDouble(100, 100);
-  // path_vertexes << QcVectorDouble(400, 400);
-  // path_vertexes << QcVectorDouble(700, 100);
-  // path_vertexes << QcVectorDouble(1000, 400);
-
-  path_vertexes << QcVectorDouble(100, 100);
-  path_vertexes << QcVectorDouble(400, 450);
-  path_vertexes << QcVectorDouble(625, 100);
-  path_vertexes << QcVectorDouble(800, 610);
+  QSGGeometry * geometry = new QSGGeometry(PathPoint2D_AttributeSet, number_of_vertexes);
+  geometry->setDrawingMode(GL_TRIANGLE_STRIP);
+  m_geometry_node->setGeometry(geometry);
+  m_geometry_node->setFlag(QSGNode::OwnsGeometry);
 
   double line_width = 10;
   double antialias_diameter = 1.;
   // Fixme: linewidth/2.0 + 1.5*antialias;
   double half_width = ceil(1.25*antialias_diameter + line_width) * .5;
 
-  int number_of_path_vertexes = path_vertexes.size();
-  int number_of_segments = number_of_path_vertexes -1;
-  int number_of_vertexes = number_of_segments * 4;
-
-  QSGGeometryNode * geometry_node = new QSGGeometryNode();
-  // QSGGeometry::defaultAttributes_Point2D()
-  QSGGeometry * geometry = new QSGGeometry(PathPoint2D_AttributeSet, number_of_vertexes);
-  geometry->setDrawingMode(GL_TRIANGLE_STRIP);
-  geometry_node->setGeometry(geometry);
-  geometry_node->setFlag(QSGNode::OwnsGeometry);
-
-  // QSGGeometry::Point2D * vertices = geometry->vertexDataAsPoint2D();
   PathPoint2D * vertices = static_cast<PathPoint2D *>(geometry->vertexData());
   int last_i = number_of_path_vertexes -2;
   for (int i = 0; i <= last_i; i++) {
@@ -240,19 +241,6 @@ QcPathNode::QcPathNode(const QcViewport * viewport)
       vertices[j+3].set(vertex, QcVectorDouble(segment_length - u2,  half_width), segment_length, line_width, cap2);
     }
   }
-
-  QSGSimpleMaterial<QcPathMaterialShaderState> * material = QcPathMaterialShader::createMaterial();
-  material->state()->r = 0;
-  material->state()->g = 0;
-  material->state()->b = 1.;
-  material->state()->a = 1.;
-  // QSGFlatColorMaterial * material = new QSGFlatColorMaterial();
-  // material->setColor(QColor("black"));
-  material->setFlag(QSGMaterial::Blending);
-  geometry_node->setMaterial(material);
-  geometry_node->setFlag(QSGNode::OwnsMaterial);
-
-  appendChildNode(geometry_node);
 }
 
 /**************************************************************************************************/

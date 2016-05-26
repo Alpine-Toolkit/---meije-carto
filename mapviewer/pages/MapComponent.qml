@@ -193,6 +193,7 @@ QcMapItem {
                 var map_event = map.map_event_router.create_map_event(mouse.button, mouse.buttons, mouse.modifiers, mouse.wasHeld, last_coordinate)
                 console.info(map_event)
                 map.map_event_router.handle_mouse_press_and_hold_event(map_event)
+                map.update()
             }
         }
     }

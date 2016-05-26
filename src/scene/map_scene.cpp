@@ -117,6 +117,13 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
     layer->update_scene_graph(layer_node, window);
   }
 
+  if (m_dirty_path) {
+    qInfo() << "Path is dirty" << m_path.number_of_edges();
+    if (m_path.number_of_edges())
+      map_root_node->path_node->update(m_path);
+    m_dirty_path = false;
+  }
+
   // Fixme: map_root_node->grid_node->update();
 
   return map_root_node;

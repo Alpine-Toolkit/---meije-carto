@@ -76,7 +76,8 @@ QcMapItem::QcMapItem(QQuickItem * parent)
   m_gesture_area->set_maximum_zoom_level(20);
 
   // Fixme: direct ptr
-  m_map_event_router.register_client(QcMapEventRouter::ClientSharedPointer(new QcMapPathEditor()));
+  // Fixme: in map_view ?
+  m_map_event_router.register_client(QcMapEventRouter::ClientSharedPointer(new QcMapPathEditor(m_map_view)));
 
   for (const auto & plugin_name : m_plugin_manager.plugin_names())
     m_plugin_layers.insert(plugin_name, make_plugin_layers(plugin_name));

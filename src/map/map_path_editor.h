@@ -35,6 +35,7 @@
 
 #include "geometry/path.h"
 #include "map/map_event_router.h"
+#include "map/map_view.h"
 
 /**************************************************************************************************/
 
@@ -47,7 +48,7 @@ class QcMapPathEditor : public QcMapEventClient
   Q_OBJECT
 
 public:
-  QcMapPathEditor();
+  QcMapPathEditor(QcMapView * map_view);
   ~QcMapPathEditor();
 
   // void handle_mouse_press_event(const QcMapEvent & event) override;
@@ -60,8 +61,14 @@ public:
   // void handle_clicked_event(const QcMapEvent & event) override;
   // void handle_double_clicked_event(const QcMapEvent & event) override;
 
+  void clear();
+
+  QcPathDouble path() const { return m_path; }
+  void set_path(const QcPathDouble & path) { m_path = path ;}
+
 private:
-  QcPath m_path;
+  QcPathDouble m_path;
+  QcMapView * m_map_view;
 };
 
 /**************************************************************************************************/
