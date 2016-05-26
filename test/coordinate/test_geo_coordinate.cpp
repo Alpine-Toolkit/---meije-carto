@@ -49,7 +49,7 @@ private slots:
 
 void TestQcGeoCoordinateWGS84::constructor()
 {
-  qInfo() << QcGeoCoordinateWGS84::projection.srid();
+  qInfo() << QcGeoCoordinateWGS84::cls_projection.srid();
 
   QcGeoCoordinateWGS84 coordinate0;
   QVERIFY(coordinate0.longitude() == .0);
@@ -81,9 +81,9 @@ void TestQcGeoCoordinateWGS84::constructor()
  // QVERIFY(qFuzzyCompare(web_mercator_coordinate1.x(), x));
  // QVERIFY(qFuzzyCompare(web_mercator_coordinate1.y(), y));
 
- //!// QcGeoCoordinateWebMercator web_mercator_coordinate2;
- //!// wgs84_coordinate1.transform(web_mercator_coordinate2);
- //!// QVERIFY(web_mercator_coordinate1 == web_mercator_coordinate2);
+ QcGeoCoordinateWebMercator web_mercator_coordinate2;
+ wgs84_coordinate1.transform(web_mercator_coordinate2);
+ QVERIFY(web_mercator_coordinate1 == web_mercator_coordinate2);
  // std::cout << web_mercator_coordinate2.x() << " " << web_mercator_coordinate2.y() << std::endl;
  // QVERIFY(qFuzzyCompare(web_mercator_coordinate1.x(), web_mercator_coordinate2.x()));
  // QVERIFY(qFuzzyCompare(web_mercator_coordinate1.y(), web_mercator_coordinate2.y()));

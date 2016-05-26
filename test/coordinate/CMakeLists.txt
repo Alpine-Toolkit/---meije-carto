@@ -12,8 +12,6 @@
 # Executable
 #
 
-# tile_loader
-
 foreach(name
     geo_coordinate
     )

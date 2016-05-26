@@ -87,9 +87,6 @@ QcGeoCoordinateWGS84::pseudo_web_mercator() const
 QcGeoCoordinateNormalisedWebMercator
 QcGeoCoordinateWGS84::normalised_web_mercator() const
 {
-  // 128/pi 2^level (longitude() + pi) px
-  // 128/pi 2^level (pi - ln(tan(latitude/2 + pi/4))) px
-
   // Fixme: duplicated code
   double x = qDegreesToRadians(longitude());
   double y = log(tan(qDegreesToRadians(latitude())/2 + M_PI/4));

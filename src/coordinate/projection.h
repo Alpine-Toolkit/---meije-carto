@@ -133,22 +133,19 @@ inline bool QcProjection::test_preserve_bit(PreserveBit preserve_bit) const {
 
 /**************************************************************************************************/
 
-template <typename Projection>
-class QC_EXPORT QcGeoCoordinate
+class QC_EXPORT QcGeoCoordinateTrait
 {
  public:
-  static const Projection projection;
+  virtual const QcProjection & projection() const = 0;
 
  public:
-  QcGeoCoordinate();
-  QcGeoCoordinate(double x, double y);
-  QcGeoCoordinate(const QcGeoCoordinate & other);
-  ~QcGeoCoordinate();
+  QcGeoCoordinateTrait();
+  QcGeoCoordinateTrait(const QcGeoCoordinateTrait & other);
 
-  QcGeoCoordinate & operator=(const QcGeoCoordinate & other);
+  QcGeoCoordinateTrait & operator=(const QcGeoCoordinateTrait & other);
 
-  bool operator==(const QcGeoCoordinate & other) const;
-  inline bool operator!=(const QcGeoCoordinate & other) const {
+  bool operator==(const QcGeoCoordinateTrait & other) const;
+  inline bool operator!=(const QcGeoCoordinateTrait & other) const {
     return !operator==(other);
   }
 
@@ -160,9 +157,9 @@ class QC_EXPORT QcGeoCoordinate
   inline double y() const { return m_y; }
   inline void set_y(double value) { m_y = value; }
 
-// #ifdef WITH_PROJ4
-//   void transform(QcGeoCoordinate & other);
-// #endif
+#ifdef WITH_PROJ4
+  void transform(QcGeoCoordinateTrait & other) const;
+#endif
 
   inline QcVectorDouble vector() const {
     return QcVectorDouble(m_x, m_y);
@@ -175,16 +172,27 @@ class QC_EXPORT QcGeoCoordinate
 };
 
 #ifndef QT_NO_DEBUG_STREAM
-template <typename Projection>
-QC_EXPORT QDebug operator<<(QDebug, const QcGeoCoordinate<Projection> &);
+QC_EXPORT QDebug operator<<(QDebug, const QcGeoCoordinateTrait &);
 #endif
 
 #ifndef QT_NO_DATASTREAM
-template <typename Projection>
-QC_EXPORT QDataStream &operator<<(QDataStream & stream, const QcGeoCoordinate<Projection> & coordinate);
-template <typename Projection>
-QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcGeoCoordinate<Projection> & coordinate);
+QC_EXPORT QDataStream &operator<<(QDataStream & stream, const QcGeoCoordinateTrait & coordinate);
+QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcGeoCoordinateTrait & coordinate);
 #endif
+
+/**************************************************************************************************/
+
+template <typename Projection>
+class QC_EXPORT QcGeoCoordinate : public QcGeoCoordinateTrait
+{
+ public:
+  static const Projection cls_projection; // class
+  inline const QcProjection & projection() const { return cls_projection; }; // instance
+
+ public:
+  QcGeoCoordinate() : QcGeoCoordinateTrait() {}
+  QcGeoCoordinate(double x, double y);
+};
 
 /**************************************************************************************************/
 

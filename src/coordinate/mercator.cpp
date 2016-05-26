@@ -89,9 +89,8 @@ QcGeoCoordinatePseudoWebMercator::QcGeoCoordinatePseudoWebMercator(double x, dou
   */
 
   // Adjust coordinate if outside domain
-  set_x(projection.x_extent().wrap(x));
-  // qInfo() << x << x();
-  set_y(projection.y_extent().truncate(y));
+  set_x(cls_projection.x_extent().wrap(x));
+  set_y(cls_projection.y_extent().truncate(y));
 }
 
 QcGeoCoordinatePseudoWebMercator::QcGeoCoordinatePseudoWebMercator()
@@ -153,10 +152,12 @@ QcGeoCoordinateNormalisedWebMercator::pseudo_web_mercator() const
 QcGeoCoordinateWGS84
 QcGeoCoordinateNormalisedWebMercator::wgs84() const
 {
-  double longitude = M_2PI * x() - M_PI;
-  double latitude = 2*atan(exp(M_PI - M_2PI * y())) - M_HALF_PI;
+  // double longitude = M_2PI * x() - M_PI;
+  // double latitude = 2*atan(exp(M_PI - M_2PI * y())) - M_HALF_PI;
 
-  return QcGeoCoordinateWGS84(qRadiansToDegrees(longitude), qRadiansToDegrees(latitude));
+  // return QcGeoCoordinateWGS84(qRadiansToDegrees(longitude), qRadiansToDegrees(latitude));
+
+  return web_mercator().wgs84();
 }
 
 /**************************************************************************************************/

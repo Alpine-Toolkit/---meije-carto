@@ -111,6 +111,108 @@ QcProjection::projection4() const
 
 /**************************************************************************************************/
 
+QcGeoCoordinateTrait::QcGeoCoordinateTrait()
+  : m_x(qQNaN()), m_y(qQNaN())
+{}
+
+QcGeoCoordinateTrait::QcGeoCoordinateTrait(const QcGeoCoordinateTrait & other)
+  : m_x(other.m_x), m_y(other.m_y)
+{}
+
+// Fixme: default
+QcGeoCoordinateTrait &
+QcGeoCoordinateTrait::operator=(const QcGeoCoordinateTrait & other)
+{
+  if (this != &other) {
+    m_x = other.m_x;
+    m_y = other.m_y;
+  }
+
+  return *this;
+}
+
+bool
+QcGeoCoordinateTrait::operator==(const QcGeoCoordinateTrait & other) const
+{
+  bool x_equal = ((qIsNaN(m_x) and qIsNaN(other.m_x))
+                  || qFuzzyCompare(m_x, other.m_x));
+  bool y_equal = ((qIsNaN(m_y) and qIsNaN(other.m_y))
+                  || qFuzzyCompare(m_y, other.m_y));
+
+  return (x_equal and y_equal);
+}
+
+bool
+QcGeoCoordinateTrait::is_valid() const
+{
+  return !(qIsNaN(m_x) or qIsNaN(m_y));
+}
+
+#ifdef WITH_PROJ4
+void
+QcGeoCoordinateTrait::transform(QcGeoCoordinateTrait & other) const
+{
+  const QcProjection4 projection4_from = projection().projection4();
+  const QcProjection4 projection4_to = other.projection().projection4();
+  double _x = x();
+  double _y = y();
+  if (projection4_from.is_latlong()) {
+    _x = qDegreesToRadians(_x);
+    _y = qDegreesToRadians(_y);
+  }
+  projection4_from.transform(projection4_to, _x, _y);
+  other.set_x(_x);
+  other.set_y(_y);
+}
+#endif
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug debug, const QcGeoCoordinateTrait & coordinate)
+{
+  QDebugStateSaver saver(debug);
+  double x = coordinate.x();
+  double y = coordinate.y();
+  QString class_name = QLatin1Literal("QcGeoCoordinate<") + coordinate.projection().srid() + QLatin1Literal(">(");
+
+  debug.nospace() << class_name.toStdString().c_str();
+  if (qIsNaN(x))
+    debug << '?';
+  else
+    debug << x;
+  debug << ", ";
+  if (qIsNaN(y))
+    debug << '?';
+  else
+    debug << y;
+  debug << ')';
+
+  return debug;
+}
+#endif
+
+#ifndef QT_NO_DATASTREAM
+QDataStream & operator<<(QDataStream & stream, const QcGeoCoordinateTrait & coordinate)
+{
+  stream << coordinate.x();
+  stream << coordinate.y();
+  return stream;
+}
+#endif
+
+#ifndef QT_NO_DATASTREAM
+QDataStream & operator>>(QDataStream & stream, QcGeoCoordinateTrait & coordinate)
+{
+  double value;
+  stream >> value;
+  coordinate.set_x(value);
+  stream >> value;
+  coordinate.set_y(value);
+  return stream;
+}
+#endif
+
+/**************************************************************************************************/
+
 // QC_END_NAMESPACE
 
 /***************************************************************************************************
