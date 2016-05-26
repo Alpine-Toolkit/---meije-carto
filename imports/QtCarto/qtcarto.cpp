@@ -35,7 +35,7 @@
 #include "map_gesture_area.h"
 
 // Fixme:
-#include "coordinate/geo_coordinate.h"
+#include "coordinate/wgs84.h"
 #include "map/map_event_router.h"
 
 // QC_BEGIN_NAMESPACE

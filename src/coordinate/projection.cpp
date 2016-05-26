@@ -1,5 +1,3 @@
-// -*- mode: c++ -*-
-
 /***************************************************************************************************
 **
 ** $QTCARTO_BEGIN_LICENSE:GPL3$
@@ -28,12 +26,9 @@
 
 /**************************************************************************************************/
 
-#ifndef __GEOPORTAIL_LOCATION_SERVICE_REPLY_H__
-#define __GEOPORTAIL_LOCATION_SERVICE_REPLY_H__
+#include "projection.h"
 
-/**************************************************************************************************/
-
-#include "wmts/location_service_reply.h"
+#include <QtMath>
 
 /**************************************************************************************************/
 
@@ -41,38 +36,82 @@
 
 /**************************************************************************************************/
 
-class QcGeoportailLocationServiceReply : public QcLocationServiceReply
+#ifdef WITH_PROJ4
+QcProjection4::QcProjection4(const QString & definition, projCtx context)
+  : m_projection(nullptr)
 {
-  Q_OBJECT
+  // cf. https://trac.osgeo.org/proj/wiki/ThreadSafety
+  if (!context)
+    context = pj_get_default_ctx();
+  // context = pj_ctx_alloc();
 
-public:
-  explicit QcGeoportailLocationServiceReply(QNetworkReply * reply, const QcLocationServiceQuery & query);
-  ~QcGeoportailLocationServiceReply();
+  m_projection = pj_init_plus_ctx(context, definition.toStdString().c_str());
+}
 
-  void process_payload();
-};
+QcProjection4::~QcProjection4()
+{
+  if (m_projection)
+    pj_free(m_projection);
+}
+
+void
+QcProjection4::transform(const QcProjection4 & proj2, double & x, double & y) const
+{
+  double z = .0;
+  return transform(proj2, x, y, z);
+}
+
+void
+QcProjection4::transform(const QcProjection4 & proj2, double & x, double & y, double & z) const
+{
+  // int pj_transform( projPJ src, projPJ dst, long point_count, int point_offset,
+  //                 double *x, double *y, double *z );
+
+  long point_count = 1;
+  int point_offset = 1;
+  int error = pj_transform(m_projection, proj2.m_projection, point_count, point_offset, &x, &y, &z);
+  if (error != 0)
+    throw; // Fixme: (pj_strerrno(error))
+}
+
+bool
+QcProjection4::is_latlong() const {
+  return pj_is_latlong(m_projection);
+}
+#endif
 
 /**************************************************************************************************/
 
-class QcGeoportailLocationServiceReverseReply : public QcLocationServiceReverseReply
+QcProjection::QcProjection(const QString & srid,
+                           const QcInterval2DDouble & extent,
+                           PreserveBit preserve_bit)
+  : m_srid(srid),
+    m_extent(extent),
+    m_preserve_bit(preserve_bit)
 {
-  Q_OBJECT
+  // qInfo() << "Build " + srid + " projection";
+}
 
-public:
-  explicit QcGeoportailLocationServiceReverseReply(QNetworkReply * reply, const QcLocationServiceReverseQuery & query);
-  ~QcGeoportailLocationServiceReverseReply();
+#ifdef WITH_PROJ4
+QString
+QcProjection::proj4_definition() const
+{
+  return QString("+init=") + srid();
+}
 
-  void process_payload();
-};
+QcProjection4 &
+QcProjection::projection4() const
+{
+  if (!m_projection4)
+    m_projection4 = new QcProjection4(proj4_definition()); // Fixme: never deleted ?
 
+  return *m_projection4;
+}
+#endif
 
 /**************************************************************************************************/
 
 // QC_END_NAMESPACE
-
-/**************************************************************************************************/
-
-#endif /* __GEOPORTAIL_LOCATION_SERVICE_REPLY_H__ */
 
 /***************************************************************************************************
  *

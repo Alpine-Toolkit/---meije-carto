@@ -33,7 +33,7 @@
 
 /**************************************************************************************************/
 
-#include "coordinate/geo_coordinate.h"
+#include "coordinate/mercator.h"
 #include "wmts/elevation_service_reply.h"
 #include "wmts/location_service_query.h"
 #include "wmts/location_service_reply.h"

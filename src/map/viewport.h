@@ -37,7 +37,8 @@
 #include <QSize>
 
 #include "qtcarto_global.h"
-#include "coordinate/geo_coordinate.h"
+#include "coordinate/mercator.h"
+#include "coordinate/wgs84.h"
 #include "geometry/polygon.h"
 #include "math/interval.h"
 

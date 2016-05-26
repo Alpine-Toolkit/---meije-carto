@@ -28,12 +28,12 @@
 
 /**************************************************************************************************/
 
-#ifndef __GEOPORTAIL_LOCATION_SERVICE_REPLY_H__
-#define __GEOPORTAIL_LOCATION_SERVICE_REPLY_H__
+#ifndef __SEXAGESIMAL_ANGLE_H__
+#define __SEXAGESIMAL_ANGLE_H__
 
 /**************************************************************************************************/
 
-#include "wmts/location_service_reply.h"
+#include "qtcarto_global.h"
 
 /**************************************************************************************************/
 
@@ -41,30 +41,57 @@
 
 /**************************************************************************************************/
 
-class QcGeoportailLocationServiceReply : public QcLocationServiceReply
+class QC_EXPORT QcGeoSexagesimalAngle
 {
-  Q_OBJECT
+ public:
+  static double to_decimal(int degrees, int minutes=0, double seconds=0);
+  static void to_sexagesimal(double angle, int & degrees, int & minutes, double & seconds);
 
-public:
-  explicit QcGeoportailLocationServiceReply(QNetworkReply * reply, const QcLocationServiceQuery & query);
-  ~QcGeoportailLocationServiceReply();
+  inline static bool is_valid_degrees(int degrees) {
+    // Fixme: -0 sign, 360 ? modulo ?
+    return -360 <= degrees && degrees <= 360;
+  }
 
-  void process_payload();
+  inline static bool is_valid_minutes(int degrees) {
+    return 0 <= degrees && degrees <= 60;
+  }
+
+ public:
+  QcGeoSexagesimalAngle(int degrees, int minutes=0, double seconds=0);
+  QcGeoSexagesimalAngle(double degrees);
+  QcGeoSexagesimalAngle(const QcGeoSexagesimalAngle & other);
+  ~QcGeoSexagesimalAngle();
+
+  QcGeoSexagesimalAngle & operator=(const QcGeoSexagesimalAngle & other);
+
+  bool operator==(const QcGeoSexagesimalAngle & other) const;
+  inline bool operator!=(const QcGeoSexagesimalAngle & other) const {
+    return !operator==(other);
+  }
+
+  inline int degrees() const { return m_degrees; }
+  inline void set_degrees(int degrees) {
+    if (is_valid_degrees(degrees))
+      m_degrees = degrees;
+  }
+  void set_degrees(double degrees);
+
+  inline int minutes() const { return m_degrees; }
+  inline void set_minutes(int minutes) {
+    if (is_valid_minutes(minutes))
+      m_minutes = minutes;
+  }
+
+  inline double seconds() const { return m_degrees; }
+  inline void set_seconds(double seconds) { m_seconds = seconds; }
+
+  double decimal() const;
+
+ private:
+  int m_degrees;
+  int m_minutes; // Fixme: unsigned
+  double m_seconds;
 };
-
-/**************************************************************************************************/
-
-class QcGeoportailLocationServiceReverseReply : public QcLocationServiceReverseReply
-{
-  Q_OBJECT
-
-public:
-  explicit QcGeoportailLocationServiceReverseReply(QNetworkReply * reply, const QcLocationServiceReverseQuery & query);
-  ~QcGeoportailLocationServiceReverseReply();
-
-  void process_payload();
-};
-
 
 /**************************************************************************************************/
 
@@ -72,7 +99,7 @@ public:
 
 /**************************************************************************************************/
 
-#endif /* __GEOPORTAIL_LOCATION_SERVICE_REPLY_H__ */
+#endif /* __SEXAGESIMAL_ANGLE_H__ */
 
 /***************************************************************************************************
  *

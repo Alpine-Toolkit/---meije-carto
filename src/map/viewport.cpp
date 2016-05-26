@@ -363,14 +363,14 @@ QcViewport::update_area()
   // Fixme: check y interval lie in mercator domain
 
   const QcInterval2DDouble & _interval = polygon.interval();
-  m_cross_date_line = !_interval.is_included_in(QcGeoCoordinatePseudoWebMercator::domain());
+  m_cross_date_line = !_interval.is_included_in(QcGeoCoordinatePseudoWebMercator::projection.extent());
   // qInfo() << "Cross date line" << m_cross_date_line;
   if (m_cross_date_line) {
     if (_bearing) {
       // Fixme: bearing and date line crossing
     } else {
       // interval matches polygon
-      double mercator_x_sup = QcGeoCoordinatePseudoWebMercator::x_interval().sup();
+      double mercator_x_sup = QcGeoCoordinatePseudoWebMercator::projection.x_extent().sup();
       double x_inf = _interval.x().inf();
       double x_sup = _interval.x().sup();
       m_cross_west_line = x_inf < 0;

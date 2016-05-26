@@ -35,7 +35,7 @@
 
 #include "qtcarto_global.h"
 
-#include "coordinate/geo_coordinate.h"
+#include "coordinate/wgs84.h"
 
 #include <QMap>
 #include <QMetaType>

@@ -34,7 +34,7 @@
 /**************************************************************************************************/
 
 #include "qtcarto_global.h"
-#include "coordinate/geo_coordinate.h"
+#include "coordinate/mercator.h"
 #include "earth.h"
 #include "wmts/tile_matrix_index.h"
 

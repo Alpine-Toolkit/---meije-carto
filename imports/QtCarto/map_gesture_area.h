@@ -70,7 +70,8 @@
 /**************************************************************************************************/
 
 #include "geo_coordinate_animation.h"
-#include "coordinate/geo_coordinate.h"
+#include "coordinate/mercator.h"
+#include "coordinate/wgs84.h"
 #include "geometry/vector.h"
 
 #include <QDebug> // Fixme: QtDebug ???

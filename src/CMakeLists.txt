@@ -35,7 +35,10 @@ set(qtcarto_files
 
   configuration/configuration.cpp
 
-  coordinate/geo_coordinate.cpp
+  coordinate/mercator.cpp
+  coordinate/projection.cpp
+  coordinate/sexagesimal_angle.cpp
+  coordinate/wgs84.cpp
 
   geo_data_format/gpx.cpp
   geo_data_format/route.cpp

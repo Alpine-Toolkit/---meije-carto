@@ -34,7 +34,8 @@
 /**************************************************************************************************/
 
 #include "cache/offline_cache.h"
-#include "coordinate/geo_coordinate.h"
+#include "coordinate/mercator.h"
+#include "coordinate/wgs84.h"
 #include "geometry/polygon.h"
 #include "geometry/vector.h"
 #include "tools/logger.h"

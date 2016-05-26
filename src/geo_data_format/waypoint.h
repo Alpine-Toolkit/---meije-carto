@@ -37,7 +37,7 @@
 #include <QString>
 #include <QList>
 
-#include "coordinate/geo_coordinate.h"
+#include "coordinate/wgs84.h"
 
 /**************************************************************************************************/
 

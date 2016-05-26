@@ -29,7 +29,7 @@
 #include "declarative_map_item.h"
 
 #include "earth.h"
-#include "coordinate/geo_coordinate.h"
+#include "coordinate/wgs84.h"
 #include "map/map_path_editor.h"
 #include "wmts/geoportail/geoportail_plugin.h"
 #include "wmts/osm/osm_plugin.h"
