@@ -31,8 +31,6 @@
 #include "earth.h"
 #include "coordinate/wgs84.h"
 #include "map/map_path_editor.h"
-#include "wmts/geoportail/geoportail_plugin.h"
-#include "wmts/osm/osm_plugin.h"
 
 #include <cmath>
 
