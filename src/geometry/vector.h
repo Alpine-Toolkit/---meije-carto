@@ -57,6 +57,8 @@ template <typename T> QcVector<T> operator+(const QcVector<T> & vector1, const Q
 template <typename T> QcVector<T> operator-(const QcVector<T> & vector1, const QcVector<T> & vector2);
 template <typename T> QcVector<T> operator*(const QcVector<T> & vector, T factor);
 template <typename T> QcVector<T> operator/(const QcVector<T> & vector, T factor);
+template <typename T> QcVector<T> operator*(const QcVector<T> & vector1, const QcVector<T> & vector2);
+template <typename T> QcVector<T> operator/(const QcVector<T> & vector1, const QcVector<T> & vector2);
 
 template <typename T>
 class QC_EXPORT QcVector
@@ -98,11 +100,15 @@ class QC_EXPORT QcVector
   QcVector<T> & operator-=(const QcVector<T> & other);
   QcVector<T> & operator*=(T factor);
   QcVector<T> & operator/=(T factor);
+  QcVector<T> & operator*=(const QcVector<T> & other);
+  QcVector<T> & operator/=(const QcVector<T> & other);
 
   friend QcVector<T> operator+<>(const QcVector<T> & vector1, const QcVector<T> & vector2);
   friend QcVector<T> operator-<>(const QcVector<T> & vector1, const QcVector<T> & vector2);
   friend QcVector<T> operator*<>(const QcVector<T> & vector, T factor);
   friend QcVector<T> operator/<>(const QcVector<T> & vector, T factor);
+  friend QcVector<T> operator*<>(const QcVector<T> & vector1, const QcVector<T> & vector2);
+  friend QcVector<T> operator/<>(const QcVector<T> & vector1, const QcVector<T> & vector2);
 
   // Return the orientation in degree
   T orientation() const;

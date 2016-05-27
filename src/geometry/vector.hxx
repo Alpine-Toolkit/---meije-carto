@@ -251,6 +251,39 @@ operator/(const QcVector<T> & vector, T factor)
   return QcVector<T>(vector.m_x / factor, vector.m_y / factor);
 }
 
+template <typename T>
+QcVector<T> &
+QcVector<T>::operator*=(const QcVector<T> & other)
+{
+  m_x *= other.m_x;
+  m_y *= other.m_y;
+  return *this;
+}
+
+template <typename T>
+QcVector<T>
+operator*(const QcVector<T> & vector1, const QcVector<T> & vector2)
+{
+  return QcVector<T>(vector1.m_x * vector2.m_x, vector1.m_y * vector2.m_y);
+}
+
+template <typename T>
+QcVector<T> &
+QcVector<T>::operator/=(const QcVector<T> & other)
+{
+  m_x /= other.m_x;
+  m_y /= other.m_y;
+  return *this;
+}
+
+template <typename T>
+QcVector<T>
+operator/(const QcVector<T> & vector1, const QcVector<T> & vector2)
+{
+  return QcVector<T>(vector1.m_x / vector2.m_x, vector1.m_y / vector2.m_y);
+}
+
+
 // Return the orientation in degree
 template <typename T>
 T
