@@ -5,52 +5,55 @@ import QtQuick.Window 2.2
 import QtQuick.Layouts 1.1
 import QtQuick.Controls 2.0
 
-Pane {
-    id: layer_pane
-    width: application_window.width / 2
+Flickable {
+    contentHeight: layer_pane.height
 
-    // Fixme: width, vertical slider, title
-    Column {
-        anchors.fill: parent
+    Pane {
+        id: layer_pane
+        width: application_window.width / 2
 
-        Repeater {
-            model: map.plugins
+        Column {
+            width: parent.width
 
-            Column {
-                property var plugin_data: modelData
-
-                Text {
-                    font.pixelSize: 20
-                    font.bold: true
-                    text: plugin_data.title
-                }
+            Repeater {
+                model: map.plugins
 
                 Column {
-                    width: layer_pane.width
+                    property var plugin_data: modelData
 
-                    Repeater {
-                        model: map.plugin_layers(plugin_data.name)
+                    Text {
+                        font.pixelSize: 20
+                        font.bold: true
+                        text: plugin_data.title
+                    }
 
-                        Row {
-                            property var plugin_layer: modelData
+                    Column {
+                        width: layer_pane.width
 
-                            CheckBox {
-                                id: checkbox
-                                anchors.verticalCenter: parent.verticalCenter
-                                Component.onCompleted: checked = plugin_layer.status
-                                onCheckedChanged: plugin_layer.status = checked
-                            }
-                            Text {
-                                anchors.verticalCenter: parent.verticalCenter
-                                width: layer_pane.width / 3
-                                text: plugin_layer.title
-                            }
-                            Slider {
-                                id: slider
-                                anchors.verticalCenter: parent.verticalCenter
-                                enabled: checkbox.checked
-                                Component.onCompleted: value = plugin_layer.opacity
-                                onValueChanged: plugin_layer.opacity = value
+                        Repeater {
+                            model: map.plugin_layers(plugin_data.name)
+
+                            Row {
+                                property var plugin_layer: modelData
+
+                                CheckBox {
+                                    id: checkbox
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    Component.onCompleted: checked = plugin_layer.status
+                                    onCheckedChanged: plugin_layer.status = checked
+                                }
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    width: layer_pane.width / 3
+                                    text: plugin_layer.title
+                                }
+                                Slider {
+                                    id: slider
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    enabled: checkbox.checked
+                                    Component.onCompleted: value = plugin_layer.opacity
+                                    onValueChanged: plugin_layer.opacity = value
+                                }
                             }
                         }
                     }
@@ -58,4 +61,6 @@ Pane {
             }
         }
     }
+
+    ScrollIndicator.vertical: ScrollIndicator {}
 }

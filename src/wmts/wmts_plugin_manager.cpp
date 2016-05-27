@@ -31,8 +31,12 @@
 #include "configuration/configuration.h"
 
 #include "providers/artic_web_map/artic_web_map_plugin.h"
+#include "providers/austria/austria_plugin.h"
 #include "providers/geoportail/geoportail_plugin.h"
+#include "providers/germany/germany_plugin.h"
 #include "providers/osm/osm_plugin.h"
+#include "providers/spain/spain_plugin.h"
+#include "providers/swiss_confederation/swiss_confederation_plugin.h"
 
 #include <QtDebug>
 
@@ -41,9 +45,15 @@
 QcWmtsPluginManager::QcWmtsPluginManager()
 {
   // Fixme: plugin name versus title ?
-  m_plugin_names << QcGeoportailPlugin::PLUGIN_NAME
-                 << QcOsmPlugin::PLUGIN_NAME
-                 << QcArticWebMapPlugin::PLUGIN_NAME;
+  m_plugin_names
+    << QcArticWebMapPlugin::PLUGIN_NAME
+    << QcAustriaPlugin::PLUGIN_NAME
+    << QcGeoportailPlugin::PLUGIN_NAME
+    << QcGermanyPlugin::PLUGIN_NAME
+    << QcOsmPlugin::PLUGIN_NAME
+    << QcSpainPlugin::PLUGIN_NAME
+    << QcSwissConfederationPlugin::PLUGIN_NAME
+    ;
 }
 
 QcWmtsPluginManager::~QcWmtsPluginManager()
@@ -65,9 +75,17 @@ QcWmtsPluginManager::operator[](const QString & name)
     if (name == QcGeoportailPlugin::PLUGIN_NAME)
       plugin = create_plugin_geoportail();
     else if (name == QcOsmPlugin::PLUGIN_NAME)
-      plugin = create_plugin_osm();
+      plugin = new QcOsmPlugin();
     else if (name == QcArticWebMapPlugin::PLUGIN_NAME)
-      plugin = create_plugin_artic_web_map();
+      plugin = new QcArticWebMapPlugin();
+    else if (name == QcSwissConfederationPlugin::PLUGIN_NAME)
+      plugin = new QcSwissConfederationPlugin();
+    else if (name == QcSpainPlugin::PLUGIN_NAME)
+      plugin = new QcSpainPlugin();
+    else if (name == QcAustriaPlugin::PLUGIN_NAME)
+      plugin = new QcAustriaPlugin();
+    else if (name == QcGermanyPlugin::PLUGIN_NAME)
+      plugin = new QcGermanyPlugin();
 
     if (plugin)
       m_plugins.insert(plugin->name(), plugin);
@@ -87,18 +105,6 @@ QcWmtsPluginManager::create_plugin_geoportail()
   QcGeoportailWmtsLicense geoportail_license(json_path);
 
   return new QcGeoportailPlugin(geoportail_license);
-}
-
-QcWmtsPlugin *
-QcWmtsPluginManager::create_plugin_osm()
-{
-  return new QcOsmPlugin();
-}
-
-QcWmtsPlugin *
-QcWmtsPluginManager::create_plugin_artic_web_map()
-{
-  return new QcArticWebMapPlugin();
 }
 
 /**************************************************************************************************/

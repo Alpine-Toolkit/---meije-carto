@@ -26,36 +26,34 @@
 
 /**************************************************************************************************/
 
-#include "artic_web_map_plugin.h"
+#include "germany_plugin.h"
 
 /**************************************************************************************************/
 
-QcArticWebMapLayer::QcArticWebMapLayer(QcArticWebMapPlugin * plugin,
-                                       int map_id,
-                                       int position,
-                                       const QString & title,
-                                       const QString & name)
-  : QcWmtsPluginLayer(plugin, map_id, position, title, name, QLatin1Literal("png"))
+QcGermanyLayer::QcGermanyLayer(QcGermanyPlugin * plugin,
+                               int map_id,
+                               int position,
+                               const QString & title,
+                               const QString & name,
+                               const QString & image_format)
+  : QcWmtsPluginLayer(plugin, map_id, position, title, name, image_format)
 {}
 
-QcArticWebMapLayer::QcArticWebMapLayer(const QcArticWebMapLayer & other)
-  : QcWmtsPluginLayer(other)
-{}
-
-QcArticWebMapLayer::~QcArticWebMapLayer()
-{}
+// QcGermanyLayer::QcGermanyLayer(const QcGermanyLayer & other)
+//   : QcWmtsPluginLayer(other)
+// {}
 
 QUrl
-QcArticWebMapLayer::url(const QcTileSpec & tile_spec) const
+QcGermanyLayer::url(const QcTileSpec & tile_spec) const
 {
-  /* http://{s}.tiles.arcticconnect.org/osm_{projection}/{z}/{x}/{y}.png
-   *
-   * where {s} is either a, b or c, {projection} is one of 3571, 3572,
-   * 3573, 3574, 3575 or 3576, {z} is the zoom level, {x} is the tile
-   * x-index, and {y} is the tile y-index.
-   */
+  // http://sg.geodatenzentrum.de/wmts_webatlasde/tile/1.0.0/webatlasde/default/DE_EPSG_25832_ADV/3/3/7.png
 
-  return QUrl(QStringLiteral("http://a.tiles.arcticconnect.org/osm_3571/") +
+  // http://sg.geodatenzentrum.de/wms_dtk200?FORMAT=image%2Fjpeg&TRANSPARENT=FALSE&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&LAYERS=DTK200&SRS=EPSG%3A25832&BBOX=550687.2074199,5679937.1602661,555579.17723015,5684829.1300764&WIDTH=256&HEIGHT=256
+
+  return QUrl(QStringLiteral("http://sg.geodatenzentrum.de/wmts_webatlasde/tile/1.0.0/") +
+              name()  + QLatin1Char('/') +
+              QLatin1Literal("default/") +
+              QLatin1Literal("DE_EPSG_25832_ADV/") +
               QString::number(tile_spec.level()) + QLatin1Char('/') +
               QString::number(tile_spec.x()) + QLatin1Char('/') +
               QString::number(tile_spec.y()) +
@@ -64,30 +62,32 @@ QcArticWebMapLayer::url(const QcTileSpec & tile_spec) const
 
 /**************************************************************************************************/
 
-const QString QcArticWebMapPlugin::PLUGIN_NAME = "artic-web-map-3571";
-const QString PLUGIN_TITLE = "Artic Web Map";
+const QString QcGermanyPlugin::PLUGIN_NAME = "germany";
+const QString PLUGIN_TITLE = "Germany";
 constexpr int NUMBER_OF_LEVELS = 20;
 constexpr int TILE_SIZE = 256;
 
-QcArticWebMapPlugin::QcArticWebMapPlugin()
+QcGermanyPlugin::QcGermanyPlugin()
   : QcWmtsPlugin(PLUGIN_NAME, PLUGIN_TITLE,
-                 new  QcTileMatrixSet(QcProjection::by_srid(QLatin1Literal("epsg:3571")),
-                                      QcVectorDouble(1., -1.),
-                                      QcVectorDouble(-HALF_EQUATORIAL_PERIMETER, HALF_EQUATORIAL_PERIMETER), // Fixme: use projection
-                                      QcGeoCoordinateWGS84(180., 90.),
-                                      NUMBER_OF_LEVELS,
-                                      TILE_SIZE))
+                 new QcMercatorTileMatrixSet(NUMBER_OF_LEVELS, TILE_SIZE))
 {
+
   int map_id = -1;
-  add_layer(new QcArticWebMapLayer(this,
-                                   ++map_id, // 1
-                                   1,
-                                   QLatin1Literal("Bearing Sea Map ESPG:3571"),
-                                   QLatin1Literal("espg-3571")));
+  add_layer(new QcGermanyLayer(this,
+                               ++map_id, // 1
+                               1,
+                               QLatin1Literal("Map"),
+                               QLatin1Literal("webatlasde"),
+                               QLatin1Literal("png")
+                               ));
 }
 
-QcArticWebMapPlugin::~QcArticWebMapPlugin()
+QcGermanyPlugin::~QcGermanyPlugin()
 {}
+
+/**************************************************************************************************/
+
+// #include "swiss_plugin.moc"
 
 /***************************************************************************************************
  *

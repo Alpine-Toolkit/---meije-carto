@@ -1,3 +1,5 @@
+// -*- mode: c++ -*-
+
 /***************************************************************************************************
 **
 ** $QTCARTO_BEGIN_LICENSE:GPL3$
@@ -26,42 +28,62 @@
 
 /**************************************************************************************************/
 
+#ifndef __SPAIN_PLUGIN_H__
+#define __SPAIN_PLUGIN_H__
+
+/**************************************************************************************************/
+
+#include "wmts/wmts_plugin.h"
 #include "wmts/wmts_network_tile_fetcher.h"
 
-#include "wmts/wmts_network_reply.h"
-#include "wmts/wmts_plugin.h"
-
-#include <QDebug>
+#include <QString>
 
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
 
+class QcSpainPlugin;
+
 /**************************************************************************************************/
 
-QcWmtsNetworkTileFetcher::QcWmtsNetworkTileFetcher(QcWmtsPlugin * plugin)
-  : QcWmtsTileFetcher(),
-    m_plugin(plugin)
-{}
-
-QcWmtsNetworkTileFetcher::~QcWmtsNetworkTileFetcher()
-{}
-
-QcWmtsReply *
-QcWmtsNetworkTileFetcher::get_tile_image(const QcTileSpec & tile_spec)
+class QcSpainLayer : public QcWmtsPluginLayer
 {
-  const QcWmtsPluginLayer * layer = m_plugin->layer(tile_spec);
-  QUrl url = layer->url(tile_spec);
-  qInfo() << url.toEncoded();
+public:
+  QcSpainLayer(QcSpainPlugin * plugin,
+               int map_id,
+               int position,
+               const QString & title,
+               const QString & name,
+               const QString & base,
+               const QString & image_format);
 
-  QNetworkReply *reply = m_plugin->get(url);
+  QUrl url(const QcTileSpec & tile_spec) const override;
 
-  return new QcWmtsNetworkReply(reply, tile_spec, layer->image_format());
-}
+private:
+  QString m_base;
+};
+
+/**************************************************************************************************/
+
+class QcSpainPlugin : public QcWmtsPlugin
+{
+  Q_OBJECT
+
+public:
+  static const QString PLUGIN_NAME;
+
+public:
+  QcSpainPlugin();
+  ~QcSpainPlugin();
+};
 
 /**************************************************************************************************/
 
 // QC_END_NAMESPACE
+
+/**************************************************************************************************/
+
+#endif /* __SPAIN_PLUGIN_H__ */
 
 /***************************************************************************************************
  *

@@ -1,3 +1,5 @@
+// -*- mode: c++ -*-
+
 /***************************************************************************************************
 **
 ** $QTCARTO_BEGIN_LICENSE:GPL3$
@@ -26,42 +28,58 @@
 
 /**************************************************************************************************/
 
+#ifndef __GERMANY_PLUGIN_H__
+#define __GERMANY_PLUGIN_H__
+
+/**************************************************************************************************/
+
+#include "wmts/wmts_plugin.h"
 #include "wmts/wmts_network_tile_fetcher.h"
 
-#include "wmts/wmts_network_reply.h"
-#include "wmts/wmts_plugin.h"
-
-#include <QDebug>
+#include <QString>
 
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
 
+class QcGermanyPlugin;
+
 /**************************************************************************************************/
 
-QcWmtsNetworkTileFetcher::QcWmtsNetworkTileFetcher(QcWmtsPlugin * plugin)
-  : QcWmtsTileFetcher(),
-    m_plugin(plugin)
-{}
-
-QcWmtsNetworkTileFetcher::~QcWmtsNetworkTileFetcher()
-{}
-
-QcWmtsReply *
-QcWmtsNetworkTileFetcher::get_tile_image(const QcTileSpec & tile_spec)
+class QcGermanyLayer : public QcWmtsPluginLayer
 {
-  const QcWmtsPluginLayer * layer = m_plugin->layer(tile_spec);
-  QUrl url = layer->url(tile_spec);
-  qInfo() << url.toEncoded();
+public:
+  QcGermanyLayer(QcGermanyPlugin * plugin,
+                 int map_id,
+                 int position,
+                 const QString & title,
+                 const QString & name,
+                 const QString & image_format);
 
-  QNetworkReply *reply = m_plugin->get(url);
+  QUrl url(const QcTileSpec & tile_spec) const override;
+};
 
-  return new QcWmtsNetworkReply(reply, tile_spec, layer->image_format());
-}
+/**************************************************************************************************/
+
+class QcGermanyPlugin : public QcWmtsPlugin
+{
+  Q_OBJECT
+
+public:
+  static const QString PLUGIN_NAME;
+
+public:
+  QcGermanyPlugin();
+  ~QcGermanyPlugin();
+};
 
 /**************************************************************************************************/
 
 // QC_END_NAMESPACE
+
+/**************************************************************************************************/
+
+#endif /* __GERMANY_PLUGIN_H__ */
 
 /***************************************************************************************************
  *
