@@ -32,8 +32,6 @@
 #include "wmts/wmts_plugin.h"
 
 #include <QDebug>
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
 
 /**************************************************************************************************/
 
@@ -54,11 +52,9 @@ QcWmtsNetworkTileFetcher::get_tile_image(const QcTileSpec & tile_spec)
 {
   const QcWmtsPluginLayer * layer = m_plugin->layer(tile_spec);
   QUrl url = layer->url(tile_spec);
-  qInfo() << url;
+  // qInfo() << url;
 
   QNetworkReply *reply = m_plugin->get(url);
-  if (reply->error() != QNetworkReply::NoError)
-    qWarning() << __FUNCTION__ << reply->errorString();
 
   return new QcWmtsNetworkReply(reply, tile_spec, layer->image_format());
 }

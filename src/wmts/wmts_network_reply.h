@@ -43,6 +43,8 @@
 
 /**************************************************************************************************/
 
+// Fixme: clarify API
+
 class QcWmtsNetworkReply : public QcWmtsReply
 {
   Q_OBJECT

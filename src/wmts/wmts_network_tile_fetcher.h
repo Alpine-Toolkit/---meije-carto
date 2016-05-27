@@ -35,8 +35,6 @@
 
 #include "wmts/wmts_tile_fetcher.h"
 
-#include <QNetworkAccessManager>
-
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE

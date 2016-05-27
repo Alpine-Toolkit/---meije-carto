@@ -96,10 +96,10 @@ QcWmtsPlugin::QcWmtsPlugin(const QString & name, const QString & title, QcTileMa
     m_name(name),
     m_title(title),
     m_tile_matrix_set(tile_matrix_set),
-    m_wmts_manager(name),
     m_user_agent("QtCarto based application"),
     m_network_manager(),
-    m_tile_fetcher(this)
+    m_tile_fetcher(this),
+    m_wmts_manager(name)
 {
   wmts_manager()->set_tile_fetcher(&m_tile_fetcher);
   wmts_manager()->tile_cache(); // create a file tile cache

@@ -104,9 +104,11 @@ public:
   const QString & name() const { return m_name; }
   const QString & title() const { return m_title; }
   QcTileMatrixSet & tile_matrix_set() { return *m_tile_matrix_set; } // Fixme: const ?
-  QcWmtsManager * wmts_manager() { return &m_wmts_manager; }  // Fixme: & or *
+
+  // Fixme: & or *
   QNetworkAccessManager * network_manager() { return &m_network_manager; }
   QcWmtsNetworkTileFetcher * tile_fetcher() { return &m_tile_fetcher; }
+  QcWmtsManager * wmts_manager() { return &m_wmts_manager; }
 
   void set_user_agent(const QByteArray & user_agent) { m_user_agent = user_agent; }
 
@@ -133,6 +135,7 @@ public:
   virtual QSharedPointer<QcElevationServiceReply> coordinate_elevations(const QVector<QcGeoCoordinateWGS84> & coordinates);
 
   // Fixme: protect ?
+  // Fixme: networking could be moved in a dedicated class (QcWmtsNetworkTileFetcher but ols)
   QNetworkReply * get(const QUrl & url);
   QNetworkReply * post(const QUrl & url, const QByteArray & data);
 
@@ -144,10 +147,10 @@ private:
   QList<const QcWmtsPluginLayer *> m_layers;
   QHash<int, const QcWmtsPluginLayer *> m_layer_map;
   QSharedPointer<QcTileMatrixSet> m_tile_matrix_set;
-  QcWmtsManager m_wmts_manager;
   QByteArray m_user_agent;
-  QNetworkAccessManager m_network_manager; // share network manager for all requests
+  QNetworkAccessManager m_network_manager; // share network manager for all requests: tile, ols, ...
   QcWmtsNetworkTileFetcher m_tile_fetcher;
+  QcWmtsManager m_wmts_manager;
 };
 
 /**************************************************************************************************/
