@@ -79,7 +79,8 @@ constexpr int NUMBER_OF_LEVELS = 20;
 constexpr int TILE_SIZE = 256;
 
 QcOsmPlugin::QcOsmPlugin()
-  : QcWmtsPlugin(PLUGIN_NAME, PLUGIN_TITLE, NUMBER_OF_LEVELS, TILE_SIZE),
+  : QcWmtsPlugin(PLUGIN_NAME, PLUGIN_TITLE,
+                 new QcMercatorTileMatrixSet(NUMBER_OF_LEVELS, TILE_SIZE)),
     m_tile_fetcher(this)
 {
   wmts_manager()->set_tile_fetcher(&m_tile_fetcher);

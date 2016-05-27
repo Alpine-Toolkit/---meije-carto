@@ -68,6 +68,7 @@ private:
   ~QcWmtsPluginManager();
   QcWmtsPluginManager();
 
+  QcWmtsPlugin * create_plugin_artic_web_map();
   QcWmtsPlugin * create_plugin_geoportail();
   QcWmtsPlugin * create_plugin_osm();
 

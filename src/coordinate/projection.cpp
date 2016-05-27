@@ -28,6 +28,10 @@
 
 #include "projection.h"
 
+#include "laea.h"
+#include "mercator.h"
+#include "wgs84.h"
+
 #include <QtMath>
 
 /**************************************************************************************************/
@@ -38,8 +42,11 @@
 
 #ifdef WITH_PROJ4
 QcProjection4::QcProjection4(const QString & definition, projCtx context)
-  : m_projection(nullptr)
+  : m_definition(definition),
+    m_projection(nullptr)
 {
+  qInfo() << definition;
+
   // cf. https://trac.osgeo.org/proj/wiki/ThreadSafety
   if (!context)
     context = pj_get_default_ctx();
@@ -50,8 +57,10 @@ QcProjection4::QcProjection4(const QString & definition, projCtx context)
 
 QcProjection4::~QcProjection4()
 {
-  if (m_projection)
-    pj_free(m_projection);
+  qInfo() << m_definition;
+  // Fixme: segfault
+  // if (m_projection)
+  //   pj_free(m_projection);
 }
 
 void
@@ -82,14 +91,95 @@ QcProjection4::is_latlong() const {
 
 /**************************************************************************************************/
 
+QMap<QString, QcProjection *> QcProjection::m_instances;
+
+const QcProjection *
+QcProjection::by_srid(const QString & srid)
+{
+  if (m_instances.isEmpty())
+    init();
+  if (m_instances.contains(srid))
+    return m_instances.value(srid);
+  else {
+    qWarning() << "SRID not found";
+    return nullptr;
+  }
+}
+
+void
+QcProjection::init()
+{
+  register_projection(new QcWgs84Projection());
+  register_projection(new QcWebMercatorProjection());
+  register_projection(new QcLaeaProjection_3571());
+}
+
+void
+QcProjection::register_projection(QcProjection * projection)
+{
+  const QString & srid = projection->srid();
+  if (!m_instances.contains(srid))
+    m_instances.insert(srid, projection);
+}
+
+
+QcProjection::QcProjection()
+  : m_srid(),
+    m_extent(),
+    m_preserve_bit(),
+    m_projection4()
+{}
+
 QcProjection::QcProjection(const QString & srid,
                            const QcInterval2DDouble & extent,
                            PreserveBit preserve_bit)
   : m_srid(srid),
     m_extent(extent),
     m_preserve_bit(preserve_bit)
+#ifdef WITH_PROJ4
+  , m_projection4(new QcProjection4(proj4_definition()))
+#endif
 {
   // qInfo() << "Build " + srid + " projection";
+}
+
+QcProjection::QcProjection(const QcProjection & other)
+  : m_srid(other.m_srid),
+    m_extent(other.m_extent),
+    m_preserve_bit(other.m_preserve_bit)
+#ifdef WITH_PROJ4
+  , m_projection4(other.m_projection4)
+#endif
+{}
+
+// Fixme: default
+QcProjection &
+QcProjection::operator=(const QcProjection & other)
+{
+  if (this != &other) {
+    m_srid = other.m_srid;
+    m_extent = other.m_extent;
+    m_preserve_bit = other.m_preserve_bit;
+#ifdef WITH_PROJ4
+    m_projection4 = other.m_projection4;
+#endif
+  }
+
+  return *this;
+}
+
+bool
+QcProjection::operator==(const QcProjection & other) const
+{
+  return (m_srid == other.m_srid and
+          m_extent == other.m_extent and
+          m_preserve_bit == other.m_preserve_bit);
+}
+
+QcGeoCoordinate
+QcProjection::coordinate(double x, double y) const
+{
+  return QcGeoCoordinate(this, x, y);
 }
 
 #ifdef WITH_PROJ4
@@ -97,15 +187,6 @@ QString
 QcProjection::proj4_definition() const
 {
   return QString("+init=") + srid();
-}
-
-QcProjection4 &
-QcProjection::projection4() const
-{
-  if (!m_projection4)
-    m_projection4 = new QcProjection4(proj4_definition()); // Fixme: never deleted ?
-
-  return *m_projection4;
 }
 #endif
 
@@ -210,6 +291,19 @@ QDataStream & operator>>(QDataStream & stream, QcGeoCoordinateTrait & coordinate
   return stream;
 }
 #endif
+
+/**************************************************************************************************/
+
+QcGeoCoordinate::QcGeoCoordinate(const QcProjection * projection, double x, double y)
+  : QcGeoCoordinateTrait(),
+    m_projection(projection)
+{
+  if (m_projection->is_valid_xy(x, y)) {
+    set_x(x);
+    set_y(y);
+  } else
+    throw std::invalid_argument("Invalid coordinate");
+}
 
 /**************************************************************************************************/
 

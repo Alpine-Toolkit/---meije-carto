@@ -39,7 +39,8 @@
 #include "geometry/polygon.h"
 #include "geometry/vector.h"
 #include "tools/logger.h"
-#include "wmts/geoportail/geoportail_plugin.h"
+
+#include "wmts/providers/geoportail/geoportail_plugin.h"
 
 // #include "map/tile_loader.h"
 

@@ -40,7 +40,9 @@
 
 // #include <cstdint>
 
+#include <QMap>
 #include <QString>
+#include <QSharedPointer>
 
 #ifdef WITH_PROJ4
 #include "proj_api.h"
@@ -54,6 +56,8 @@
 
 class QDebug;
 class QDataStream;
+
+class QcGeoCoordinate;
 
 /**************************************************************************************************/
 
@@ -70,6 +74,7 @@ class QC_EXPORT QcProjection4
   bool is_latlong() const;
 
  private:
+  QString m_definition;
   projPJ m_projection;
 };
 #endif
@@ -89,7 +94,24 @@ class QC_EXPORT QcProjection
   };
 
  public:
+  static const QcProjection * by_srid(const QString & srid);
+
+ private:
+  static void init();
+  static void register_projection(QcProjection * projection);
+  static QMap<QString, QcProjection *> m_instances; // QSharedPointer<>
+
+ public:
+  QcProjection();
   QcProjection(const QString & srid, const QcInterval2DDouble & extent, PreserveBit preserve_bit);
+  QcProjection(const QcProjection & other);
+
+  QcProjection & operator=(const QcProjection & other);
+
+  bool operator==(const QcProjection & other) const;
+  inline bool operator!=(const QcProjection & other) const {
+    return !operator==(other);
+  }
 
   inline const QString & srid() const { return m_srid; }
 
@@ -107,6 +129,8 @@ class QC_EXPORT QcProjection
   inline bool preserve_distance() const { return test_preserve_bit(PreserveBit::PreserveDistance); }
   inline bool preserve_shortest_route() const { return test_preserve_bit(PreserveBit::PreserveShortestRoute); }
 
+  QcGeoCoordinate coordinate(double x, double y) const;
+
  private:
   bool test_preserve_bit(PreserveBit preserve_bit) const;
 
@@ -118,10 +142,10 @@ class QC_EXPORT QcProjection
 #ifdef WITH_PROJ4
  public:
   virtual QString proj4_definition() const;
-  inline QcProjection4 & projection4() const;
+  inline QcProjection4 & projection4() const { return *m_projection4; }
 
  private:
-  mutable QcProjection4 * m_projection4 = nullptr;
+  QSharedPointer<QcProjection4> m_projection4; // Fixme: several instance
 #endif
 };
 
@@ -183,15 +207,29 @@ QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcGeoCoordinateTrait & c
 /**************************************************************************************************/
 
 template <typename Projection>
-class QC_EXPORT QcGeoCoordinate : public QcGeoCoordinateTrait
+class QC_EXPORT QcGeoCoordinateTemplate : public QcGeoCoordinateTrait
 {
  public:
   static const Projection cls_projection; // class
   inline const QcProjection & projection() const { return cls_projection; }; // instance
 
  public:
+  QcGeoCoordinateTemplate() : QcGeoCoordinateTrait() {}
+  QcGeoCoordinateTemplate(double x, double y);
+};
+
+/**************************************************************************************************/
+
+class QC_EXPORT QcGeoCoordinate : public QcGeoCoordinateTrait
+{
+ public:
   QcGeoCoordinate() : QcGeoCoordinateTrait() {}
-  QcGeoCoordinate(double x, double y);
+  QcGeoCoordinate(const QcProjection * projection, double x, double y);
+
+  inline const QcProjection & projection() const { return *m_projection; }; // instance
+
+ private:
+  const QcProjection * m_projection; // class
 };
 
 /**************************************************************************************************/

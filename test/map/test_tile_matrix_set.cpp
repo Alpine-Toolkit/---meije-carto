@@ -46,13 +46,13 @@ private slots:
 
 void TestQcTileMatrixSet::constructor()
 {
-  QcTileMatrixSet tile_matrix_set("wtms", 20, 256);
+  QcMercatorTileMatrixSet tile_matrix_set(20, 256);
 
   for (size_t i = 0; i < tile_matrix_set.number_of_levels(); i++) {
     std::cout << "Level " << tile_matrix_set[i].level() << std::endl;
   }
 
-  for (const QcTileMatrix & tile_matrix : tile_matrix_set) {
+  for (const QcTileMatrix & tile_matrix : tile_matrix_set.levels()) {
     std::cout << "Level " << tile_matrix.level() << std::endl;
   }
 }

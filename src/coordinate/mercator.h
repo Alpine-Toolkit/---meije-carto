@@ -54,6 +54,35 @@ class QcGeoCoordinateNormalisedWebMercator;
 
 /**************************************************************************************************/
 
+/*!
+ * http://epsg.io/3857
+ *
+ * Unit: metre
+ * Geodetic CRS: WGS 84
+ * Datum: World Geodetic System 1984
+ * Ellipsoid: WGS 84
+ * Prime meridian: Greenwich
+ * Data source: OGP
+ * Scope: Certain Web mapping and visualisation applications. It is
+ *   not a recognised geodetic system: for that see ellipsoidal Mercator
+ *   CRS code 3395 (WGS 84 / World Mercator).
+ * Remarks: Uses spherical development of ellipsoidal
+ *   coordinates. Relative to WGS 84 / World Mercator (CRS code 3395)
+ *   errors of 0.7 percent in scale and differences in northing of up to
+ *   43km in the map (equivalent to 21km on the ground) may arise.
+ * Area of use: World between 85.06°S and 85.06°N.
+ * Coordinate system: Cartesian 2D CS. Axes: easting, northing (X,Y). Orientations: east, north. UoM: m.
+ * Center coordinates
+ *   0.00 -0.00
+ * Projected bounds:
+ *   -20026376.39 -20048966.10
+ *    20026376.39  20048966.10
+ * WGS84 bounds:
+ *   -180.0 -85.06
+ *    180.0  85.06
+ * World between 85.06°S and 85.06°N.
+ */
+
 class QC_EXPORT QcWebMercatorProjection : public QcProjection
 {
   /*
@@ -89,7 +118,7 @@ class QC_EXPORT QcWebMercatorProjection : public QcProjection
 };
 
 
-class QC_EXPORT QcGeoCoordinateWebMercator : public QcGeoCoordinate<QcWebMercatorProjection>
+class QC_EXPORT QcGeoCoordinateWebMercator : public QcGeoCoordinateTemplate<QcWebMercatorProjection>
 {
   Q_GADGET;
 
@@ -122,7 +151,7 @@ class QC_EXPORT QcPseudoMercatorProjection : public QcProjection
 };
 
 
-class QC_EXPORT QcGeoCoordinatePseudoWebMercator : public QcGeoCoordinate<QcPseudoMercatorProjection>
+class QC_EXPORT QcGeoCoordinatePseudoWebMercator : public QcGeoCoordinateTemplate<QcPseudoMercatorProjection>
 {
   Q_GADGET;
 
@@ -160,7 +189,7 @@ class QC_EXPORT QcNormalisedMercatorProjection : public QcProjection
 };
 
 
-class QC_EXPORT QcGeoCoordinateNormalisedWebMercator : public QcGeoCoordinate<QcNormalisedMercatorProjection>
+class QC_EXPORT QcGeoCoordinateNormalisedWebMercator : public QcGeoCoordinateTemplate<QcNormalisedMercatorProjection>
 {
   Q_GADGET;
 

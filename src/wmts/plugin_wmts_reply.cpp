@@ -1,5 +1,3 @@
-// -*- mode: c++ -*-
-
 /***************************************************************************************************
 **
 ** $QTCARTO_BEGIN_LICENSE:GPL3$
@@ -28,39 +26,27 @@
 
 /**************************************************************************************************/
 
-#ifndef __OSM_WMTS_REPLY_H__
-#define __OSM_WMTS_REPLY_H__
+#include "wmts/plugin_wmts_reply.h"
 
 /**************************************************************************************************/
 
-#include "wmts/wmts_reply.h"
+QcPluginWmtsReply::QcPluginWmtsReply(QNetworkReply * reply,
+                                     const QcTileSpec & tile_spec,
+                                     const QString & format)
+  : QcWmtsReply(reply, tile_spec),
+    m_format(format)
+{}
 
-#include <QNetworkReply>
-#include <QPointer>
+QcPluginWmtsReply::~QcPluginWmtsReply()
+{}
 
-/**************************************************************************************************/
-
-// QC_BEGIN_NAMESPACE
-
-class QcOsmWmtsReply : public QcWmtsReply
+// Handle a successful request : store image data
+void
+QcPluginWmtsReply::process_payload()
 {
-  Q_OBJECT
-
-public:
-  explicit QcOsmWmtsReply(QNetworkReply * reply, const QcTileSpec & spec, const QString & format);
-  ~QcOsmWmtsReply();
-
-  void process_payload();
-
-private:
-  QString m_format;
-};
-
-// QC_END_NAMESPACE
-
-/**************************************************************************************************/
-
-#endif /* __OSM_WMTS_REPLY_H__ */
+  set_map_image_data(network_reply()->readAll());
+  set_map_image_format(m_format);
+}
 
 /***************************************************************************************************
  *

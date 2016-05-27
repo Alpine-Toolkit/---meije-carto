@@ -32,31 +32,39 @@
 
 /**************************************************************************************************/
 
-QcTileMatrixSetIterator::QcTileMatrixSetIterator (const QcTileMatrixSet * tile_matrix_set, int position)
-  : m_position(position), m_tile_matrix_set(tile_matrix_set)
-{}
+// QcTileMatrixSetIterator::QcTileMatrixSetIterator (const QcTileMatrixSet * tile_matrix_set, int position)
+//   : m_position(position), m_tile_matrix_set(tile_matrix_set)
+// {}
 
-const QcTileMatrix &
-QcTileMatrixSetIterator::operator* () const {
-  return (*m_tile_matrix_set)[m_position];
-}
+// const QcTileMatrix &
+// QcTileMatrixSetIterator::operator* () const {
+//   return (*m_tile_matrix_set)[m_position];
+// }
 
 /**************************************************************************************************/
 
 double
 QcTileMatrixSet::resolution_for_level(double map_size, int tile_size, int zoom_level)
 {
+  // assume square map
   return map_size / double(tile_size * (1 << zoom_level)); // unit is m/px
 }
 
-QcTileMatrixSet::QcTileMatrixSet(QString name, int number_of_levels, int tile_size)
-  : m_name(name),
+QcTileMatrixSet::QcTileMatrixSet(const QcProjection * projection,
+                                 const QcVectorDouble & origin,
+                                 const QcVectorDouble & scale,
+                                 const QcGeoCoordinateWGS84 & default_center,
+                                 int number_of_levels,
+                                 int tile_size)
+  : m_projection(projection),
+    m_origin(origin),
+    m_default_center(default_center),
     m_number_of_levels(number_of_levels),
     m_tile_size(tile_size),
-    m_root_resolution(EQUATORIAL_PERIMETER / tile_size)
+    m_root_resolution(projection->x_extent().length() / tile_size) // assume square map
 {
   for (int level = 0; level < number_of_levels; level++)
-    m_tile_matrix_set.emplace_back(*this, level);
+    m_tile_matrix_set << QcTileMatrix(this, level);
 }
 
 int
@@ -67,38 +75,63 @@ QcTileMatrixSet::closest_level(double resolution) const
 
 /**************************************************************************************************/
 
-QcTileMatrix::QcTileMatrix(QcTileMatrixSet & tile_matrix_set, int level)
+QcTileMatrix::QcTileMatrix()
+  : m_tile_matrix_set(nullptr),
+    m_level(0),
+    m_mosaic_size(0),
+    m_resolution(0),
+    m_tile_length_m(0)
+{}
+
+QcTileMatrix::QcTileMatrix(QcTileMatrixSet * tile_matrix_set, int level)
   : m_tile_matrix_set(tile_matrix_set),
     m_level(level),
     m_mosaic_size(1 << level),
-    m_resolution(tile_matrix_set.level_resolution(level)),
+    m_resolution(tile_matrix_set->level_resolution(level)),
     m_tile_length_m(0)
 {
   m_tile_length_m = tile_size() * m_resolution;
 }
 
+QcTileMatrix::QcTileMatrix(const QcTileMatrix & other)
+  : m_tile_matrix_set(other.m_tile_matrix_set),
+    m_level(other.m_level),
+    m_mosaic_size(other.m_mosaic_size),
+    m_resolution(other.m_resolution),
+    m_tile_length_m(other.m_tile_length_m)
+{}
+
+// QcTileMatrix::operator=(const QcTileMatrix & other)
+// {
+//   m_tile_matrix_set = other.m_tile_matrix_set;
+//   m_level = other.m_level;
+//   m_mosaic_size = other.m_mosaic_size;
+//   m_resolution = other.m_resolution;
+//   m_tile_length_m = other.m_tile_length_m;
+// }
+
 QcTileMatrixIndex
-QcTileMatrix::mercator_to_matrix_index(const QcGeoCoordinateWebMercator & coordinate) const
+QcTileMatrix::to_matrix_index(const QcVectorDouble & coordinate) const
 {
-  // return mercator_to_matrix_index(coordinate.normalised_mercator());
-
-  double xm = coordinate.x() - QcTileMatrixSet::x_offset;
-  double ym = QcTileMatrixSet::y_offset - coordinate.y();
-
-  int x = int(xm / m_tile_length_m);
-  int y = int(ym / m_tile_length_m);
-
-  if (x < m_mosaic_size and y < m_mosaic_size)
-    return QcTileMatrixIndex(x, y);
-  else
-    throw std::invalid_argument("Invalid coordinate");
+  QcVectorDouble mapped_coordinate = (coordinate - m_tile_matrix_set->origin()) * m_tile_matrix_set->scale();
+  mapped_coordinate /= m_tile_length_m;
+  return _to_matrix_index_check(mapped_coordinate);
 }
 
+/*
+// Normalised case
 QcTileMatrixIndex
-QcTileMatrix::mercator_to_matrix_index(const QcGeoCoordinateNormalisedWebMercator & coordinate) const
+QcTileMatrix::to_matrix_index(const QcVectorDouble & coordinate) const
 {
-  int x = int(coordinate.x() * m_mosaic_size);
-  int y = int(coordinate.x() * m_mosaic_size);
+  return _to_matrix_index_check(coordinate * m_mosaic_size);
+}
+*/
+
+QcTileMatrixIndex
+QcTileMatrix::_to_matrix_index_check(const QcVectorDouble & mapped_coordinate) const
+{
+  int x = static_cast<int>(mapped_coordinate.x());
+  int y = static_cast<int>(mapped_coordinate.y());
 
   if (x < m_mosaic_size and y < m_mosaic_size)
     return QcTileMatrixIndex(x, y);

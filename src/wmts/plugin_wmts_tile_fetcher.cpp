@@ -26,32 +26,54 @@
 
 /**************************************************************************************************/
 
-#include "osm_wmts_reply.h"
+#include "wmts/plugin_wmts_tile_fetcher.h"
+
+#include "wmts/plugin_wmts_reply.h"
+#include "wmts/wmts_plugin.h"
+
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QDebug>
 
 /**************************************************************************************************/
 
-QcOsmWmtsReply::QcOsmWmtsReply(QNetworkReply * reply,
-                               const QcTileSpec & tile_spec,
-                               const QString & format)
-  : QcWmtsReply(reply, tile_spec),
-    m_format(format)
-{
-}
+// QC_BEGIN_NAMESPACE
 
-QcOsmWmtsReply::~QcOsmWmtsReply()
+/**************************************************************************************************/
+
+QcPluginWmtsTileFetcher::QcPluginWmtsTileFetcher(const QcWmtsPlugin * plugin)
+  : QcWmtsTileFetcher(),
+    m_plugin(plugin),
+    m_network_manager(new QNetworkAccessManager(this)),
+    m_user_agent("QtCarto based application")
 {}
 
-// Handle a successful request : store image data
-void
-QcOsmWmtsReply::process_payload()
+QcPluginWmtsTileFetcher::~QcPluginWmtsTileFetcher()
 {
-  set_map_image_data(network_reply()->readAll());
-  set_map_image_format(m_format);
+  delete m_network_manager;
+}
+
+QcWmtsReply *
+QcPluginWmtsTileFetcher::get_tile_image(const QcTileSpec & tile_spec)
+{
+  const QcWmtsPluginLayer * layer = m_plugin->layer(tile_spec);
+  QUrl url = layer->url(tile_spec);
+  // qInfo() << url;
+
+  QNetworkRequest request;
+  request.setRawHeader("User-Agent", m_user_agent);
+  request.setUrl(url);
+
+  QNetworkReply *reply = m_network_manager->get(request);
+  if (reply->error() != QNetworkReply::NoError)
+    qWarning() << __FUNCTION__ << reply->errorString();
+
+  return new QcPluginWmtsReply(reply, tile_spec, layer->image_format());
 }
 
 /**************************************************************************************************/
 
-// #include "osm_wmts_reply.moc"
+// QC_END_NAMESPACE
 
 /***************************************************************************************************
  *

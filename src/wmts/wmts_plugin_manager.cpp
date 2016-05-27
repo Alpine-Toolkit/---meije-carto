@@ -29,8 +29,10 @@
 #include "wmts_plugin_manager.h"
 
 #include "configuration/configuration.h"
-#include "geoportail/geoportail_plugin.h"
-#include "osm/osm_plugin.h"
+
+#include "providers/artic_web_map/artic_web_map_plugin.h"
+#include "providers/geoportail/geoportail_plugin.h"
+#include "providers/osm/osm_plugin.h"
 
 #include <QtDebug>
 
@@ -40,7 +42,8 @@ QcWmtsPluginManager::QcWmtsPluginManager()
 {
   // Fixme: plugin name versus title ?
   m_plugin_names << QcGeoportailPlugin::PLUGIN_NAME
-                 << QcOsmPlugin::PLUGIN_NAME;
+                 << QcOsmPlugin::PLUGIN_NAME
+                 << QcArticWebMapPlugin::PLUGIN_NAME;
 }
 
 QcWmtsPluginManager::~QcWmtsPluginManager()
@@ -63,6 +66,8 @@ QcWmtsPluginManager::operator[](const QString & name)
       plugin = create_plugin_geoportail();
     else if (name == QcOsmPlugin::PLUGIN_NAME)
       plugin = create_plugin_osm();
+    else if (name == QcArticWebMapPlugin::PLUGIN_NAME)
+      plugin = create_plugin_artic_web_map();
 
     if (plugin)
       m_plugins.insert(plugin->name(), plugin);
@@ -88,6 +93,12 @@ QcWmtsPlugin *
 QcWmtsPluginManager::create_plugin_osm()
 {
   return new QcOsmPlugin();
+}
+
+QcWmtsPlugin *
+QcWmtsPluginManager::create_plugin_artic_web_map()
+{
+  return new QcArticWebMapPlugin();
 }
 
 /**************************************************************************************************/

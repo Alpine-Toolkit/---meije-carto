@@ -125,7 +125,8 @@ constexpr int NUMBER_OF_LEVELS = 20;
 constexpr int TILE_SIZE = 256;
 
 QcGeoportailPlugin::QcGeoportailPlugin(const QcGeoportailWmtsLicense & license)
-  : QcWmtsPlugin(PLUGIN_NAME, PLUGIN_TITLE, NUMBER_OF_LEVELS, TILE_SIZE),
+  : QcWmtsPlugin(PLUGIN_NAME, PLUGIN_TITLE,
+                 new QcMercatorTileMatrixSet(NUMBER_OF_LEVELS, TILE_SIZE)),
     m_license(license),
     m_network_manager(new QNetworkAccessManager()),
     m_user_agent("QtCarto based application"),
@@ -201,12 +202,12 @@ QcGeoportailPlugin::QcGeoportailPlugin(const QcGeoportailWmtsLicense & license)
   // query.set_free_form_address("7 rue jean baillet 95870 bezons");
   // m_location_reply = geocode_request(query);
 
-  QcLocationServiceReverseQuery query;
-  query.set_request_id(QString::number(1));
-  query.set_maximum_responses(1);
-  // query.set_srs_name(QLatin1Literal("epsg:4326"));
-  query.set_coordinate(QcGeoCoordinateWGS84(2.3241667, 48.8033333));
-  m_location_reverse_reply = reverse_geocode_request(query);
+  // QcLocationServiceReverseQuery query;
+  // query.set_request_id(QString::number(1));
+  // query.set_maximum_responses(1);
+  // // query.set_srs_name(QLatin1Literal("epsg:4326"));
+  // query.set_coordinate(QcGeoCoordinateWGS84(2.3241667, 48.8033333));
+  // m_location_reverse_reply = reverse_geocode_request(query);
 }
 
 QcGeoportailPlugin::~QcGeoportailPlugin()
@@ -307,10 +308,8 @@ QcGeoportailPlugin::geocode_request(const QcLocationServiceQuery & query) const
   // http://wxs.ign.fr/<API_KEY>/geoportail/ols?
   QUrl url = QStringLiteral("https://wxs.ign.fr/") +
     m_license.api_key() +
-    QStringLiteral("/geoportail/ols?")
-    ;
+    QStringLiteral("/geoportail/ols?");
 
-  qInfo() << url << xml_request;
   QNetworkReply * reply = post(url, xml_request);
 
   return QSharedPointer<QcLocationServiceReply>(new QcGeoportailLocationServiceReply(reply, query));
@@ -370,10 +369,8 @@ QcGeoportailPlugin::reverse_geocode_request(const QcLocationServiceReverseQuery 
   // http://wxs.ign.fr/<API_KEY>/geoportail/ols?
   QUrl url = QStringLiteral("https://wxs.ign.fr/") +
     m_license.api_key() +
-    QStringLiteral("/geoportail/ols?")
-    ;
+    QStringLiteral("/geoportail/ols?");
 
-  qInfo() << url << xml_request;
   QNetworkReply * reply = post(url, xml_request);
 
   return QSharedPointer<QcLocationServiceReverseReply>(new QcGeoportailLocationServiceReverseReply(reply, query));

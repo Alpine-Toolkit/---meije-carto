@@ -1,3 +1,5 @@
+// -*- mode: c++ -*-
+
 /***************************************************************************************************
 **
 ** $QTCARTO_BEGIN_LICENSE:GPL3$
@@ -26,57 +28,64 @@
 
 /**************************************************************************************************/
 
-#include "osm_wmts_tile_fetcher.h"
+#ifndef __ARTIC_WEB_MAP_PLUGIN_H__
+#define __ARTIC_WEB_MAP_PLUGIN_H__
 
-#include "osm_plugin.h"
-#include "osm_wmts_reply.h"
+/**************************************************************************************************/
+
 #include "wmts/wmts_plugin.h"
+#include "wmts/plugin_wmts_tile_fetcher.h"
 
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QDebug>
+#include <QString>
 
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
 
-/**************************************************************************************************/
-
-QcOsmWmtsTileFetcher::QcOsmWmtsTileFetcher(const QcOsmPlugin * plugin)
-  : QcWmtsTileFetcher(),
-    m_plugin(plugin),
-    m_network_manager(new QNetworkAccessManager(this)),
-    m_user_agent("QtCarto based application")
-{}
-
-QcOsmWmtsTileFetcher::~QcOsmWmtsTileFetcher()
-{
-  delete m_network_manager;
-}
-
-QcWmtsReply *
-QcOsmWmtsTileFetcher::get_tile_image(const QcTileSpec & tile_spec)
-{
-  const QcWmtsPluginLayer * layer = m_plugin->layer(tile_spec);
-  QUrl url = layer->url(tile_spec);
-  // qInfo() << url;
-
-  QNetworkRequest request;
-  request.setRawHeader("User-Agent", m_user_agent);
-  request.setUrl(url);
-
-  QNetworkReply *reply = m_network_manager->get(request);
-  if (reply->error() != QNetworkReply::NoError)
-    qWarning() << __FUNCTION__ << reply->errorString();
-
-  return new QcOsmWmtsReply(reply, tile_spec, layer->image_format());
-}
+class QcArticWebMapPlugin;
 
 /**************************************************************************************************/
 
-// #include "osm_wmts_tile_fetcher.moc"
+class QcArticWebMapLayer : public QcWmtsPluginLayer
+{
+public:
+  QcArticWebMapLayer(QcArticWebMapPlugin * plugin,
+                     int map_id,
+                     int position,
+                     const QString & title,
+                     const QString & name);
+  QcArticWebMapLayer(const QcArticWebMapLayer & other);
+  ~QcArticWebMapLayer();
+
+  QUrl url(const QcTileSpec & tile_spec) const;
+};
+
+/**************************************************************************************************/
+
+class QcArticWebMapPlugin : public QcWmtsPlugin
+{
+  Q_OBJECT
+
+public:
+  static const QString PLUGIN_NAME;
+
+public:
+  QcArticWebMapPlugin();
+  ~QcArticWebMapPlugin();
+
+  QcPluginWmtsTileFetcher * tile_fetcher() { return &m_tile_fetcher; }
+
+private:
+  QcPluginWmtsTileFetcher m_tile_fetcher;
+};
+
+/**************************************************************************************************/
 
 // QC_END_NAMESPACE
+
+/**************************************************************************************************/
+
+#endif /* __ARTIC_WEB_MAP_PLUGIN_H__ */
 
 /***************************************************************************************************
  *

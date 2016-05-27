@@ -45,7 +45,8 @@ QcMapItem {
     ]
 
     Component.onCompleted: {
-        map.plugin_layers('osm')[0].status = true
+        /* map.plugin_layers('osm')[0].status = true */
+        map.plugin_layers('artic-web-map')[0].status = true
         set_scale()
     }
 
@@ -54,8 +55,10 @@ QcMapItem {
         // longitude: 0
         // latitude: 44.6900
         // longitude: 6.1639
-        latitude: 45.956
-        longitude: 6.311
+        /* latitude: 45.956 */
+        /* longitude: 6.311 */
+        latitude: 0.
+        longitude: 0.
     }
     // zoomLevel: (maximum_zoom_level - minimum_zoom_level) / 2
     zoom_level: 10

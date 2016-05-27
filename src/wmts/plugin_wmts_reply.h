@@ -28,76 +28,38 @@
 
 /**************************************************************************************************/
 
-#ifndef __OSM_PLUGIN_H__
-#define __OSM_PLUGIN_H__
+#ifndef __PLUGIN_WMTS_REPLY_H__
+#define __PLUGIN_WMTS_REPLY_H__
 
 /**************************************************************************************************/
 
-#include "wmts/wmts_plugin.h"
-#include "wmts/osm/osm_wmts_tile_fetcher.h"
+#include "wmts/wmts_reply.h"
 
-#include <QObject>
-#include <QString>
-
-/**************************************************************************************************/
-
-class QcOsmPlugin;
-
-/**************************************************************************************************/
-
-class QcOsmLayer : public QcWmtsPluginLayer
-{
-public:
-  QcOsmLayer(QcOsmPlugin * plugin,
-             int map_id,
-             int position,
-             const QString & title,
-             const QString & name,
-             const QString & image_format,
-             const QString & base);
-  QcOsmLayer(const QcOsmLayer & other);
-  ~QcOsmLayer();
-
-  QcOsmLayer & operator=(const QcOsmLayer & other);
-
-  const QString & base() const { return m_base; }
-
-  QUrl url(const QcTileSpec & tile_spec) const;
-
-private:
-  QString m_base;
-};
+#include <QNetworkReply>
 
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
 
-class QcOsmPlugin : public QcWmtsPlugin
+class QcPluginWmtsReply : public QcWmtsReply
 {
   Q_OBJECT
 
 public:
-  static const QString PLUGIN_NAME;
+  explicit QcPluginWmtsReply(QNetworkReply * reply, const QcTileSpec & spec, const QString & format);
+  ~QcPluginWmtsReply();
 
-public:
-  QcOsmPlugin();
-  ~QcOsmPlugin();
-
-  QcOsmWmtsTileFetcher * tile_fetcher() {
-    return &m_tile_fetcher;
-  }
-
-  // off-line cache : load tiles from a polygon
+  void process_payload();
 
 private:
-  QcOsmWmtsTileFetcher m_tile_fetcher;
+  QString m_format;
 };
 
 // QC_END_NAMESPACE
 
 /**************************************************************************************************/
 
-#endif /* __OSM_PLUGIN_H__ */
+#endif /* __PLUGIN_WMTS_REPLY_H__ */
 
 /***************************************************************************************************
  *

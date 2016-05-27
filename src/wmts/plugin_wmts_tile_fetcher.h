@@ -1,3 +1,5 @@
+// -*- mode: c++ -*-
+
 /***************************************************************************************************
 **
 ** $QTCARTO_BEGIN_LICENSE:GPL3$
@@ -26,37 +28,51 @@
 
 /**************************************************************************************************/
 
-#include <QtTest/QtTest>
-#include <QtDebug>
+#ifndef __PLUGIN_WMTS_TILE_FETCHER_H__
+#define __PLUGIN_WMTS_TILE_FETCHER_H__
 
 /**************************************************************************************************/
 
-#include "wmts/providers/geoportail/geoportail_license.h"
+#include "wmts/wmts_tile_fetcher.h"
 
-/***************************************************************************************************/
+#include <QNetworkAccessManager>
 
-class TestQcGeoportailWmtsLicense: public QObject
+/**************************************************************************************************/
+
+// QC_BEGIN_NAMESPACE
+
+class QcWmtsPlugin; // Fixme: circular
+
+/**************************************************************************************************/
+
+// Fixme: merge code
+
+class QcPluginWmtsTileFetcher : public QcWmtsTileFetcher
 {
   Q_OBJECT
 
-private slots:
-  void constructor();
+public:
+  QcPluginWmtsTileFetcher(const QcWmtsPlugin * plugin);
+  ~QcPluginWmtsTileFetcher();
+
+  void set_user_agent(const QByteArray & user_agent) { m_user_agent = user_agent; }
+
+private:
+  QcWmtsReply * get_tile_image(const QcTileSpec & tile_spec);
+
+private:
+  const QcWmtsPlugin * m_plugin;
+  QNetworkAccessManager * m_network_manager;
+  QByteArray m_user_agent;
 };
 
-void TestQcGeoportailWmtsLicense::constructor()
-{
-  QString json_path("geoportail-license.json");
-  QcGeoportailWmtsLicense geoportail_license(json_path);
-  qInfo() << geoportail_license.user()
-	  << geoportail_license.password()
-	  << geoportail_license.api_key()
-    	  << geoportail_license.offline_cache_limit();
-}
+/**************************************************************************************************/
 
-/***************************************************************************************************/
+// QC_END_NAMESPACE
 
-QTEST_MAIN(TestQcGeoportailWmtsLicense)
-#include "test_geoportail_license.moc"
+/**************************************************************************************************/
+
+#endif /* __PLUGIN_WMTS_TILE_FETCHER_H__ */
 
 /***************************************************************************************************
  *

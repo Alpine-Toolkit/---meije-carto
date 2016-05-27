@@ -120,7 +120,7 @@ class QC_EXPORT QcWgs84Projection : public QcProjection
 
 /**************************************************************************************************/
 
-class QC_EXPORT QcGeoCoordinateWGS84 : public QcGeoCoordinate<QcWgs84Projection>
+class QC_EXPORT QcGeoCoordinateWGS84 : public QcGeoCoordinateTemplate<QcWgs84Projection>
 {
   Q_GADGET;
 

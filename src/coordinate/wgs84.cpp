@@ -37,15 +37,15 @@
 /**************************************************************************************************/
 
 QcGeoCoordinateWGS84::QcGeoCoordinateWGS84(double longitude, double latitude)
-  : QcGeoCoordinate(longitude, latitude)
+  : QcGeoCoordinateTemplate(longitude, latitude)
 {}
 
 QcGeoCoordinateWGS84::QcGeoCoordinateWGS84()
-  : QcGeoCoordinate(.0, .0)
+  : QcGeoCoordinateTemplate(.0, .0)
 {}
 
 QcGeoCoordinateWGS84::QcGeoCoordinateWGS84(QcGeoSexagesimalAngle & longitude, QcGeoSexagesimalAngle & latitude)
-  : QcGeoCoordinate(longitude.decimal(), latitude.decimal())
+  : QcGeoCoordinateTemplate(longitude.decimal(), latitude.decimal())
 {}
 
 bool

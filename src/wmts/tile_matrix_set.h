@@ -34,11 +34,11 @@
 /**************************************************************************************************/
 
 #include "qtcarto_global.h"
-#include "coordinate/mercator.h"
+#include "coordinate/projection.h"
+#include "coordinate/wgs84.h"
 #include "earth.h"
+#include "geometry/vector.h"
 #include "wmts/tile_matrix_index.h"
-
-#include <vector>
 
 #include <QtCore/QMetaType>
 #include <QDebug>
@@ -55,6 +55,7 @@ class QcTileMatrixSet;
 
 /**************************************************************************************************/
 
+/*
 class QC_EXPORT QcTileMatrixSetIterator
 {
  public:
@@ -75,27 +76,29 @@ class QC_EXPORT QcTileMatrixSetIterator
   int m_position;
   const QcTileMatrixSet * m_tile_matrix_set;
 };
+*/
 
 /**************************************************************************************************/
 
-// Fixme: subclass QVector ?
 class QC_EXPORT QcTileMatrixSet
 {
  public:
   static double resolution_for_level(double map_size, int tile_size, int zoom_level);
 
  public:
-  // Fixme: ???
-  // Fixme: generalise, map_size
-  static constexpr char const * projection = "epsg:3857";
-  static constexpr double x_offset = -HALF_EQUATORIAL_PERIMETER;
-  static constexpr double y_offset =  HALF_EQUATORIAL_PERIMETER;
+  QcTileMatrixSet(const QcProjection * projection,
+                  const QcVectorDouble & origin,
+                  const QcVectorDouble & scale,
+                  const QcGeoCoordinateWGS84 & default_center,
+                  int number_of_level,
+                  int tile_size);
 
- public:
-  // Fixme: std::int ???
-  QcTileMatrixSet(QString name, int number_of_level, int tile_size);
+  inline const QcProjection & projection() const { return *m_projection; }
 
-  inline QString name() const { return m_name; }
+  const QcVectorDouble & origin() const { return m_origin; }
+  const QcVectorDouble & scale() const { return m_scale; }
+
+  inline const QcGeoCoordinateWGS84 & default_center() const { return m_default_center; }
 
   inline int number_of_levels() const { return m_number_of_levels; }
 
@@ -122,6 +125,9 @@ class QC_EXPORT QcTileMatrixSet
     return m_tile_matrix_set[level];
   };
 
+  const QVector<QcTileMatrix> levels() const { return m_tile_matrix_set; }
+
+  /*
   QcTileMatrixSetIterator begin() const {
     return QcTileMatrixSetIterator(this,  0);
   }
@@ -129,19 +135,18 @@ class QC_EXPORT QcTileMatrixSet
   QcTileMatrixSetIterator end() const {
     return QcTileMatrixSetIterator(this, m_number_of_levels);
   }
-
-  // public:
-  //  typedef std::vector<QcTileMatrix>::const_iterator tile_matrix_set_iterator;
-  // inline std::vector<QcTileMatrix>::const_iterator level_iterator() const {
-  //   return m_tile_matrix_set.begin();
-  // }
+  */
 
  private:
-  QString m_name;
-  int m_number_of_levels;
+  const QcProjection * m_projection;
+  QcVectorDouble m_origin;
+  QcVectorDouble m_scale;
+  QcGeoCoordinateWGS84 m_default_center;
+  // Bounds of the CRS, in projected coordinates
+  int m_number_of_levels; // Fixme: could be a subset
   int m_tile_size;
   double m_root_resolution;
-  std::vector<QcTileMatrix> m_tile_matrix_set;
+  QVector<QcTileMatrix> m_tile_matrix_set;
 };
 
 /**************************************************************************************************/
@@ -149,9 +154,11 @@ class QC_EXPORT QcTileMatrixSet
 class QC_EXPORT QcTileMatrix
 {
  public:
-  QcTileMatrix(QcTileMatrixSet & tile_matrix_set, int level);
+  QcTileMatrix();
+  QcTileMatrix(QcTileMatrixSet * tile_matrix_set, int level);
+  QcTileMatrix(const QcTileMatrix & other);
 
-  inline const QcTileMatrixSet & tile_matrix_set() const { return m_tile_matrix_set; }
+  inline const QcTileMatrixSet & tile_matrix_set() const { return *m_tile_matrix_set; }
 
   // pyramid level
   inline int level() const { return m_level; }
@@ -164,17 +171,36 @@ class QC_EXPORT QcTileMatrix
   inline double tile_length_m() const { return m_tile_length_m; }
 
   // unit [px]
-  inline int tile_size() const { return m_tile_matrix_set.tile_size(); }
+  inline int tile_size() const { return m_tile_matrix_set->tile_size(); }
 
-  QcTileMatrixIndex mercator_to_matrix_index(const QcGeoCoordinateWebMercator & coordinate) const;
-  QcTileMatrixIndex mercator_to_matrix_index(const QcGeoCoordinateNormalisedWebMercator & coordinate) const;
+  QcTileMatrixIndex to_matrix_index(const QcVectorDouble & coordinate) const;
+  // QcTileMatrixIndex to_matrix_index(const QcVectorDouble & coordinate) const; // normalised
 
  private:
-  QcTileMatrixSet & m_tile_matrix_set;
+  QcTileMatrixIndex _to_matrix_index_check(const QcVectorDouble & coordinate) const;
+
+ private:
+  QcTileMatrixSet * m_tile_matrix_set;
   int m_level;
   int m_mosaic_size;
   double m_resolution;
   double m_tile_length_m;
+};
+
+/**************************************************************************************************/
+
+class QC_EXPORT QcMercatorTileMatrixSet : public QcTileMatrixSet
+{
+ public:
+  QcMercatorTileMatrixSet(int number_of_level, int tile_size)
+    : QcTileMatrixSet(QcProjection::by_srid(QLatin1Literal("epsg:3857")),
+                      QcVectorDouble(1., -1.),
+                      QcVectorDouble(-HALF_EQUATORIAL_PERIMETER, HALF_EQUATORIAL_PERIMETER), // Fixme: use projection
+                      QcGeoCoordinateWGS84(.0, .0),
+                      number_of_level,
+                      tile_size
+                      )
+    {}
 };
 
 /**************************************************************************************************/

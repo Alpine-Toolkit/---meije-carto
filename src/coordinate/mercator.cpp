@@ -39,11 +39,11 @@
 /**************************************************************************************************/
 
 QcGeoCoordinateWebMercator::QcGeoCoordinateWebMercator(double x, double y)
-  : QcGeoCoordinate(x, y)
+  : QcGeoCoordinateTemplate(x, y)
 {}
 
 QcGeoCoordinateWebMercator::QcGeoCoordinateWebMercator()
-  : QcGeoCoordinate(.0, .0)
+  : QcGeoCoordinateTemplate(.0, .0)
 {}
 
 QcGeoCoordinateWGS84
@@ -78,7 +78,7 @@ QcGeoCoordinateWebMercator::normalised_web_mercator() const
 /**************************************************************************************************/
 
 QcGeoCoordinatePseudoWebMercator::QcGeoCoordinatePseudoWebMercator(double x, double y)
-  : QcGeoCoordinate()
+  : QcGeoCoordinateTemplate()
 {
   // Fixme: right or in viewport ???
   /*
@@ -94,7 +94,7 @@ QcGeoCoordinatePseudoWebMercator::QcGeoCoordinatePseudoWebMercator(double x, dou
 }
 
 QcGeoCoordinatePseudoWebMercator::QcGeoCoordinatePseudoWebMercator()
-  : QcGeoCoordinate(.0, .0)
+  : QcGeoCoordinateTemplate(.0, .0)
 {}
 
 QcGeoCoordinateWGS84
@@ -124,11 +124,11 @@ QcGeoCoordinatePseudoWebMercator::normalised_web_mercator() const
 /**************************************************************************************************/
 
 QcGeoCoordinateNormalisedWebMercator::QcGeoCoordinateNormalisedWebMercator(double x, double y)
-  : QcGeoCoordinate(x, y)
+  : QcGeoCoordinateTemplate(x, y)
 {}
 
 QcGeoCoordinateNormalisedWebMercator::QcGeoCoordinateNormalisedWebMercator()
-  : QcGeoCoordinate(.0, .0)
+  : QcGeoCoordinateTemplate(.0, .0)
 {}
 
 QcGeoCoordinateWebMercator

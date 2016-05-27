@@ -28,53 +28,75 @@
 
 /**************************************************************************************************/
 
-#ifndef __OSM_WMTS_TILE_FETCHER_H__
-#define __OSM_WMTS_TILE_FETCHER_H__
+#ifndef __OSM_PLUGIN_H__
+#define __OSM_PLUGIN_H__
 
 /**************************************************************************************************/
 
-#include "wmts/wmts_tile_fetcher.h"
-// #include "map/osm/osm_plugin.h" // Fixme: circular
+#include "wmts/wmts_plugin.h"
+#include "wmts/plugin_wmts_tile_fetcher.h"
 
-#include <QAuthenticator>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
+#include <QString>
 
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
 
-class QcOsmPlugin; // Fixme: circular
+class QcOsmPlugin;
 
 /**************************************************************************************************/
 
-// Fixme: merge code
+class QcOsmLayer : public QcWmtsPluginLayer
+{
+public:
+  QcOsmLayer(QcOsmPlugin * plugin,
+             int map_id,
+             int position,
+             const QString & title,
+             const QString & name,
+             const QString & image_format,
+             const QString & base);
+  QcOsmLayer(const QcOsmLayer & other);
+  ~QcOsmLayer();
 
-class QcOsmWmtsTileFetcher : public QcWmtsTileFetcher
+  QcOsmLayer & operator=(const QcOsmLayer & other);
+
+  const QString & base() const { return m_base; }
+
+  QUrl url(const QcTileSpec & tile_spec) const;
+
+private:
+  QString m_base;
+};
+
+/**************************************************************************************************/
+
+class QcOsmPlugin : public QcWmtsPlugin
 {
   Q_OBJECT
 
 public:
-  QcOsmWmtsTileFetcher(const QcOsmPlugin * plugin);
-  ~QcOsmWmtsTileFetcher();
+  static const QString PLUGIN_NAME;
 
-  void set_user_agent(const QByteArray & user_agent) { m_user_agent = user_agent; }
+public:
+  QcOsmPlugin();
+  ~QcOsmPlugin();
+
+  QcPluginWmtsTileFetcher * tile_fetcher() { return &m_tile_fetcher; }
+
+  // off-line cache : load tiles from a polygon
 
 private:
-  QcWmtsReply * get_tile_image(const QcTileSpec & tile_spec);
-
-private:
-  const QcOsmPlugin * m_plugin;
-  QNetworkAccessManager * m_network_manager;
-  QByteArray m_user_agent;
-  QString m_reply_format;
+  QcPluginWmtsTileFetcher m_tile_fetcher;
 };
+
+/**************************************************************************************************/
 
 // QC_END_NAMESPACE
 
 /**************************************************************************************************/
 
-#endif /* __OSM_WMTS_TILE_FETCHER_H__ */
+#endif /* __OSM_PLUGIN_H__ */
 
 /***************************************************************************************************
  *

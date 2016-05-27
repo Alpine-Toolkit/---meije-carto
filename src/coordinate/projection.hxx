@@ -37,10 +37,10 @@
 /**************************************************************************************************/
 
 template <typename Projection>
-const Projection QcGeoCoordinate<Projection>::cls_projection;
+const Projection QcGeoCoordinateTemplate<Projection>::cls_projection;
 
 template <typename Projection>
-QcGeoCoordinate<Projection>::QcGeoCoordinate(double x, double y)
+QcGeoCoordinateTemplate<Projection>::QcGeoCoordinateTemplate(double x, double y)
   : QcGeoCoordinateTrait()
 {
   if (cls_projection.is_valid_xy(x, y)) {

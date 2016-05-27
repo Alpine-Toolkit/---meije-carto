@@ -33,10 +33,10 @@
 
 /**************************************************************************************************/
 
-#include "wmts/geoportail/geoportail_elevation_service_reply.h"
-#include "wmts/geoportail/geoportail_license.h"
-#include "wmts/geoportail/geoportail_location_service_reply.h"
-#include "wmts/geoportail/geoportail_wmts_tile_fetcher.h" // Fixme: circular
+#include "wmts/providers/geoportail/geoportail_elevation_service_reply.h"
+#include "wmts/providers/geoportail/geoportail_license.h"
+#include "wmts/providers/geoportail/geoportail_location_service_reply.h"
+#include "wmts/providers/geoportail/geoportail_wmts_tile_fetcher.h" // Fixme: circular
 #include "wmts/wmts_plugin.h"
 
 #include <QAuthenticator>

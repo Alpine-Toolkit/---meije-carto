@@ -96,12 +96,12 @@ class QcWmtsPlugin : public QObject
   Q_OBJECT
 
 public:
-  QcWmtsPlugin(const QString & name, const QString & title, int number_of_levels, int tile_size);
+  QcWmtsPlugin(const QString & name, const QString & title, QcTileMatrixSet * tile_matrix_set);
   ~QcWmtsPlugin();
 
   const QString & name() const { return m_name; }
   const QString & title() const { return m_title; }
-  QcTileMatrixSet & tile_matrix_set() { return m_tile_matrix_set; } // Fixme: const ?
+  QcTileMatrixSet & tile_matrix_set() { return *m_tile_matrix_set; } // Fixme: const ?
   QcWmtsManager * wmts_manager() { return &m_wmts_manager; }  // Fixme: & or *
 
   void add_layer(const QcWmtsPluginLayer * layer);
@@ -131,7 +131,7 @@ private:
   QString m_title;
   QList<const QcWmtsPluginLayer *> m_layers;
   QHash<int, const QcWmtsPluginLayer *> m_layer_map;
-  QcTileMatrixSet m_tile_matrix_set;
+  QSharedPointer<QcTileMatrixSet> m_tile_matrix_set;
   QcWmtsManager m_wmts_manager;
 };
 
