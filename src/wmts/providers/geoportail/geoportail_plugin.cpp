@@ -27,9 +27,7 @@
 /**************************************************************************************************/
 
 #include "geoportail_plugin.h"
-#include "geoportail_wmts_tile_fetcher.h"
 
-#include <QNetworkAccessManager>
 #include <QString>
 #include <QXmlStreamWriter>
 
@@ -127,20 +125,12 @@ constexpr int TILE_SIZE = 256;
 QcGeoportailPlugin::QcGeoportailPlugin(const QcGeoportailWmtsLicense & license)
   : QcWmtsPlugin(PLUGIN_NAME, PLUGIN_TITLE,
                  new QcMercatorTileMatrixSet(NUMBER_OF_LEVELS, TILE_SIZE)),
-    m_license(license),
-    m_network_manager(new QNetworkAccessManager()),
-    m_user_agent("QtCarto based application"),
-    m_tile_fetcher(this)
+    m_license(license)
 {
-  connect(m_network_manager,
+  connect(network_manager(),
           SIGNAL(authenticationRequired(QNetworkReply*, QAuthenticator*)),
 	  this,
 	  SLOT(on_authentication_request_slot(QNetworkReply*, QAuthenticator*)));
-
-  wmts_manager()->set_tile_fetcher(&m_tile_fetcher);
-  wmts_manager()->tile_cache(); // create a file tile cache
-
-  // wmts_manager()->tile_cache()->clear_all();
 
   // Fixme: to json
   int map_id = -1;
@@ -211,39 +201,7 @@ QcGeoportailPlugin::QcGeoportailPlugin(const QcGeoportailWmtsLicense & license)
 }
 
 QcGeoportailPlugin::~QcGeoportailPlugin()
-{
-  delete m_network_manager;
-}
-
-// Fixme: move to wmts_plugin
-QNetworkReply *
-QcGeoportailPlugin::get(const QUrl & url) const
-{
-  QNetworkRequest request;
-  request.setRawHeader("User-Agent", m_user_agent);
-  request.setUrl(url);
-
-  QNetworkReply * reply = m_network_manager->get(request);
-  if (reply->error() != QNetworkReply::NoError)
-    qWarning() << __FUNCTION__ << reply->errorString();
-
-  return reply;
-}
-
-QNetworkReply *
-QcGeoportailPlugin::post(const QUrl & url, const QByteArray & data) const
-{
-  QNetworkRequest request;
-  request.setHeader(QNetworkRequest::UserAgentHeader, m_user_agent);
-  request.setHeader(QNetworkRequest::ContentTypeHeader, "text/xml;charset=UTF-8");
-  request.setUrl(url);
-
-  QNetworkReply * reply = m_network_manager->post(request, data);
-  if (reply->error() != QNetworkReply::NoError)
-    qWarning() << __FUNCTION__ << reply->errorString();
-
-  return reply;
-}
+{}
 
 void
 QcGeoportailPlugin::on_authentication_request_slot(QNetworkReply * reply,
@@ -256,7 +214,7 @@ QcGeoportailPlugin::on_authentication_request_slot(QNetworkReply * reply,
 }
 
 QSharedPointer<QcLocationServiceReply>
-QcGeoportailPlugin::geocode_request(const QcLocationServiceQuery & query) const
+QcGeoportailPlugin::geocode_request(const QcLocationServiceQuery & query)
 {
   QByteArray xml_request;
   QXmlStreamWriter stream(&xml_request);
@@ -316,7 +274,7 @@ QcGeoportailPlugin::geocode_request(const QcLocationServiceQuery & query) const
 }
 
 QSharedPointer<QcLocationServiceReverseReply>
-QcGeoportailPlugin::reverse_geocode_request(const QcLocationServiceReverseQuery & query) const
+QcGeoportailPlugin::reverse_geocode_request(const QcLocationServiceReverseQuery & query)
 {
   // Fixme: duplicated code
 
@@ -377,7 +335,7 @@ QcGeoportailPlugin::reverse_geocode_request(const QcLocationServiceReverseQuery 
 }
 
 QSharedPointer<QcElevationServiceReply>
-QcGeoportailPlugin::coordinate_elevations(const QVector<QcGeoCoordinateWGS84> & coordinates) const
+QcGeoportailPlugin::coordinate_elevations(const QVector<QcGeoCoordinateWGS84> & coordinates)
 {
   QStringList longitudes;
   QStringList latitudes;

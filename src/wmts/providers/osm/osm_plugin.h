@@ -34,7 +34,7 @@
 /**************************************************************************************************/
 
 #include "wmts/wmts_plugin.h"
-#include "wmts/plugin_wmts_tile_fetcher.h"
+#include "wmts/wmts_network_tile_fetcher.h"
 
 #include <QString>
 
@@ -81,13 +81,6 @@ public:
 public:
   QcOsmPlugin();
   ~QcOsmPlugin();
-
-  QcPluginWmtsTileFetcher * tile_fetcher() { return &m_tile_fetcher; }
-
-  // off-line cache : load tiles from a polygon
-
-private:
-  QcPluginWmtsTileFetcher m_tile_fetcher;
 };
 
 /**************************************************************************************************/

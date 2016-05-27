@@ -36,15 +36,11 @@
 #include "wmts/providers/geoportail/geoportail_elevation_service_reply.h"
 #include "wmts/providers/geoportail/geoportail_license.h"
 #include "wmts/providers/geoportail/geoportail_location_service_reply.h"
-#include "wmts/providers/geoportail/geoportail_wmts_tile_fetcher.h" // Fixme: circular
 #include "wmts/wmts_plugin.h"
 
 #include <QAuthenticator>
 #include <QHash>
 #include <QList>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QUrl>
 
 /**************************************************************************************************/
 
@@ -92,32 +88,20 @@ public:
 
   const QcGeoportailWmtsLicense & license() const { return m_license; }
 
-  // Fixme: private ?
-  QcGeoportailWmtsTileFetcher * tile_fetcher() { return &m_tile_fetcher; }
-
   bool has_location_service() override { return true; }
-  QSharedPointer<QcLocationServiceReply> geocode_request(const QcLocationServiceQuery & query) const override;
+  QSharedPointer<QcLocationServiceReply> geocode_request(const QcLocationServiceQuery & query) override;
   // virtual QSharedPointer<QcLocationServiceReply> inverse_geocode_request(const QcLocationServiceInverseQuery & query) const;
 
   bool has_coordinate_elevation_service() override { return true; }
   bool has_sampling_elevation_service() override { return true; }
-  QSharedPointer<QcElevationServiceReply> coordinate_elevations(const QVector<QcGeoCoordinateWGS84> & coordinates) const override;
-  QSharedPointer<QcLocationServiceReverseReply> reverse_geocode_request(const QcLocationServiceReverseQuery & query) const override;
-
-  void set_user_agent(const QByteArray & user_agent) { m_user_agent = user_agent; }
-
-  // Fixme: protect ?
-  QNetworkReply * get(const QUrl & url) const;
-  QNetworkReply * post(const QUrl & url, const QByteArray & data) const;
+  QSharedPointer<QcElevationServiceReply> coordinate_elevations(const QVector<QcGeoCoordinateWGS84> & coordinates) override;
+  QSharedPointer<QcLocationServiceReverseReply> reverse_geocode_request(const QcLocationServiceReverseQuery & query) override;
 
 private Q_SLOTS:
   void on_authentication_request_slot(QNetworkReply * reply, QAuthenticator * authenticator);
 
 private:
   QcGeoportailWmtsLicense m_license;
-  QNetworkAccessManager * m_network_manager;
-  QByteArray m_user_agent;
-  QcGeoportailWmtsTileFetcher m_tile_fetcher;
 
   QSharedPointer<QcLocationServiceReply> m_location_reply;
   QSharedPointer<QcLocationServiceReverseReply> m_location_reverse_reply;

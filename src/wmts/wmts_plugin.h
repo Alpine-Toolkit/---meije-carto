@@ -39,8 +39,10 @@
 #include "wmts/location_service_reply.h"
 #include "wmts/tile_matrix_set.h"
 #include "wmts/wmts_manager.h"
+#include "wmts/wmts_network_tile_fetcher.h"
 
-#include <QObject>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 #include <QSharedPointer>
 #include <QString>
 #include <QUrl>
@@ -103,6 +105,10 @@ public:
   const QString & title() const { return m_title; }
   QcTileMatrixSet & tile_matrix_set() { return *m_tile_matrix_set; } // Fixme: const ?
   QcWmtsManager * wmts_manager() { return &m_wmts_manager; }  // Fixme: & or *
+  QNetworkAccessManager * network_manager() { return &m_network_manager; }
+  QcWmtsNetworkTileFetcher * tile_fetcher() { return &m_tile_fetcher; }
+
+  void set_user_agent(const QByteArray & user_agent) { m_user_agent = user_agent; }
 
   void add_layer(const QcWmtsPluginLayer * layer);
   const QList<const QcWmtsPluginLayer *> & layers() const { return m_layers; }
@@ -119,12 +125,18 @@ public:
   QUrl make_layer_url(const QcTileSpec & tile_spec) const;
 
   virtual bool has_location_service() { return false; }
-  virtual QSharedPointer<QcLocationServiceReply> geocode_request(const QcLocationServiceQuery & query) const;
-  virtual QSharedPointer<QcLocationServiceReverseReply> reverse_geocode_request(const QcLocationServiceReverseQuery & query) const;
+  virtual QSharedPointer<QcLocationServiceReply> geocode_request(const QcLocationServiceQuery & query);
+  virtual QSharedPointer<QcLocationServiceReverseReply> reverse_geocode_request(const QcLocationServiceReverseQuery & query);
 
   virtual bool has_coordinate_elevation_service() { return false; }
   virtual bool has_sampling_elevation_service() { return false; }
-  virtual QSharedPointer<QcElevationServiceReply> coordinate_elevations(const QVector<QcGeoCoordinateWGS84> & coordinates) const;
+  virtual QSharedPointer<QcElevationServiceReply> coordinate_elevations(const QVector<QcGeoCoordinateWGS84> & coordinates);
+
+  // Fixme: protect ?
+  QNetworkReply * get(const QUrl & url);
+  QNetworkReply * post(const QUrl & url, const QByteArray & data);
+
+  // off-line cache : load tiles from a polygon
 
 private:
   QString m_name;
@@ -133,6 +145,9 @@ private:
   QHash<int, const QcWmtsPluginLayer *> m_layer_map;
   QSharedPointer<QcTileMatrixSet> m_tile_matrix_set;
   QcWmtsManager m_wmts_manager;
+  QByteArray m_user_agent;
+  QNetworkAccessManager m_network_manager; // share network manager for all requests
+  QcWmtsNetworkTileFetcher m_tile_fetcher;
 };
 
 /**************************************************************************************************/

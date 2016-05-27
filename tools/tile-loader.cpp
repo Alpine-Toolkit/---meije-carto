@@ -130,11 +130,11 @@ Application::main_task()
           << "x"
           << "[" << interval.y().inf() << ", " << interval.y().sup() << "]";
 
-  QcGeoportailWmtsTileFetcher * tile_fetcher = geoportail_plugin.tile_fetcher(); // subclass QcGeoportailPlugin ???
+  QcWmtsNetworkTileFetcher * tile_fetcher = geoportail_plugin.tile_fetcher(); // subclass QcGeoportailPlugin ???
 
   QcOfflineTileCache * offline_cache = geoportail_plugin.wmts_manager()->tile_cache()->offline_cache();
   TileFetcherHelper tile_fetcher_helper(offline_cache);
-  QObject::connect(tile_fetcher, &QcGeoportailWmtsTileFetcher::tile_finished,
+  QObject::connect(tile_fetcher, &QcWmtsNetworkTileFetcher::tile_finished,
                    &tile_fetcher_helper, &TileFetcherHelper::tile_finished);
 
 

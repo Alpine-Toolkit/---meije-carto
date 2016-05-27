@@ -34,7 +34,7 @@
 /**************************************************************************************************/
 
 #include "wmts/wmts_plugin.h"
-#include "wmts/plugin_wmts_tile_fetcher.h"
+#include "wmts/wmts_network_tile_fetcher.h"
 
 #include <QString>
 
@@ -72,11 +72,6 @@ public:
 public:
   QcArticWebMapPlugin();
   ~QcArticWebMapPlugin();
-
-  QcPluginWmtsTileFetcher * tile_fetcher() { return &m_tile_fetcher; }
-
-private:
-  QcPluginWmtsTileFetcher m_tile_fetcher;
 };
 
 /**************************************************************************************************/

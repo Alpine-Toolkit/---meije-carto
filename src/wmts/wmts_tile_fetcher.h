@@ -69,8 +69,6 @@
 
 /**************************************************************************************************/
 
-#include <QObject>
-
 #include <QHash>
 #include <QList>
 #include <QMap>
@@ -86,6 +84,8 @@
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
+
+/**************************************************************************************************/
 
 /*! This class implements a WMTS Tile Fetcher abstract class for WMTS
  *  providers. It must be subclassed for each provider in order to
@@ -127,8 +127,6 @@ class QC_EXPORT QcWmtsTileFetcher : public QObject
   // Q_DECLARE_PRIVATE(QcWmtsTileFetcher);
   // Q_DISABLE_COPY(QcWmtsTileFetcher);
 
-  // friend class QGeoTiledMappingManagerEngine;
-
  private:
   bool m_enabled;
   QBasicTimer m_timer;
@@ -136,6 +134,8 @@ class QC_EXPORT QcWmtsTileFetcher : public QObject
   QList<QcTileSpec> m_queue;
   QHash<QcTileSpec, QcWmtsReply *> m_invmap;
 };
+
+/**************************************************************************************************/
 
 // QC_END_NAMESPACE
 

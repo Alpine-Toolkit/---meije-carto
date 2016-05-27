@@ -1,5 +1,3 @@
-// -*- mode: c++ -*-
-
 /***************************************************************************************************
 **
 ** $QTCARTO_BEGIN_LICENSE:GPL3$
@@ -28,15 +26,14 @@
 
 /**************************************************************************************************/
 
-#ifndef __GEOPORTAIL_WMTS_REPLY_H__
-#define __GEOPORTAIL_WMTS_REPLY_H__
+#include "wmts/wmts_network_tile_fetcher.h"
 
-/**************************************************************************************************/
+#include "wmts/wmts_network_reply.h"
+#include "wmts/wmts_plugin.h"
 
-#include "wmts/wmts_reply.h"
-
-#include <QNetworkReply>
-#include <QPointer>
+#include <QDebug>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
 
 /**************************************************************************************************/
 
@@ -44,27 +41,31 @@
 
 /**************************************************************************************************/
 
-class QcGeoportailWmtsReply : public QcWmtsReply
+QcWmtsNetworkTileFetcher::QcWmtsNetworkTileFetcher(QcWmtsPlugin * plugin)
+  : QcWmtsTileFetcher(),
+    m_plugin(plugin)
+{}
+
+QcWmtsNetworkTileFetcher::~QcWmtsNetworkTileFetcher()
+{}
+
+QcWmtsReply *
+QcWmtsNetworkTileFetcher::get_tile_image(const QcTileSpec & tile_spec)
 {
-  Q_OBJECT
+  const QcWmtsPluginLayer * layer = m_plugin->layer(tile_spec);
+  QUrl url = layer->url(tile_spec);
+  qInfo() << url;
 
-public:
-  explicit QcGeoportailWmtsReply(QNetworkReply * reply, const QcTileSpec & spec, const QString & format);
-  ~QcGeoportailWmtsReply();
+  QNetworkReply *reply = m_plugin->get(url);
+  if (reply->error() != QNetworkReply::NoError)
+    qWarning() << __FUNCTION__ << reply->errorString();
 
-  void process_payload();
-
-private:
-  QString m_format;
-};
+  return new QcWmtsNetworkReply(reply, tile_spec, layer->image_format());
+}
 
 /**************************************************************************************************/
 
 // QC_END_NAMESPACE
-
-/**************************************************************************************************/
-
-#endif /* __GEOPORTAIL_WMTS_REPLY_H__ */
 
 /***************************************************************************************************
  *

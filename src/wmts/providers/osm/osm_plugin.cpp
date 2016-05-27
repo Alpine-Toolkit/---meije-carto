@@ -80,14 +80,8 @@ constexpr int TILE_SIZE = 256;
 
 QcOsmPlugin::QcOsmPlugin()
   : QcWmtsPlugin(PLUGIN_NAME, PLUGIN_TITLE,
-                 new QcMercatorTileMatrixSet(NUMBER_OF_LEVELS, TILE_SIZE)),
-    m_tile_fetcher(this)
+                 new QcMercatorTileMatrixSet(NUMBER_OF_LEVELS, TILE_SIZE))
 {
-  wmts_manager()->set_tile_fetcher(&m_tile_fetcher);
-  wmts_manager()->tile_cache(); // create a file tile cache
-
-  // wmts_manager()->tile_cache()->clear_all();
-
   int map_id = -1;
   add_layer(new QcOsmLayer(this,
                            ++map_id, // 1

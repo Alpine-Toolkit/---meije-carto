@@ -76,28 +76,18 @@ QcArticWebMapPlugin::QcArticWebMapPlugin()
                                       QcVectorDouble(-HALF_EQUATORIAL_PERIMETER, HALF_EQUATORIAL_PERIMETER), // Fixme: use projection
                                       QcGeoCoordinateWGS84(180., 90.),
                                       NUMBER_OF_LEVELS,
-                                      TILE_SIZE)),
-    m_tile_fetcher(this)
+                                      TILE_SIZE))
 {
-  wmts_manager()->set_tile_fetcher(&m_tile_fetcher);
-  wmts_manager()->tile_cache(); // create a file tile cache
-
-  // wmts_manager()->tile_cache()->clear_all();
-
   int map_id = -1;
   add_layer(new QcArticWebMapLayer(this,
                                    ++map_id, // 1
                                    1,
-                                   QLatin1Literal("Map"),
-                                   QLatin1Literal("map")));
+                                   QLatin1Literal("espg-3571"),
+                                   QLatin1Literal("Bearing Sea Map")));
 }
 
 QcArticWebMapPlugin::~QcArticWebMapPlugin()
 {}
-
-/**************************************************************************************************/
-
-// #include "osm_plugin.moc"
 
 /***************************************************************************************************
  *

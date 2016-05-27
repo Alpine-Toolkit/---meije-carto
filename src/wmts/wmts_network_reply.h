@@ -1,3 +1,5 @@
+// -*- mode: c++ -*-
+
 /***************************************************************************************************
 **
 ** $QTCARTO_BEGIN_LICENSE:GPL3$
@@ -26,14 +28,14 @@
 
 /**************************************************************************************************/
 
-#include "wmts/plugin_wmts_tile_fetcher.h"
+#ifndef __WMTS_NETWORK_REPLY_H__
+#define __WMTS_NETWORK_REPLY_H__
 
-#include "wmts/plugin_wmts_reply.h"
-#include "wmts/wmts_plugin.h"
+/**************************************************************************************************/
 
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QDebug>
+#include "wmts/wmts_reply.h"
+
+#include <QNetworkReply>
 
 /**************************************************************************************************/
 
@@ -41,39 +43,27 @@
 
 /**************************************************************************************************/
 
-QcPluginWmtsTileFetcher::QcPluginWmtsTileFetcher(const QcWmtsPlugin * plugin)
-  : QcWmtsTileFetcher(),
-    m_plugin(plugin),
-    m_network_manager(new QNetworkAccessManager(this)),
-    m_user_agent("QtCarto based application")
-{}
-
-QcPluginWmtsTileFetcher::~QcPluginWmtsTileFetcher()
+class QcWmtsNetworkReply : public QcWmtsReply
 {
-  delete m_network_manager;
-}
+  Q_OBJECT
 
-QcWmtsReply *
-QcPluginWmtsTileFetcher::get_tile_image(const QcTileSpec & tile_spec)
-{
-  const QcWmtsPluginLayer * layer = m_plugin->layer(tile_spec);
-  QUrl url = layer->url(tile_spec);
-  // qInfo() << url;
+public:
+  explicit QcWmtsNetworkReply(QNetworkReply * reply, const QcTileSpec & spec, const QString & format);
+  ~QcWmtsNetworkReply();
 
-  QNetworkRequest request;
-  request.setRawHeader("User-Agent", m_user_agent);
-  request.setUrl(url);
+  void process_payload();
 
-  QNetworkReply *reply = m_network_manager->get(request);
-  if (reply->error() != QNetworkReply::NoError)
-    qWarning() << __FUNCTION__ << reply->errorString();
-
-  return new QcPluginWmtsReply(reply, tile_spec, layer->image_format());
-}
+private:
+  QString m_format;
+};
 
 /**************************************************************************************************/
 
 // QC_END_NAMESPACE
+
+/**************************************************************************************************/
+
+#endif /* __WMTS_NETWORK_REPLY_H__ */
 
 /***************************************************************************************************
  *

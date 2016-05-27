@@ -74,20 +74,18 @@ set(qtcarto_files
   wmts/location_service_query.cpp
   wmts/location_service_reply.cpp
   wmts/network_reply.cpp
-  wmts/plugin_wmts_reply.cpp
-  wmts/plugin_wmts_tile_fetcher.cpp
   wmts/providers/artic_web_map/artic_web_map_plugin.cpp
   wmts/providers/geoportail/geoportail_elevation_service_reply.cpp
   wmts/providers/geoportail/geoportail_license.cpp
   wmts/providers/geoportail/geoportail_location_service_reply.cpp
   wmts/providers/geoportail/geoportail_plugin.cpp
-  wmts/providers/geoportail/geoportail_wmts_reply.cpp
-  wmts/providers/geoportail/geoportail_wmts_tile_fetcher.cpp
   wmts/providers/osm/osm_plugin.cpp
   wmts/tile_matrix_index.cpp
   wmts/tile_matrix_set.cpp
   wmts/tile_spec.cpp
   wmts/wmts_manager.cpp
+  wmts/wmts_network_reply.cpp
+  wmts/wmts_network_tile_fetcher.cpp
   wmts/wmts_plugin.cpp
   wmts/wmts_plugin_manager.cpp
   wmts/wmts_reply.cpp

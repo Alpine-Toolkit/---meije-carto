@@ -26,32 +26,28 @@
 
 /**************************************************************************************************/
 
-#include "geoportail_wmts_reply.h"
+#include "wmts/wmts_network_reply.h"
 
 /**************************************************************************************************/
 
-QcGeoportailWmtsReply::QcGeoportailWmtsReply(QNetworkReply * reply,
-					     const QcTileSpec & tile_spec,
-					     const QString & format)
+QcWmtsNetworkReply::QcWmtsNetworkReply(QNetworkReply * reply,
+                                       const QcTileSpec & tile_spec,
+                                       const QString & format)
   : QcWmtsReply(reply, tile_spec),
     m_format(format)
-{
-}
-
-QcGeoportailWmtsReply::~QcGeoportailWmtsReply()
 {}
 
-// Handle a successful request : store image data
+QcWmtsNetworkReply::~QcWmtsNetworkReply()
+{}
+
+/*! Handle a successful request : store image data
+ */
 void
-QcGeoportailWmtsReply::process_payload()
+QcWmtsNetworkReply::process_payload()
 {
   set_map_image_data(network_reply()->readAll());
   set_map_image_format(m_format);
 }
-
-/**************************************************************************************************/
-
-// #include "geoportail_wmts_reply.moc"
 
 /***************************************************************************************************
  *

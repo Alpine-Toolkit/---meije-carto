@@ -96,8 +96,16 @@ QcWmtsPlugin::QcWmtsPlugin(const QString & name, const QString & title, QcTileMa
     m_name(name),
     m_title(title),
     m_tile_matrix_set(tile_matrix_set),
-    m_wmts_manager(name)
-{}
+    m_wmts_manager(name),
+    m_user_agent("QtCarto based application"),
+    m_network_manager(),
+    m_tile_fetcher(this)
+{
+  wmts_manager()->set_tile_fetcher(&m_tile_fetcher);
+  wmts_manager()->tile_cache(); // create a file tile cache
+
+  // wmts_manager()->tile_cache()->clear_all();
+}
 
 QcWmtsPlugin::~QcWmtsPlugin()
 {
@@ -141,30 +149,55 @@ QcWmtsPlugin::make_layer_url(const QcTileSpec & tile_spec) const
   return layer(tile_spec)->url(tile_spec);
 }
 
+QNetworkReply *
+QcWmtsPlugin::get(const QUrl & url)
+{
+  QNetworkRequest request;
+  request.setRawHeader("User-Agent", m_user_agent);
+  request.setUrl(url);
+
+  QNetworkReply * reply = m_network_manager.get(request);
+  if (reply->error() != QNetworkReply::NoError)
+    qWarning() << __FUNCTION__ << reply->errorString();
+
+  return reply;
+}
+
+QNetworkReply *
+QcWmtsPlugin::post(const QUrl & url, const QByteArray & data)
+{
+  QNetworkRequest request;
+  request.setHeader(QNetworkRequest::UserAgentHeader, m_user_agent);
+  request.setHeader(QNetworkRequest::ContentTypeHeader, "text/xml;charset=UTF-8");
+  request.setUrl(url);
+
+  QNetworkReply * reply = m_network_manager.post(request, data);
+  if (reply->error() != QNetworkReply::NoError)
+    qWarning() << __FUNCTION__ << reply->errorString();
+
+  return reply;
+}
+
 QSharedPointer<QcLocationServiceReply>
-QcWmtsPlugin::geocode_request(const QcLocationServiceQuery & query) const
+QcWmtsPlugin::geocode_request(const QcLocationServiceQuery & query)
 {
   Q_UNUSED(query);
   return QSharedPointer<QcLocationServiceReply>(nullptr);
 }
 
 QSharedPointer<QcLocationServiceReverseReply>
-QcWmtsPlugin::reverse_geocode_request(const QcLocationServiceReverseQuery & query) const
+QcWmtsPlugin::reverse_geocode_request(const QcLocationServiceReverseQuery & query)
 {
   Q_UNUSED(query);
   return QSharedPointer<QcLocationServiceReverseReply>(nullptr);
 }
 
 QSharedPointer<QcElevationServiceReply>
-QcWmtsPlugin::coordinate_elevations(const QVector<QcGeoCoordinateWGS84> & coordinates) const
+QcWmtsPlugin::coordinate_elevations(const QVector<QcGeoCoordinateWGS84> & coordinates)
 {
   Q_UNUSED(coordinates);
   return QSharedPointer<QcElevationServiceReply>(nullptr);
 }
-
-/**************************************************************************************************/
-
-// #include "wmts_plugin.moc"
 
 /***************************************************************************************************
  *

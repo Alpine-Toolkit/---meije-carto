@@ -1,3 +1,5 @@
+// -*- mode: c++ -*-
+
 /***************************************************************************************************
 **
 ** $QTCARTO_BEGIN_LICENSE:GPL3$
@@ -26,44 +28,47 @@
 
 /**************************************************************************************************/
 
-#include "geoportail_wmts_tile_fetcher.h"
+#ifndef __WMTS_NETWORK_TILE_FETCHER_H__
+#define __WMTS_NETWORK_TILE_FETCHER_H__
 
-#include "geoportail_plugin.h"
-#include "geoportail_wmts_reply.h"
-#include "wmts/wmts_plugin.h"
+/**************************************************************************************************/
 
-#include <QNetworkRequest>
-#include <QDebug>
+#include "wmts/wmts_tile_fetcher.h"
+
+#include <QNetworkAccessManager>
+
+/**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
 
+class QcWmtsPlugin; // circular
+
 /**************************************************************************************************/
 
-QcGeoportailWmtsTileFetcher::QcGeoportailWmtsTileFetcher(const QcGeoportailPlugin * plugin)
-  : QcWmtsTileFetcher(),
-    m_plugin(plugin)
-{}
+// Fixme: QcWmtsTileFetcher isn't networking aware, excepted QcWmtsReply relies on QNetworkReply
 
-QcGeoportailWmtsTileFetcher::~QcGeoportailWmtsTileFetcher()
-{}
-
-QcWmtsReply *
-QcGeoportailWmtsTileFetcher::get_tile_image(const QcTileSpec & tile_spec)
+class QcWmtsNetworkTileFetcher : public QcWmtsTileFetcher
 {
-  const QcWmtsPluginLayer * layer = m_plugin->layer(tile_spec);
-  QUrl url = layer->url(tile_spec);
-  // qInfo() << url;
+  Q_OBJECT
 
-  QNetworkReply * reply = m_plugin->get(url);
+public:
+  QcWmtsNetworkTileFetcher(QcWmtsPlugin * plugin);
+  ~QcWmtsNetworkTileFetcher();
 
-  return new QcGeoportailWmtsReply(reply, tile_spec, layer->image_format());
-}
+private:
+  QcWmtsReply * get_tile_image(const QcTileSpec & tile_spec);
+
+private:
+  QcWmtsPlugin * m_plugin;
+};
 
 /**************************************************************************************************/
-
-// #include "geoportail_wmts_tile_fetcher.moc"
 
 // QC_END_NAMESPACE
+
+/**************************************************************************************************/
+
+#endif /* __WMTS_NETWORK_TILE_FETCHER_H__ */
 
 /***************************************************************************************************
  *
