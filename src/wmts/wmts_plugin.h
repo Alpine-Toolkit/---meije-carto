@@ -106,7 +106,7 @@ public:
   QcTileMatrixSet & tile_matrix_set() { return *m_tile_matrix_set; } // Fixme: const ?
 
   // Fixme: & or *
-  QNetworkAccessManager * network_manager() { return &m_network_manager; }
+  QNetworkAccessManager * network_manager() { return m_network_manager; }
   QcWmtsNetworkTileFetcher * tile_fetcher() { return &m_tile_fetcher; }
   QcWmtsManager * wmts_manager() { return &m_wmts_manager; }
 
@@ -148,7 +148,7 @@ private:
   QHash<int, const QcWmtsPluginLayer *> m_layer_map;
   QSharedPointer<QcTileMatrixSet> m_tile_matrix_set;
   QByteArray m_user_agent;
-  QNetworkAccessManager m_network_manager; // share network manager for all requests: tile, ols, ...
+  QNetworkAccessManager * m_network_manager; // share network manager for all requests: tile, ols, ...
   QcWmtsNetworkTileFetcher m_tile_fetcher;
   QcWmtsManager m_wmts_manager;
 };

@@ -65,8 +65,8 @@ public:
   QcWmtsPlugin * operator[](const QString & name);
 
 private:
-  ~QcWmtsPluginManager();
   QcWmtsPluginManager();
+  ~QcWmtsPluginManager();
 
   QcWmtsPlugin * create_plugin_geoportail();
 

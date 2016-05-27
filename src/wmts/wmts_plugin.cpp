@@ -97,7 +97,7 @@ QcWmtsPlugin::QcWmtsPlugin(const QString & name, const QString & title, QcTileMa
     m_title(title),
     m_tile_matrix_set(tile_matrix_set),
     m_user_agent("QtCarto based application"),
-    m_network_manager(),
+    m_network_manager(new QNetworkAccessManager()), // Fixme: delete ?, segfault if this is parent
     m_tile_fetcher(this),
     m_wmts_manager(name)
 {
@@ -156,7 +156,7 @@ QcWmtsPlugin::get(const QUrl & url)
   request.setRawHeader("User-Agent", m_user_agent);
   request.setUrl(url);
 
-  QNetworkReply * reply = m_network_manager.get(request);
+  QNetworkReply * reply = m_network_manager->get(request);
   if (reply->error() != QNetworkReply::NoError)
     qWarning() << __FUNCTION__ << reply->errorString();
 
@@ -171,7 +171,7 @@ QcWmtsPlugin::post(const QUrl & url, const QByteArray & data)
   request.setHeader(QNetworkRequest::ContentTypeHeader, "text/xml;charset=UTF-8");
   request.setUrl(url);
 
-  QNetworkReply * reply = m_network_manager.post(request, data);
+  QNetworkReply * reply = m_network_manager->post(request, data);
   if (reply->error() != QNetworkReply::NoError)
     qWarning() << __FUNCTION__ << reply->errorString();
 
