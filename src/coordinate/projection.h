@@ -81,9 +81,22 @@ class QC_EXPORT QcProjection4
 
 /**************************************************************************************************/
 
+// bounds : limites
+// extent : étendue
+
 class QC_EXPORT QcProjection
 {
  public:
+  enum class ProjectionSurface : unsigned int { // std::uint8_t
+    Spherical,
+    Cylindrical,
+    Pseudocylindrical,
+    Hybrid,
+    Conic,
+    Pseudoconic,
+    Azimuthal,
+  };
+
   enum class PreserveBit : unsigned int { // std::uint8_t
     PreserveAll           = 0xFFF,
     PreserveDirection     = 0x1, // azimuthal or zenithal
@@ -100,10 +113,32 @@ class QC_EXPORT QcProjection
   static void init();
   static void register_projection(QcProjection * projection);
   static QMap<QString, QcProjection *> m_instances; // QSharedPointer<>
+#ifdef WITH_PROJ4
+  static QMap<QString, QcProjection4 *> m_projection4_instances;
+#endif
 
  public:
   QcProjection();
-  QcProjection(const QString & srid, const QcInterval2DDouble & extent, PreserveBit preserve_bit);
+  QcProjection(const QString & srid,
+               const QString & title,
+               const QcVectorDouble & wgs84_origin, // Fixme: QcGeoCoordinateWGS84 is not yet defined
+               // const QcVectorDouble & x_axis_orientation,
+               // const QcVectorDouble & y_axis_orientation,
+               const QcInterval2DDouble & wgs84_interval,
+               const QcInterval2DDouble & projected_interval, // Fixme: computed ?
+               const QString & unit,
+               ProjectionSurface projection_surface,
+               PreserveBit preserve_bit,
+               bool proj4_support = true
+               // Geodetic CRS: WGS 84
+               // Datum: World Geodetic System 1984
+               // Ellipsoid: WGS 84
+               // Prime meridian: Greenwich
+               // Data source: OGP
+               // Scope: Arctic research.
+               // Remarks: For studies of Bering Sea area.
+               // Area of use: Northern hemisphere - north of 45°N, including Arctic.
+               );
   QcProjection(const QcProjection & other);
 
   QcProjection & operator=(const QcProjection & other);
@@ -114,13 +149,20 @@ class QC_EXPORT QcProjection
   }
 
   inline const QString & srid() const { return m_srid; }
+  inline const QString & title() const { return m_title; }
 
-  inline const QcInterval2DDouble & extent() const { return m_extent; }
-  inline const QcIntervalDouble & x_extent() const { return m_extent.x(); }
-  inline const QcIntervalDouble & y_extent() const { return m_extent.y(); }
-  inline bool is_valid_x(double x) const { return x_extent().contains(x); }
-  inline bool is_valid_y(double y) const { return y_extent().contains(y); }
-  inline bool is_valid_xy(double x, double y) const { return m_extent.contains(x, y); }
+  inline const QcVectorDouble wgs84_origin() const { return m_wgs84_origin; }
+  inline const QcInterval2DDouble wgs84_interval() const { return m_wgs84_interval; }
+
+  inline const QcInterval2DDouble & projected_interval() const { return m_projected_interval; }
+  inline const QcIntervalDouble & x_projected_interval() const { return m_projected_interval.x(); }
+  inline const QcIntervalDouble & y_projected_interval() const { return m_projected_interval.y(); }
+  inline bool is_valid_x(double x) const { return x_projected_interval().contains(x); }
+  inline bool is_valid_y(double y) const { return y_projected_interval().contains(y); }
+  inline bool is_valid_xy(double x, double y) const { return m_projected_interval.contains(x, y); }
+
+  inline const QString & unit() const { return m_unit; }
+  inline ProjectionSurface projection_surface() const { return  m_projection_surface; }
 
   inline PreserveBit preserve_bit() const { return m_preserve_bit; }
   inline bool preserve_direction() const { return test_preserve_bit(PreserveBit::PreserveDirection); }
@@ -131,21 +173,25 @@ class QC_EXPORT QcProjection
 
   QcGeoCoordinate coordinate(double x, double y) const;
 
+#ifdef WITH_PROJ4
+  virtual QString proj4_definition() const;
+  inline QcProjection4 * projection4() const { return m_projection4; }
+#endif
+
  private:
   bool test_preserve_bit(PreserveBit preserve_bit) const;
 
  private:
   QString m_srid;
-  QcInterval2DDouble m_extent;
+  QString m_title;
+  QcVectorDouble m_wgs84_origin;
+  QcInterval2DDouble m_wgs84_interval;
+  QcInterval2DDouble m_projected_interval;
+  QString m_unit;
+  ProjectionSurface m_projection_surface;
   PreserveBit m_preserve_bit;
-
 #ifdef WITH_PROJ4
- public:
-  virtual QString proj4_definition() const;
-  inline QcProjection4 & projection4() const { return *m_projection4; }
-
- private:
-  QSharedPointer<QcProjection4> m_projection4; // Fixme: several instance
+  QcProjection4 * m_projection4; // Fixme: QSharedPointer ?
 #endif
 };
 
@@ -160,7 +206,7 @@ inline bool QcProjection::test_preserve_bit(PreserveBit preserve_bit) const {
 class QC_EXPORT QcGeoCoordinateTrait
 {
  public:
-  virtual const QcProjection & projection() const = 0;
+  virtual const QcProjection & projection() const = 0; // Fixme: * would permit to define before QcProjection
 
  public:
   QcGeoCoordinateTrait();
@@ -205,6 +251,8 @@ QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcGeoCoordinateTrait & c
 #endif
 
 /**************************************************************************************************/
+
+// Fixme: use singleton, *, static instance for projection class ???
 
 template <typename Projection>
 class QC_EXPORT QcGeoCoordinateTemplate : public QcGeoCoordinateTrait

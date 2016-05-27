@@ -61,7 +61,7 @@ QcTileMatrixSet::QcTileMatrixSet(const QcProjection * projection,
     m_default_center(default_center),
     m_number_of_levels(number_of_levels),
     m_tile_size(tile_size),
-    m_root_resolution(projection->x_extent().length() / tile_size) // assume square map
+    m_root_resolution(projection->x_projected_interval().length() / tile_size) // assume square map
 {
   for (int level = 0; level < number_of_levels; level++)
     m_tile_matrix_set << QcTileMatrix(this, level);

@@ -49,22 +49,6 @@ class QcGeoCoordinateWGS84;
 /*! Lambert Azimuthal Equal-Area (LAEA) Projection
  *
  */
-// class QC_EXPORT QcLaeaProjection : public QcProjection
-// {
-//  public:
-//   static inline QcIntervalDouble latitude_interval() {
-//     return QcIntervalDouble(45, 90);
-//   }
-// };
-
-/**************************************************************************************************/
-
-// A Geodetic datum or geodetic system is a coordinate system, and a
-// set of reference points, used to locate places on the Earth.
-
-// false easting : The linear value added to all x-coordinates of a
-// map projection so that none of the values in the geographic region
-// being mapped are negative.
 
 /*!
  * http://epsg.io/3571
@@ -94,10 +78,16 @@ class QC_EXPORT QcLaeaProjection_3571 : public QcProjection // LaeaProjection
  public:
   QcLaeaProjection_3571()
     : QcProjection(QLatin1Literal("epsg:3571"),
-                   // QLatin1Literal("North Pole LAEA Bering Sea"),
-                   // QcGeoCoordinateWGS84(180, 90),
+                   QLatin1Literal("North Pole LAEA Bering Sea"),
+                   QcVectorDouble(180, 90),
+                   // QcVector2DDouble(90, 0), // X along 90°W
+                   // QcVector2DDouble(0, 0), // Y along 0°E
+                   QcInterval2DDouble(-180, 180,
+                                      45, 90),
                    QcInterval2DDouble(-HALF_EQUATORIAL_PERIMETER, HALF_EQUATORIAL_PERIMETER,
                                       -HALF_EQUATORIAL_PERIMETER, HALF_EQUATORIAL_PERIMETER),
+                   QLatin1Literal("m"),
+                   ProjectionSurface::Azimuthal,
                    PreserveBit::PreserveArea)
     {}
 };

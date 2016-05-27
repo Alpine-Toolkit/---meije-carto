@@ -92,6 +92,7 @@ QcProjection4::is_latlong() const {
 /**************************************************************************************************/
 
 QMap<QString, QcProjection *> QcProjection::m_instances;
+QMap<QString, QcProjection4 *> QcProjection::m_projection4_instances;
 
 const QcProjection *
 QcProjection::by_srid(const QString & srid)
@@ -125,27 +126,55 @@ QcProjection::register_projection(QcProjection * projection)
 
 QcProjection::QcProjection()
   : m_srid(),
-    m_extent(),
+    m_projected_interval(),
     m_preserve_bit(),
     m_projection4()
 {}
 
 QcProjection::QcProjection(const QString & srid,
-                           const QcInterval2DDouble & extent,
-                           PreserveBit preserve_bit)
+                           const QString & title,
+                           const QcVectorDouble & wgs84_origin, // QcGeoCoordinateWGS84 is not yet defined
+                           // const QcVectorDouble & x_axis_orientation,
+                           // const QcVectorDouble & y_axis_orientation,
+                           const QcInterval2DDouble & wgs84_interval,
+                           const QcInterval2DDouble & projected_interval,
+                           const QString & unit,
+                           ProjectionSurface projection_surface,
+                           PreserveBit preserve_bit,
+                           bool proj4_support
+                           )
   : m_srid(srid),
-    m_extent(extent),
+    m_title(title),
+    m_wgs84_origin(wgs84_origin),
+    m_wgs84_interval(wgs84_interval),
+    m_projected_interval(projected_interval),
+    m_projection_surface(projection_surface),
     m_preserve_bit(preserve_bit)
 #ifdef WITH_PROJ4
-  , m_projection4(new QcProjection4(proj4_definition()))
+  , m_projection4(nullptr)
 #endif
 {
+#ifdef WITH_PROJ4
+  if (proj4_support) {
+    const QString & definition = proj4_definition();
+    // qInfo() << definition << m_projection4_instances;
+    // if (! m_projection4_instances.contains(definition))
+    //   m_projection4_instances.insert(definition, new QcProjection4(definition));
+    // m_projection4 = m_projection4_instances.value(definition);
+    m_projection4 = new QcProjection4(definition);
+  }
+#endif
+
   // qInfo() << "Build " + srid + " projection";
 }
 
 QcProjection::QcProjection(const QcProjection & other)
   : m_srid(other.m_srid),
-    m_extent(other.m_extent),
+    m_title(other.m_title),
+    m_wgs84_origin(other.m_wgs84_origin),
+    m_wgs84_interval(other.m_wgs84_interval),
+    m_projected_interval(other.m_projected_interval),
+    m_projection_surface(other.m_projection_surface),
     m_preserve_bit(other.m_preserve_bit)
 #ifdef WITH_PROJ4
   , m_projection4(other.m_projection4)
@@ -158,7 +187,11 @@ QcProjection::operator=(const QcProjection & other)
 {
   if (this != &other) {
     m_srid = other.m_srid;
-    m_extent = other.m_extent;
+    m_title = other.m_title;
+    m_wgs84_origin = other.m_wgs84_origin;
+    m_wgs84_interval = other.m_wgs84_interval;
+    m_projected_interval = other.m_projected_interval;
+    m_projection_surface = other.m_projection_surface;
     m_preserve_bit = other.m_preserve_bit;
 #ifdef WITH_PROJ4
     m_projection4 = other.m_projection4;
@@ -171,9 +204,7 @@ QcProjection::operator=(const QcProjection & other)
 bool
 QcProjection::operator==(const QcProjection & other) const
 {
-  return (m_srid == other.m_srid and
-          m_extent == other.m_extent and
-          m_preserve_bit == other.m_preserve_bit);
+  return m_srid == other.m_srid; // Fixme: and ...
 }
 
 QcGeoCoordinate
@@ -233,17 +264,19 @@ QcGeoCoordinateTrait::is_valid() const
 void
 QcGeoCoordinateTrait::transform(QcGeoCoordinateTrait & other) const
 {
-  const QcProjection4 projection4_from = projection().projection4();
-  const QcProjection4 projection4_to = other.projection().projection4();
-  double _x = x();
-  double _y = y();
-  if (projection4_from.is_latlong()) {
-    _x = qDegreesToRadians(_x);
-    _y = qDegreesToRadians(_y);
+  const QcProjection4 * projection4_from = projection().projection4();
+  const QcProjection4 * projection4_to = other.projection().projection4();
+  if (projection4_from and projection4_to) {
+    double _x = x();
+    double _y = y();
+    if (projection4_from->is_latlong()) {
+      _x = qDegreesToRadians(_x);
+      _y = qDegreesToRadians(_y);
+    }
+    projection4_from->transform(*projection4_to, _x, _y);
+    other.set_x(_x);
+    other.set_y(_y);
   }
-  projection4_from.transform(projection4_to, _x, _y);
-  other.set_x(_x);
-  other.set_y(_y);
 }
 #endif
 

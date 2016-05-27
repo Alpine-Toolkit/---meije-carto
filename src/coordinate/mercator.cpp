@@ -89,8 +89,8 @@ QcGeoCoordinatePseudoWebMercator::QcGeoCoordinatePseudoWebMercator(double x, dou
   */
 
   // Adjust coordinate if outside domain
-  set_x(cls_projection.x_extent().wrap(x));
-  set_y(cls_projection.y_extent().truncate(y));
+  set_x(cls_projection.x_projected_interval().wrap(x));
+  set_y(cls_projection.y_projected_interval().truncate(y));
 }
 
 QcGeoCoordinatePseudoWebMercator::QcGeoCoordinatePseudoWebMercator()

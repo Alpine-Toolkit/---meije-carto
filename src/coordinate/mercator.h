@@ -96,23 +96,19 @@ class QC_EXPORT QcWebMercatorProjection : public QcProjection
   // argmax(latitude) = 2*atan(exp(pi)) - pi/2 = 85.051 128 779 806 6
   static constexpr double latitude_max = 85.0511287798060;
 
-  // static inline QcIntervalDouble longitude_interval() {
-  //   return QcIntervalDouble(QcGeoCoordinateWGS84::westward_longitude, QcGeoCoordinateWGS84::eastward_longitude);
-  // }
-
-  static inline QcIntervalDouble latitude_interval() {
-    return QcIntervalDouble(-latitude_max, latitude_max);
-  }
-
-  // static inline QcInterval2DDouble wgs84_domain() {
-  //   return QcInterval2DDouble(longitude_interval(), latitude_interval());
-  // }
-
  public:
   QcWebMercatorProjection()
     : QcProjection(QLatin1Literal("epsg:3857"),
+                   QLatin1Literal("Web Mercator"),
+                   QcVectorDouble(0, 0),
+                   // QcVectorDouble(0, 180), // X towards E
+                   // QcVectorDouble(0, 90), // Y towards N
+                   QcInterval2DDouble(-180, 180,
+                                      -latitude_max, latitude_max),
                    QcInterval2DDouble(-HALF_EQUATORIAL_PERIMETER, HALF_EQUATORIAL_PERIMETER,
                                       -HALF_EQUATORIAL_PERIMETER, HALF_EQUATORIAL_PERIMETER),
+                   QLatin1Literal("m"),
+                   ProjectionSurface::Cylindrical,
                    PreserveBit::PreserveDirection)
     {}
 };
@@ -143,10 +139,19 @@ class QC_EXPORT QcPseudoMercatorProjection : public QcProjection
 {
  public:
   QcPseudoMercatorProjection()
-    : QcProjection(QLatin1Literal("pseudo-mercator"),
+    : QcProjection(QLatin1Literal("pseudo-mercator"), // Fxime: name ???
+                   QLatin1Literal("Pseudo Web Mercator"),
+                   QcVectorDouble(0, 0),
+                   // QcVectorDouble(0, 180), // X towards E
+                   // QcVectorDouble(0, 90), // Y towards N
+                   QcInterval2DDouble(-180, 180,
+                                      -QcWebMercatorProjection::latitude_max, QcWebMercatorProjection::latitude_max),
                    QcInterval2DDouble(0, EQUATORIAL_PERIMETER,
                                       0, EQUATORIAL_PERIMETER),
-                   PreserveBit::PreserveDirection)
+                   QLatin1Literal("m"),
+                   ProjectionSurface::Cylindrical,
+                   PreserveBit::PreserveDirection,
+                   false)
     {}
 };
 
@@ -183,8 +188,17 @@ class QC_EXPORT QcNormalisedMercatorProjection : public QcProjection
  public:
   QcNormalisedMercatorProjection()
     : QcProjection(QLatin1Literal("normalised-mercator"),
+                   QLatin1Literal("Normalised Web Mercator"),
+                   QcVectorDouble(0, 0),
+                   // QcVectorDouble(0, 180), // X towards E
+                   // QcVectorDouble(0, 90), // Y towards N
+                   QcInterval2DDouble(-180, 180,
+                                      -QcWebMercatorProjection::latitude_max, QcWebMercatorProjection::latitude_max),
                    QcInterval2DDouble(0, 1, 0, 1),
-                   PreserveBit::PreserveDirection)
+                   QLatin1Literal("m"),
+                   ProjectionSurface::Cylindrical,
+                   PreserveBit::PreserveDirection,
+                   false)
     {}
 };
 

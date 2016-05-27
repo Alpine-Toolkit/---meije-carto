@@ -76,6 +76,26 @@ class QcGeoCoordinateNormalisedWebMercator;
 
 /**************************************************************************************************/
 
+/*!
+ *
+ * Unit: degree (supplier to define representation)
+ * Geodetic CRS: WGS 84
+ * Datum: World Geodetic System 1984
+ * Ellipsoid: WGS 84
+ * Prime meridian: Greenwich
+ * Data source: OGP
+ * Information source: EPSG. See 3D CRS for original information source.
+ * Revision date: 2007-08-27
+ * Scope: Horizontal component of 3D system. Used by the GPS satellite navigation system and for NATO military geodetic surveying.
+ * Area of use: World.
+ * Coordinate system: Ellipsoidal 2D CS. Axes: latitude, longitude. Orientations: north, east. UoM: degree
+ * Center coordinates
+ *   0.00000000 0.00000000
+ * WGS84 bounds:
+ *  -180.0 -90.0
+ *   180.0  90.0
+ */
+
 class QC_EXPORT QcWgs84Projection : public QcProjection
 {
   /*
@@ -96,17 +116,24 @@ class QC_EXPORT QcWgs84Projection : public QcProjection
  public:
   QcWgs84Projection()
     : QcProjection(QLatin1Literal("epsg:4326"),
+                   QLatin1Literal("WGS 84"),
+                   QcVectorDouble(), // Fixme: not projection, ellipsoidal cs
+                   // QcVectorDouble(),
+                   // QcVectorDouble(),
+                   QcInterval2DDouble(),
                    QcInterval2DDouble(westward_longitude, eastward_longitude,
                                       south_pole_latitude, north_pole_latitude),
+                   QLatin1Literal("degrees"),
+                   ProjectionSurface::Spherical,
                    PreserveBit::PreserveAll)
     {}
 
   inline const QcIntervalDouble & longitude_interval() const {
-    return x_extent();
+    return x_projected_interval();
   }
 
   inline const QcIntervalDouble & latitude_interval() const {
-    return y_extent();
+    return y_projected_interval();
   }
 
   inline bool is_valid_longitude(double longitude) const {

@@ -196,7 +196,7 @@ class QC_EXPORT QcMercatorTileMatrixSet : public QcTileMatrixSet
     : QcTileMatrixSet(QcProjection::by_srid(QLatin1Literal("epsg:3857")),
                       QcVectorDouble(1., -1.),
                       QcVectorDouble(-HALF_EQUATORIAL_PERIMETER, HALF_EQUATORIAL_PERIMETER), // Fixme: use projection
-                      QcGeoCoordinateWGS84(.0, .0),
+                      QcGeoCoordinateWGS84(.0, .0), // Fixme: use projection
                       number_of_level,
                       tile_size
                       )
