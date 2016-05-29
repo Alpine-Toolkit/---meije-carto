@@ -175,10 +175,10 @@ QcGeoportailPlugin::QcGeoportailPlugin(const QcGeoportailWmtsLicense & license)
                                   QLatin1Literal("bdparcellaire")
                                   ));
 
-  // QVector<QcGeoCoordinateWGS84> coordinates;
-  // coordinates << QcGeoCoordinateWGS84(0.23, 48.05);
-  // coordinates << QcGeoCoordinateWGS84(2.15, 46.60);
-  // coordinates << QcGeoCoordinateWGS84(4.39, 43.91);
+  // QVector<QcWgsCoordinate> coordinates;
+  // coordinates << QcWgsCoordinate(0.23, 48.05);
+  // coordinates << QcWgsCoordinate(2.15, 46.60);
+  // coordinates << QcWgsCoordinate(4.39, 43.91);
   // m_elevation_reply = coordinate_elevations(coordinates);
 
   // QcLocationServiceQuery query;
@@ -196,7 +196,7 @@ QcGeoportailPlugin::QcGeoportailPlugin(const QcGeoportailWmtsLicense & license)
   // query.set_request_id(QString::number(1));
   // query.set_maximum_responses(1);
   // // query.set_srs_name(QLatin1Literal("epsg:4326"));
-  // query.set_coordinate(QcGeoCoordinateWGS84(2.3241667, 48.8033333));
+  // query.set_coordinate(QcWgsCoordinate(2.3241667, 48.8033333));
   // m_location_reverse_reply = reverse_geocode_request(query);
 }
 
@@ -308,7 +308,7 @@ QcGeoportailPlugin::reverse_geocode_request(const QcLocationServiceReverseQuery 
   stream.writeTextElement(QLatin1Literal("ReverseGeocodePreference"), QLatin1Literal("StreetAddress"));
   stream.writeStartElement(QLatin1Literal("Position"));
   stream.writeStartElement(QLatin1Literal("gml:Point"));
-  const QcGeoCoordinateWGS84 & coordinate = query.coordinate();
+  const QcWgsCoordinate & coordinate = query.coordinate();
   QString coordinate_string = QString::number(coordinate.latitude()) + ' ' + QString::number(coordinate.longitude());
   stream.writeTextElement(QLatin1Literal("gml:pos"), coordinate_string);
   stream.writeEndElement();
@@ -335,7 +335,7 @@ QcGeoportailPlugin::reverse_geocode_request(const QcLocationServiceReverseQuery 
 }
 
 QSharedPointer<QcElevationServiceReply>
-QcGeoportailPlugin::coordinate_elevations(const QVector<QcGeoCoordinateWGS84> & coordinates)
+QcGeoportailPlugin::coordinate_elevations(const QVector<QcWgsCoordinate> & coordinates)
 {
   QStringList longitudes;
   QStringList latitudes;

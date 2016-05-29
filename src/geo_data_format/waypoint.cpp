@@ -105,14 +105,14 @@ QcWayPoint::operator=(const QcWayPoint & other)
 }
 
 // Elevation (in meters) of the point.
-QcGeoElevationCoordinateWGS84
+QcWgsElevationCoordinate
 QcWayPoint::coordinate() const
 {
   return m_coordinate;
 }
 
 void
-QcWayPoint::set_coordinate(const QcGeoElevationCoordinateWGS84 & coordinate)
+QcWayPoint::set_coordinate(const QcWgsElevationCoordinate & coordinate)
 {
   m_coordinate = coordinate;
 }

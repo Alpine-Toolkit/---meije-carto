@@ -61,13 +61,13 @@ class QtCartoDeclarativeModule : public QQmlExtensionPlugin
 
       // Register the 1.0 types
 
-      qRegisterMetaType<QcGeoCoordinateWGS84>();
-      QMetaType::registerEqualsComparator<QcGeoCoordinateWGS84>();
-      qRegisterMetaType<QcGeoCoordinateWebMercator>();
-      QMetaType::registerEqualsComparator<QcGeoCoordinateWebMercator>();
-      qRegisterMetaType<QcGeoCoordinatePseudoWebMercator>();
-      QMetaType::registerEqualsComparator<QcGeoCoordinatePseudoWebMercator>();
-      qRegisterMetaType<QcGeoCoordinateNormalisedWebMercator>();
+      qRegisterMetaType<QcWgsCoordinate>();
+      QMetaType::registerEqualsComparator<QcWgsCoordinate>();
+      qRegisterMetaType<QcWebMercatorCoordinate>();
+      QMetaType::registerEqualsComparator<QcWebMercatorCoordinate>();
+      qRegisterMetaType<QcPseudoWebMercatorCoordinate>();
+      QMetaType::registerEqualsComparator<QcPseudoWebMercatorCoordinate>();
+      qRegisterMetaType<QcNormalisedWebMercatorCoordinate>();
       // qRegisterAnimationInterpolator<QGeoCoordinate>(q_coordinateInterpolator);
 
       qRegisterMetaType<QcMapEvent>();

@@ -46,17 +46,17 @@ class QcElevationServiceReply : public QcNetworkReply
   Q_OBJECT
 
 public:
-  explicit QcElevationServiceReply(QNetworkReply * reply, const QVector<QcGeoCoordinateWGS84> & coordinates);
+  explicit QcElevationServiceReply(QNetworkReply * reply, const QVector<QcWgsCoordinate> & coordinates);
   ~QcElevationServiceReply();
 
-  const QVector<QcGeoElevationCoordinateWGS84> & elevations() const { return m_elevations; }
+  const QVector<QcWgsElevationCoordinate> & elevations() const { return m_elevations; }
 
 protected:
-  QVector<QcGeoElevationCoordinateWGS84> & elevations() { return m_elevations; }
+  QVector<QcWgsElevationCoordinate> & elevations() { return m_elevations; }
 
 private:
-  const QVector<QcGeoCoordinateWGS84> & m_coordinates;
-  QVector<QcGeoElevationCoordinateWGS84> m_elevations;
+  const QVector<QcWgsCoordinate> & m_coordinates;
+  QVector<QcWgsElevationCoordinate> m_elevations;
 };
 
 // QC_END_NAMESPACE

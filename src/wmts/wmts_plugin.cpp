@@ -193,7 +193,7 @@ QcWmtsPlugin::reverse_geocode_request(const QcLocationServiceReverseQuery & quer
 }
 
 QSharedPointer<QcElevationServiceReply>
-QcWmtsPlugin::coordinate_elevations(const QVector<QcGeoCoordinateWGS84> & coordinates)
+QcWmtsPlugin::coordinate_elevations(const QVector<QcWgsCoordinate> & coordinates)
 {
   Q_UNUSED(coordinates);
   return QSharedPointer<QcElevationServiceReply>(nullptr);

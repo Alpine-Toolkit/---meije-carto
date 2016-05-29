@@ -803,7 +803,7 @@ QcMapGestureArea::start_one_touch_point()
   m_scene_start_point1 = mapFromScene(m_all_points.at(0).scenePos());
   m_last_pos = m_scene_start_point1;
   m_last_pos_time.start();
-  QcGeoCoordinateWGS84 start_coord = m_map->to_coordinate(QcVectorDouble(m_scene_start_point1), false);
+  QcWgsCoordinate start_coord = m_map->to_coordinate(QcVectorDouble(m_scene_start_point1), false);
   // ensures a smooth transition for panning
   m_start_coord.set_longitude(m_start_coord.longitude() + start_coord.longitude() - m_touch_center_coord.longitude());
   m_start_coord.set_latitude(m_start_coord.latitude() + start_coord.latitude() - m_touch_center_coord.latitude());
@@ -826,7 +826,7 @@ QcMapGestureArea::start_two_touch_points()
   QPointF start_pos = (m_scene_start_point1 + m_scene_start_point2) * .5; // Fixme: middle
   m_last_pos = start_pos;
   m_last_pos_time.start();
-  QcGeoCoordinateWGS84 start_coord = m_map->to_coordinate(QcVectorDouble(start_pos), false);
+  QcWgsCoordinate start_coord = m_map->to_coordinate(QcVectorDouble(start_pos), false);
   m_start_coord.set_longitude(m_start_coord.longitude() + start_coord.longitude() - m_touch_center_coord.longitude());
   m_start_coord.set_latitude(m_start_coord.latitude() + start_coord.latitude() - m_touch_center_coord.latitude());
 }
@@ -1017,7 +1017,7 @@ QcMapGestureArea::pan_state_machine()
   case FlickInactive:
     if (can_start_pan()) {
       // Update startCoord_ to ensure smooth start for panning when going over startDragDistance
-      QcGeoCoordinateWGS84 new_start_coord = m_map->to_coordinate(QcVectorDouble(m_scene_center), false);
+      QcWgsCoordinate new_start_coord = m_map->to_coordinate(QcVectorDouble(m_scene_center), false);
       m_start_coord.set_longitude(new_start_coord.longitude());
       m_start_coord.set_latitude(new_start_coord.latitude());
       m_map->setKeepMouseGrab(true);
@@ -1101,7 +1101,7 @@ QcMapGestureArea::update_pan()
   QPointF map_center_point;
   map_center_point.setX(m_map->width() / 2.0 - dx);
   map_center_point.setY(m_map->height() / 2.0  - dy);
-  QcGeoCoordinateWGS84 animation_start_coordinate = m_map->to_coordinate(QcVectorDouble(map_center_point), false);
+  QcWgsCoordinate animation_start_coordinate = m_map->to_coordinate(QcVectorDouble(map_center_point), false);
   m_map->set_center(animation_start_coordinate);
 }
 
@@ -1155,11 +1155,11 @@ QcMapGestureArea::start_flick(int dx, int dy, int time_ms)
   if (time_ms < 0)
     return;
 
-  QcGeoCoordinateWGS84 animation_start_coordinate = m_map->center();
+  QcWgsCoordinate animation_start_coordinate = m_map->center();
 
   if (m_flick.m_animation->isRunning())
     m_flick.m_animation->stop();
-  QcGeoCoordinateWGS84 animation_end_coordinate = m_map->center();
+  QcWgsCoordinate animation_end_coordinate = m_map->center();
   m_flick.m_animation->setDuration(time_ms);
 
   double zoom = pow(2.0, m_map->zoom_level());

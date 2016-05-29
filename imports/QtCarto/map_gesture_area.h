@@ -334,8 +334,8 @@ private:
 
   // only set when two points in contact
   QPointF m_scene_start_point2;
-  QcGeoCoordinateWGS84 m_start_coord;
-  QcGeoCoordinateWGS84 m_touch_center_coord;
+  QcWgsCoordinate m_start_coord;
+  QcWgsCoordinate m_touch_center_coord;
   qreal m_two_touch_angle;
   qreal m_distance_between_touch_points;
   QPointF m_scene_center;

@@ -47,10 +47,10 @@
 class QDebug;
 class QDataStream;
 
-class QcGeoCoordinateWGS84;
-class QcGeoCoordinateWebMercator;
-class QcGeoCoordinatePseudoWebMercator;
-class QcGeoCoordinateNormalisedWebMercator;
+class QcWgsCoordinate;
+class QcWebMercatorCoordinate;
+class QcPseudoWebMercatorCoordinate;
+class QcNormalisedWebMercatorCoordinate;
 
 /**************************************************************************************************/
 
@@ -114,7 +114,7 @@ class QC_EXPORT QcWebMercatorProjection : public QcProjection
 };
 
 
-class QC_EXPORT QcGeoCoordinateWebMercator : public QcGeoCoordinateTemplate<QcWebMercatorProjection>
+class QC_EXPORT QcWebMercatorCoordinate : public QcGeoCoordinateTemplate<QcWebMercatorProjection>
 {
   Q_GADGET;
 
@@ -123,15 +123,15 @@ class QC_EXPORT QcGeoCoordinateWebMercator : public QcGeoCoordinateTemplate<QcWe
   Q_PROPERTY(bool is_valid READ is_valid)
 
  public:
-  QcGeoCoordinateWebMercator();
-  QcGeoCoordinateWebMercator(double x, double y);
+  QcWebMercatorCoordinate();
+  QcWebMercatorCoordinate(double x, double y);
 
-  QcGeoCoordinateWGS84 wgs84() const;
-  QcGeoCoordinatePseudoWebMercator pseudo_web_mercator() const;
-  QcGeoCoordinateNormalisedWebMercator normalised_web_mercator() const;
+  QcWgsCoordinate wgs84() const;
+  QcPseudoWebMercatorCoordinate pseudo_web_mercator() const;
+  QcNormalisedWebMercatorCoordinate normalised_web_mercator() const;
 };
 
-// Q_DECLARE_TYPEINFO(QcGeoCoordinateWebMercator, Q_MOVABLE_TYPE);
+// Q_DECLARE_TYPEINFO(QcWebMercatorCoordinate, Q_MOVABLE_TYPE);
 
 /**************************************************************************************************/
 
@@ -156,7 +156,7 @@ class QC_EXPORT QcPseudoMercatorProjection : public QcProjection
 };
 
 
-class QC_EXPORT QcGeoCoordinatePseudoWebMercator : public QcGeoCoordinateTemplate<QcPseudoMercatorProjection>
+class QC_EXPORT QcPseudoWebMercatorCoordinate : public QcGeoCoordinateTemplate<QcPseudoMercatorProjection>
 {
   Q_GADGET;
 
@@ -165,15 +165,15 @@ class QC_EXPORT QcGeoCoordinatePseudoWebMercator : public QcGeoCoordinateTemplat
   Q_PROPERTY(bool is_valid READ is_valid)
 
  public:
-  QcGeoCoordinatePseudoWebMercator();
-  QcGeoCoordinatePseudoWebMercator(double x, double y);
+  QcPseudoWebMercatorCoordinate();
+  QcPseudoWebMercatorCoordinate(double x, double y);
 
-  QcGeoCoordinateWGS84 wgs84() const;
-  QcGeoCoordinateWebMercator web_mercator() const;
-  QcGeoCoordinateNormalisedWebMercator normalised_web_mercator() const;
+  QcWgsCoordinate wgs84() const;
+  QcWebMercatorCoordinate web_mercator() const;
+  QcNormalisedWebMercatorCoordinate normalised_web_mercator() const;
 };
 
-// Q_DECLARE_TYPEINFO(QcGeoCoordinatePseudoWebMercator, Q_MOVABLE_TYPE);
+// Q_DECLARE_TYPEINFO(QcPseudoWebMercatorCoordinate, Q_MOVABLE_TYPE);
 
 /**************************************************************************************************/
 
@@ -203,7 +203,7 @@ class QC_EXPORT QcNormalisedMercatorProjection : public QcProjection
 };
 
 
-class QC_EXPORT QcGeoCoordinateNormalisedWebMercator : public QcGeoCoordinateTemplate<QcNormalisedMercatorProjection>
+class QC_EXPORT QcNormalisedWebMercatorCoordinate : public QcGeoCoordinateTemplate<QcNormalisedMercatorProjection>
 {
   Q_GADGET;
 
@@ -212,23 +212,23 @@ class QC_EXPORT QcGeoCoordinateNormalisedWebMercator : public QcGeoCoordinateTem
   Q_PROPERTY(bool is_valid READ is_valid)
 
  public:
-  QcGeoCoordinateNormalisedWebMercator();
-  QcGeoCoordinateNormalisedWebMercator(double x, double y);
+  QcNormalisedWebMercatorCoordinate();
+  QcNormalisedWebMercatorCoordinate(double x, double y);
 
-  QcGeoCoordinateWGS84 wgs84() const;
-  QcGeoCoordinateWebMercator web_mercator() const;
-  QcGeoCoordinatePseudoWebMercator pseudo_web_mercator() const;
+  QcWgsCoordinate wgs84() const;
+  QcWebMercatorCoordinate web_mercator() const;
+  QcPseudoWebMercatorCoordinate pseudo_web_mercator() const;
 };
 
-// Q_DECLARE_TYPEINFO(QcGeoCoordinateNormalisedWebMercator, Q_MOVABLE_TYPE);
+// Q_DECLARE_TYPEINFO(QcNormalisedWebMercatorCoordinate, Q_MOVABLE_TYPE);
 
 /**************************************************************************************************/
 
 // QC_END_NAMESPACE
 
-// Q_DECLARE_METATYPE(QcGeoCoordinateWebMercator)
-// Q_DECLARE_METATYPE(QcGeoCoordinatePseudoWebMercator)
-// Q_DECLARE_METATYPE(QcGeoCoordinateNormalisedWebMercator)
+// Q_DECLARE_METATYPE(QcWebMercatorCoordinate)
+// Q_DECLARE_METATYPE(QcPseudoWebMercatorCoordinate)
+// Q_DECLARE_METATYPE(QcNormalisedWebMercatorCoordinate)
 
 /**************************************************************************************************/
 

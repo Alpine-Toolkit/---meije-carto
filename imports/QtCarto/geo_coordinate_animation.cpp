@@ -75,7 +75,7 @@
 
 /*
 QVariant
-coordinate_interpolator(const QcGeoCoordinateWGS84 & from, const QcGeoCoordinateWGS84 & to, qreal progress)
+coordinate_interpolator(const QcWgsCoordinate & from, const QcWgsCoordinate & to, qreal progress)
 {
   if (from == to) { // ???
     if (progress < 0.5)
@@ -84,7 +84,7 @@ coordinate_interpolator(const QcGeoCoordinateWGS84 & from, const QcGeoCoordinate
       return QVariant::fromValue(to);
   }
 
-  QcGeoCoordinateWGS84 result = QGeoProjection::coordinateInterpolation(from, to, progress);
+  QcWgsCoordinate result = QGeoProjection::coordinateInterpolation(from, to, progress);
 
   return QVariant::fromValue(result);
 }
@@ -97,10 +97,10 @@ coordinate_interpolator(const QcGeoCoordinateWGS84 & from, const QcGeoCoordinate
 // or use normalised_web_mercator
 
 QVariant
-coordinate_shortest_interpolator(const QcGeoCoordinateWGS84 & _from, const QcGeoCoordinateWGS84 & _to, qreal progress)
+coordinate_shortest_interpolator(const QcWgsCoordinate & _from, const QcWgsCoordinate & _to, qreal progress)
 {
-  QcGeoCoordinateNormalisedWebMercator from = _from.normalised_web_mercator();
-  QcGeoCoordinateNormalisedWebMercator to = _to.normalised_web_mercator();
+  QcNormalisedWebMercatorCoordinate from = _from.normalised_web_mercator();
+  QcNormalisedWebMercatorCoordinate to = _to.normalised_web_mercator();
 
   double to_x = to.x();
   double to_y = to.y();
@@ -135,15 +135,15 @@ coordinate_shortest_interpolator(const QcGeoCoordinateWGS84 & _from, const QcGeo
 
   double y = from_y + delta_y * progress;
 
-  QcGeoCoordinateWGS84 coordinate = QcGeoCoordinateNormalisedWebMercator(x, y).wgs84();
+  QcWgsCoordinate coordinate = QcNormalisedWebMercatorCoordinate(x, y).wgs84();
   return QVariant::fromValue(coordinate);
 }
 
 QVariant
-coordinate_west_interpolator(const QcGeoCoordinateWGS84 & _from, const QcGeoCoordinateWGS84 & _to, qreal progress)
+coordinate_west_interpolator(const QcWgsCoordinate & _from, const QcWgsCoordinate & _to, qreal progress)
 {
-  QcGeoCoordinateNormalisedWebMercator from = _from.normalised_web_mercator();
-  QcGeoCoordinateNormalisedWebMercator to = _to.normalised_web_mercator();
+  QcNormalisedWebMercatorCoordinate from = _from.normalised_web_mercator();
+  QcNormalisedWebMercatorCoordinate to = _to.normalised_web_mercator();
 
   double to_x = to.x();
   double to_y = to.y();
@@ -160,15 +160,15 @@ coordinate_west_interpolator(const QcGeoCoordinateWGS84 & _from, const QcGeoCoor
 
   double y = from_y + delta_y * progress;
 
-  QcGeoCoordinateWGS84 coordinate = QcGeoCoordinateNormalisedWebMercator(x, y).wgs84();
+  QcWgsCoordinate coordinate = QcNormalisedWebMercatorCoordinate(x, y).wgs84();
   return QVariant::fromValue(coordinate);
 }
 
 QVariant
-coordinate_east_interpolator(const QcGeoCoordinateWGS84 & _from, const QcGeoCoordinateWGS84 & _to, qreal progress)
+coordinate_east_interpolator(const QcWgsCoordinate & _from, const QcWgsCoordinate & _to, qreal progress)
 {
-  QcGeoCoordinateNormalisedWebMercator from = _from.normalised_web_mercator();
-  QcGeoCoordinateNormalisedWebMercator to = _to.normalised_web_mercator();
+  QcNormalisedWebMercatorCoordinate from = _from.normalised_web_mercator();
+  QcNormalisedWebMercatorCoordinate to = _to.normalised_web_mercator();
 
   double to_x = to.x();
   double to_y = to.y();
@@ -185,7 +185,7 @@ coordinate_east_interpolator(const QcGeoCoordinateWGS84 & _from, const QcGeoCoor
 
   double y = from_y + delta_y * progress;
 
-  QcGeoCoordinateWGS84 coordinate = QcGeoCoordinateNormalisedWebMercator(x, y).wgs84();
+  QcWgsCoordinate coordinate = QcNormalisedWebMercatorCoordinate(x, y).wgs84();
   return QVariant::fromValue(coordinate);
 }
 
@@ -202,7 +202,7 @@ QcGeoCoordinateAnimation::QcGeoCoordinateAnimation(QObject * parent)
   : QQuickPropertyAnimation(*(new QcGeoCoordinateAnimationPrivate), parent) // ctor prototype ??? when deleted ???
 {
   Q_D(QcGeoCoordinateAnimation);
-  d->interpolatorType = qMetaTypeId<QcGeoCoordinateWGS84>();
+  d->interpolatorType = qMetaTypeId<QcWgsCoordinate>();
   d->defaultToInterpolatorType = true;
   d->interpolator = QVariantAnimationPrivate::getInterpolator(d->interpolatorType);
 }
@@ -214,14 +214,14 @@ QcGeoCoordinateAnimation::~QcGeoCoordinateAnimation()
   \qmlproperty coordinate CoordinateAnimation::from
   This property holds the coordinate where the animation should begin.
 */
-QcGeoCoordinateWGS84
+QcWgsCoordinate
 QcGeoCoordinateAnimation::from() const
 {
   Q_D(const QcGeoCoordinateAnimation);
-  return d->from.value<QcGeoCoordinateWGS84>();
+  return d->from.value<QcWgsCoordinate>();
 }
 
-void QcGeoCoordinateAnimation::setFrom(const QcGeoCoordinateWGS84 & from)
+void QcGeoCoordinateAnimation::setFrom(const QcWgsCoordinate & from)
 {
   QQuickPropertyAnimation::setFrom(QVariant::fromValue(from));
 }
@@ -230,15 +230,15 @@ void QcGeoCoordinateAnimation::setFrom(const QcGeoCoordinateWGS84 & from)
   \qmlproperty coordinate CoordinateAnimation::to
   This property holds the coordinate where the animation should end.
 */
-QcGeoCoordinateWGS84
+QcWgsCoordinate
 QcGeoCoordinateAnimation::to() const
 {
   Q_D(const QcGeoCoordinateAnimation);
-  return d->to.value<QcGeoCoordinateWGS84>();
+  return d->to.value<QcWgsCoordinate>();
 }
 
 void
-QcGeoCoordinateAnimation::setTo(const QcGeoCoordinateWGS84 & to)
+QcGeoCoordinateAnimation::setTo(const QcWgsCoordinate & to)
 {
   QQuickPropertyAnimation::setTo(QVariant::fromValue(to));
 }

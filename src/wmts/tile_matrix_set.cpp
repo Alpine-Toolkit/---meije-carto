@@ -53,11 +53,12 @@ QcTileMatrixSet::resolution_for_level(double map_size, int tile_size, int zoom_l
 QcTileMatrixSet::QcTileMatrixSet(const QcProjection * projection,
                                  const QcVectorDouble & origin,
                                  const QcVectorDouble & scale,
-                                 const QcGeoCoordinateWGS84 & default_center,
+                                 const QcWgsCoordinate & default_center,
                                  int number_of_levels,
                                  int tile_size)
   : m_projection(projection),
     m_origin(origin),
+    m_scale(scale),
     m_default_center(default_center),
     m_number_of_levels(number_of_levels),
     m_tile_size(tile_size),

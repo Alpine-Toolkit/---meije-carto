@@ -38,46 +38,46 @@
 
 /**************************************************************************************************/
 
-QcGeoCoordinateWebMercator::QcGeoCoordinateWebMercator(double x, double y)
+QcWebMercatorCoordinate::QcWebMercatorCoordinate(double x, double y)
   : QcGeoCoordinateTemplate(x, y)
 {}
 
-QcGeoCoordinateWebMercator::QcGeoCoordinateWebMercator()
+QcWebMercatorCoordinate::QcWebMercatorCoordinate()
   : QcGeoCoordinateTemplate(.0, .0)
 {}
 
-QcGeoCoordinateWGS84
-QcGeoCoordinateWebMercator::wgs84() const
+QcWgsCoordinate
+QcWebMercatorCoordinate::wgs84() const
 {
   double longitude = x() / EQUATORIAL_RADIUS;
   double _y = y() / EQUATORIAL_RADIUS;
   double latitude = 2*atan(exp(_y)) - M_HALF_PI;
 
-  return QcGeoCoordinateWGS84(qRadiansToDegrees(longitude), qRadiansToDegrees(latitude));
+  return QcWgsCoordinate(qRadiansToDegrees(longitude), qRadiansToDegrees(latitude));
 }
 
-QcGeoCoordinatePseudoWebMercator
-QcGeoCoordinateWebMercator::pseudo_web_mercator() const
+QcPseudoWebMercatorCoordinate
+QcWebMercatorCoordinate::pseudo_web_mercator() const
 {
   double _x = x() + HALF_EQUATORIAL_PERIMETER;
   double _y = HALF_EQUATORIAL_PERIMETER - y();
 
-  return QcGeoCoordinatePseudoWebMercator(_x, _y);
+  return QcPseudoWebMercatorCoordinate(_x, _y);
 }
 
-QcGeoCoordinateNormalisedWebMercator
-QcGeoCoordinateWebMercator::normalised_web_mercator() const
+QcNormalisedWebMercatorCoordinate
+QcWebMercatorCoordinate::normalised_web_mercator() const
 {
   // Fixme: duplicated code
   double _x = (x() + HALF_EQUATORIAL_PERIMETER) * INVERSE_EQUATORIAL_PERIMETER;
   double _y = (HALF_EQUATORIAL_PERIMETER - y()) * INVERSE_EQUATORIAL_PERIMETER;
 
-  return QcGeoCoordinateNormalisedWebMercator(_x, _y);
+  return QcNormalisedWebMercatorCoordinate(_x, _y);
 }
 
 /**************************************************************************************************/
 
-QcGeoCoordinatePseudoWebMercator::QcGeoCoordinatePseudoWebMercator(double x, double y)
+QcPseudoWebMercatorCoordinate::QcPseudoWebMercatorCoordinate(double x, double y)
   : QcGeoCoordinateTemplate()
 {
   // Fixme: right or in viewport ???
@@ -93,69 +93,69 @@ QcGeoCoordinatePseudoWebMercator::QcGeoCoordinatePseudoWebMercator(double x, dou
   set_y(cls_projection.y_projected_interval().truncate(y));
 }
 
-QcGeoCoordinatePseudoWebMercator::QcGeoCoordinatePseudoWebMercator()
+QcPseudoWebMercatorCoordinate::QcPseudoWebMercatorCoordinate()
   : QcGeoCoordinateTemplate(.0, .0)
 {}
 
-QcGeoCoordinateWGS84
-QcGeoCoordinatePseudoWebMercator::wgs84() const
+QcWgsCoordinate
+QcPseudoWebMercatorCoordinate::wgs84() const
 {
   return web_mercator().wgs84();
 }
 
-QcGeoCoordinateWebMercator
-QcGeoCoordinatePseudoWebMercator::web_mercator() const
+QcWebMercatorCoordinate
+QcPseudoWebMercatorCoordinate::web_mercator() const
 {
   double _x = x() - HALF_EQUATORIAL_PERIMETER;
   double _y = HALF_EQUATORIAL_PERIMETER - y();
 
-  return QcGeoCoordinateWebMercator(_x, _y);
+  return QcWebMercatorCoordinate(_x, _y);
 }
 
-QcGeoCoordinateNormalisedWebMercator
-QcGeoCoordinatePseudoWebMercator::normalised_web_mercator() const
+QcNormalisedWebMercatorCoordinate
+QcPseudoWebMercatorCoordinate::normalised_web_mercator() const
 {
   double _x = x() * INVERSE_EQUATORIAL_PERIMETER;
   double _y = y() * INVERSE_EQUATORIAL_PERIMETER;
 
-  return QcGeoCoordinateNormalisedWebMercator(_x, _y);
+  return QcNormalisedWebMercatorCoordinate(_x, _y);
 }
 
 /**************************************************************************************************/
 
-QcGeoCoordinateNormalisedWebMercator::QcGeoCoordinateNormalisedWebMercator(double x, double y)
+QcNormalisedWebMercatorCoordinate::QcNormalisedWebMercatorCoordinate(double x, double y)
   : QcGeoCoordinateTemplate(x, y)
 {}
 
-QcGeoCoordinateNormalisedWebMercator::QcGeoCoordinateNormalisedWebMercator()
+QcNormalisedWebMercatorCoordinate::QcNormalisedWebMercatorCoordinate()
   : QcGeoCoordinateTemplate(.0, .0)
 {}
 
-QcGeoCoordinateWebMercator
-QcGeoCoordinateNormalisedWebMercator::web_mercator() const
+QcWebMercatorCoordinate
+QcNormalisedWebMercatorCoordinate::web_mercator() const
 {
   double _x = x() * EQUATORIAL_PERIMETER - HALF_EQUATORIAL_PERIMETER;
   double _y = HALF_EQUATORIAL_PERIMETER - y() * EQUATORIAL_PERIMETER;
 
-  return QcGeoCoordinateWebMercator(_x, _y);
+  return QcWebMercatorCoordinate(_x, _y);
 }
 
-QcGeoCoordinatePseudoWebMercator
-QcGeoCoordinateNormalisedWebMercator::pseudo_web_mercator() const
+QcPseudoWebMercatorCoordinate
+QcNormalisedWebMercatorCoordinate::pseudo_web_mercator() const
 {
   double _x = x() * EQUATORIAL_PERIMETER;
   double _y = y() * EQUATORIAL_PERIMETER;
 
-  return QcGeoCoordinatePseudoWebMercator(_x, _y);
+  return QcPseudoWebMercatorCoordinate(_x, _y);
 }
 
-QcGeoCoordinateWGS84
-QcGeoCoordinateNormalisedWebMercator::wgs84() const
+QcWgsCoordinate
+QcNormalisedWebMercatorCoordinate::wgs84() const
 {
   // double longitude = M_2PI * x() - M_PI;
   // double latitude = 2*atan(exp(M_PI - M_2PI * y())) - M_HALF_PI;
 
-  // return QcGeoCoordinateWGS84(qRadiansToDegrees(longitude), qRadiansToDegrees(latitude));
+  // return QcWgsCoordinate(qRadiansToDegrees(longitude), qRadiansToDegrees(latitude));
 
   return web_mercator().wgs84();
 }

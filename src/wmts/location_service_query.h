@@ -132,7 +132,7 @@ private:
 class QcLocationServiceReverseQuery : public QcLocationServiceQueryBase
 {
   Q_GADGET
-  Q_PROPERTY(QcGeoCoordinateWGS84 coordinate READ coordinate WRITE set_coordinate)
+  Q_PROPERTY(QcWgsCoordinate coordinate READ coordinate WRITE set_coordinate)
   Q_PROPERTY(int radius READ radius WRITE set_radius)
 
 public:
@@ -142,14 +142,14 @@ public:
 
   QcLocationServiceReverseQuery & operator=(const QcLocationServiceReverseQuery & other);
 
-  const QcGeoCoordinateWGS84 & coordinate() const { return m_coordinate; }
-  void set_coordinate(const QcGeoCoordinateWGS84 & coordinate);
+  const QcWgsCoordinate & coordinate() const { return m_coordinate; }
+  void set_coordinate(const QcWgsCoordinate & coordinate);
 
   int radius() const { return m_radius; }
   void set_radius(int radius);
 
 private:
-  QcGeoCoordinateWGS84 m_coordinate;
+  QcWgsCoordinate m_coordinate;
   int m_radius;
 };
 

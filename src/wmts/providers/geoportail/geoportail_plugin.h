@@ -94,7 +94,7 @@ public:
 
   bool has_coordinate_elevation_service() override { return true; }
   bool has_sampling_elevation_service() override { return true; }
-  QSharedPointer<QcElevationServiceReply> coordinate_elevations(const QVector<QcGeoCoordinateWGS84> & coordinates) override;
+  QSharedPointer<QcElevationServiceReply> coordinate_elevations(const QVector<QcWgsCoordinate> & coordinates) override;
   QSharedPointer<QcLocationServiceReverseReply> reverse_geocode_request(const QcLocationServiceReverseQuery & query) override;
 
 private Q_SLOTS:

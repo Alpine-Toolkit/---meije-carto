@@ -108,8 +108,8 @@ Application::main_task()
   double longitude = 6.311331853277862;
   double latitude = 45.956298260767284;
   // geoportail-0-16-33915-23329
-  QcGeoCoordinateWGS84 center_wsg84(longitude, latitude);
-  QcGeoCoordinatePseudoWebMercator center_mercator = center_wsg84.pseudo_web_mercator();
+  QcWgsCoordinate center_wsg84(longitude, latitude);
+  QcPseudoWebMercatorCoordinate center_mercator = center_wsg84.pseudo_web_mercator();
   QcVectorDouble center = center_mercator.vector();;
   double radius_m = 100 * 1000; // 20 km
   QcVectorDouble half_diagonal_m(radius_m, radius_m);

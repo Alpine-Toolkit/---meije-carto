@@ -380,7 +380,7 @@ QcGpxReader::read_waypoint(const QString & element)
 
   double latitude = m_reader.get_double_attribute(LATITUDE_ATTRIBUTE);
   double longitude = m_reader.get_double_attribute(LONGITUDE_ATTRIBUTE);
-  QcGeoElevationCoordinateWGS84 coordinate(longitude, latitude, .0);
+  QcWgsElevationCoordinate coordinate(longitude, latitude, .0);
 
   while (! m_reader.read_match_end_element(element))
     if (m_reader.isStartElement()) {
@@ -584,7 +584,7 @@ QcGpxWriter::write_metadata(const QcGpx & gpx)
 void
 QcGpxWriter::write_waypoint(const QcWayPoint & waypoint)
 {
-  const QcGeoElevationCoordinateWGS84 & coordinate = waypoint.coordinate();
+  const QcWgsElevationCoordinate & coordinate = waypoint.coordinate();
   m_writer.writeAttribute(LATITUDE_ATTRIBUTE, QString::number(coordinate.latitude()));
   m_writer.writeAttribute(LONGITUDE_ATTRIBUTE, QString::number(coordinate.longitude()));
   m_writer.writeTextElement(ELEVATION_ELEMENT, QString::number(coordinate.elevation()));

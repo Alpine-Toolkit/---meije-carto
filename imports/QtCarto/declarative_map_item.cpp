@@ -87,8 +87,8 @@ QcMapItem::QcMapItem(QQuickItem * parent)
   int level = 10;
   double longitude =  2.3491; // Paris Notre-Dame
   double latitude  = 48.8533;
-  QcGeoCoordinateWGS84 coordinate(longitude, latitude);
-  m_viewport->zoom_at(coordinate.pseudo_web_mercator(), level);
+  QcWgsCoordinate coordinate(longitude, latitude);
+  m_viewport->zoom_at(coordinate, level);
 }
 
 QcMapItem::~QcMapItem()
@@ -384,15 +384,15 @@ QcMapItem::set_zoom_level(unsigned int new_zoom_level)
 void
 QcMapItem::set_center_qt(const QGeoCoordinate & coordinate)
 {
-  set_center(QcGeoCoordinateWGS84(coordinate));
+  set_center(QcWgsCoordinate(coordinate));
 }
 
 void
-QcMapItem::set_center(const QcGeoCoordinateWGS84 & coordinate)
+QcMapItem::set_center(const QcWgsCoordinate & coordinate)
 {
   // qInfo() << "WGS84 " << coordinate;
 
-  if (coordinate == m_viewport->wgs84())
+  if (coordinate == m_viewport->center())
     return;
 
   // Fixme: check latitude
@@ -400,16 +400,16 @@ QcMapItem::set_center(const QcGeoCoordinateWGS84 & coordinate)
   //   return;
   // coordinate.setLatitude(qBound(-m_maximumViewportLatitude, center.latitude(), m_maximumViewportLatitude));
 
-  m_viewport->set_coordinate(coordinate);
+  m_viewport->set_center(coordinate);
   // update(); // Fixme: signal
 
   emit centerChanged(coordinate);
 }
 
-QcGeoCoordinateWGS84
+QcWgsCoordinate
 QcMapItem::center() const
 {
-  return m_viewport->wgs84();
+  return m_viewport->center();
 }
 
 QGeoCoordinate
@@ -496,10 +496,10 @@ QcMapItem::updatePaintNode(QSGNode * old_node, UpdatePaintNodeData *)
     If \a cliptoViewPort is \c true, or not supplied then returns an invalid coordinate if
     \a position is not within the current viewport.
 */
-QcGeoCoordinateWGS84
+QcWgsCoordinate
 QcMapItem::to_coordinate(const QcVectorDouble & position_px, bool clip_to_viewport) const
 {
-  return m_viewport->to_coordinate(position_px, clip_to_viewport).wgs84();
+  return m_viewport->to_coordinate(position_px, clip_to_viewport);
 }
 
 QGeoCoordinate
@@ -518,7 +518,7 @@ QcMapItem::to_coordinate_qt(const QVector2D & position_px, bool clip_to_viewport
     \a coordinate is not within the current viewport.
 */
 QcVectorDouble
-QcMapItem::from_coordinate(const QcGeoCoordinateWGS84 & coordinate, bool clip_to_viewport) const
+QcMapItem::from_coordinate(const QcWgsCoordinate & coordinate, bool clip_to_viewport) const
 {
   return m_viewport->from_coordinate(coordinate, clip_to_viewport);
 }
@@ -526,7 +526,7 @@ QcMapItem::from_coordinate(const QcGeoCoordinateWGS84 & coordinate, bool clip_to
 QVector2D
 QcMapItem::from_coordinate_qt(const QGeoCoordinate & coordinate, bool clip_to_viewport) const
 {
-  QcGeoCoordinateWGS84 _coordinate(coordinate);
+  QcWgsCoordinate _coordinate(coordinate);
   QcVectorDouble position_px = from_coordinate(_coordinate, clip_to_viewport);
   return QVector2D(position_px.x(), position_px.y());
 }

@@ -66,8 +66,8 @@ class QcGeoCoordinateAnimation : public QQuickPropertyAnimation
 {
   Q_OBJECT
   Q_DECLARE_PRIVATE(QcGeoCoordinateAnimation)
-  Q_PROPERTY(QcGeoCoordinateWGS84 from READ from WRITE setFrom)
-  Q_PROPERTY(QcGeoCoordinateWGS84 to READ to WRITE setTo)
+  Q_PROPERTY(QcWgsCoordinate from READ from WRITE setFrom)
+  Q_PROPERTY(QcWgsCoordinate to READ to WRITE setTo)
   Q_PROPERTY(Direction direction READ direction WRITE setDirection NOTIFY directionChanged)
 
 public:
@@ -81,11 +81,11 @@ public:
   QcGeoCoordinateAnimation(QObject * parent = 0);
   ~QcGeoCoordinateAnimation();
 
-  QcGeoCoordinateWGS84 from() const;
-  void setFrom(const QcGeoCoordinateWGS84 &);
+  QcWgsCoordinate from() const;
+  void setFrom(const QcWgsCoordinate &);
 
-  QcGeoCoordinateWGS84 to() const;
-  void setTo(const QcGeoCoordinateWGS84 &);
+  QcWgsCoordinate to() const;
+  void setTo(const QcWgsCoordinate &);
 
   Direction direction() const;
   void setDirection(Direction direction);
@@ -103,7 +103,7 @@ public:
   QcGeoCoordinateAnimation::Direction m_direction;
 };
 
-// QVariant coordinate_interpolator(const QcGeoCoordinateWGS84 & from, const QcGeoCoordinateWGS84 & to, qreal progress);
+// QVariant coordinate_interpolator(const QcWgsCoordinate & from, const QcWgsCoordinate & to, qreal progress);
 
 // QC_END_NAMESPACE
 

@@ -53,7 +53,7 @@ QcMapPathEditor::handle_mouse_move_event(const QcMapEvent & event)
 void
 QcMapPathEditor::handle_mouse_press_and_hold_event(const QcMapEvent & event)
 {
-  QcGeoCoordinatePseudoWebMercator coordinate = event.coordinate().pseudo_web_mercator();
+  QcPseudoWebMercatorCoordinate coordinate = event.coordinate().pseudo_web_mercator();
   m_path.add_vertex(coordinate.vector());
   qInfo() << event << coordinate << m_path.number_of_edges();
   m_map_view->update_path(m_path);

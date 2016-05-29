@@ -132,7 +132,7 @@ public:
 
   virtual bool has_coordinate_elevation_service() { return false; }
   virtual bool has_sampling_elevation_service() { return false; }
-  virtual QSharedPointer<QcElevationServiceReply> coordinate_elevations(const QVector<QcGeoCoordinateWGS84> & coordinates);
+  virtual QSharedPointer<QcElevationServiceReply> coordinate_elevations(const QVector<QcWgsCoordinate> & coordinates);
 
   // Fixme: protect ?
   // Fixme: networking could be moved in a dedicated class (QcWmtsNetworkTileFetcher but ols)

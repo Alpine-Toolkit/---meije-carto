@@ -81,8 +81,8 @@ class QC_EXPORT QcWayPoint
 
   // bool operator==(const QcWayPoint & rhs) const;
 
-  QcGeoElevationCoordinateWGS84 coordinate() const;
-  void set_coordinate(const QcGeoElevationCoordinateWGS84 & coordinate);
+  QcWgsElevationCoordinate coordinate() const;
+  void set_coordinate(const QcWgsElevationCoordinate & coordinate);
 
   QDateTime time() const;
   void set_time(const QDateTime & time);
@@ -136,7 +136,7 @@ class QC_EXPORT QcWayPoint
   void set_dgps_id(int dgps_id);
 
  private:
-  QcGeoElevationCoordinateWGS84 m_coordinate;
+  QcWgsElevationCoordinate m_coordinate;
   QDateTime m_time;
   qreal m_magnetic_variation;
   qreal m_geoid_height;

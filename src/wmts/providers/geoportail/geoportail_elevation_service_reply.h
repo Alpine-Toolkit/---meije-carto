@@ -45,7 +45,7 @@ class QcGeoportailElevationServiceReply : public QcElevationServiceReply
 
 public:
   explicit QcGeoportailElevationServiceReply(QNetworkReply * reply,
-                                             const QVector<QcGeoCoordinateWGS84> & coordinates);
+                                             const QVector<QcWgsCoordinate> & coordinates);
   ~QcGeoportailElevationServiceReply();
 
   void process_payload();

@@ -35,7 +35,7 @@
 /**************************************************************************************************/
 
 QcGeoportailElevationServiceReply::QcGeoportailElevationServiceReply(QNetworkReply * reply,
-                                                                     const QVector<QcGeoCoordinateWGS84> & coordinates)
+                                                                     const QVector<QcWgsCoordinate> & coordinates)
   : QcElevationServiceReply(reply, coordinates)
 {}
 
@@ -60,7 +60,7 @@ QcGeoportailElevationServiceReply::process_payload()
       double latitude = json_object["lat"].toDouble();
       double elevation = json_object["z"].toDouble();
       double elevation_accuracy = json_object["acc"].toDouble();
-      elevations() << QcGeoElevationCoordinateWGS84(longitude, latitude, elevation);
+      elevations() << QcWgsElevationCoordinate(longitude, latitude, elevation);
     }
   }
   qInfo() << elevations();

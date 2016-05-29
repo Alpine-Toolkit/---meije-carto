@@ -31,7 +31,7 @@
 /**************************************************************************************************/
 
 QcElevationServiceReply::QcElevationServiceReply(QNetworkReply * reply,
-                                   const QVector<QcGeoCoordinateWGS84> & coordinates)
+                                   const QVector<QcWgsCoordinate> & coordinates)
   : QcNetworkReply(reply),
     m_coordinates(coordinates)
 {

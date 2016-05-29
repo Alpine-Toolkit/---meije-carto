@@ -45,7 +45,7 @@ QcMapEvent::QcMapEvent()
 {}
 
 QcMapEvent::QcMapEvent(int button, int buttons, int modifiers, int was_held,
-                       const QcGeoCoordinateWGS84 & coordinate)
+                       const QcWgsCoordinate & coordinate)
   : m_button(button),
     m_buttons(buttons),
     m_modifiers(modifiers),
@@ -123,7 +123,7 @@ QcMapEventRouter::~QcMapEventRouter()
 
 QcMapEvent
 QcMapEventRouter::create_map_event(int button, int buttons, int modifiers, int was_held,
-                                   const QcGeoCoordinateWGS84 & coordinate)
+                                   const QcWgsCoordinate & coordinate)
 {
   return QcMapEvent(button, buttons, modifiers, was_held, coordinate);
 }

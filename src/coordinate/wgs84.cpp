@@ -36,20 +36,20 @@
 
 /**************************************************************************************************/
 
-QcGeoCoordinateWGS84::QcGeoCoordinateWGS84(double longitude, double latitude)
+QcWgsCoordinate::QcWgsCoordinate(double longitude, double latitude)
   : QcGeoCoordinateTemplate(longitude, latitude)
 {}
 
-QcGeoCoordinateWGS84::QcGeoCoordinateWGS84()
+QcWgsCoordinate::QcWgsCoordinate()
   : QcGeoCoordinateTemplate(.0, .0)
 {}
 
-QcGeoCoordinateWGS84::QcGeoCoordinateWGS84(QcGeoSexagesimalAngle & longitude, QcGeoSexagesimalAngle & latitude)
+QcWgsCoordinate::QcWgsCoordinate(QcGeoSexagesimalAngle & longitude, QcGeoSexagesimalAngle & latitude)
   : QcGeoCoordinateTemplate(longitude.decimal(), latitude.decimal())
 {}
 
 bool
-QcGeoCoordinateWGS84::operator==(const QcGeoCoordinateWGS84 & other) const
+QcWgsCoordinate::operator==(const QcWgsCoordinate & other) const
 {
   bool longitude_equal = ((qIsNaN(longitude()) and qIsNaN(other.longitude()))
 			  || qFuzzyCompare(longitude(), other.longitude()));
@@ -63,8 +63,8 @@ QcGeoCoordinateWGS84::operator==(const QcGeoCoordinateWGS84 & other) const
   return (longitude_equal and latitude_equal);
 }
 
-QcGeoCoordinateWebMercator
-QcGeoCoordinateWGS84::web_mercator() const
+QcWebMercatorCoordinate
+QcWgsCoordinate::web_mercator() const
 {
   // 128/pi 2^level (longitude() + pi) px
   // 128/pi 2^level (pi - ln(tan(latitude/2 + pi/4))) px
@@ -75,17 +75,17 @@ QcGeoCoordinateWGS84::web_mercator() const
   y *= EQUATORIAL_RADIUS;
   // y = R/2 * math.log((1 + sin(latitude))/(1 - sin(latitude))
 
-  return QcGeoCoordinateWebMercator(x, y);
+  return QcWebMercatorCoordinate(x, y);
 }
 
-QcGeoCoordinatePseudoWebMercator
-QcGeoCoordinateWGS84::pseudo_web_mercator() const
+QcPseudoWebMercatorCoordinate
+QcWgsCoordinate::pseudo_web_mercator() const
 {
   return web_mercator().pseudo_web_mercator(); // shift
 }
 
-QcGeoCoordinateNormalisedWebMercator
-QcGeoCoordinateWGS84::normalised_web_mercator() const
+QcNormalisedWebMercatorCoordinate
+QcWgsCoordinate::normalised_web_mercator() const
 {
   // Fixme: duplicated code
   double x = qDegreesToRadians(longitude());
@@ -95,7 +95,7 @@ QcGeoCoordinateWGS84::normalised_web_mercator() const
   x += .5;
   y = .5 - y;
 
-  return QcGeoCoordinateNormalisedWebMercator(x, y);
+  return QcNormalisedWebMercatorCoordinate(x, y);
 }
 
 /*!
@@ -107,12 +107,12 @@ QcGeoCoordinateWGS84::normalised_web_mercator() const
   purpose of this calculation.
 
   Returns 0 if the type of this coordinate or the type of \a other is
-  QcGeoCoordinateWGS84::InvalidCoordinate.
+  QcWgsCoordinate::InvalidCoordinate.
 */
-double QcGeoCoordinateWGS84::distance_to(const QcGeoCoordinateWGS84 & other) const
+double QcWgsCoordinate::distance_to(const QcWgsCoordinate & other) const
 {
   /*
-  if (type() == QcGeoCoordinateWGS84::InvalidCoordinate || other.type() == QcGeoCoordinateWGS84::InvalidCoordinate) {
+  if (type() == QcWgsCoordinate::InvalidCoordinate || other.type() == QcWgsCoordinate::InvalidCoordinate) {
     return 0;
   }
   */
@@ -141,13 +141,13 @@ double QcGeoCoordinateWGS84::distance_to(const QcGeoCoordinateWGS84 & other) con
   Earth is spherical for the purpose of this calculation.
 
   Returns 0 if the type of this coordinate or the type of \a other is
-  QcGeoCoordinateWGS84::InvalidCoordinate.
+  QcWgsCoordinate::InvalidCoordinate.
 */
 double
-QcGeoCoordinateWGS84::azimuth_to(const QcGeoCoordinateWGS84 & other) const
+QcWgsCoordinate::azimuth_to(const QcWgsCoordinate & other) const
 {
   /*
-  if (type() == QcGeoCoordinateWGS84::InvalidCoordinate || other.type() == QcGeoCoordinateWGS84::InvalidCoordinate) {
+  if (type() == QcWgsCoordinate::InvalidCoordinate || other.type() == QcWgsCoordinate::InvalidCoordinate) {
     return 0;
   }
   */
@@ -180,12 +180,12 @@ QcGeoCoordinateWGS84::azimuth_to(const QcGeoCoordinateWGS84 & other) const
 
   Returns an invalid coordinate if this coordinate is invalid.
 */
-QcGeoCoordinateWGS84
-QcGeoCoordinateWGS84::at_distance_and_azimuth(double distance, double _azimuth) const
+QcWgsCoordinate
+QcWgsCoordinate::at_distance_and_azimuth(double distance, double _azimuth) const
 {
   /*
   if (!isValid())
-    return QcGeoCoordinateWGS84();
+    return QcWgsCoordinate();
   */
 
   // Fixme: find reference
@@ -215,43 +215,43 @@ QcGeoCoordinateWGS84::at_distance_and_azimuth(double distance, double _azimuth) 
   else if (longitude2 < -180.0)
     longitude2 += 360.0;
 
-  return QcGeoCoordinateWGS84(latitude2, longitude2);
+  return QcWgsCoordinate(latitude2, longitude2);
 }
 
 /**************************************************************************************************/
 
-QcGeoElevationCoordinateWGS84::QcGeoElevationCoordinateWGS84(double longitude, double latitude, double elevation)
-  : QcGeoCoordinateWGS84(longitude, latitude),
+QcWgsElevationCoordinate::QcWgsElevationCoordinate(double longitude, double latitude, double elevation)
+  : QcWgsCoordinate(longitude, latitude),
     QcElevation(elevation)
 {
 }
 
-QcGeoElevationCoordinateWGS84::QcGeoElevationCoordinateWGS84()
-  : QcGeoCoordinateWGS84(),
+QcWgsElevationCoordinate::QcWgsElevationCoordinate()
+  : QcWgsCoordinate(),
     QcElevation()
 {}
 
-QcGeoElevationCoordinateWGS84::QcGeoElevationCoordinateWGS84(QcGeoSexagesimalAngle & longitude,
+QcWgsElevationCoordinate::QcWgsElevationCoordinate(QcGeoSexagesimalAngle & longitude,
                                                              QcGeoSexagesimalAngle & latitude,
                                                              double elevation)
-  : QcGeoCoordinateWGS84(longitude.decimal(), latitude.decimal()),
+  : QcWgsCoordinate(longitude.decimal(), latitude.decimal()),
     QcElevation(elevation)
 {}
 
-QcGeoElevationCoordinateWGS84::QcGeoElevationCoordinateWGS84(const QcGeoElevationCoordinateWGS84 & other)
-  : QcGeoCoordinateWGS84(other.longitude(), other.latitude()),
+QcWgsElevationCoordinate::QcWgsElevationCoordinate(const QcWgsElevationCoordinate & other)
+  : QcWgsCoordinate(other.longitude(), other.latitude()),
     QcElevation(other.elevation())
 {}
 
-QcGeoElevationCoordinateWGS84::~QcGeoElevationCoordinateWGS84()
+QcWgsElevationCoordinate::~QcWgsElevationCoordinate()
 {}
 
 // Fixme: default
-QcGeoElevationCoordinateWGS84 &
-QcGeoElevationCoordinateWGS84::operator=(const QcGeoElevationCoordinateWGS84 & other)
+QcWgsElevationCoordinate &
+QcWgsElevationCoordinate::operator=(const QcWgsElevationCoordinate & other)
 {
   if (this != &other) {
-    QcGeoCoordinateWGS84::operator=(other);
+    QcWgsCoordinate::operator=(other);
     QcElevation::operator=(other);
   }
 
@@ -259,14 +259,14 @@ QcGeoElevationCoordinateWGS84::operator=(const QcGeoElevationCoordinateWGS84 & o
 }
 
 #ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug debug, const QcGeoElevationCoordinateWGS84 & coordinate)
+QDebug operator<<(QDebug debug, const QcWgsElevationCoordinate & coordinate)
 {
     QDebugStateSaver saver(debug);
     double longitude = coordinate.longitude();
     double latitude = coordinate.latitude();
     double elevation = coordinate.elevation();
 
-    debug.nospace() << "QcGeoElevationCoordinateWGS84(";
+    debug.nospace() << "QcWgsElevationCoordinate(";
     if (qIsNaN(longitude))
         debug << '?';
     else
@@ -288,7 +288,7 @@ QDebug operator<<(QDebug debug, const QcGeoElevationCoordinateWGS84 & coordinate
 #endif
 
 #ifndef QT_NO_DATASTREAM
-QDataStream & operator<<(QDataStream & stream, const QcGeoElevationCoordinateWGS84 & coordinate)
+QDataStream & operator<<(QDataStream & stream, const QcWgsElevationCoordinate & coordinate)
 {
     stream << coordinate.longitude();
     stream << coordinate.latitude();
@@ -298,7 +298,7 @@ QDataStream & operator<<(QDataStream & stream, const QcGeoElevationCoordinateWGS
 #endif
 
 #ifndef QT_NO_DATASTREAM
-QDataStream & operator>>(QDataStream & stream, QcGeoElevationCoordinateWGS84 & coordinate)
+QDataStream & operator>>(QDataStream & stream, QcWgsElevationCoordinate & coordinate)
 {
     double value;
     stream >> value;

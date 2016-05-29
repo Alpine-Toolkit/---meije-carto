@@ -74,7 +74,7 @@ QcArticWebMapPlugin::QcArticWebMapPlugin()
                  new  QcTileMatrixSet(QcProjection::by_srid(QLatin1Literal("epsg:3571")),
                                       QcVectorDouble(1., -1.),
                                       QcVectorDouble(-HALF_EQUATORIAL_PERIMETER, HALF_EQUATORIAL_PERIMETER), // Fixme: use projection
-                                      QcGeoCoordinateWGS84(180., 90.),
+                                      QcWgsCoordinate(180., 90.),
                                       NUMBER_OF_LEVELS,
                                       TILE_SIZE))
 {

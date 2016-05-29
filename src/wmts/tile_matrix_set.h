@@ -89,7 +89,7 @@ class QC_EXPORT QcTileMatrixSet
   QcTileMatrixSet(const QcProjection * projection,
                   const QcVectorDouble & origin,
                   const QcVectorDouble & scale,
-                  const QcGeoCoordinateWGS84 & default_center,
+                  const QcWgsCoordinate & default_center,
                   int number_of_level,
                   int tile_size);
 
@@ -98,7 +98,7 @@ class QC_EXPORT QcTileMatrixSet
   const QcVectorDouble & origin() const { return m_origin; }
   const QcVectorDouble & scale() const { return m_scale; }
 
-  inline const QcGeoCoordinateWGS84 & default_center() const { return m_default_center; }
+  inline const QcWgsCoordinate & default_center() const { return m_default_center; }
 
   inline int number_of_levels() const { return m_number_of_levels; }
 
@@ -141,7 +141,7 @@ class QC_EXPORT QcTileMatrixSet
   const QcProjection * m_projection;
   QcVectorDouble m_origin;
   QcVectorDouble m_scale;
-  QcGeoCoordinateWGS84 m_default_center;
+  QcWgsCoordinate m_default_center;
   // Bounds of the CRS, in projected coordinates
   int m_number_of_levels; // Fixme: could be a subset
   int m_tile_size;
@@ -196,7 +196,7 @@ class QC_EXPORT QcMercatorTileMatrixSet : public QcTileMatrixSet
     : QcTileMatrixSet(QcProjection::by_srid(QLatin1Literal("epsg:3857")),
                       QcVectorDouble(1., -1.),
                       QcVectorDouble(-HALF_EQUATORIAL_PERIMETER, HALF_EQUATORIAL_PERIMETER), // Fixme: use projection
-                      QcGeoCoordinateWGS84(.0, .0), // Fixme: use projection
+                      QcWgsCoordinate(.0, .0), // Fixme: use projection
                       number_of_level,
                       tile_size
                       )

@@ -177,7 +177,7 @@ QcLocationServiceReverseQuery::operator=(const QcLocationServiceReverseQuery & o
 }
 
 void
-QcLocationServiceReverseQuery::set_coordinate(const QcGeoCoordinateWGS84 & coordinate)
+QcLocationServiceReverseQuery::set_coordinate(const QcWgsCoordinate & coordinate)
 {
   m_coordinate = coordinate;
 }

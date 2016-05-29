@@ -41,9 +41,9 @@
 
 /**************************************************************************************************/
 
-class QcGeoCoordinateWebMercator;
-class QcGeoCoordinatePseudoWebMercator;
-class QcGeoCoordinateNormalisedWebMercator;
+class QcWebMercatorCoordinate;
+class QcPseudoWebMercatorCoordinate;
+class QcNormalisedWebMercatorCoordinate;
 
 /**************************************************************************************************/
 
@@ -147,7 +147,7 @@ class QC_EXPORT QcWgs84Projection : public QcProjection
 
 /**************************************************************************************************/
 
-class QC_EXPORT QcGeoCoordinateWGS84 : public QcGeoCoordinateTemplate<QcWgs84Projection>
+class QC_EXPORT QcWgsCoordinate : public QcGeoCoordinateTemplate<QcWgs84Projection>
 {
   Q_GADGET;
 
@@ -156,14 +156,14 @@ class QC_EXPORT QcGeoCoordinateWGS84 : public QcGeoCoordinateTemplate<QcWgs84Pro
   Q_PROPERTY(bool is_valid READ is_valid)
 
  public:
-  QcGeoCoordinateWGS84();
-  QcGeoCoordinateWGS84(double longitude, double latitude);
-  QcGeoCoordinateWGS84(QcGeoSexagesimalAngle & longitude, QcGeoSexagesimalAngle & latitude);
+  QcWgsCoordinate();
+  QcWgsCoordinate(double longitude, double latitude);
+  QcWgsCoordinate(QcGeoSexagesimalAngle & longitude, QcGeoSexagesimalAngle & latitude);
 
-  bool operator==(const QcGeoCoordinateWGS84 & other) const;
+  bool operator==(const QcWgsCoordinate & other) const;
 
-  QcGeoCoordinateWGS84(const QGeoCoordinate & coordinate)
-    : QcGeoCoordinateWGS84(coordinate.longitude(), coordinate.latitude()) {}
+  QcWgsCoordinate(const QGeoCoordinate & coordinate)
+    : QcWgsCoordinate(coordinate.longitude(), coordinate.latitude()) {}
   inline QGeoCoordinate to_qt() const { return QGeoCoordinate(latitude(), longitude()); }
 
   inline void set_longitude(double longitude) { set_x(longitude); }
@@ -178,18 +178,18 @@ class QC_EXPORT QcGeoCoordinateWGS84 : public QcGeoCoordinateTemplate<QcWgs84Pro
     return QcGeoSexagesimalAngle(latitude());
   }
 
-  QcGeoCoordinateWebMercator web_mercator() const;
-  QcGeoCoordinatePseudoWebMercator pseudo_web_mercator() const;
-  QcGeoCoordinateNormalisedWebMercator normalised_web_mercator() const;
+  QcWebMercatorCoordinate web_mercator() const;
+  QcPseudoWebMercatorCoordinate pseudo_web_mercator() const;
+  QcNormalisedWebMercatorCoordinate normalised_web_mercator() const;
 
-  Q_INVOKABLE double distance_to(const QcGeoCoordinateWGS84 & other) const;
-  Q_INVOKABLE double azimuth_to(const QcGeoCoordinateWGS84 & other) const;
-  Q_INVOKABLE QcGeoCoordinateWGS84 at_distance_and_azimuth(double distance, double azimuth) const;
+  Q_INVOKABLE double distance_to(const QcWgsCoordinate & other) const;
+  Q_INVOKABLE double azimuth_to(const QcWgsCoordinate & other) const;
+  Q_INVOKABLE QcWgsCoordinate at_distance_and_azimuth(double distance, double azimuth) const;
 
   // Q_INVOKABLE QString toString(CoordinateFormat format = DegreesMinutesSecondsWithHemisphere) const;
 };
 
-// Q_DECLARE_TYPEINFO(QcGeoCoordinateWGS84, Q_MOVABLE_TYPE);
+// Q_DECLARE_TYPEINFO(QcWgsCoordinate, Q_MOVABLE_TYPE);
 
 /**************************************************************************************************/
 
@@ -218,7 +218,7 @@ class QC_EXPORT QcElevation
 
 /**************************************************************************************************/
 
-class QC_EXPORT QcGeoElevationCoordinateWGS84 : public QcGeoCoordinateWGS84, public QcElevation
+class QC_EXPORT QcWgsElevationCoordinate : public QcWgsCoordinate, public QcElevation
 {
   Q_GADGET;
 
@@ -228,33 +228,33 @@ class QC_EXPORT QcGeoElevationCoordinateWGS84 : public QcGeoCoordinateWGS84, pub
   Q_PROPERTY(bool is_valid READ is_valid)
 
  public:
-  QcGeoElevationCoordinateWGS84();
-  QcGeoElevationCoordinateWGS84(double longitude, double latitude, double elevation);
-  QcGeoElevationCoordinateWGS84(QcGeoSexagesimalAngle & longitude, QcGeoSexagesimalAngle & latitude, double elevation);
-  QcGeoElevationCoordinateWGS84(const QcGeoElevationCoordinateWGS84 & other);
-  ~QcGeoElevationCoordinateWGS84();
+  QcWgsElevationCoordinate();
+  QcWgsElevationCoordinate(double longitude, double latitude, double elevation);
+  QcWgsElevationCoordinate(QcGeoSexagesimalAngle & longitude, QcGeoSexagesimalAngle & latitude, double elevation);
+  QcWgsElevationCoordinate(const QcWgsElevationCoordinate & other);
+  ~QcWgsElevationCoordinate();
 
-  QcGeoElevationCoordinateWGS84 & operator=(const QcGeoElevationCoordinateWGS84 & other);
+  QcWgsElevationCoordinate & operator=(const QcWgsElevationCoordinate & other);
 
-  bool operator==(const QcGeoElevationCoordinateWGS84 & other) const;
+  bool operator==(const QcWgsElevationCoordinate & other) const;
 };
 
-// Q_DECLARE_TYPEINFO(QcGeoElevationCoordinateWGS84, Q_MOVABLE_TYPE);
+// Q_DECLARE_TYPEINFO(QcWgsElevationCoordinate, Q_MOVABLE_TYPE);
 
 #ifndef QT_NO_DEBUG_STREAM
-QC_EXPORT QDebug operator<<(QDebug, const QcGeoElevationCoordinateWGS84 &);
+QC_EXPORT QDebug operator<<(QDebug, const QcWgsElevationCoordinate &);
 #endif
 
 #ifndef QT_NO_DATASTREAM
-QC_EXPORT QDataStream &operator<<(QDataStream & stream, const QcGeoElevationCoordinateWGS84 & coordinate);
-QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcGeoElevationCoordinateWGS84 & coordinate);
+QC_EXPORT QDataStream &operator<<(QDataStream & stream, const QcWgsElevationCoordinate & coordinate);
+QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcWgsElevationCoordinate & coordinate);
 #endif
 
 /**************************************************************************************************/
 
 // QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QcGeoCoordinateWGS84)
+Q_DECLARE_METATYPE(QcWgsCoordinate)
 
 /**************************************************************************************************/
 
