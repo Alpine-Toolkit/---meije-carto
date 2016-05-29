@@ -194,8 +194,8 @@ class QC_EXPORT QcMercatorTileMatrixSet : public QcTileMatrixSet
  public:
   QcMercatorTileMatrixSet(int number_of_level, int tile_size)
     : QcTileMatrixSet(QcProjection::by_srid(QLatin1Literal("epsg:3857")),
-                      QcVectorDouble(1., -1.),
                       QcVectorDouble(-HALF_EQUATORIAL_PERIMETER, HALF_EQUATORIAL_PERIMETER), // Fixme: use projection
+                      QcVectorDouble(1., -1.),
                       QcWgsCoordinate(.0, .0), // Fixme: use projection
                       number_of_level,
                       tile_size
