@@ -121,7 +121,7 @@ class QC_EXPORT QcProjection
   QcProjection();
   QcProjection(const QString & srid,
                const QString & title,
-               const QcVectorDouble & wgs84_origin, // Fixme: QcGeoCoordinateWGS84 is not yet defined
+               const QcVectorDouble & wgs84_origin, // Fixme: QcWgsCoordinate is not yet defined
                // const QcVectorDouble & x_axis_orientation,
                // const QcVectorDouble & y_axis_orientation,
                const QcInterval2DDouble & wgs84_interval,
@@ -229,6 +229,7 @@ class QC_EXPORT QcGeoCoordinateTrait
 
 #ifdef WITH_PROJ4
   void transform(QcGeoCoordinateTrait & other) const;
+  QcVectorDouble transform(const QcProjection & projection) const;
 #endif
 
   inline QcVectorDouble vector() const {
@@ -271,10 +272,14 @@ class QC_EXPORT QcGeoCoordinateTemplate : public QcGeoCoordinateTrait
 class QC_EXPORT QcGeoCoordinate : public QcGeoCoordinateTrait
 {
  public:
-  QcGeoCoordinate() : QcGeoCoordinateTrait() {}
+  QcGeoCoordinate() : QcGeoCoordinateTrait(), m_projection(nullptr) {}
   QcGeoCoordinate(const QcProjection * projection, double x, double y);
 
   inline const QcProjection & projection() const { return *m_projection; }; // instance
+
+#ifdef WITH_PROJ4
+  QcGeoCoordinate transform(const QcProjection * projection) const;
+#endif
 
  private:
   const QcProjection * m_projection; // class

@@ -133,7 +133,7 @@ QcProjection::QcProjection()
 
 QcProjection::QcProjection(const QString & srid,
                            const QString & title,
-                           const QcVectorDouble & wgs84_origin, // QcGeoCoordinateWGS84 is not yet defined
+                           const QcVectorDouble & wgs84_origin, // QcWgsCoordinate is not yet defined
                            // const QcVectorDouble & x_axis_orientation,
                            // const QcVectorDouble & y_axis_orientation,
                            const QcInterval2DDouble & wgs84_interval,
@@ -278,6 +278,25 @@ QcGeoCoordinateTrait::transform(QcGeoCoordinateTrait & other) const
     other.set_y(_y);
   }
 }
+
+QcVectorDouble
+QcGeoCoordinateTrait::transform(const QcProjection & projection_to) const
+{
+  const QcProjection4 * projection4_from = projection().projection4();
+  const QcProjection4 * projection4_to = projection_to.projection4();
+  if (projection4_from and projection4_to) {
+    // Fixme: duplicated code
+    double _x = x();
+    double _y = y();
+    if (projection4_from->is_latlong()) {
+      _x = qDegreesToRadians(_x);
+      _y = qDegreesToRadians(_y);
+    }
+    projection4_from->transform(*projection4_to, _x, _y);
+    return QcVectorDouble(_x, _y);
+  } else
+    return QcVectorDouble(); // Fixme: nan
+}
 #endif
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -337,6 +356,15 @@ QcGeoCoordinate::QcGeoCoordinate(const QcProjection * projection, double x, doub
   } else
     throw std::invalid_argument("Invalid coordinate");
 }
+
+#ifdef WITH_PROJ4
+QcGeoCoordinate
+QcGeoCoordinate::transform(const QcProjection * projection) const
+{
+  QcVectorDouble projected = QcGeoCoordinateTrait::transform(*projection);
+  return QcGeoCoordinate(projection, projected.x(), projected.y());
+}
+#endif
 
 /**************************************************************************************************/
 
