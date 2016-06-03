@@ -58,6 +58,7 @@ public:
   QcMapLayerRootNode(const QcTileMatrixSet & tile_matrix_set, const QcViewport * viewport);
   ~QcMapLayerRootNode();
 
+  void update_middle_maps();
   void update_tiles(QcMapLayerScene * map_scene,
                     QcMapSideNode * map_side_node, const QcTileSpecSet & visible_tiles, const QcPolygon & polygon,
                     double offset);
@@ -71,6 +72,7 @@ public:
   QcMapSideNode * west_map_node;
   QcMapSideNode * middle_map_node;
   QcMapSideNode * east_map_node;
+  QList<QcMapSideNode *> middle_map_nodes;
   QHash<QcTileSpec, QSGTexture *> textures;
 };
 

@@ -26,8 +26,10 @@
 
 /**************************************************************************************************/
 
-#include "math/qc_math.h"
 #include "map/viewport.h"
+
+#include "coordinate/mercator.h"
+#include "math/qc_math.h"
 
 #include <cmath>
 
@@ -164,20 +166,7 @@ QcViewportState::QcViewportState()
   : m_coordinate(), m_tiled_zoom_level(), m_bearing(0)
 {}
 
-QcViewportState::QcViewportState(const QcGeoCoordinateWGS84 & coordinate, const QcTiledZoomLevel & tiled_zoom_level, double bearing)
-  : m_coordinate(coordinate.pseudo_web_mercator()), m_tiled_zoom_level(tiled_zoom_level), m_bearing(0)
-{
-  set_bearing(bearing);
-}
-
-QcViewportState::QcViewportState(const QcGeoCoordinateWebMercator & coordinate, const QcTiledZoomLevel & tiled_zoom_level, double bearing)
-  : QcViewportState(coordinate.pseudo_web_mercator(), tiled_zoom_level, bearing)
-    // : m_coordinate(coordinate.pseudo_web_mercator()), m_bearing(0), m_tiled_zoom_level(tiled_zoom_level)
-{
-  set_bearing(bearing);
-}
-
-QcViewportState::QcViewportState(const QcGeoCoordinatePseudoWebMercator & coordinate, const QcTiledZoomLevel & tiled_zoom_level, double bearing)
+QcViewportState::QcViewportState(const QcWgsCoordinate & coordinate, const QcTiledZoomLevel & tiled_zoom_level, double bearing)
   : m_coordinate(coordinate), m_tiled_zoom_level(tiled_zoom_level), m_bearing(0)
 {
   set_bearing(bearing);
@@ -221,7 +210,10 @@ QcViewportState::operator==(const QcViewportState & other) const
 /**************************************************************************************************/
 
 QcViewport::QcViewport(const QcViewportState & viewport_state, const QSize & viewport_size)
-  : m_state(viewport_state), m_viewport_size(viewport_size)
+  : m_state(viewport_state),
+    m_projection(nullptr), // Fixme: QcWebMercatorCoordinate::cls_projection
+    m_is_web_mercator(false),
+    m_viewport_size(viewport_size)
 {
   update_area_size();
 }
@@ -237,7 +229,7 @@ QcViewport::update_area_size()
 void
 QcViewport::set_viewport_size(const QSize & size, float device_pixel_ratio)
 {
-  qInfo() << "viewport size" << size << device_pixel_ratio;
+  // qInfo() << "viewport size" << size << device_pixel_ratio;
   m_viewport_size = size* device_pixel_ratio;
   m_device_pixel_ratio = device_pixel_ratio;
   update_area_size();
@@ -245,9 +237,17 @@ QcViewport::set_viewport_size(const QSize & size, float device_pixel_ratio)
 }
 
 void
-QcViewport::set_coordinate(const QcGeoCoordinatePseudoWebMercator & coordinate)
+QcViewport::set_projection(const QcProjection * projection)
 {
-  if (coordinate != m_state.pseudo_web_mercator()) {
+  m_projection = projection; // passing ‘const QcProjection’ as ‘this’ argument discards qualifiers
+  m_is_web_mercator = *projection == QcWebMercatorCoordinate().cls_projection;
+}
+
+void
+QcViewport::set_center(const QcWgsCoordinate & coordinate)
+{
+  // qInfo() << coordinate;
+  if (coordinate != m_state.coordinate()) {
     m_state.set_coordinate(coordinate);
     update_area(); // move polygon
   }
@@ -281,61 +281,94 @@ QcViewport::set_resolution(double resolution)
 }
 */
 
-void
-QcViewport::zoom_at(const QcGeoCoordinatePseudoWebMercator & coordinate, unsigned int zoom_level)
+QcVectorDouble
+QcViewport::to_projected_coordinate(const QcWgsCoordinate & coordinate) const
 {
-  // qInfo() << "zoom_at" << coordinate << zoom_level;
-  if (zoom_level != m_state.zoom_level())
-    m_state.set_zoom_level(zoom_level);
-  set_coordinate(coordinate); // move and scale polygon
+  if (m_is_web_mercator)
+    return coordinate.web_mercator().vector();
+  else
+    return coordinate.transform(*m_projection); // Fixme:
+}
+
+QcWgsCoordinate
+QcViewport::from_projected_coordinate(const QcVectorDouble & coordinate) const
+{
+  // adjust position if it is outside the valid domain
+  if (m_is_web_mercator)
+    return QcWebMercatorCoordinate(coordinate.x(), coordinate.y()).wgs84(); // Fixme:
+  else {
+    QcGeoCoordinate wgs = QcGeoCoordinate(m_projection, coordinate.x(), coordinate.y()).transform(&QcWgsCoordinate::cls_projection); // Fixme:
+    // QcVectorDouble wgs = QcGeoCoordinateTrait::projection()
+    return QcWgsCoordinate(wgs.x(), wgs.y());
+
+  }
+}
+
+QcVectorDouble
+QcViewport::projected_center_coordinate() const
+{
+  // Fixme: cache
+  return to_projected_coordinate(center());
 }
 
 void
-QcViewport::stable_zoom(const QcVectorDouble & position_px, unsigned int zoom_level)
+QcViewport::zoom_at(const QcWgsCoordinate & coordinate, unsigned int zoom_level)
 {
+  // qInfo() << coordinate << zoom_level;
+  if (zoom_level != m_state.zoom_level())
+    m_state.set_zoom_level(zoom_level);
+  set_center(coordinate); // move and scale polygon
+}
+
+void
+QcViewport::stable_zoom(const QcVectorDouble & screen_position, unsigned int zoom_level)
+{
+  qInfo() << screen_position << zoom_level;
+
   // Fixme: (from map_gesture_area) event position == pre_zoom_point ???
 
-  QcGeoCoordinatePseudoWebMercator coordinate = to_coordinate(position_px, false);
+  // Fixme: ???
+  QcWgsCoordinate coordinate = to_coordinate(screen_position, false);
   QcVectorDouble pre_zoom_point = from_coordinate(coordinate, false);
+  if (!isnan(pre_zoom_point.x()))
+    qWarning() << "pre is undefined";
 
   set_zoom_level(zoom_level);
 
   QcVectorDouble post_zoom_point = from_coordinate(coordinate, false);
+  if (!isnan(post_zoom_point.x()))
+    qWarning() << "post is undefined";
 
-  // qInfo() << event->posF() << pre_zoom_point << "\n" << post_zoom_point;
-  if (pre_zoom_point != post_zoom_point) {
+  qInfo() << coordinate << screen_position << '\n' << pre_zoom_point << '\n' << post_zoom_point;
+  if (!isnan(post_zoom_point.x()) and pre_zoom_point != post_zoom_point) {
     // Keep location under pointer
     QcVectorDouble delta_px = post_zoom_point - pre_zoom_point;
     // Fixme: improve
-    QcVectorDouble map_center_point(width() * .5 + delta_px.x(), height() * .5  + delta_px.y());
-    QcGeoCoordinatePseudoWebMercator center_coordinate = to_coordinate(map_center_point, false);
-    set_coordinate(center_coordinate);
+    QcVectorDouble map_center_point = QcVectorDouble(width(), height()) * .5 + delta_px;
+    QcWgsCoordinate center_coordinate = to_coordinate(map_center_point, false);
+    set_center(center_coordinate);
   }
 }
 
 void
 QcViewport::pan(const QcVectorDouble & translation)
 {
-  // Fixme: x are px
-  QcVectorDouble position = pseudo_web_mercator().vector();
-  position += from_px(translation);
-  // qInfo() << x << "px" << x_m << "m";
-  // Ctor will adjust position if it is outside the valid domain
-  QcGeoCoordinatePseudoWebMercator new_coordinate(position.x(), position.y());
-  set_coordinate(new_coordinate);
+  // Fixme: translation unit are screen px
+  QcVectorDouble position = projected_center_coordinate() + from_px(translation) * QcVectorDouble(1., -1.);
+  set_center(from_projected_coordinate(position));
 }
 
 void
 QcViewport::update_area()
 {
   // const QcInterval2DDouble & current_interval = middle_interval();
-  // qInfo() << "Current Pseudo Mercator polygon interval [m]"
+  // qInfo() << "Current polygon interval [m]"
   //         << "[" << (int) current_interval.x().inf() << ", " << (int) current_interval.x().sup() << "]"
   //         << "x"
   //         << "[" << (int) current_interval.y().inf() << ", " << (int) current_interval.y().sup() << "]";
 
-  // Use pseudo mercator to match the origin to the top-left corner
-  QcVectorDouble center = pseudo_web_mercator().vector();
+  // Use <<<pseudo mercator>>> to match the origin to the top-left corner
+  QcVectorDouble center = projected_center_coordinate();
 
   // qInfo() << "viewport_size" << viewport_size;
   // qInfo() << "resolution" << resolution() << "m/px";
@@ -360,73 +393,90 @@ QcViewport::update_area()
   if (_bearing)
     polygon = polygon.rotate_counter_clockwise(_bearing); // Fixme: copy ?
 
-  // Fixme: check y interval lie in mercator domain
+  m_viewport_polygon = polygon;
 
   const QcInterval2DDouble & _interval = polygon.interval();
-  m_cross_date_line = !_interval.is_included_in(QcGeoCoordinatePseudoWebMercator::cls_projection.projected_interval());
-  // qInfo() << "Cross date line" << m_cross_date_line;
-  if (m_cross_date_line) {
+  // Fixme: check (-100187541,  100187541, -68481603,  49238758 );
+  qInfo() << "polygon interval [m]"
+          << "[" << (int) _interval.x().inf() << ", " << (int) _interval.x().sup() << "]"
+          << "x"
+          << "[" << (int) _interval.y().inf() << ", " << (int) _interval.y().sup() << "]";
+  const QcIntervalDouble & x_projected_interval = m_projection->x_projected_interval();
+  m_number_of_full_maps = static_cast<int>(_interval.x().length() / x_projected_interval.length());
+  qInfo() << "Number of maps" << m_number_of_full_maps;
+
+  // Fixme. optimise
+  m_west_polygon.clear();
+  m_middle_polygon.clear();
+  m_east_polygon.clear();
+
+  m_cross_boundaries = !_interval.is_included_in(m_projection->projected_interval());
+  qInfo() << "Cross boudaries" << m_cross_boundaries;
+  if (m_cross_boundaries) {
     if (_bearing) {
       // Fixme: bearing and date line crossing
     } else {
       // interval matches polygon
-      double mercator_x_sup = QcGeoCoordinatePseudoWebMercator::cls_projection.x_projected_interval().sup();
+      double projected_x_inf = x_projected_interval.inf();
+      double projected_x_sup = x_projected_interval.sup();
       double x_inf = _interval.x().inf();
       double x_sup = _interval.x().sup();
-      m_cross_west_line = x_inf < 0;
-      m_cross_east_line = mercator_x_sup < x_sup;
-      // qInfo() << m_cross_west_line << m_cross_east_line;
+      m_cross_west_line = x_inf < projected_x_inf;
+      m_cross_east_line = projected_x_sup < x_sup;
+      qInfo() << "west / est" << m_cross_west_line << m_cross_east_line;
       QcInterval2DDouble west_interval;
       QcInterval2DDouble middle_interval;
       QcInterval2DDouble east_interval;
+
       // Fixme: cross both ?
       if (m_cross_west_line) { // Fixme: tiles at east !
-        west_interval.x() = QcIntervalDouble(mercator_x_sup + x_inf, mercator_x_sup -1.); // x_inf < 0
-        middle_interval.x() = QcIntervalDouble(0, x_sup);
-        middle_interval.y() = _interval.y();
+        // x_inf < projected_x_inf
+        west_interval.x() = QcIntervalDouble(x_projected_interval.wrap(x_inf), projected_x_sup -1.); // Fixme: -1 else take tile on border
         west_interval.y() = _interval.y();
         m_west_polygon = interval_to_polygon(west_interval);
+        if (!m_cross_east_line)
+          middle_interval.x() = QcIntervalDouble(projected_x_inf, x_sup);
       }
+
       if (m_cross_east_line) { // Fixme: tiles at west !
-        middle_interval.x() = QcIntervalDouble(x_inf, mercator_x_sup -1.); // Fixme: -1 else take tile on border
-        east_interval.x() = QcIntervalDouble(0, x_sup - mercator_x_sup); // mercator_x_sup < x_sup
-        middle_interval.y() = _interval.y();
+        // projected_x_sup < x_sup
+        east_interval.x() = QcIntervalDouble(projected_x_inf, x_projected_interval.wrap(x_sup));
         east_interval.y() = _interval.y();
         m_east_polygon = interval_to_polygon(east_interval);
+        if (!m_cross_west_line)
+          middle_interval.x() = QcIntervalDouble(x_inf, projected_x_sup -1.);
+        else
+          middle_interval.x() = QcIntervalDouble(projected_x_inf, projected_x_sup -1.);
       }
-      // qInfo() << "West interval [m]"
-      //         << "[" << (int) west_interval.x().inf() << ", " << (int) west_interval.x().sup() << "]"
-      //         << "x"
-      //         << "[" << (int) west_interval.y().inf() << ", " << (int) west_interval.y().sup() << "]"
-      //         << "Middle interval [m]"
-      //         << "[" << (int) middle_interval.x().inf() << ", " << (int) middle_interval.x().sup() << "]"
-      //         << "x"
-      //         << "[" << (int) middle_interval.y().inf() << ", " << (int) middle_interval.y().sup() << "]"
-      //         << "East interval [m]"
-      //         << "[" << (int) east_interval.x().inf() << ", " << (int) east_interval.x().sup() << "]"
-      //         << "x"
-      //         << "[" << (int) east_interval.y().inf() << ", " << (int) east_interval.y().sup() << "]";
+
+      middle_interval.y() = _interval.y();
       m_middle_polygon = interval_to_polygon(middle_interval);
     }
   } else {
-    m_west_polygon.clear();
+    m_cross_west_line = false;
+    m_cross_east_line = false;
     m_middle_polygon = polygon;
-    m_east_polygon.clear();
-
-    // qInfo() << "Updated Pseudo Mercator polygon interval [m]"
-    //         << "[" << (int) _interval.x().inf() << ", " << (int) _interval.x().sup() << "]"
-    //         << "x"
-    //         << "[" << (int) _interval.y().inf() << ", " << (int) _interval.y().sup() << "]";
   }
 
-  emit viewport_changed();
-}
+  qInfo() << "West interval [m]\n"
+          << "[" << (int) west_interval().x().inf() << ", " << (int) west_interval().x().sup() << "]"
+          << "[" << (int) west_interval().x().inf()*8.98e-6 << ", " << (int) west_interval().x().sup()*8.98e-6 << "]"
+          << "x"
+          << "[" << (int) west_interval().y().inf() << ", " << (int) west_interval().y().sup() << "]\n"
 
-QcVectorDouble
-QcViewport::inf_point() const
-{
-  const QcInterval2DDouble & _interval = middle_interval();
-  return QcVectorDouble(_interval.x().inf(), _interval.y().inf());
+          << "Middle interval [m]\n"
+          << "[" << (int) middle_interval().x().inf() << ", " << (int) middle_interval().x().sup() << "]"
+          << "[" << (int) middle_interval().x().inf()*8.98e-6 << ", " << (int) middle_interval().x().sup()*8.98e-6 << "]"
+          << "x"
+          << "[" << (int) middle_interval().y().inf() << ", " << (int) middle_interval().y().sup() << "]\n"
+
+          << "East interval [m]\n"
+          << "[" << (int) east_interval().x().inf() << ", " << (int) east_interval().x().sup() << "]"
+          << "[" << (int) east_interval().x().inf()*8.98e-6 << ", " << (int) east_interval().x().sup()*8.98e-6 << "]"
+          << "x"
+          << "[" << (int) east_interval().y().inf() << ", " << (int) east_interval().y().sup() << "]";
+
+  emit viewport_changed();
 }
 
 /*!
@@ -437,26 +487,25 @@ QcViewport::inf_point() const
     If \a cliptoViewPort is \c true, or not supplied then returns an invalid coordinate if
     \a position is not within the current viewport.
 */
-QcGeoCoordinatePseudoWebMercator
-QcViewport::to_coordinate(const QcVectorDouble & position_px, bool clip_to_viewport) const
+QcWgsCoordinate
+QcViewport::to_coordinate(const QcVectorDouble & screen_position, bool clip_to_viewport) const
 {
-  // Fixme: if cross datum
+  qInfo() << screen_position << clip_to_viewport;
 
-  // qInfo() << position_px << clip_to_viewport;
-
+  // Fixme: purpose
   if (clip_to_viewport) {
     // Fixme: use interval, int versus double
-    double x = position_px.x();
-    double y = position_px.y();
-
+    double x = screen_position.x();
+    double y = screen_position.y();
     if ((x < 0) || (width() < x) || (y < 0) || (height() < y))
-      return QcGeoCoordinatePseudoWebMercator();
+      return QcWgsCoordinate();
   }
 
-  QcVectorDouble position_m = inf_point();
-  position_m += from_px(position_px);
+  const QcInterval2DDouble & interval = m_viewport_polygon.interval();
+  QcVectorDouble projected_position(interval.x().inf(), interval.y().sup());
+  projected_position += from_px(screen_position) * QcVectorDouble(1., -1.);
 
-  return QcGeoCoordinatePseudoWebMercator(position_m.x(), position_m.y());
+  return from_projected_coordinate(projected_position);
 }
 
 /*!
@@ -468,26 +517,69 @@ QcViewport::to_coordinate(const QcVectorDouble & position_px, bool clip_to_viewp
     \a coordinate is not within the current viewport.
 */
 QcVectorDouble
-QcViewport::from_coordinate(const QcGeoCoordinatePseudoWebMercator & coordinate, bool clip_to_viewport) const
+QcViewport::from_coordinate(const QcWgsCoordinate & coordinate, bool clip_to_viewport) const
 {
-  // Fixme: if cross datum
+  // Note: it is not a bijection when m_number_of_full_maps is > 1
 
-  // qInfo() << coordinate << clip_to_viewport;
+  QcVectorDouble projected_coordinate = to_projected_coordinate(coordinate);
+  qInfo() << coordinate << clip_to_viewport
+          << (int)projected_coordinate.x() << (int)projected_coordinate.y();
 
-  QcVectorDouble position_px = to_px(coordinate.vector() - inf_point());
+  const QcInterval2DDouble & west_interval = m_west_polygon.interval();
+  const QcInterval2DDouble & middle_interval = m_middle_polygon.interval();
+  const QcInterval2DDouble & east_interval = m_east_polygon.interval();
+  qInfo() << "West interval [m]\n"
+          << "[" << (int) west_interval.x().inf() << ", " << (int) west_interval.x().sup() << "]"
+          << "[" << (int) west_interval.x().inf()*8.98e-6 << ", " << (int) west_interval.x().sup()*8.98e-6 << "]"
+          << "x"
+          << "[" << (int) west_interval.y().inf() << ", " << (int) west_interval.y().sup() << "]\n"
+          << "Middle interval [m]\n"
+          << "[" << (int) middle_interval.x().inf() << ", " << (int) middle_interval.x().sup() << "]"
+          << "[" << (int) middle_interval.x().inf()*8.98e-6 << ", " << (int) middle_interval.x().sup()*8.98e-6 << "]"
+          << "x"
+          << "[" << (int) middle_interval.y().inf() << ", " << (int) middle_interval.y().sup() << "]\n"
+          << "East interval [m]\n"
+          << "[" << (int) east_interval.x().inf() << ", " << (int) east_interval.x().sup() << "]"
+          << "[" << (int) east_interval.x().inf()*8.98e-6 << ", " << (int) east_interval.x().sup()*8.98e-6 << "]"
+          << "x"
+          << "[" << (int) east_interval.y().inf() << ", " << (int) east_interval.y().sup() << "]";
 
+  const QcPolygon * polygon;
+  if (m_middle_polygon.interval().contains(projected_coordinate.x(), projected_coordinate.y())) { // Fixme: contains(projected_coordinate)
+    polygon = &m_middle_polygon;
+    qInfo() << "middle polygon";
+  }
+  else if (m_east_polygon.interval().contains(projected_coordinate.x(), projected_coordinate.y())) {
+    polygon = &m_east_polygon;
+    qInfo() << "east polygon";
+  }
+  else if (m_west_polygon.interval().contains(projected_coordinate.x(), projected_coordinate.y())) {
+    polygon = &m_west_polygon;
+    qInfo() << "west polygon";
+  }
+  else {
+    qInfo() << "out";
+    return QcVectorDouble(qQNaN(), qQNaN());
+  }
+
+  const QcInterval2DDouble & interval = polygon->interval();
+  QcVectorDouble inf_position(interval.x().inf(), interval.y().sup());
+
+  QcVectorDouble screen_position = to_px((projected_coordinate - inf_position) * QcVectorDouble(1., -1.));
+
+  // Fixme: purpose
   if (clip_to_viewport) {
     int w = width();
     int h = height();
-    double x = position_px.x();
-    double y = position_px.y();
+    double x = screen_position.x();
+    double y = screen_position.y();
     if ((x < 0.0) || (x > w) || (y < 0) || (y > h) || qIsNaN(x) || qIsNaN(y))
       return QcVectorDouble(qQNaN(), qQNaN());
   }
 
-  // qInfo() << position_px;
-  // Fixme: return QPointF(qQNaN(), qQNaN());
-  return position_px;
+  // qInfo() << screen_position;
+
+  return screen_position;
 }
 
 double

@@ -78,6 +78,7 @@ class QC_EXPORT QcMapViewLayer : public QObject
   void scene_graph_changed();
 
  private:
+  QcPolygon transform_polygon(const QcPolygon & polygon); // Fixme: const;
   QcTileSpecSet intersec_polygon_with_grid(const QcPolygon & polygon, double tile_length_m, int zoom_level);
 
  private:

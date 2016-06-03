@@ -37,7 +37,6 @@
 #include <QSize>
 
 #include "qtcarto_global.h"
-#include "coordinate/mercator.h"
 #include "coordinate/wgs84.h"
 #include "geometry/polygon.h"
 #include "math/interval.h"
@@ -154,10 +153,7 @@ class QC_EXPORT QcViewportState
  public:
   QcViewportState();
   // Fixme: QcTiledZoomLevel or QcMapResolution ???
-  QcViewportState(const QcGeoCoordinateWGS84 & coordinate, const QcTiledZoomLevel & tiled_zoom_level, double bearing);
-  QcViewportState(const QcGeoCoordinateWebMercator & coordinate, const QcTiledZoomLevel & tiled_zoom_level, double bearing);
-  QcViewportState(const QcGeoCoordinatePseudoWebMercator & coordinate, const QcTiledZoomLevel & tiled_zoom_level, double bearing);
-  // QcViewportState(const QcGeoCoordinateNormalisedWebMercator & coordinate, const QcTiledZoomLevel & tiled_zoom_level, double bearing);
+  QcViewportState(const QcWgsCoordinate & coordinate, const QcTiledZoomLevel & tiled_zoom_level, double bearing);
   QcViewportState(const QcViewportState & other);
   ~QcViewportState();
 
@@ -168,21 +164,8 @@ class QC_EXPORT QcViewportState
     return !operator==(other);
   }
 
-  QcGeoCoordinateWGS84 wgs84() const { return m_coordinate.wgs84(); }
-  QcGeoCoordinateWebMercator web_mercator() const { return m_coordinate.web_mercator(); }
-  QcGeoCoordinatePseudoWebMercator pseudo_web_mercator() const { return m_coordinate; }
-  // const QcGeoCoordinateNormalisedWebMercator & normalised_web_mercator() const { return m_coordinate.normalised_web_mercator(); }
-
-  void set_coordinate(const QcGeoCoordinatePseudoWebMercator & coordinate) { m_coordinate = coordinate; }
-  void set_coordinate(const QcGeoCoordinateWGS84 & coordinate) {
-    m_coordinate = coordinate.pseudo_web_mercator();
-  }
-  void set_coordinate(const QcGeoCoordinateWebMercator & coordinate) {
-    m_coordinate = coordinate.pseudo_web_mercator();
-  }
-  // void set_coordinate(const QcGeoCoordinateNormalisedWebMercator & coordinate) {
-  //   m_coordinate = coordinate.pseudo_web_mercator();
-  // }
+  QcWgsCoordinate coordinate() const { return m_coordinate; }
+  void set_coordinate(const QcWgsCoordinate & coordinate) { m_coordinate = coordinate; }
 
   double bearing() const { return m_bearing; }
   void set_bearing(double bearing);
@@ -193,7 +176,7 @@ class QC_EXPORT QcViewportState
   void set_zoom_level(unsigned int zoom_level) { m_tiled_zoom_level.set_zoom_level(zoom_level); }
 
  private:
-  QcGeoCoordinatePseudoWebMercator m_coordinate;
+  QcWgsCoordinate m_coordinate;
   QcTiledZoomLevel m_tiled_zoom_level;
   double m_bearing;
 };
@@ -212,20 +195,32 @@ class QC_EXPORT QcViewport : public QObject
 
   const QcViewportState & viewport_state() const { return m_state; }
 
-  QcGeoCoordinateWGS84 wgs84() const { return m_state.wgs84(); }
-  QcGeoCoordinateWebMercator web_mercator() const { return m_state.web_mercator(); }
-  const QcGeoCoordinatePseudoWebMercator pseudo_web_mercator() const { return m_state.pseudo_web_mercator(); }
-  // const QcGeoCoordinateNormalisedWebMercator & normalised_web_mercator() const { return m_state.normalised_web_mercator(); }
+  const QcProjection & projection() const { return *m_projection; }
+  void set_projection(const QcProjection * projection);
+
+  QcWgsCoordinate center() const { return m_state.coordinate(); }
+  QcVectorDouble projected_center_coordinate() const;
+  void set_center(const QcWgsCoordinate & coordinate);
+
+  double bearing() const { return m_state.bearing(); }
+  void set_bearing(double bearing);
+
+  unsigned int zoom_level() const { return tiled_zoom_level().zoom_level(); }
+  void set_zoom_level(unsigned int zoom_level);
 
   double resolution() const { return tiled_zoom_level().resolution(); }
-  unsigned int zoom_level() const { return tiled_zoom_level().zoom_level(); }
+  // void set_resolution(double resolution);
+
+  QcVectorDouble to_projected_coordinate(const QcWgsCoordinate & coordinate) const;
+  QcWgsCoordinate from_projected_coordinate(const QcVectorDouble & coordinate) const;
+
+  QcWgsCoordinate to_coordinate(const QcVectorDouble & position, bool clip_to_viewport) const;
+  QcVectorDouble from_coordinate(const QcWgsCoordinate & coordinate, bool clip_to_viewport) const;
 
   double from_px(double distance_px) const { return tiled_zoom_level().from_px(distance_px); }
   double to_px(double distance) const { return tiled_zoom_level().to_px(distance); }
   QcVectorDouble from_px(const QcVectorDouble & distance_px) const { return distance_px * resolution(); }
   QcVectorDouble to_px(const QcVectorDouble & distance) const { return distance / resolution(); }
-
-  double bearing() const { return m_state.bearing(); }
 
   QSize viewport_size() const { return m_viewport_size; }
   int width() const  { return m_viewport_size.width(); }
@@ -234,32 +229,17 @@ class QC_EXPORT QcViewport : public QObject
 
   QcVectorDouble area_size_m() const { return m_area_size_m; }
 
-  void set_coordinate(const QcGeoCoordinatePseudoWebMercator & coordinate);
-  void set_coordinate(const QcGeoCoordinateWGS84 & coordinate) {
-    set_coordinate(coordinate.pseudo_web_mercator());
-  }
-  void set_coordinate(const QcGeoCoordinateWebMercator & coordinate) {
-    set_coordinate(coordinate.pseudo_web_mercator());
-  }
-  // void set_coordinate(const QcGeoCoordinateNormalisedWebMercator & coordinate) {
-  //   set_coordinate(coordinate.pseudo_web_mercator());
-  // }
-
-  void set_zoom_level(unsigned int zoom_level);
-  // void set_resolution(double resolution);
-
-  void set_bearing(double bearing);
-
   void stable_zoom(const QcVectorDouble & position_px, unsigned int zoom_level);
-  void zoom_at(const QcGeoCoordinatePseudoWebMercator & coordinate, unsigned int zoom_level);
+  void zoom_at(const QcWgsCoordinate & coordinate, unsigned int zoom_level);
   void pan(const QcVectorDouble & translation);
   void pan(double x, double y) {
     pan(QcVectorDouble(x, y));
   }
 
-  bool cross_date_line() const { return m_cross_date_line; }
+  bool cross_boundaries() const { return m_cross_boundaries; }
   bool cross_west_line() const { return m_cross_west_line; }
   bool cross_east_line() const { return m_cross_east_line; }
+  int number_of_full_maps() const { return m_number_of_full_maps; }
 
   const QcPolygon & east_polygon() const { return m_east_polygon; }
   const QcInterval2DDouble & east_interval() const { return m_east_polygon.interval(); }
@@ -267,16 +247,6 @@ class QC_EXPORT QcViewport : public QObject
   const QcInterval2DDouble & middle_interval() const { return m_middle_polygon.interval(); }
   const QcPolygon & west_polygon() const { return m_west_polygon; }
   const QcInterval2DDouble & west_interval() const { return m_west_polygon.interval(); }
-
-  QcGeoCoordinatePseudoWebMercator to_coordinate(const QcVectorDouble & position, bool clip_to_viewport) const;
-  QcVectorDouble from_coordinate(const QcGeoCoordinatePseudoWebMercator & coordinate, bool clip_to_viewport) const;
-
-  // QcGeoCoordinateWGS84 to_coordinate(const QcVectorDouble & position_px, bool clip_to_viewport) const {
-  //   return to_coordinate(position_px, clip_to_viewport).wgs84();
-  // }
-  QcVectorDouble from_coordinate(const QcGeoCoordinateWGS84 & coordinate, bool clip_to_viewport) const {
-    return from_coordinate(coordinate.pseudo_web_mercator(), clip_to_viewport);
-  }
 
   QcMapScale make_scale(unsigned int max_length_px);
 
@@ -291,16 +261,20 @@ class QC_EXPORT QcViewport : public QObject
 
  private:
   QcViewportState m_state;
+  const QcProjection * m_projection; // Fixme: const
+  bool m_is_web_mercator;
   QSize m_viewport_size; // px   Fixme: QcVectorInt ?
   float m_device_pixel_ratio;
   QcVectorDouble m_area_size_m;
   QcVectorDouble m_half_diagonal_m;
+  QcPolygon m_viewport_polygon;
   QcPolygon m_west_polygon;
   QcPolygon m_middle_polygon;
   QcPolygon m_east_polygon;
-  bool m_cross_date_line;
+  bool m_cross_boundaries;
   bool m_cross_west_line;
   bool m_cross_east_line;
+  int m_number_of_full_maps;
 };
 
 /**************************************************************************************************/

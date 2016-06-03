@@ -89,6 +89,7 @@ public:
 
   QcMapLayerRootNode * make_node();
   void update_scene_graph(QcMapLayerRootNode * map_root_node, QQuickWindow * window);
+  QcPolygon transform_polygon(const QcPolygon & polygon) const;
   bool build_geometry(const QcTileSpec & tile_spec, QSGGeometry::TexturedPoint2D * vertices, const QcPolygon & polygon);
 
   // Fixme: protected

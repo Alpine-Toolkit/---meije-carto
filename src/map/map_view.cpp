@@ -77,15 +77,45 @@ QcMapViewLayer::update_tile(const QcTileSpec & tile_spec)
   }
 }
 
+QcPolygon
+QcMapViewLayer::transform_polygon(const QcPolygon & polygon) // Fixme: const
+{
+  const QcTileMatrixSet & tile_matrix_set = plugin()->tile_matrix_set();
+  QcPolygon transformed_polygon;
+  QList<QcVectorDouble> vertexes;
+  for (const auto & vertex : polygon.vertexes()) {
+    auto transformed_vertex = (vertex - tile_matrix_set.origin()) * tile_matrix_set.scale();
+    vertexes << transformed_vertex;
+    // transformed_polygon.add_vertex(transformed_vertex);
+  }
+  // Fixme: inverted y
+  transformed_polygon.add_vertex(vertexes[1]);
+  transformed_polygon.add_vertex(vertexes[0]);
+  transformed_polygon.add_vertex(vertexes[3]);
+  transformed_polygon.add_vertex(vertexes[2]);
+  return transformed_polygon;
+}
+
 QcTileSpecSet
 QcMapViewLayer::intersec_polygon_with_grid(const QcPolygon & polygon, double tile_length_m, int zoom_level)
 {
   QcTileSpecSet visible_tiles;
-  QcTiledPolygon tiled_polygon = polygon.intersec_with_grid(tile_length_m);
+  QcTiledPolygon tiled_polygon = transform_polygon(polygon).intersec_with_grid(tile_length_m);
+  int number_of_tiles = 1 << zoom_level; // Fixme: cf. tile_matrix_set
+  QcIntervalInt valid_interval(0, number_of_tiles -1);
   for (const QcTiledPolygonRun & run: tiled_polygon.runs()) {
-    const QcIntervalInt & run_interval = run.interval();
+    QcIntervalInt run_interval = run.interval(); // const &
     int y = run.y();
     // qInfo() << "Run " << run.y() << " [" << run_interval.inf() << ", " << run_interval.sup() << "]";
+    if (!valid_interval.contains(y)) {
+      // It arises at large zoom, when the item eight is larger than the map.
+      // qWarning() << "Tile columns is out of range" << y;
+      y = qMax(qMin(y, number_of_tiles -1), 0); // Fixme: to func
+    }
+    if (!run_interval.is_included_in(valid_interval)) {
+      qWarning() << "Tile row is out of range" << run_interval;
+      run_interval &= valid_interval;
+    }
     for (int x = run_interval.inf(); x <= run_interval.sup(); x++)
       visible_tiles.insert(m_plugin_layer->create_tile_spec(zoom_level, x, y));
   }
@@ -168,13 +198,14 @@ QcMapView::QcMapView()
     m_map_scene(nullptr) // initialised in ctor
 {
   // Fixme: need to pass fake state
-  QcGeoCoordinatePseudoWebMercator coordinate_origin(0, 0);
+  QcWgsCoordinate coordinate_origin(0, 0);
   int tile_size = 256; // map can have different tile size ! Use the most common ?
   // map_size = EQUATORIAL_PERIMETER here
   QcTiledZoomLevel tiled_zoom_level(EQUATORIAL_PERIMETER, tile_size, 0);
   QcViewportState viewport_state(coordinate_origin, tiled_zoom_level, 0);
   QSize viewport_size(0, 0);
   m_viewport = new QcViewport(viewport_state, viewport_size);
+  m_viewport->set_projection(&QcWebMercatorCoordinate::cls_projection);
 
   m_map_scene = new QcMapScene(m_viewport); // parent
 

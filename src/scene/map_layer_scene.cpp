@@ -69,6 +69,27 @@ QcMapLayerRootNode::~QcMapLayerRootNode()
 }
 
 void
+QcMapLayerRootNode::update_middle_maps()
+{
+  int number_of_full_maps = m_viewport->number_of_full_maps();
+  int number_of_clones = qMax(number_of_full_maps - 1, 0);
+  while (number_of_clones < middle_map_nodes.size()) {
+    qInfo() << "remove clone";
+    auto * node = middle_map_nodes.takeLast();
+    removeChildNode(node);
+  }
+  if (number_of_clones) {
+    while (middle_map_nodes.size() < number_of_clones) {
+    // for (int i = 0; i < (number_of_clones - middle_map_nodes.size()); i++) {
+      qInfo() << "add clone";
+      auto * node = new QcMapSideNode();
+      middle_map_nodes << node;
+      appendChildNode(node);
+    }
+  }
+}
+
+void
 QcMapLayerRootNode::update_tiles(QcMapLayerScene * map_scene,
                                  QcMapSideNode * map_side_node,
                                  const QcTileSpecSet & visible_tiles,
@@ -88,11 +109,11 @@ QcMapLayerRootNode::update_tiles(QcMapLayerScene * map_scene,
   QcTileSpecSet to_remove = tiles_in_scene - visible_tiles;
   QcTileSpecSet to_add = visible_tiles - tiles_in_scene;
 
-   // qInfo() << "Offset" << offset
-   //         << "tiles_in_scene" << tiles_in_scene
-   //         << "\nvisible_tiles" << visible_tiles
-   //         << "\nto_remove" << to_remove
-   //         << "\nto_add" << to_add;
+  // qInfo() << "Offset" << offset
+  //         << "tiles_in_scene" << tiles_in_scene
+  //         << "\nvisible_tiles" << visible_tiles
+  //         << "\nto_remove" << to_remove
+  //         << "\nto_add" << to_add;
 
   for (const auto & tile_spec : to_remove)
     delete map_side_node->texture_nodes.take(tile_spec);
@@ -252,6 +273,17 @@ QcMapLayerScene::make_node()
   return m_scene_graph_node;
 }
 
+QcPolygon
+QcMapLayerScene::transform_polygon(const QcPolygon & polygon) const
+{
+  QcPolygon transformed_polygon;
+  for (const auto & vertex : polygon.vertexes()) {
+    auto transformed_vertex = (vertex - m_tile_matrix_set.origin()) * m_tile_matrix_set.scale();
+    transformed_polygon.add_vertex(transformed_vertex);
+  }
+  return transformed_polygon;
+}
+
 void
 QcMapLayerScene::update_scene_graph(QcMapLayerRootNode * map_root_node, QQuickWindow * window)
 {
@@ -265,9 +297,9 @@ QcMapLayerScene::update_scene_graph(QcMapLayerRootNode * map_root_node, QQuickWi
   QcTileSpecSet textures_in_scene = QcTileSpecSet::fromList(map_root_node->textures.keys()); // cf. textured_tiles
   QcTileSpecSet to_remove = textures_in_scene - m_visible_tiles;
   QcTileSpecSet to_add = m_visible_tiles - textures_in_scene;
-   // qInfo() << "textures in scene" << textures_in_scene
-   //         << "to remove:" << to_remove
-   //         << "to add" << to_add;
+  // qInfo() << "textures in scene" << textures_in_scene
+  //         << "to remove:" << to_remove
+  //         << "to add" << to_add;
   for (const auto & tile_spec : to_remove)
     map_root_node->textures.take(tile_spec)->deleteLater();
   for (const auto & tile_spec : to_add) {
@@ -283,17 +315,39 @@ QcMapLayerScene::update_scene_graph(QcMapLayerRootNode * map_root_node, QQuickWi
   double resolution = tile_matrix.resolution(); // [m/px]
   // when we cross west line
   map_root_node->update_tiles(this,
-                              map_root_node->west_map_node, m_west_visible_tiles, m_viewport->west_polygon(),
+                              map_root_node->west_map_node,
+                              m_west_visible_tiles,
+                              transform_polygon(m_viewport->west_polygon()),
                               .0);
+
   double middle_offset = 0;
   if (m_viewport->cross_west_line())
-    middle_offset = m_viewport->west_interval().x().length() / resolution;
+    middle_offset = m_viewport->west_interval().x().length() / resolution; // Fixme: to_px
+  QcPolygon transformed_middle_polygon = transform_polygon(m_viewport->middle_polygon());
+  qInfo() << "middle" << middle_offset;
   map_root_node->update_tiles(this,
-                              map_root_node->middle_map_node, m_middle_visible_tiles, m_viewport->middle_polygon(),
+                              map_root_node->middle_map_node,
+                              m_middle_visible_tiles,
+                              transformed_middle_polygon,
                               middle_offset);
-  double east_offset = m_viewport->middle_interval().x().length() / resolution;
+  double middle_map_length = m_viewport->middle_interval().x().length() / resolution;
+  double east_offset = middle_offset + middle_map_length;
+  map_root_node->update_middle_maps();
+  for (auto * node : map_root_node->middle_map_nodes) {
+    qInfo() << "clone" << east_offset;
+    map_root_node->update_tiles(this,
+                                node,
+                                m_middle_visible_tiles,
+                                transformed_middle_polygon,
+                                east_offset);
+    east_offset += middle_map_length;
+  }
+
+  qInfo() << "east" << east_offset;
   map_root_node->update_tiles(this,
-                              map_root_node->east_map_node, m_east_visible_tiles, m_viewport->east_polygon(),
+                              map_root_node->east_map_node,
+                              m_east_visible_tiles,
+                              transform_polygon(m_viewport->east_polygon()),
                               east_offset);
 }
 
