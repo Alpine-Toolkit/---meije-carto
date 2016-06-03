@@ -293,6 +293,10 @@ QcGeoCoordinateTrait::transform(const QcProjection & projection_to) const
       _y = qDegreesToRadians(_y);
     }
     projection4_from->transform(*projection4_to, _x, _y);
+    if (projection4_to->is_latlong()) {
+      _x = qRadiansToDegrees(_x);
+      _y = qRadiansToDegrees(_y);
+    }
     return QcVectorDouble(_x, _y);
   } else
     return QcVectorDouble(); // Fixme: nan
