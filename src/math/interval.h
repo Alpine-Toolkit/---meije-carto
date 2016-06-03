@@ -33,12 +33,13 @@
 
 /**************************************************************************************************/
 
+#include "qtcarto_global.h"
+// #include "geometry/vector.h"
+
 #include <algorithm>
 #include <stdexcept>
 
 #include <QDebug>
-
-#include "qtcarto_global.h"
 
 /**************************************************************************************************/
 
@@ -194,6 +195,9 @@ class QC_EXPORT QcInterval2D
 
 typedef QcInterval2D<int> QcInterval2DInt;
 typedef QcInterval2D<double> QcInterval2DDouble;
+
+// Fixme: circular reference
+// template<> bool QcInterval2DDouble::contains(QcVectorDouble vector) const;
 
 #ifndef QT_NO_DEBUG_STREAM
 QC_EXPORT QDebug operator<<(QDebug debug, const QcInterval2DInt & interval);

@@ -33,6 +33,11 @@
 
 /**************************************************************************************************/
 
+#include <QString>
+#include <QtDebug>
+
+/**************************************************************************************************/
+
 // QC_BEGIN_NAMESPACE
 
 /**************************************************************************************************/
@@ -50,8 +55,10 @@ QcInterval<T>::QcInterval(T inf, T sup)
     m_inf = inf;
     m_sup = sup;
   }
-  else
+  else {
+    qWarning() << QLatin1Literal("inf > sup") << m_inf << m_sup;
     throw std::invalid_argument("inf > sup");
+  }
 }
 
 template <typename T>
@@ -196,7 +203,7 @@ template <typename T>
 T
 QcInterval<T>::truncate(T x) const
 {
-  if (x > m_sup)
+  if (m_sup < x)
     return m_sup;
   else if (x < m_inf)
     return m_inf;
@@ -210,7 +217,7 @@ QcInterval<T>::wrap(T x) const
 {
   if (contains(x))
     return x;
-  else if (x > m_inf)
+  else if (m_inf < x)
     return m_inf + ((x - m_inf) % length());
   else
     return m_sup - ((m_inf - x) % length());
@@ -378,6 +385,15 @@ QcInterval2D<T>::contains(T x, T y) const
 {
   return m_x.contains(x) and m_y.contains(y);
 }
+
+/*
+template<>
+bool
+QcInterval2DDouble::contains(QcVectorDouble vector) const
+{
+  return contains(vector.x(), vector.y());
+}
+*/
 
 // Test whether the interval intersects with i2?
 template <typename T>
