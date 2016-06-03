@@ -29,6 +29,7 @@
 #include "map/viewport.h"
 
 #include "coordinate/mercator.h"
+#include "coordinate/debug_tools.h"
 #include "math/qc_math.h"
 
 #include <cmath>
@@ -323,7 +324,7 @@ QcViewport::zoom_at(const QcWgsCoordinate & coordinate, unsigned int zoom_level)
 void
 QcViewport::stable_zoom(const QcVectorDouble & screen_position, unsigned int zoom_level)
 {
-  qInfo() << screen_position << zoom_level;
+  // qInfo() << screen_position << zoom_level;
 
   // Fixme: (from map_gesture_area) event position == pre_zoom_point ???
 
@@ -339,8 +340,8 @@ QcViewport::stable_zoom(const QcVectorDouble & screen_position, unsigned int zoo
   if (!isnan(post_zoom_point.x()))
     qWarning() << "post is undefined";
 
-  qInfo() << coordinate << screen_position << '\n' << pre_zoom_point << '\n' << post_zoom_point;
-  if (!isnan(post_zoom_point.x()) and pre_zoom_point != post_zoom_point) {
+  // qInfo() << coordinate << screen_position << '\n' << pre_zoom_point << '\n' << post_zoom_point;
+  if (!isnan(pre_zoom_point.x()) and !isnan(post_zoom_point.x()) and pre_zoom_point != post_zoom_point) {
     // Keep location under pointer
     QcVectorDouble delta_px = post_zoom_point - pre_zoom_point;
     // Fixme: improve
@@ -397,13 +398,13 @@ QcViewport::update_area()
 
   const QcInterval2DDouble & _interval = polygon.interval();
   // Fixme: check (-100187541,  100187541, -68481603,  49238758 );
-  qInfo() << "polygon interval [m]"
-          << "[" << (int) _interval.x().inf() << ", " << (int) _interval.x().sup() << "]"
-          << "x"
-          << "[" << (int) _interval.y().inf() << ", " << (int) _interval.y().sup() << "]";
+  // qInfo() << "polygon interval [m]"
+  //         << "[" << (int) _interval.x().inf() << ", " << (int) _interval.x().sup() << "]"
+  //         << "x"
+  //         << "[" << (int) _interval.y().inf() << ", " << (int) _interval.y().sup() << "]";
   const QcIntervalDouble & x_projected_interval = m_projection->x_projected_interval();
   m_number_of_full_maps = static_cast<int>(_interval.x().length() / x_projected_interval.length());
-  qInfo() << "Number of maps" << m_number_of_full_maps;
+  // qInfo() << "Number of maps" << m_number_of_full_maps;
 
   // Fixme. optimise
   m_west_polygon.clear();
@@ -411,7 +412,7 @@ QcViewport::update_area()
   m_east_polygon.clear();
 
   m_cross_boundaries = !_interval.is_included_in(m_projection->projected_interval());
-  qInfo() << "Cross boudaries" << m_cross_boundaries;
+  // qInfo() << "Cross boudaries" << m_cross_boundaries;
   if (m_cross_boundaries) {
     if (_bearing) {
       // Fixme: bearing and date line crossing
@@ -423,7 +424,7 @@ QcViewport::update_area()
       double x_sup = _interval.x().sup();
       m_cross_west_line = x_inf < projected_x_inf;
       m_cross_east_line = projected_x_sup < x_sup;
-      qInfo() << "west / est" << m_cross_west_line << m_cross_east_line;
+      // qInfo() << "west / est" << m_cross_west_line << m_cross_east_line;
       QcInterval2DDouble west_interval;
       QcInterval2DDouble middle_interval;
       QcInterval2DDouble east_interval;
@@ -458,23 +459,9 @@ QcViewport::update_area()
     m_middle_polygon = polygon;
   }
 
-  qInfo() << "West interval [m]\n"
-          << "[" << (int) west_interval().x().inf() << ", " << (int) west_interval().x().sup() << "]"
-          << "[" << (int) west_interval().x().inf()*8.98e-6 << ", " << (int) west_interval().x().sup()*8.98e-6 << "]"
-          << "x"
-          << "[" << (int) west_interval().y().inf() << ", " << (int) west_interval().y().sup() << "]\n"
-
-          << "Middle interval [m]\n"
-          << "[" << (int) middle_interval().x().inf() << ", " << (int) middle_interval().x().sup() << "]"
-          << "[" << (int) middle_interval().x().inf()*8.98e-6 << ", " << (int) middle_interval().x().sup()*8.98e-6 << "]"
-          << "x"
-          << "[" << (int) middle_interval().y().inf() << ", " << (int) middle_interval().y().sup() << "]\n"
-
-          << "East interval [m]\n"
-          << "[" << (int) east_interval().x().inf() << ", " << (int) east_interval().x().sup() << "]"
-          << "[" << (int) east_interval().x().inf()*8.98e-6 << ", " << (int) east_interval().x().sup()*8.98e-6 << "]"
-          << "x"
-          << "[" << (int) east_interval().y().inf() << ", " << (int) east_interval().y().sup() << "]";
+  qInfo() << "West interval   [m]" << format_interval(west_interval(), m_projection).toStdString().c_str() << '\n'
+          << "Middle interval [m]" << format_interval(middle_interval(), m_projection).toStdString().c_str() << '\n'
+          << "East interval   [m]" << format_interval(east_interval(), m_projection).toStdString().c_str();
 
   emit viewport_changed();
 }
@@ -490,7 +477,7 @@ QcViewport::update_area()
 QcWgsCoordinate
 QcViewport::to_coordinate(const QcVectorDouble & screen_position, bool clip_to_viewport) const
 {
-  qInfo() << screen_position << clip_to_viewport;
+  // qInfo() << screen_position << clip_to_viewport;
 
   // Fixme: purpose
   if (clip_to_viewport) {
@@ -522,43 +509,24 @@ QcViewport::from_coordinate(const QcWgsCoordinate & coordinate, bool clip_to_vie
   // Note: it is not a bijection when m_number_of_full_maps is > 1
 
   QcVectorDouble projected_coordinate = to_projected_coordinate(coordinate);
-  qInfo() << coordinate << clip_to_viewport
-          << (int)projected_coordinate.x() << (int)projected_coordinate.y();
-
-  const QcInterval2DDouble & west_interval = m_west_polygon.interval();
-  const QcInterval2DDouble & middle_interval = m_middle_polygon.interval();
-  const QcInterval2DDouble & east_interval = m_east_polygon.interval();
-  qInfo() << "West interval [m]\n"
-          << "[" << (int) west_interval.x().inf() << ", " << (int) west_interval.x().sup() << "]"
-          << "[" << (int) west_interval.x().inf()*8.98e-6 << ", " << (int) west_interval.x().sup()*8.98e-6 << "]"
-          << "x"
-          << "[" << (int) west_interval.y().inf() << ", " << (int) west_interval.y().sup() << "]\n"
-          << "Middle interval [m]\n"
-          << "[" << (int) middle_interval.x().inf() << ", " << (int) middle_interval.x().sup() << "]"
-          << "[" << (int) middle_interval.x().inf()*8.98e-6 << ", " << (int) middle_interval.x().sup()*8.98e-6 << "]"
-          << "x"
-          << "[" << (int) middle_interval.y().inf() << ", " << (int) middle_interval.y().sup() << "]\n"
-          << "East interval [m]\n"
-          << "[" << (int) east_interval.x().inf() << ", " << (int) east_interval.x().sup() << "]"
-          << "[" << (int) east_interval.x().inf()*8.98e-6 << ", " << (int) east_interval.x().sup()*8.98e-6 << "]"
-          << "x"
-          << "[" << (int) east_interval.y().inf() << ", " << (int) east_interval.y().sup() << "]";
+  // qInfo() << coordinate << clip_to_viewport
+  //         << (int)projected_coordinate.x() << (int)projected_coordinate.y();
 
   const QcPolygon * polygon;
   if (m_middle_polygon.interval().contains(projected_coordinate.x(), projected_coordinate.y())) { // Fixme: contains(projected_coordinate)
     polygon = &m_middle_polygon;
-    qInfo() << "middle polygon";
+    // qInfo() << "middle polygon";
   }
   else if (m_east_polygon.interval().contains(projected_coordinate.x(), projected_coordinate.y())) {
     polygon = &m_east_polygon;
-    qInfo() << "east polygon";
+    // qInfo() << "east polygon";
   }
   else if (m_west_polygon.interval().contains(projected_coordinate.x(), projected_coordinate.y())) {
     polygon = &m_west_polygon;
-    qInfo() << "west polygon";
+    // qInfo() << "west polygon";
   }
   else {
-    qInfo() << "out";
+    qWarning() << "out of domain";
     return QcVectorDouble(qQNaN(), qQNaN());
   }
 
@@ -605,7 +573,7 @@ QcViewport::make_scale(unsigned int max_length_px)
   double power_10 = pow(10., number_of_digits);
   double normalised_max_length = max_length / power_10;
   double digit = find_scale_digit(normalised_max_length);
-  qInfo() << max_length_px << max_length << number_of_digits << normalised_max_length << digit;
+  // qInfo() << max_length_px << max_length << number_of_digits << normalised_max_length << digit;
   double length = digit * power_10;
 
   return QcMapScale(length, ceil(to_px(length) / m_device_pixel_ratio));

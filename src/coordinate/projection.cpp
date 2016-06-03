@@ -353,8 +353,10 @@ QcGeoCoordinate::QcGeoCoordinate(const QcProjection * projection, double x, doub
   if (m_projection->is_valid_xy(x, y)) {
     set_x(x);
     set_y(y);
-  } else
+  } else {
+    qWarning() << "Invalid coordinate" << projection->srid() << x << y;
     throw std::invalid_argument("Invalid coordinate");
+  }
 }
 
 #ifdef WITH_PROJ4

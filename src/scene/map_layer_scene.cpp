@@ -276,6 +276,7 @@ QcMapLayerScene::make_node()
 QcPolygon
 QcMapLayerScene::transform_polygon(const QcPolygon & polygon) const
 {
+  // Fixme: cf. map_view
   QcPolygon transformed_polygon;
   for (const auto & vertex : polygon.vertexes()) {
     auto transformed_vertex = (vertex - m_tile_matrix_set.origin()) * m_tile_matrix_set.scale();
@@ -324,7 +325,7 @@ QcMapLayerScene::update_scene_graph(QcMapLayerRootNode * map_root_node, QQuickWi
   if (m_viewport->cross_west_line())
     middle_offset = m_viewport->west_interval().x().length() / resolution; // Fixme: to_px
   QcPolygon transformed_middle_polygon = transform_polygon(m_viewport->middle_polygon());
-  qInfo() << "middle" << middle_offset;
+  // qInfo() << "middle" << middle_offset;
   map_root_node->update_tiles(this,
                               map_root_node->middle_map_node,
                               m_middle_visible_tiles,
@@ -334,7 +335,7 @@ QcMapLayerScene::update_scene_graph(QcMapLayerRootNode * map_root_node, QQuickWi
   double east_offset = middle_offset + middle_map_length;
   map_root_node->update_middle_maps();
   for (auto * node : map_root_node->middle_map_nodes) {
-    qInfo() << "clone" << east_offset;
+    // qInfo() << "clone" << east_offset;
     map_root_node->update_tiles(this,
                                 node,
                                 m_middle_visible_tiles,
@@ -343,7 +344,7 @@ QcMapLayerScene::update_scene_graph(QcMapLayerRootNode * map_root_node, QQuickWi
     east_offset += middle_map_length;
   }
 
-  qInfo() << "east" << east_offset;
+  // qInfo() << "east" << east_offset;
   map_root_node->update_tiles(this,
                               map_root_node->east_map_node,
                               m_east_visible_tiles,

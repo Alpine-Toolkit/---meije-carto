@@ -39,6 +39,7 @@ set(qtcarto_files
   coordinate/projection.cpp
   coordinate/sexagesimal_angle.cpp
   coordinate/wgs84.cpp
+  coordinate/debug_tools.cpp
 
   geo_data_format/gpx.cpp
   geo_data_format/route.cpp

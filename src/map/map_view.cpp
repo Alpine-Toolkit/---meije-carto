@@ -205,6 +205,7 @@ QcMapView::QcMapView()
   QcViewportState viewport_state(coordinate_origin, tiled_zoom_level, 0);
   QSize viewport_size(0, 0);
   m_viewport = new QcViewport(viewport_state, viewport_size);
+  // Fixme: cf. add_layer
   m_viewport->set_projection(&QcWebMercatorCoordinate::cls_projection);
 
   m_map_scene = new QcMapScene(m_viewport); // parent

@@ -46,8 +46,10 @@ QcGeoCoordinateTemplate<Projection>::QcGeoCoordinateTemplate(double x, double y)
   if (cls_projection.is_valid_xy(x, y)) {
     set_x(x);
     set_y(y);
-  } else
+  } else {
+    qWarning() << "Invalid coordinate" << cls_projection.srid() << x << y;
     throw std::invalid_argument("Invalid coordinate");
+  }
 }
 
 /**************************************************************************************************/

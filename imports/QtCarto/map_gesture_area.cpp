@@ -747,7 +747,7 @@ QcMapGestureArea::update()
 void
 QcMapGestureArea::touch_point_state_machine()
 {
-  qInfo();
+  // qInfo();
   // Transitions:
   switch (m_touch_point_state) {
   case TouchPoints0:
@@ -799,7 +799,7 @@ QcMapGestureArea::touch_point_state_machine()
 void
 QcMapGestureArea::start_one_touch_point()
 {
-  qInfo();
+  // qInfo();
   m_scene_start_point1 = mapFromScene(m_all_points.at(0).scenePos());
   m_last_pos = m_scene_start_point1;
   m_last_pos_time.start();
@@ -820,7 +820,7 @@ QcMapGestureArea::update_one_touch_point()
 void
 QcMapGestureArea::start_two_touch_points()
 {
-  qInfo();
+  // qInfo();
   m_scene_start_point1 = mapFromScene(m_all_points.at(0).scenePos());
   m_scene_start_point2 = mapFromScene(m_all_points.at(1).scenePos());
   QPointF start_pos = (m_scene_start_point1 + m_scene_start_point2) * .5; // Fixme: middle
@@ -1009,7 +1009,7 @@ QcMapGestureArea::end_pinch()
 void
 QcMapGestureArea::pan_state_machine()
 {
-  qInfo();
+  // qInfo();
   FlickState last_state = m_flick_state;
 
   // Transitions
@@ -1093,10 +1093,11 @@ void
 QcMapGestureArea::update_pan()
 {
   // Not used by animation/flick
-  qInfo();
+  // qInfo();
   QcVectorDouble vector = m_map->from_coordinate(m_start_coord, false);
+  // Fixme:
   if (isnan(vector.x())) {
-    qWarning() << "NAN";
+    qWarning() << "Screen coordinate are nan";
     return;
   }
   // .toPointF()
