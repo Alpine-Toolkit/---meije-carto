@@ -43,7 +43,6 @@
 #include <cmath>
 
 #include <QDebug>
-#include <QPointF>
 #include <QPropertyAnimation>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QStyleHints>
@@ -766,7 +765,7 @@ void
 QcMapGestureArea::start_one_touch_point()
 {
   // qInfo();
-  m_scene_start_point1 = mapFromScene(first_point().scenePos());
+  m_scene_start_point1 = first_point().pos();
   m_last_position = m_scene_start_point1;
   m_last_position_time.start();
   QcWgsCoordinate start_coord = m_map->to_coordinate(m_scene_start_point1, false);
@@ -779,7 +778,7 @@ void
 QcMapGestureArea::update_one_touch_point()
 {
   // qInfo();
-  m_scene_center = mapFromScene(first_point().scenePos());
+  m_scene_center = first_point().pos();
   update_velocity_list(m_scene_center);
 }
 
@@ -787,8 +786,8 @@ void
 QcMapGestureArea::start_two_touch_points()
 {
   // qInfo();
-  m_scene_start_point1 = mapFromScene(first_point().scenePos());
-  m_scene_start_point2 = mapFromScene(second_point().scenePos());
+  m_scene_start_point1 = first_point().pos();
+  m_scene_start_point2 = second_point().pos();
   QcVectorDouble start_pos = middle(m_scene_start_point1, m_scene_start_point2);
   m_last_position = start_pos;
   m_last_position_time.start();
@@ -801,8 +800,8 @@ void
 QcMapGestureArea::update_two_touch_points()
 {
   // qInfo();
-  QcVectorDouble p1 = mapFromScene(first_point().scenePos());
-  QcVectorDouble p2 = mapFromScene(second_point().scenePos());
+  QcVectorDouble p1 = first_point().pos();
+  QcVectorDouble p2 = second_point().pos();
   QcVectorDouble delta = p2 - p1;
   m_distance_between_touch_points = delta.magnitude();
   m_scene_center = middle(p1, p2);
@@ -884,13 +883,13 @@ QcMapGestureArea::can_start_pinch()
   const int start_drag_distance = qApp->styleHints()->startDragDistance();
 
   if (m_all_points.count() >= 2) {
-    QcVectorDouble p1 = mapFromScene(first_point().scenePos());
-    QcVectorDouble p2 = mapFromScene(second_point().scenePos());
+    QcVectorDouble p1 = first_point().pos();
+    QcVectorDouble p2 = second_point().pos();
     if (qAbs(p1.x()-m_scene_start_point1.x()) > start_drag_distance
         or qAbs(p1.y()-m_scene_start_point1.y()) > start_drag_distance
         or qAbs(p2.x()-m_scene_start_point2.x()) > start_drag_distance
         or qAbs(p2.y()-m_scene_start_point2.y()) > start_drag_distance) {
-      m_pinch.m_event.set_center(mapFromScene(m_scene_center.to_pointf()));
+      m_pinch.m_event.set_center(m_scene_center);
       m_pinch.m_event.set_angle(m_two_touch_angle);
       m_pinch.m_event.set_point1(p1);
       m_pinch.m_event.set_point2(p2);
@@ -910,8 +909,8 @@ QcMapGestureArea::start_pinch()
   m_pinch.m_start_dist = m_distance_between_touch_points;
   m_pinch.m_zoom.m_previous = m_map->zoom_level();
   m_pinch.m_last_angle = m_two_touch_angle;
-  m_pinch.m_last_point1 = mapFromScene(first_point().scenePos());
-  m_pinch.m_last_point2 = mapFromScene(second_point().scenePos());
+  m_pinch.m_last_point1 = first_point().pos();
+  m_pinch.m_last_point2 = second_point().pos();
   m_pinch.m_zoom.m_start = m_map->zoom_level();
 }
 
@@ -935,11 +934,11 @@ QcMapGestureArea::update_pinch()
     da -= 360;
   else if (da < -180)
     da += 360;
-  m_pinch.m_event.set_center(mapFromScene(m_scene_center.to_pointf()));
+  m_pinch.m_event.set_center(m_scene_center);
   m_pinch.m_event.set_angle(m_two_touch_angle);
 
-  m_pinch.m_last_point1 = mapFromScene(first_point().scenePos());
-  m_pinch.m_last_point2 = mapFromScene(second_point().scenePos());
+  m_pinch.m_last_point1 = first_point().pos();
+  m_pinch.m_last_point2 = second_point().pos();
   m_pinch.m_event.set_point1(m_pinch.m_last_point1);
   m_pinch.m_event.set_point2(m_pinch.m_last_point2);
   m_pinch.m_event.set_number_of_points(m_all_points.count());
@@ -962,8 +961,8 @@ void
 QcMapGestureArea::end_pinch()
 {
   // qInfo();
-  QcVectorDouble p1 = mapFromScene(m_pinch.m_last_point1.to_pointf());
-  QcVectorDouble p2 = mapFromScene(m_pinch.m_last_point2.to_pointf());
+  QcVectorDouble p1 = m_pinch.m_last_point1;
+  QcVectorDouble p2 = m_pinch.m_last_point2;
   m_pinch.m_event.set_center(middle(p1, p2));
   m_pinch.m_event.set_angle(m_pinch.m_last_angle);
   m_pinch.m_event.set_point1(p1);
@@ -1050,7 +1049,7 @@ QcMapGestureArea::can_start_pan()
   // Check if thresholds for normal panning are met.
   // (normal panning vs flicking: flicking will start from mouse release event).
   const int start_drag_distance = qApp->styleHints()->startDragDistance() * 2;
-  QcVectorDouble p1 = mapFromScene(first_point().scenePos());
+  QcVectorDouble p1 = first_point().pos();
   QcVectorDouble delta_from_press = p1 - m_scene_start_point1;
   return (qAbs(delta_from_press.x()) >= start_drag_distance or
           qAbs(delta_from_press.y()) >= start_drag_distance);
