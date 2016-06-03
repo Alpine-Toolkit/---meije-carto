@@ -60,6 +60,8 @@ template <typename T> QcVector<T> operator/(const QcVector<T> & vector, T factor
 template <typename T> QcVector<T> operator*(const QcVector<T> & vector1, const QcVector<T> & vector2);
 template <typename T> QcVector<T> operator/(const QcVector<T> & vector1, const QcVector<T> & vector2);
 
+template <typename T> QcVector<T> middle(const QcVector<T> & vector1, const QcVector<T> & vector2);
+
 template <typename T>
 class QC_EXPORT QcVector
 {
@@ -78,6 +80,8 @@ class QC_EXPORT QcVector
   ~QcVector();
 
   QcVector<T> & operator=(const QcVector<T> & other);
+
+  QPointF to_pointf() const;
 
   T x() const;
   T y() const;

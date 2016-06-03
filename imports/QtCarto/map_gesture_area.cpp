@@ -412,12 +412,6 @@ QcMapGestureArea::is_pan_active() const
   return m_flick_state == PanActive or m_flick_state == FlickActive;
 }
 
-bool
-QcMapGestureArea::enabled() const
-{
-  return m_enabled;
-}
-
 void
 QcMapGestureArea::set_enabled(bool enabled)
 {
@@ -438,25 +432,12 @@ QcMapGestureArea::set_enabled(bool enabled)
     emit enabledChanged();
   }
 }
-
-bool
-QcMapGestureArea::pinch_enabled() const
-{
-  return m_pinch.m_enabled;
-}
-
 void
 QcMapGestureArea::set_pinch_enabled(bool enabled)
 {
   // qInfo();
   if (enabled != m_pinch.m_enabled)
     m_pinch.m_enabled = enabled;
-}
-
-bool
-QcMapGestureArea::pan_enabled() const
-{
-  return m_pan_enabled;
 }
 
 void
@@ -469,12 +450,6 @@ QcMapGestureArea::set_pan_enabled(bool enabled)
     if (!enabled)
       stop_pan();
   }
-}
-
-bool
-QcMapGestureArea::flick_enabled() const
-{
-  return m_flick.m_enabled;
 }
 
 void
@@ -549,12 +524,6 @@ QcMapGestureArea::set_maximum_zoom_level_change(qreal max_change)
   emit maximum_zoom_level_changeChanged();
 }
 
-qreal
-QcMapGestureArea::flick_deceleration() const
-{
-  return m_flick.m_deceleration;
-}
-
 void
 QcMapGestureArea::set_flick_deceleration(qreal deceleration)
 {
@@ -578,10 +547,11 @@ create_touch_point_from_mouse_event(QMouseEvent * event, Qt::TouchPointState sta
 
   // this is only partially filled. But since it is only partially used it works
   // more robust would be to store a list of QPointFs rather than TouchPoints
+
   QTouchEvent::TouchPoint * new_point = new QTouchEvent::TouchPoint();
-  new_point->setPos(event->localPos());
-  new_point->setScenePos(event->windowPos());
-  new_point->setScreenPos(event->screenPos());
+  new_point->setPos(event->localPos()); // relative to the item
+  new_point->setScenePos(event->windowPos()); // relative to the window
+  new_point->setScreenPos(event->screenPos()); // relative to the screen
   new_point->setState(state);
   new_point->setId(0);
   return new_point;
@@ -678,33 +648,28 @@ QcMapGestureArea::clear_touch_data()
   // Fixme: vectorize
   m_velocity_x = 0;
   m_velocity_y = 0;
-  m_scene_center.setX(0);
-  m_scene_center.setY(0);
+  m_scene_center.set_x(0);
+  m_scene_center.set_y(0);
   m_touch_center_coord.set_longitude(0);
   m_touch_center_coord.set_latitude(0);
-  m_start_coord.set_longitude(0);
-  m_start_coord.set_latitude(0);
+  m_start_coordinate.set_longitude(0);
+  m_start_coordinate.set_latitude(0);
 }
 
 void
-QcMapGestureArea::update_velocity_list(const QPointF & pos)
+QcMapGestureArea::update_velocity_list(const QcVectorDouble & position)
 {
   // qInfo();
   // Take velocity samples every sufficient period of time, used later to determine the flick
   // duration and speed (when mouse is released).
-  qreal elapsed = qreal(m_last_pos_time.elapsed());
-
+  qreal elapsed = qreal(m_last_position_time.elapsed());
   if (elapsed >= QML_MAP_FLICK_VELOCITY_SAMPLE_PERIOD) {
     elapsed /= 1000.;
-    // Fixme: vectorize
-    int dy_from_last_pos = pos.y() - m_last_pos.y();
-    int dx_from_last_pos = pos.x() - m_last_pos.x();
-    m_last_pos = pos;
-    m_last_pos_time.restart();
-    qreal velocity_x = qreal(dx_from_last_pos) / elapsed;
-    qreal velocity_y = qreal(dy_from_last_pos) / elapsed;
-    m_velocity_x = qBound<qreal>(-m_flick.m_max_velocity, velocity_x, m_flick.m_max_velocity);
-    m_velocity_y = qBound<qreal>(-m_flick.m_max_velocity, velocity_y, m_flick.m_max_velocity);
+    QcVectorDouble velocity = (position - m_last_position) / elapsed;
+    m_last_position = position;
+    m_last_position_time.restart();
+    m_velocity_x = qBound<qreal>(-m_flick.m_max_velocity, velocity.x(), m_flick.m_max_velocity);
+    m_velocity_y = qBound<qreal>(-m_flick.m_max_velocity, velocity.y(), m_flick.m_max_velocity);
   }
 }
 
@@ -724,7 +689,7 @@ QcMapGestureArea::update()
 
   // First state machine is for the number of touch points
 
-  //combine touch with mouse event
+  // combine touch with mouse event
   m_all_points.clear();
   m_all_points << m_touch_points;
   if (m_all_points.isEmpty() and !m_mouse_point.isNull())
@@ -748,6 +713,7 @@ void
 QcMapGestureArea::touch_point_state_machine()
 {
   // qInfo();
+
   // Transitions:
   switch (m_touch_point_state) {
   case TouchPoints0:
@@ -766,7 +732,7 @@ QcMapGestureArea::touch_point_state_machine()
     if (m_all_points.count() == 0) {
       m_touch_point_state = TouchPoints0;
     } else if (m_all_points.count() == 2) {
-      m_touch_center_coord = m_map->to_coordinate(QcVectorDouble(m_scene_center), false);
+      m_touch_center_coord = m_map->to_coordinate(m_scene_center, false);
       start_two_touch_points();
       m_touch_point_state = TouchPoints2;
     }
@@ -776,7 +742,7 @@ QcMapGestureArea::touch_point_state_machine()
     if (m_all_points.count() == 0) {
       m_touch_point_state = TouchPoints0;
     } else if (m_all_points.count() == 1) {
-      m_touch_center_coord = m_map->to_coordinate(QcVectorDouble(m_scene_center), false);
+      m_touch_center_coord = m_map->to_coordinate(m_scene_center, false);
       start_one_touch_point();
       m_touch_point_state = TouchPoints1;
     }
@@ -800,20 +766,20 @@ void
 QcMapGestureArea::start_one_touch_point()
 {
   // qInfo();
-  m_scene_start_point1 = mapFromScene(m_all_points.at(0).scenePos());
-  m_last_pos = m_scene_start_point1;
-  m_last_pos_time.start();
-  QcWgsCoordinate start_coord = m_map->to_coordinate(QcVectorDouble(m_scene_start_point1), false);
+  m_scene_start_point1 = mapFromScene(first_point().scenePos());
+  m_last_position = m_scene_start_point1;
+  m_last_position_time.start();
+  QcWgsCoordinate start_coord = m_map->to_coordinate(m_scene_start_point1, false);
   // ensures a smooth transition for panning
-  m_start_coord.set_longitude(m_start_coord.longitude() + start_coord.longitude() - m_touch_center_coord.longitude());
-  m_start_coord.set_latitude(m_start_coord.latitude() + start_coord.latitude() - m_touch_center_coord.latitude());
+  m_start_coordinate.set_longitude(m_start_coordinate.longitude() + start_coord.longitude() - m_touch_center_coord.longitude());
+  m_start_coordinate.set_latitude(m_start_coordinate.latitude() + start_coord.latitude() - m_touch_center_coord.latitude());
 }
 
 void
 QcMapGestureArea::update_one_touch_point()
 {
   // qInfo();
-  m_scene_center = mapFromScene(m_all_points.at(0).scenePos());
+  m_scene_center = mapFromScene(first_point().scenePos());
   update_velocity_list(m_scene_center);
 }
 
@@ -821,32 +787,34 @@ void
 QcMapGestureArea::start_two_touch_points()
 {
   // qInfo();
-  m_scene_start_point1 = mapFromScene(m_all_points.at(0).scenePos());
-  m_scene_start_point2 = mapFromScene(m_all_points.at(1).scenePos());
-  QPointF start_pos = (m_scene_start_point1 + m_scene_start_point2) * .5; // Fixme: middle
-  m_last_pos = start_pos;
-  m_last_pos_time.start();
-  QcWgsCoordinate start_coord = m_map->to_coordinate(QcVectorDouble(start_pos), false);
-  m_start_coord.set_longitude(m_start_coord.longitude() + start_coord.longitude() - m_touch_center_coord.longitude());
-  m_start_coord.set_latitude(m_start_coord.latitude() + start_coord.latitude() - m_touch_center_coord.latitude());
+  m_scene_start_point1 = mapFromScene(first_point().scenePos());
+  m_scene_start_point2 = mapFromScene(second_point().scenePos());
+  QcVectorDouble start_pos = middle(m_scene_start_point1, m_scene_start_point2);
+  m_last_position = start_pos;
+  m_last_position_time.start();
+  QcWgsCoordinate start_coord = m_map->to_coordinate(start_pos, false);
+  m_start_coordinate.set_longitude(m_start_coordinate.longitude() + start_coord.longitude() - m_touch_center_coord.longitude());
+  m_start_coordinate.set_latitude(m_start_coordinate.latitude() + start_coord.latitude() - m_touch_center_coord.latitude());
 }
 
 void
 QcMapGestureArea::update_two_touch_points()
 {
   // qInfo();
-  QPointF p1 = mapFromScene(m_all_points.at(0).scenePos());
-  QPointF p2 = mapFromScene(m_all_points.at(1).scenePos());
-  qreal dx = p1.x() - p2.x();
-  qreal dy = p1.y() - p2.y();
-  m_distance_between_touch_points = sqrt(dx * dx + dy * dy);
-  m_scene_center = (p1 + p2) * .5;
+  QcVectorDouble p1 = mapFromScene(first_point().scenePos());
+  QcVectorDouble p2 = mapFromScene(second_point().scenePos());
+  QcVectorDouble delta = p2 - p1;
+  m_distance_between_touch_points = delta.magnitude();
+  m_scene_center = middle(p1, p2);
   update_velocity_list(m_scene_center);
 
-  m_two_touch_angle = QLineF(p1, p2).angle();
+  m_two_touch_angle = delta.orientation();
+  // Fixme: required ?
   if (m_two_touch_angle > 180)
     m_two_touch_angle -= 360;
 }
+
+/**************************************************************************************************/
 
 void
 QcMapGestureArea::pinch_state_machine()
@@ -916,13 +884,13 @@ QcMapGestureArea::can_start_pinch()
   const int start_drag_distance = qApp->styleHints()->startDragDistance();
 
   if (m_all_points.count() >= 2) {
-    QPointF p1 = mapFromScene(m_all_points.at(0).scenePos());
-    QPointF p2 = mapFromScene(m_all_points.at(1).scenePos());
+    QcVectorDouble p1 = mapFromScene(first_point().scenePos());
+    QcVectorDouble p2 = mapFromScene(second_point().scenePos());
     if (qAbs(p1.x()-m_scene_start_point1.x()) > start_drag_distance
         or qAbs(p1.y()-m_scene_start_point1.y()) > start_drag_distance
         or qAbs(p2.x()-m_scene_start_point2.x()) > start_drag_distance
         or qAbs(p2.y()-m_scene_start_point2.y()) > start_drag_distance) {
-      m_pinch.m_event.set_center(mapFromScene(m_scene_center));
+      m_pinch.m_event.set_center(mapFromScene(m_scene_center.to_pointf()));
       m_pinch.m_event.set_angle(m_two_touch_angle);
       m_pinch.m_event.set_point1(p1);
       m_pinch.m_event.set_point2(p2);
@@ -942,8 +910,8 @@ QcMapGestureArea::start_pinch()
   m_pinch.m_start_dist = m_distance_between_touch_points;
   m_pinch.m_zoom.m_previous = m_map->zoom_level();
   m_pinch.m_last_angle = m_two_touch_angle;
-  m_pinch.m_last_point1 = mapFromScene(m_all_points.at(0).scenePos());
-  m_pinch.m_last_point2 = mapFromScene(m_all_points.at(1).scenePos());
+  m_pinch.m_last_point1 = mapFromScene(first_point().scenePos());
+  m_pinch.m_last_point2 = mapFromScene(second_point().scenePos());
   m_pinch.m_zoom.m_start = m_map->zoom_level();
 }
 
@@ -967,11 +935,11 @@ QcMapGestureArea::update_pinch()
     da -= 360;
   else if (da < -180)
     da += 360;
-  m_pinch.m_event.set_center(mapFromScene(m_scene_center));
+  m_pinch.m_event.set_center(mapFromScene(m_scene_center.to_pointf()));
   m_pinch.m_event.set_angle(m_two_touch_angle);
 
-  m_pinch.m_last_point1 = mapFromScene(m_all_points.at(0).scenePos());
-  m_pinch.m_last_point2 = mapFromScene(m_all_points.at(1).scenePos());
+  m_pinch.m_last_point1 = mapFromScene(first_point().scenePos());
+  m_pinch.m_last_point2 = mapFromScene(second_point().scenePos());
   m_pinch.m_event.set_point1(m_pinch.m_last_point1);
   m_pinch.m_event.set_point2(m_pinch.m_last_point2);
   m_pinch.m_event.set_number_of_points(m_all_points.count());
@@ -994,9 +962,9 @@ void
 QcMapGestureArea::end_pinch()
 {
   // qInfo();
-  QPointF p1 = mapFromScene(m_pinch.m_last_point1);
-  QPointF p2 = mapFromScene(m_pinch.m_last_point2);
-  m_pinch.m_event.set_center((p1 + p2) / 2);
+  QcVectorDouble p1 = mapFromScene(m_pinch.m_last_point1.to_pointf());
+  QcVectorDouble p2 = mapFromScene(m_pinch.m_last_point2.to_pointf());
+  m_pinch.m_event.set_center(middle(p1, p2));
   m_pinch.m_event.set_angle(m_pinch.m_last_angle);
   m_pinch.m_event.set_point1(p1);
   m_pinch.m_event.set_point2(p2);
@@ -1005,6 +973,8 @@ QcMapGestureArea::end_pinch()
   emit pinch_finished(&m_pinch.m_event);
   m_pinch.m_start_dist = 0;
 }
+
+/**************************************************************************************************/
 
 void
 QcMapGestureArea::pan_state_machine()
@@ -1016,10 +986,9 @@ QcMapGestureArea::pan_state_machine()
   switch (m_flick_state) {
   case FlickInactive:
     if (can_start_pan()) {
-      // Update startCoord_ to ensure smooth start for panning when going over startDragDistance
-      QcWgsCoordinate new_start_coord = m_map->to_coordinate(QcVectorDouble(m_scene_center), false);
-      m_start_coord.set_longitude(new_start_coord.longitude());
-      m_start_coord.set_latitude(new_start_coord.latitude());
+      // Update start_coord to ensure smooth start for panning when going over startDragDistance
+      QcWgsCoordinate new_start_coordinate = m_map->to_coordinate(m_scene_center, false);
+      m_start_coordinate = new_start_coordinate;
       m_map->setKeepMouseGrab(true);
       m_flick_state = PanActive;
     }
@@ -1045,7 +1014,7 @@ QcMapGestureArea::pan_state_machine()
     break;
 
   case FlickActive:
-    if (m_all_points.count() > 0) { // re touched before movement ended
+    if (m_all_points.count() > 0) { // retouched before movement ended
       stop_flick();
       m_map->setKeepMouseGrab(true);
       m_flick_state = PanActive;
@@ -1081,12 +1050,10 @@ QcMapGestureArea::can_start_pan()
   // Check if thresholds for normal panning are met.
   // (normal panning vs flicking: flicking will start from mouse release event).
   const int start_drag_distance = qApp->styleHints()->startDragDistance() * 2;
-  QPointF p1 = mapFromScene(m_all_points.at(0).scenePos());
-  int dx_from_press = int(p1.x() - m_scene_start_point1.x());
-  int dy_from_press = int(p1.y() - m_scene_start_point1.y());
-  if ((qAbs(dy_from_press) >= start_drag_distance or qAbs(dx_from_press) >= start_drag_distance))
-    return true;
-  return false;
+  QcVectorDouble p1 = mapFromScene(first_point().scenePos());
+  QcVectorDouble delta_from_press = p1 - m_scene_start_point1;
+  return (qAbs(delta_from_press.x()) >= start_drag_distance or
+          qAbs(delta_from_press.y()) >= start_drag_distance);
 }
 
 void
@@ -1094,20 +1061,16 @@ QcMapGestureArea::update_pan()
 {
   // Not used by animation/flick
   // qInfo();
-  QcVectorDouble vector = m_map->from_coordinate(m_start_coord, false);
+  QcVectorDouble start_point = m_map->from_coordinate(m_start_coordinate, false);
   // Fixme:
-  if (isnan(vector.x())) {
+  if (isnan(start_point.x())) {
     qWarning() << "Screen coordinate are nan";
     return;
   }
-  // .toPointF()
-  QPointF start_point = QPointF(vector.x(), vector.y());
-  int dx = static_cast<int>(m_scene_center.x() - start_point.x());
-  int dy = static_cast<int>(m_scene_center.y() - start_point.y());
-  QPointF map_center_point;
-  map_center_point.setX(m_map->width() / 2.0 - dx);
-  map_center_point.setY(m_map->height() / 2.0  - dy);
-  QcWgsCoordinate animation_start_coordinate = m_map->to_coordinate(QcVectorDouble(map_center_point), false);
+  QcVectorDouble delta = m_scene_center - start_point;
+  QcVectorDouble map_center_px = QcVectorDouble(m_map->width(), m_map->height()) * .5;
+  QcVectorDouble map_center_point = map_center_px - delta;
+  QcWgsCoordinate animation_start_coordinate = m_map->to_coordinate(map_center_point, false);
   m_map->set_center(animation_start_coordinate);
 }
 
@@ -1120,7 +1083,7 @@ QcMapGestureArea::try_start_flick()
   // if we drag then pause before release we should not cause a flick.
   qreal velocity_x = 0.0;
   qreal velocity_y = 0.0;
-  if (m_last_pos_time.elapsed() < QML_MAP_FLICK_VELOCITY_SAMPLE_PERIOD) {
+  if (m_last_position_time.elapsed() < QML_MAP_FLICK_VELOCITY_SAMPLE_PERIOD) {
     velocity_x = m_velocity_x;
     velocity_y = m_velocity_y;
   }
@@ -1219,6 +1182,7 @@ QcMapGestureArea::stop_flick()
   // qInfo();
   if (!m_flick.m_animation)
     return;
+
   m_velocity_x = 0;
   m_velocity_y = 0;
   if (m_flick.m_animation->isRunning())
@@ -1238,6 +1202,8 @@ QcMapGestureArea::handle_flick_animation_stopped()
     m_map->prefetch_data();
   }
 }
+
+/**************************************************************************************************/
 
 // #include "moc_map_gesture_area.cpp"
 

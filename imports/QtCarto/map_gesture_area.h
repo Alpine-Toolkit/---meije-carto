@@ -91,20 +91,22 @@ class QcMapPinchEvent : public QObject
 {
   Q_OBJECT
 
-  Q_PROPERTY(QPointF center READ center)
+  Q_PROPERTY(QcVectorDouble center READ center)
   Q_PROPERTY(qreal angle READ angle)
-  Q_PROPERTY(QPointF point1 READ point1)
-  Q_PROPERTY(QPointF point2 READ point2)
+  Q_PROPERTY(QcVectorDouble point1 READ point1)
+  Q_PROPERTY(QcVectorDouble point2 READ point2)
   Q_PROPERTY(int number_of_points READ number_of_points)
   Q_PROPERTY(bool accepted READ accepted WRITE set_accepted)
 
 public:
-  QcMapPinchEvent(const QPointF & center, qreal angle,
-                  const QPointF & point1, const QPointF & point2, int number_of_points = 0,
+  QcMapPinchEvent(const QcVectorDouble & center, qreal angle,
+                  const QcVectorDouble & point1, const QcVectorDouble & point2, int number_of_points = 0,
                   bool accepted = true)
     : QObject(),
-      m_center(center), m_angle(angle),
-      m_point1(point1), m_point2(point2), m_number_of_points(number_of_points),
+      m_center(center),
+      m_point1(point1), m_point2(point2),
+      m_angle(angle),
+      m_number_of_points(number_of_points),
       m_accepted(accepted)
   {}
   QcMapPinchEvent()
@@ -114,17 +116,17 @@ public:
       m_accepted(true)
   {}
 
-  QPointF center() const { return m_center; }
-  void set_center(const QPointF & center) { m_center = center; }
+  QcVectorDouble center() const { return m_center; }
+  void set_center(const QcVectorDouble & center) { m_center = center; }
 
   qreal angle() const { return m_angle; }
   void set_angle(qreal angle) { m_angle = angle; }
 
-  QPointF point1() const { return m_point1; }
-  void set_point1(const QPointF & p) { m_point1 = p; }
+  QcVectorDouble point1() const { return m_point1; }
+  void set_point1(const QcVectorDouble & p) { m_point1 = p; }
 
-  QPointF point2() const { return m_point2; }
-  void set_point2(const QPointF & p) { m_point2 = p; }
+  QcVectorDouble point2() const { return m_point2; }
+  void set_point2(const QcVectorDouble & p) { m_point2 = p; }
 
   int number_of_points() const { return m_number_of_points; }
   void set_number_of_points(int number_of_points) { m_number_of_points = number_of_points; }
@@ -133,10 +135,10 @@ public:
   void set_accepted(bool status) { m_accepted = status; }
 
 private:
-  QPointF m_center;
+  QcVectorDouble m_center;
+  QcVectorDouble m_point1;
+  QcVectorDouble m_point2;
   qreal m_angle;
-  QPointF m_point1;
-  QPointF m_point2;
   int m_number_of_points;
   bool m_accepted;
 };
@@ -159,8 +161,8 @@ struct Pinch
   QcMapPinchEvent m_event;
   bool m_enabled;
   struct Zoom m_zoom;
-  QPointF m_last_point1;
-  QPointF m_last_point2;
+  QcVectorDouble m_last_point1;
+  QcVectorDouble m_last_point2;
   qreal m_start_dist;
   qreal m_last_angle;
 };
@@ -210,13 +212,13 @@ public:
   bool is_pan_active() const;
   bool is_active() const;
 
-  bool enabled() const;
+  bool enabled() const { return m_enabled; }
   void set_enabled(bool enabled);
 
   qreal maximum_zoom_level_change() const;
   void set_maximum_zoom_level_change(qreal max_change);
 
-  qreal flick_deceleration() const;
+  qreal flick_deceleration() const { return m_flick.m_deceleration; }
   void set_flick_deceleration(qreal deceleration);
 
   void set_minimum_zoom_level(qreal min);
@@ -253,6 +255,9 @@ Q_SIGNALS:
   void prevent_stealingChanged();
 
 private:
+  const QTouchEvent::TouchPoint & first_point() const  { return m_all_points.at(0); }
+  const QTouchEvent::TouchPoint & second_point() const { return m_all_points.at(1); }
+
   void update();
 
   // Create general data relating to the touch points
@@ -278,11 +283,11 @@ private:
   void start_flick(int dx, int dy, int time_ms = 0);
   void stop_flick();
 
-  bool pinch_enabled() const;
+  bool pinch_enabled() const { return m_pinch.m_enabled; }
   void set_pinch_enabled(bool enabled);
-  bool pan_enabled() const;
+  bool pan_enabled() const { return m_pan_enabled; }
   void set_pan_enabled(bool enabled);
-  bool flick_enabled() const;
+  bool flick_enabled() const { return m_flick.m_enabled; }
   void set_flick_enabled(bool enabled);
 
 private Q_SLOTS:
@@ -291,7 +296,7 @@ private Q_SLOTS:
 private:
   void stop_pan();
   void clear_touch_data();
-  void update_velocity_list(const QPointF & pos);
+  void update_velocity_list(const QcVectorDouble & pos);
 
 private:
   // prototype state machine...
@@ -325,20 +330,20 @@ private:
   // these are calculated regardless of gesture or number of touch points
   qreal m_velocity_x;
   qreal m_velocity_y;
-  QElapsedTimer m_last_pos_time;
-  QPointF m_last_pos;
+  QElapsedTimer m_last_position_time;
+  QcVectorDouble m_last_position;
   QList<QTouchEvent::TouchPoint> m_all_points;
   QList<QTouchEvent::TouchPoint> m_touch_points;
   QScopedPointer<QTouchEvent::TouchPoint> m_mouse_point;
-  QPointF m_scene_start_point1;
+  QcVectorDouble m_scene_start_point1;
 
   // only set when two points in contact
-  QPointF m_scene_start_point2;
-  QcWgsCoordinate m_start_coord;
+  QcVectorDouble m_scene_start_point2;
+  QcWgsCoordinate m_start_coordinate;
   QcWgsCoordinate m_touch_center_coord;
   qreal m_two_touch_angle;
   qreal m_distance_between_touch_points;
-  QPointF m_scene_center;
+  QcVectorDouble m_scene_center;
   bool m_prevent_stealing;
   bool m_pan_enabled;
 

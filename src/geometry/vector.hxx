@@ -89,6 +89,13 @@ QcVector<T>::operator=(const QcVector<T> & other)
 }
 
 template <typename T>
+QPointF
+QcVector<T>::to_pointf() const
+{
+  return QPointF(m_x, m_y);
+}
+
+template <typename T>
 inline T
 QcVector<T>::x() const
 {
@@ -310,14 +317,14 @@ QcVector<T>::orientation() const
   else if (m_y == 0)
     return m_x >= 0 ? 0 : 180;
   else {
-    orientation = qRadiansToDegrees(atan(tan()));
+    T _orientation = qRadiansToDegrees(atan(tan()));
     if (m_x < 0) {
       if (m_y > 0)
-	orientation += 180;
+	_orientation += 180;
       else
-	orientation -= 180;
+	_orientation -= 180;
     }
-    return orientation;
+    return _orientation;
   }
 }
 
@@ -508,6 +515,13 @@ QcInterval2D<T>
 QcVector<T>::to_interval() const
 {
   return QcInterval2D<T>(m_x, m_x, m_y, m_y);
+}
+
+template <typename T>
+QcVector<T>
+middle(const QcVector<T> & vector1, const QcVector<T> & vector2)
+{
+  return (vector1 + vector2) * .5;
 }
 
 /**************************************************************************************************/
