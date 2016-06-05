@@ -136,6 +136,7 @@ coordinate_shortest_interpolator(const QcWgsCoordinate & _from, const QcWgsCoord
   double y = from_y + delta_y * progress;
 
   QcWgsCoordinate coordinate = QcNormalisedWebMercatorCoordinate(x, y).wgs84();
+  // qInfo() << progress << coordinate;
   return QVariant::fromValue(coordinate);
 }
 
@@ -153,6 +154,8 @@ coordinate_west_interpolator(const QcWgsCoordinate & _from, const QcWgsCoordinat
   double delta_y = to_y - from_y;
 
   // <-|-
+  if (from_x < to_x)
+    delta_x = 1 + delta_x;
   double delta_x_abs = qAbs(delta_x);
   double x = from_x - delta_x_abs * progress;
   if (x < 0.0) // we crossed date line
@@ -161,6 +164,7 @@ coordinate_west_interpolator(const QcWgsCoordinate & _from, const QcWgsCoordinat
   double y = from_y + delta_y * progress;
 
   QcWgsCoordinate coordinate = QcNormalisedWebMercatorCoordinate(x, y).wgs84();
+  // qInfo() << progress << coordinate;
   return QVariant::fromValue(coordinate);
 }
 
@@ -178,6 +182,8 @@ coordinate_east_interpolator(const QcWgsCoordinate & _from, const QcWgsCoordinat
   double delta_y = to_y - from_y;
 
   // -|->
+  if (to_x < from_x)
+    delta_x = 1 + delta_x;
   double delta_x_abs = qAbs(delta_x);
   double x = from_x + delta_x_abs * progress;
   if (x > 1.0) // we crossed date line
@@ -186,6 +192,7 @@ coordinate_east_interpolator(const QcWgsCoordinate & _from, const QcWgsCoordinat
   double y = from_y + delta_y * progress;
 
   QcWgsCoordinate coordinate = QcNormalisedWebMercatorCoordinate(x, y).wgs84();
+  // qInfo() << progress << coordinate << from << x << to;
   return QVariant::fromValue(coordinate);
 }
 
