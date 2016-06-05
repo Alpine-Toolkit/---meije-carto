@@ -143,6 +143,8 @@ private:
   bool m_accepted;
 };
 
+/**************************************************************************************************/
+
 struct Zoom
 {
   Zoom() : m_minimum(-1.0), m_maximum(-1.0), m_start(0.0), m_previous(0.0), maximum_change(4.0) {}
@@ -154,25 +156,29 @@ struct Zoom
   qreal maximum_change;
 };
 
+/**************************************************************************************************/
+
 struct Pinch
 {
-  Pinch() : m_enabled(true), m_start_dist(0), m_last_angle(0.0) {}
+  Pinch() : m_enabled(true), m_start_distance(0), m_last_angle(0.0) {}
 
-  QcMapPinchEvent m_event;
   bool m_enabled;
+  QcMapPinchEvent m_event;
   struct Zoom m_zoom;
   QcVectorDouble m_last_point1;
   QcVectorDouble m_last_point2;
-  qreal m_start_dist;
+  qreal m_start_distance;
   qreal m_last_angle;
 };
 
+/**************************************************************************************************/
+
 struct Pan
 {
+  bool m_enabled;
   qreal m_max_velocity;
   qreal m_deceleration;
   QcGeoCoordinateAnimation * m_animation; // Fixme
-  bool m_enabled;
 };
 
 /**************************************************************************************************/
@@ -205,7 +211,7 @@ public:
 
   Q_DECLARE_FLAGS(Accepted_gestures, GeoMapGesture)
 
-  Accepted_gestures accepted_gestures() const;
+  Accepted_gestures accepted_gestures() const { return m_accepted_gestures; }
   void set_accepted_gestures(Accepted_gestures accepted_gestures);
 
   bool is_pinch_active() const;
@@ -227,7 +233,7 @@ public:
   void set_maximum_zoom_level(qreal max);
   qreal maximum_zoom_level() const;
 
-  bool prevent_stealing() const;
+  bool prevent_stealing() const { return m_prevent_stealing; }
   void set_prevent_stealing(bool prevent);
 
   void handle_touch_event(QTouchEvent * event);
@@ -334,13 +340,13 @@ private:
   QcVectorDouble m_last_position;
   QList<QTouchEvent::TouchPoint> m_all_points;
   QList<QTouchEvent::TouchPoint> m_touch_points;
-  QScopedPointer<QTouchEvent::TouchPoint> m_mouse_point;
+  QScopedPointer<QTouchEvent::TouchPoint> m_mouse_point; // mouse event data
   QcVectorDouble m_scene_start_point1;
 
   // only set when two points in contact
   QcVectorDouble m_scene_start_point2;
   QcWgsCoordinate m_start_coordinate;
-  QcWgsCoordinate m_touch_center_coord;
+  QcWgsCoordinate m_touch_center_coordinate;
   qreal m_two_touch_angle;
   qreal m_distance_between_touch_points;
   QcVectorDouble m_scene_center;
