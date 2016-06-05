@@ -45,7 +45,7 @@ QcWebMercatorCoordinate::QcWebMercatorCoordinate(double _x, double y)
   set_x(cls_projection.x_projected_interval().wrap(_x));
   set_y(cls_projection.y_projected_interval().truncate(y));
 
-  qInfo() << "x adjust" << static_cast<int>(_x) << "->" << static_cast<int>(x());
+  // qInfo() << "x adjust" << static_cast<int>(_x) << "->" << static_cast<int>(x());
 }
 
 QcWebMercatorCoordinate::QcWebMercatorCoordinate()

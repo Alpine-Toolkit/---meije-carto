@@ -247,7 +247,7 @@ QcViewport::set_projection(const QcProjection * projection)
 void
 QcViewport::set_center(const QcWgsCoordinate & coordinate)
 {
-  // qInfo() << coordinate;
+  qInfo() << coordinate;
   if (coordinate != m_state.coordinate()) {
     m_state.set_coordinate(coordinate);
     update_area(); // move polygon
@@ -459,9 +459,9 @@ QcViewport::update_area()
     m_middle_polygon = polygon;
   }
 
-  qInfo() << "West interval   [m]" << format_interval(west_interval(), m_projection).toStdString().c_str() << '\n'
-          << "Middle interval [m]" << format_interval(middle_interval(), m_projection).toStdString().c_str() << '\n'
-          << "East interval   [m]" << format_interval(east_interval(), m_projection).toStdString().c_str();
+  // qInfo() << "West interval   [m]" << format_interval(west_interval(), m_projection).toStdString().c_str() << '\n'
+  //         << "Middle interval [m]" << format_interval(middle_interval(), m_projection).toStdString().c_str() << '\n'
+  //         << "East interval   [m]" << format_interval(east_interval(), m_projection).toStdString().c_str();
 
   emit viewport_changed();
 }

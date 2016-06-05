@@ -45,8 +45,8 @@ QcMapItem {
     ]
 
     Component.onCompleted: {
-        // map.plugin_layers('osm')[0].status = true
-        map.plugin_layers('geoportail')[0].status = true
+        map.plugin_layers('osm')[0].status = true
+        // map.plugin_layers('geoportail')[0].status = true
         // map.plugin_layers('artic-web-map')[0].status = true
         set_scale()
     }
