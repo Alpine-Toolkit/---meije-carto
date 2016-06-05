@@ -328,28 +328,27 @@ private:
     } m_flick_state;
 
 private:
-  QcMapItem * m_map; // Fixme: used for width, height, to_coordinate, from_coordinate, prefetch_data
-  // used for QQuickItem, set_zoom_level, set_center, center
+  QcMapItem * m_map;
   bool m_enabled;
   Accepted_gestures m_accepted_gestures;
 
-  // these are calculated regardless of gesture or number of touch points
-  qreal m_velocity_x;
+  // These are calculated regardless of gesture or number of touch points
+  QScopedPointer<QTouchEvent::TouchPoint> m_mouse_point; // mouse event data (pointer so as to by undefined)
+  QList<QTouchEvent::TouchPoint> m_touch_points; // touch event data
+  QList<QTouchEvent::TouchPoint> m_all_points; // combined (touch and mouse) event data
+  QcVectorDouble m_scene_start_point1; // first point item position
+  QcVectorDouble m_last_position_for_velocity; // used to compute velocity; first point or middle item position, then updated
+  QcVectorDouble m_scene_center; // first point or middle item position, then updated
+  QcWgsCoordinate m_start_coordinate; // first point or middle coordinate, then updated when mouse pointer slides on the map
+  QElapsedTimer m_last_position_for_velocity_time; // used to compute velocity
+  qreal m_velocity_x; // [px/s]
   qreal m_velocity_y;
-  QElapsedTimer m_last_position_time;
-  QcVectorDouble m_last_position;
-  QList<QTouchEvent::TouchPoint> m_all_points;
-  QList<QTouchEvent::TouchPoint> m_touch_points;
-  QScopedPointer<QTouchEvent::TouchPoint> m_mouse_point; // mouse event data
-  QcVectorDouble m_scene_start_point1;
 
-  // only set when two points in contact
-  QcVectorDouble m_scene_start_point2;
-  QcWgsCoordinate m_start_coordinate;
-  QcWgsCoordinate m_touch_center_coordinate;
+  // Only set when two points in contact
+  QcVectorDouble m_scene_start_point2; // second point position
+  QcWgsCoordinate m_touch_center_coordinate; // scene center coordinate
   qreal m_two_touch_angle;
   qreal m_distance_between_touch_points;
-  QcVectorDouble m_scene_center;
   bool m_prevent_stealing;
   bool m_pan_enabled;
 
