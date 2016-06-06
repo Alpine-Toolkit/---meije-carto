@@ -46,7 +46,8 @@
 class QcPlatform
 {
 public:
-  enum OsType {LINUX, ANDROID, WINDOWS, OSX};
+  // note: ANDROID is a macro
+  enum OsType {LinuxOS, AndroidOS, WindowsOS, OsxOS};
   enum ArchitectureType {X86, X86_64, ARM, ARM_64};
 
 public:
@@ -65,10 +66,10 @@ public:
   QString os_name() const;
   QString architecture_name() const;
 
-  bool on_linux() const { return m_os_type == LINUX; }
-  bool on_android() const { return m_os_type == ANDROID; }
-  bool on_windows() const { return m_os_type == WINDOWS; }
-  bool on_osx() const { return m_os_type == OSX; }
+  bool on_linux() const { return m_os_type == LinuxOS; }
+  bool on_android() const { return m_os_type == AndroidOS; }
+  bool on_windows() const { return m_os_type == WindowsOS; }
+  bool on_osx() const { return m_os_type == OsxOS; }
 
   bool on_x86() const { return m_architecture_type == X86; }
   bool on_x86_64() const { return m_architecture_type == X86_64; }

@@ -15,7 +15,8 @@ debug {
 # QT += qml quick quickcontrols
 # QT += positioning
 
-INCLUDEPATH += src
+# Fixme: config.h
+# INCLUDEPATH +=
 
 ####################################################################################################
 #

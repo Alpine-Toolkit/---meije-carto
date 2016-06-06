@@ -39,13 +39,13 @@
 QcPlatform::QcPlatform()
 {
 #ifdef ON_LINUX
-  m_os_type = LINUX;
+  m_os_type = LinuxOS;
 #endif
 #ifdef ON_ANDROID
-  m_os_type = ANDROID;
+  m_os_type = AndroidOS;
 #endif
 #ifdef ON_WINDOWS
-  m_os_type = WINDOWS;
+  m_os_type = WindowsOS;
 #endif
 }
 
@@ -56,13 +56,13 @@ QString
 QcPlatform::os_name() const
 {
   switch (m_os_type) {
-  case LINUX:
+  case LinuxOS:
     return QLatin1Literal("linux");
-  case ANDROID:
+  case AndroidOS:
     return QLatin1Literal("android");
-  case WINDOWS:
+  case WindowsOS:
     return QLatin1Literal("windows");
-  case OSX:
+  case OsxOS:
     return QLatin1Literal("osx");
   }
 }

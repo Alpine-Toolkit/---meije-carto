@@ -6,10 +6,7 @@ SUBDIRS = \
   imports \
   mapviewer
 
-#  src \
-
-# test \
-# test.depends = src
+mapviewer.depends = imports
 
 ####################################################################################################
 #

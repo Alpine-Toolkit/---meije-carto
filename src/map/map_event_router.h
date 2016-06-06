@@ -107,15 +107,15 @@ public:
 
   const QString & name() const { return m_name; }
 
-  virtual void handle_mouse_press_event(const QcMapEvent & event) {};
-  virtual void handle_mouse_move_event(const QcMapEvent & event) {};
-  virtual void handle_mouse_release_event(const QcMapEvent & event) {};
-  virtual void handle_mouse_wheel_event(const QcMapEvent & event) {};
+  virtual void handle_mouse_press_event(const QcMapEvent & event) {Q_UNUSED(event)};
+  virtual void handle_mouse_move_event(const QcMapEvent & event) {Q_UNUSED(event)};
+  virtual void handle_mouse_release_event(const QcMapEvent & event) {Q_UNUSED(event)};
+  virtual void handle_mouse_wheel_event(const QcMapEvent & event) {Q_UNUSED(event)};
 
-  virtual void handle_mouse_press_and_hold_event(const QcMapEvent & event) {};
+  virtual void handle_mouse_press_and_hold_event(const QcMapEvent & event) {Q_UNUSED(event)};
 
-  virtual void handle_clicked_event(const QcMapEvent & event) {};
-  virtual void handle_double_clicked_event(const QcMapEvent & event) {};
+  virtual void handle_clicked_event(const QcMapEvent & event) {Q_UNUSED(event)};
+  virtual void handle_double_clicked_event(const QcMapEvent & event) {Q_UNUSED(event)};
 
 private:
   QString m_name;

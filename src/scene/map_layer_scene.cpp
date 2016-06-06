@@ -96,8 +96,8 @@ QcMapLayerRootNode::update_tiles(QcMapLayerScene * map_scene,
                                  const QcPolygon & polygon,
                                  double offset)
 {
-  float width = map_scene->width();
-  float height = map_scene->height();
+  // float width = map_scene->width();
+  // float height = map_scene->height();
 
   QMatrix4x4 space_matrix;
   space_matrix.setToIdentity();

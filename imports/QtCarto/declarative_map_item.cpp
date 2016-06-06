@@ -375,6 +375,7 @@ QcMapItem::set_zoom_level(unsigned int new_zoom_level)
     return;
 
   // Fixme: check range
+  // Fixme: int
   if (new_zoom_level < 0 or new_zoom_level > 18)
     return;
 
@@ -435,6 +436,7 @@ QcMapItem::stable_zoom(QPointF position_px, unsigned int new_zoom_level)
     return;
 
   // Fixme: check range
+  // Fixme: int
   if (new_zoom_level < 0 or new_zoom_level > 18)
     return;
 
@@ -608,6 +610,7 @@ QcMapItem::bearing() const
 void
 QcMapItem::set_gps_horizontal_precision(double horizontal_precision)
 {
+  Q_UNUSED(horizontal_precision)
 }
 
 double
