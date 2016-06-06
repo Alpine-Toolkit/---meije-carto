@@ -94,7 +94,7 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
    * |  0    2S/H   -1 |
    */
   QMatrix4x4 item_space_matrix;
-  qreal device_pixel_ratio_inverse = 1. / window->devicePixelRatio();
+  qreal device_pixel_ratio_inverse = 1.; // / window->devicePixelRatio();
   item_space_matrix.scale(device_pixel_ratio_inverse, device_pixel_ratio_inverse);
   map_root_node->root->setMatrix(item_space_matrix);
   // qInfo() << "item_space_matrix" << item_space_matrix;

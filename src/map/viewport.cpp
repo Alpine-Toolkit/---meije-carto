@@ -231,8 +231,8 @@ void
 QcViewport::set_viewport_size(const QSize & size, float device_pixel_ratio)
 {
   // qInfo() << "viewport size" << size << device_pixel_ratio;
-  m_viewport_size = size* device_pixel_ratio;
-  m_device_pixel_ratio = device_pixel_ratio;
+  m_viewport_size = size; // * device_pixel_ratio;
+  m_device_pixel_ratio = 1; // device_pixel_ratio;
   update_area_size();
   update_area();
 }
