@@ -137,7 +137,7 @@ void
 QcMapItem::mousePressEvent(QMouseEvent * event)
 {
   // Never called when a child (MouseArea) should receive th event
-  // qInfo();
+  qInfo();
   if (is_interactive())
     m_gesture_area->handle_mouse_press_event(event);
   else
@@ -148,7 +148,7 @@ void
 QcMapItem::mouseMoveEvent(QMouseEvent * event)
 {
   // Called when mouse is grabbed
-  // qInfo();
+  qInfo();
   if (is_interactive())
     m_gesture_area->handle_mouse_move_event(event);
   else
@@ -159,7 +159,7 @@ void
 QcMapItem::mouseReleaseEvent(QMouseEvent * event)
 {
   // Called when mouse is grabbed
-  // qInfo();
+  qInfo();
   if (is_interactive()) {
     m_gesture_area->handle_mouse_release_event(event);
     ungrabMouse();
@@ -198,7 +198,7 @@ QcMapItem::touchEvent(QTouchEvent * event)
       ungrabTouchPoints();
     }
   } else
-    //ignore event so sythesized event is generated;
+    // ignore event so sythesized event is generated;
     QQuickItem::touchEvent(event);
 }
 
@@ -218,7 +218,7 @@ QcMapItem::childMouseEventFilter(QQuickItem * item, QEvent * event)
   Q_UNUSED(item);
 
   // item is QQuickMouseArea
-  // qInfo() << item << "\n" << event;
+  qInfo() << item << "\n" << event;
 
   if (!isVisible() or !isEnabled() or !is_interactive())
     return QQuickItem::childMouseEventFilter(item, event);
@@ -264,6 +264,8 @@ QcMapItem::childMouseEventFilter(QQuickItem * item, QEvent * event)
 bool
 QcMapItem::send_mouse_event(QMouseEvent * event)
 {
+  qInfo() << event;
+
   QPointF local_position = mapFromScene(event->windowPos());
   QQuickWindow * _window = window();
   QQuickItem * grabber = _window ? _window->mouseGrabberItem() : nullptr;
@@ -489,12 +491,12 @@ QcMapItem::updatePaintNode(QSGNode * old_node, UpdatePaintNodeData *)
 /**************************************************************************************************/
 
 /*!
-    \qmlmethod coordinate QtLocation::Map::to_coordinate(QPointF position, bool clipToViewPort)
+  \qmlmethod coordinate QtLocation::Map::to_coordinate(QPointF position, bool clipToViewPort)
 
-    Returns the coordinate which corresponds to the \a position relative to the map item.
+  Returns the coordinate which corresponds to the \a position relative to the map item.
 
-    If \a cliptoViewPort is \c true, or not supplied then returns an invalid coordinate if
-    \a position is not within the current viewport.
+  If \a cliptoViewPort is \c true, or not supplied then returns an invalid coordinate if
+  \a position is not within the current viewport.
 */
 QcWgsCoordinate
 QcMapItem::to_coordinate(const QcVectorDouble & position_px, bool clip_to_viewport) const

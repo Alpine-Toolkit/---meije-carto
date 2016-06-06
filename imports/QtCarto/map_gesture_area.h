@@ -104,7 +104,8 @@ public:
                   bool accepted = true)
     : QObject(),
       m_center(center),
-      m_point1(point1), m_point2(point2),
+      m_point1(point1),
+      m_point2(point2),
       m_angle(angle),
       m_number_of_points(number_of_points),
       m_accepted(accepted)
@@ -147,7 +148,13 @@ private:
 
 struct Zoom
 {
-  Zoom() : m_minimum(-1.0), m_maximum(-1.0), m_start(0.0), m_previous(0.0), maximum_change(4.0) {}
+  Zoom()
+    : m_minimum(-1.0),
+      m_maximum(-1.0),
+      m_start(0.0),
+      m_previous(0.0),
+      maximum_change(4.0)
+  {}
 
   qreal m_minimum;
   qreal m_maximum;
@@ -160,7 +167,11 @@ struct Zoom
 
 struct Pinch
 {
-  Pinch() : m_enabled(true), m_start_distance(0), m_last_angle(0.0) {}
+  Pinch()
+    : m_enabled(true),
+      m_start_distance(0),
+      m_last_angle(.0)
+  {}
 
   bool m_enabled;
   QcMapPinchEvent m_event;
@@ -336,16 +347,18 @@ private:
   QScopedPointer<QTouchEvent::TouchPoint> m_mouse_point; // mouse event data (pointer so as to by undefined)
   QList<QTouchEvent::TouchPoint> m_touch_points; // touch event data
   QList<QTouchEvent::TouchPoint> m_all_points; // combined (touch and mouse) event data
-  QcVectorDouble m_scene_start_point1; // first point item position
+
   QcVectorDouble m_last_position_for_velocity; // used to compute velocity; first point or middle item position, then updated
-  QcVectorDouble m_scene_center; // first point or middle item position, then updated
-  QcWgsCoordinate m_start_coordinate; // first point or middle coordinate, then updated when mouse pointer slides on the map
   QElapsedTimer m_last_position_for_velocity_time; // used to compute velocity
   qreal m_velocity_x; // [px/s]
   qreal m_velocity_y;
 
+  QcVectorDouble m_start_position1; // first point item position
+  QcVectorDouble m_current_position; // first point or middle item position, then updated
+  QcWgsCoordinate m_start_coordinate; // first point or middle coordinate, then updated when mouse pointer slides on the map
+
   // Only set when two points in contact
-  QcVectorDouble m_scene_start_point2; // second point position
+  QcVectorDouble m_start_position2; // second point position
   QcWgsCoordinate m_touch_center_coordinate; // scene center coordinate
   qreal m_two_touch_angle;
   qreal m_distance_between_touch_points;
