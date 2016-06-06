@@ -1,15 +1,15 @@
 ####################################################################################################
+#
+# Run from build directory
+#
 
-# -DANDROID_ABI="armeabi-v7a with NEON"
+QT_ANDROID_PATH="/opt/Qt-dev-5.7.0-android"
+QML_PLUGIN_PATH="${QT_ANDROID_PATH}/qml/QtCarto"
 
-cmake \
-  -DCMAKE_TOOLCHAIN_FILE=android.toolchain.cmake \
-  -DANDROID_NDK=/opt/android-ndk-r10e \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DANDROID_ABI="armeabi-v7a" \
-  $HOME/home/developpement/qtcarto-application/alpine-toolkit/qtcarto
-
-cmake --build
+mkdir ${QML_PLUGIN_PATH}
+# cp imports/QtCarto/{*.so,qmldir} ${QML_PLUGIN_PATH}
+cp imports/QtCarto/qmldir ${QML_PLUGIN_PATH}
+ln -sf imports/QtCarto/libqmlqtcartoplugin.so ${QML_PLUGIN_PATH}
 
 ####################################################################################################
 #

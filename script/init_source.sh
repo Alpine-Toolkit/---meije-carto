@@ -1,15 +1,10 @@
 ####################################################################################################
 
-# -DANDROID_ABI="armeabi-v7a with NEON"
+ln -sf cmake-build/compile_commands.json
 
-cmake \
-  -DCMAKE_TOOLCHAIN_FILE=android.toolchain.cmake \
-  -DANDROID_NDK=/opt/android-ndk-r10e \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DANDROID_ABI="armeabi-v7a" \
-  $HOME/home/developpement/qtcarto-application/alpine-toolkit/qtcarto
-
-cmake --build
+pushd src
+ln -sf cmake-build/config.h
+popd
 
 ####################################################################################################
 #
