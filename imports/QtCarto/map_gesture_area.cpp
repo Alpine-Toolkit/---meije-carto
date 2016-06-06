@@ -641,6 +641,7 @@ QcMapGestureArea::handle_mouse_release_event(QMouseEvent * event)
     if (m_touch_points.isEmpty())
       update();
   }
+  m_touch_point_state = TouchPoints0;
   event->accept();
 }
 
