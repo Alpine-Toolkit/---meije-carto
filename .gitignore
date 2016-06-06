@@ -1,32 +1,23 @@
 *~
 du.log
 
-Makefile
 qtcarto.pro.user
 
+android-cmake-build/
 build/
 cmake-build/
-doc/html/
 qmake-build/
+
+compile_commands.json
+doc/html/
+src/config.h
 src/scene/shaders/location_circle_shader.h
+src/scene/shaders/path_shader.h
 
-install-android-plugin.sh
-run-cmake.sh
-run-qmake.sh
-open-doc.sh
-
-geoportail-license-fabrice.json
-geoportail-license.json
-
-ArithmeticInterval
-annecy.patch
-class-def.txt
-devel/
-imports/QtCarto/compilation-errors.txt
-imports/QtCarto/qmldir-orig
-mapviewer/pages/main-bis.qml
-shader-test/
-test/triangulation_test/cleanup.sh
+script/open-doc.sh
+script/push-to-vps.sh
+script/run-cmake.sh
+script/run-qmake.sh
 
 third-parties/libspatialindex/cmake.log
 third-parties/libspatialindex/libspatialindex.git/
@@ -36,3 +27,16 @@ third-parties/proj4/cmake.log
 third-parties/proj4/make.log
 third-parties/proj4/proj.4.git/
 
+ArithmeticInterval
+bugs-to-check.txt
+class-def.txt
+devel/
+imports/QtCarto/compilation-errors.txt
+imports/QtCarto/qmldir-orig
+mapviewer/pages/main-bis.qml
+mapviewer/pages/tmp.qml
+shader-test/
+src/wmts/providers/austria/mobile-base3.js
+src/wmts/providers/geoportail/ols.txt
+test/triangulation_test/cleanup.sh
+trash/
