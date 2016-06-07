@@ -1,6 +1,10 @@
 <!DOCTYPE RCC><RCC version="1.0">
   <qresource prefix="/">
      <!-- icons: 24 48@2 72@3 96@4 -->
+    <file>icons/add-black.png</file>
+    <file>icons/add-black@3x.png</file>
+    <file>icons/add-white.png</file>
+    <file>icons/add-white@3x.png</file>
     <file>icons/arrow-back-white.png</file>
     <file>icons/arrow-back-white@3x.png</file>
     <file>icons/explore-black.png</file>
@@ -19,6 +23,10 @@
     <file>icons/menu-white@3x.png</file>
     <file>icons/more-vert-white.png</file>
     <file>icons/more-vert-white@3x.png</file>
+    <file>icons/remove-black.png</file>
+    <file>icons/remove-black@3x.png</file>
+    <file>icons/remove-white.png</file>
+    <file>icons/remove-white@3x.png</file>
     <file>icons/svg/ruler-black.png</file>
     <file>icons/svg/ruler-black@3x.png</file>
     <file>images/location-bearing.1000.png</file>

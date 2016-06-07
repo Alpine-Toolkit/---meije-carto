@@ -481,8 +481,7 @@ QcMapItem::stable_zoom(QPointF position_px, unsigned int new_zoom_level)
   if (new_zoom_level < 0 or new_zoom_level > 18)
     return;
 
-  QcVectorDouble _position_px(position_px.x(), position_px.y());
-  m_viewport->stable_zoom(_position_px, new_zoom_level);
+  m_viewport->stable_zoom(QcVectorDouble(position_px), new_zoom_level);
   emit zoom_levelChanged(new_zoom_level);
 }
 

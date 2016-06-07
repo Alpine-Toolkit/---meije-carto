@@ -250,6 +250,34 @@ QcMapItem {
                     map.state = "Measure"
                 }
             }
+            ToolButton {
+                id: zoom_in_icon
+                contentItem: Image {
+                    fillMode: Image.Pad
+                    horizontalAlignment: Image.AlignHCenter
+                    verticalAlignment: Image.AlignVCenter
+                    source: "qrc:/icons/add-black.png"
+                }
+                onClicked: {
+                    // Fixme
+                    var position_px = Qt.point(map.width/2, map.height/2);
+                    stable_zoom_by_increment(position_px, 1);
+                }
+            }
+            ToolButton {
+                id: zoom_out_icon
+                contentItem: Image {
+                    fillMode: Image.Pad
+                    horizontalAlignment: Image.AlignHCenter
+                    verticalAlignment: Image.AlignVCenter
+                    source: "qrc:/icons/remove-black.png"
+                }
+                onClicked: {
+                    var position_px = Qt.point(map.width/2, map.height/2);
+                    stable_zoom_by_increment(position_px, -1);
+                }
+            }
+
         }
     }
 }
