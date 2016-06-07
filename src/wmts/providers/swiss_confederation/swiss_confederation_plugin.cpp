@@ -86,7 +86,7 @@ QcSwissConfederationPlugin::QcSwissConfederationPlugin()
   add_layer(new QcSwissConfederationLayer(this,
                                           ++map_id, // 1
                                           1,
-                                          QLatin1Literal("La Suisse à pieds"),
+                                          QStringLiteral("La Suisse à pieds"),
                                           QLatin1Literal("ch.astra.wanderland"),
                                           QLatin1Literal("png")
                                           ));
