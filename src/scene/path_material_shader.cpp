@@ -175,6 +175,9 @@ QcPathMaterialShader::updateState(const QcPathMaterialShaderState * state,
                                   const QcPathMaterialShaderState *)
 {
   program()->setUniformValue("colour", state->r, state->g, state->b, state->a);
+  program()->setUniformValue("cap_type", state->cap_type);
+  program()->setUniformValue("line_join", state->line_join);
+  program()->setUniformValue("antialias_diameter", state->antialias_diameter);
 }
 
 // QC_END_NAMESPACE

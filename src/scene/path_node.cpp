@@ -129,10 +129,14 @@ QcPathNode::QcPathNode(const QcViewport * viewport)
   m_geometry_node->setFlag(QSGNode::OwnsGeometry);
 
   QSGSimpleMaterial<QcPathMaterialShaderState> * material = QcPathMaterialShader::createMaterial();
-  material->state()->r = 0;
-  material->state()->g = 0;
-  material->state()->b = 1.;
-  material->state()->a = 1.;
+  QcPathMaterialShaderState * state = material->state();
+  state->r = 0;
+  state->g = 0;
+  state->b = 1.;
+  state->a = 1.;
+  state->cap_type = 1;
+  state->line_join = 1;
+  state->antialias_diameter = 1.;
   material->setFlag(QSGMaterial::Blending);
   m_geometry_node->setMaterial(material);
   m_geometry_node->setFlag(QSGNode::OwnsMaterial);
