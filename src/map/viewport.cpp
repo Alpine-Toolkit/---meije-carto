@@ -240,8 +240,12 @@ QcViewport::set_viewport_size(const QSize & size, float device_pixel_ratio)
 void
 QcViewport::set_projection(const QcProjection * projection)
 {
-  m_projection = projection; // Fixme: passing ‘const QcProjection’ as ‘this’ argument discards qualifiers
-  m_is_web_mercator = *projection == QcWebMercatorCoordinate().cls_projection;
+  if (!m_projection or *projection != *m_projection) {
+    m_projection = projection; // Fixme: passing ‘const QcProjection’ as ‘this’ argument discards qualifiers
+    m_is_web_mercator = *projection == QcWebMercatorCoordinate().cls_projection;
+    QcWgsCoordinate coordinate(projection->wgs84_origin());
+    set_center(coordinate);
+  }
 }
 
 void

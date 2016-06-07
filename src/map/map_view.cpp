@@ -223,6 +223,15 @@ QcMapView::~QcMapView()
   delete m_viewport;
 }
 
+void
+QcMapView::set_projection(const QcProjection * new_projection)
+{
+  if (*new_projection != projection()) {
+    remove_all_layers();
+    m_viewport->set_projection(new_projection);
+  }
+}
+
 QcMapViewLayer *
 QcMapView::get_layer(const QcWmtsPluginLayer * plugin_layer)
 {
@@ -233,15 +242,17 @@ QcMapView::get_layer(const QcWmtsPluginLayer * plugin_layer)
 void
 QcMapView::add_layer(const QcWmtsPluginLayer * plugin_layer)
 {
-  QString name = plugin_layer->hash_name();
-  if (!m_layer_map.contains(name)) {
-    QcMapLayerScene * layer_scene = m_map_scene->add_layer(plugin_layer);
-    QcMapViewLayer * layer = new QcMapViewLayer(plugin_layer, m_viewport, layer_scene);
-    m_layers << layer;
-    m_layer_map.insert(name, layer);
-    connect(layer, SIGNAL(scene_graph_changed()),
-            this, SIGNAL(scene_graph_changed()),
-            Qt::QueuedConnection);
+  if (plugin_layer->projection() == m_viewport->projection()) {
+    QString name = plugin_layer->hash_name();
+    if (!m_layer_map.contains(name)) {
+      QcMapLayerScene * layer_scene = m_map_scene->add_layer(plugin_layer);
+      QcMapViewLayer * layer = new QcMapViewLayer(plugin_layer, m_viewport, layer_scene);
+      m_layers << layer;
+      m_layer_map.insert(name, layer);
+      connect(layer, SIGNAL(scene_graph_changed()),
+              this, SIGNAL(scene_graph_changed()),
+              Qt::QueuedConnection);
+    }
   }
 }
 
@@ -257,6 +268,13 @@ QcMapView::remove_layer(const QcWmtsPluginLayer * plugin_layer)
     layer->deleteLater();
     // Fixme: disconnect scene_graph_changed ?
   }
+}
+
+void
+QcMapView::remove_all_layers()
+{
+  for (const auto * plugin_layer : layers())
+    remove_layer(plugin_layer);
 }
 
 QList<const QcWmtsPluginLayer *>

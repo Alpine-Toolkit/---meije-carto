@@ -620,6 +620,13 @@ QcMapItem::plugin_layers(const QString & plugin_name)
 }
 
 void
+QcMapItem::set_projection(const QcProjection * projection)
+{
+  m_map_view->set_projection(projection);
+  update();
+}
+
+void
 QcMapItem::layer_status_changed(bool status)
 {
   QcWmtsPluginLayerData * layer_data = qobject_cast<QcWmtsPluginLayerData *>(QObject::sender());

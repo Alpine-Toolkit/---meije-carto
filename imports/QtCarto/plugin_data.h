@@ -87,7 +87,7 @@ public:
   const QcWmtsPluginLayer * plugin_layer() const { return m_plugin_layer; }
   QString plugin() const { return m_plugin_layer->plugin_name(); }
   QString title() const { return m_plugin_layer->title(); }
-  QString projection() const { return m_plugin_layer->projection_name(); }
+  QString projection() const { return m_plugin_layer->projection().title(); }
 
   bool status() const { return m_status; }
   float opacity() const { return m_opacity; }

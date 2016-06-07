@@ -76,7 +76,8 @@ public:
   const QString & title() const { return m_title; }
   const QString & name() const { return m_name; }
   const QString & image_format() const { return m_image_format; }
-  const QString & projection_name() const;
+
+  const QcProjection & projection() const;
 
   QString hash_name() const;
   QcTileSpec create_tile_spec(int level, int x, int y) const;
@@ -105,7 +106,7 @@ public:
   const QString & name() const { return m_name; }
   const QString & title() const { return m_title; }
   QcTileMatrixSet & tile_matrix_set() { return *m_tile_matrix_set; } // Fixme: const ?
-  const QcProjection & projection() { return m_tile_matrix_set->projection(); }
+  const QcProjection & projection() const { return m_tile_matrix_set->projection(); }
 
   // Fixme: & or *
   QNetworkAccessManager * network_manager() { return m_network_manager; }

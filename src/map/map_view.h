@@ -107,9 +107,12 @@ class QC_EXPORT QcMapView : public QObject
   ~QcMapView();
 
   QcViewport * viewport() { return m_viewport; };
+  const QcProjection & projection() const { return m_viewport->projection(); }
+  void set_projection(const QcProjection * projection);
 
   void add_layer(const QcWmtsPluginLayer * plugin_layer);
   void remove_layer(const QcWmtsPluginLayer * plugin_layer);
+  void remove_all_layers();
   float opacity(const QcWmtsPluginLayer * plugin_layer);
   void set_opacity(const QcWmtsPluginLayer * plugin_layer, float opacity);
   QList<const QcWmtsPluginLayer *> layers() const;

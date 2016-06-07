@@ -128,6 +128,7 @@ public:
 
   QString projection() const;
   QStringList projections() const;
+  void set_projection(const QcProjection * projection);
 
   QcMapEventRouter * map_event_router() { return &m_map_event_router; }
 
