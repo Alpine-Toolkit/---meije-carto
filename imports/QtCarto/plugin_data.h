@@ -73,6 +73,7 @@ class QcWmtsPluginLayerData : public QObject
   Q_OBJECT
   Q_PROPERTY(QString plugin READ plugin CONSTANT)
   Q_PROPERTY(QString title READ title CONSTANT)
+  Q_PROPERTY(QString projection READ projection CONSTANT)
   Q_PROPERTY(bool status READ status WRITE set_status NOTIFY statusChanged)
   Q_PROPERTY(float opacity READ opacity WRITE set_opacity NOTIFY opacityChanged)
 
@@ -86,6 +87,7 @@ public:
   const QcWmtsPluginLayer * plugin_layer() const { return m_plugin_layer; }
   QString plugin() const { return m_plugin_layer->plugin_name(); }
   QString title() const { return m_plugin_layer->title(); }
+  QString projection() const { return m_plugin_layer->projection_name(); }
 
   bool status() const { return m_status; }
   float opacity() const { return m_opacity; }

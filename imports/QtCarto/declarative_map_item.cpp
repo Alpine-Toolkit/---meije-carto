@@ -642,6 +642,24 @@ QcMapItem::layer_opacity_changed(float opacity)
 
 /**************************************************************************************************/
 
+QString
+QcMapItem::projection() const
+{
+  return m_viewport->projection().title();
+}
+
+QStringList
+QcMapItem::projections() const
+{
+  QSet<QString> projections;
+  for (auto * plugin : m_plugin_manager.plugins())
+    // Fixme: to func
+    projections.insert(plugin->tile_matrix_set().projection().title());
+  return projections.toList();
+}
+
+/**************************************************************************************************/
+
 void
 QcMapItem::set_bearing(double bearing)
 {

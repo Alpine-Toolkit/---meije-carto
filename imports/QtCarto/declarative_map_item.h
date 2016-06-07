@@ -64,6 +64,8 @@ class QcMapItem : public QQuickItem
   Q_PROPERTY(double bearing READ bearing WRITE set_bearing NOTIFY bearingChanged)
   Q_PROPERTY(double gps_horizontal_precision READ gps_horizontal_precision WRITE set_gps_horizontal_precision NOTIFY gps_horizontal_precisionChanged)
   Q_PROPERTY(QVariantList plugins READ plugins CONSTANT)
+  Q_PROPERTY(QString projection READ projection CONSTANT)
+  Q_PROPERTY(QStringList projections READ projections CONSTANT)
   Q_PROPERTY(QcMapEventRouter * map_event_router READ map_event_router CONSTANT)
 
 public:
@@ -123,6 +125,9 @@ public:
 
   QVariantList plugins() const;
   Q_INVOKABLE QVariantList plugin_layers(const QString & plugin_name);
+
+  QString projection() const;
+  QStringList projections() const;
 
   QcMapEventRouter * map_event_router() { return &m_map_event_router; }
 

@@ -128,6 +128,11 @@ ApplicationWindow {
 
             model: ListModel {
                 ListElement {
+                    title: qsTr("Projections")
+                    icon: ""
+                    source: "qrc:/pages/Projections.qml"
+                }
+                ListElement {
                     title: qsTr("Layers")
                     icon: ""
                     source: "qrc:/pages/Layers.qml"

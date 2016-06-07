@@ -76,6 +76,7 @@ public:
   const QString & title() const { return m_title; }
   const QString & name() const { return m_name; }
   const QString & image_format() const { return m_image_format; }
+  const QString & projection_name() const;
 
   QString hash_name() const;
   QcTileSpec create_tile_spec(int level, int x, int y) const;

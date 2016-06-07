@@ -45,7 +45,7 @@ Flickable {
                                 Text {
                                     anchors.verticalCenter: parent.verticalCenter
                                     width: layer_pane.width / 3
-                                    text: plugin_layer.title
+                                    text: plugin_layer.title + '\n' + plugin_layer.projection
                                 }
                                 Slider {
                                     id: slider

@@ -1,5 +1,6 @@
 <!DOCTYPE RCC><RCC version="1.0">
   <qresource prefix="/">
+
      <!-- icons: 24 48@2 72@3 96@4 -->
     <file>icons/add-black.png</file>
     <file>icons/add-black@3x.png</file>
@@ -27,13 +28,19 @@
     <file>icons/remove-black@3x.png</file>
     <file>icons/remove-white.png</file>
     <file>icons/remove-white@3x.png</file>
+
     <file>icons/svg/ruler-black.png</file>
     <file>icons/svg/ruler-black@3x.png</file>
+
     <file>images/location-bearing.1000.png</file>
     <file>images/location-bearing.svg</file>
+
     <file>pages/Layers.qml</file>
     <file>pages/MapComponent.qml</file>
+    <file>pages/Projections.qml</file>
     <file>pages/main.qml</file>
+
     <file>qtquickcontrols2.conf</file>
+
   </qresource>
 </RCC>

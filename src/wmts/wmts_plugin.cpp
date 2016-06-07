@@ -77,6 +77,11 @@ QcWmtsPluginLayer::plugin_name() const
   return m_plugin->name();
 }
 
+const QString &
+QcWmtsPluginLayer::projection_name() const {
+  return m_plugin->tile_matrix_set().projection().title();
+}
+
 QString
 QcWmtsPluginLayer::hash_name() const
 {
