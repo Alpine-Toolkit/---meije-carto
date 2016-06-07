@@ -310,6 +310,7 @@ QcMapView::update_scene()
   // qInfo();
   for (auto * layer : m_layers)
     layer->update_scene();
+  m_map_scene->set_dirty_path(); // viewport changed thus update vertexes
 }
 
 /**************************************************************************************************/

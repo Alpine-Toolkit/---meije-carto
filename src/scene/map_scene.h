@@ -135,6 +135,10 @@ public:
     m_dirty_path = true;
   }
 
+  void set_dirty_path() {
+    m_dirty_path = true;
+  }
+
 private:
   float width() { return m_viewport->width(); }
   float height() { return m_viewport->height(); }
