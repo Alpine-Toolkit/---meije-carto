@@ -44,9 +44,7 @@
 #include <QString>
 #include <QSharedPointer>
 
-#ifdef WITH_PROJ4
 #include "proj_api.h"
-#endif
 
 /**************************************************************************************************/
 
@@ -61,7 +59,9 @@ class QcGeoCoordinate;
 
 /**************************************************************************************************/
 
-#ifdef WITH_PROJ4
+/*! Proj4 Interface
+ *
+ */
 class QC_EXPORT QcProjection4
 {
  public:
@@ -77,7 +77,6 @@ class QC_EXPORT QcProjection4
   QString m_definition;
   projPJ m_projection;
 };
-#endif
 
 /**************************************************************************************************/
 
@@ -113,9 +112,7 @@ class QC_EXPORT QcProjection
   static void init();
   static void register_projection(QcProjection * projection);
   static QMap<QString, QcProjection *> m_instances; // QSharedPointer<>
-#ifdef WITH_PROJ4
   static QMap<QString, QcProjection4 *> m_projection4_instances;
-#endif
 
  public:
   QcProjection();
@@ -151,6 +148,9 @@ class QC_EXPORT QcProjection
   inline const QString & srid() const { return m_srid; }
   inline const QString & title() const { return m_title; }
 
+  inline QcProjection4 * projection4() const { return m_projection4; }
+  virtual QString proj4_definition() const;
+
   inline const QcVectorDouble wgs84_origin() const { return m_wgs84_origin; }
   inline const QcInterval2DDouble wgs84_interval() const { return m_wgs84_interval; }
 
@@ -171,12 +171,8 @@ class QC_EXPORT QcProjection
   inline bool preserve_distance() const { return test_preserve_bit(PreserveBit::PreserveDistance); }
   inline bool preserve_shortest_route() const { return test_preserve_bit(PreserveBit::PreserveShortestRoute); }
 
+  // QcGeoCoordinate coordinate(QcVectorDouble vector) const;
   QcGeoCoordinate coordinate(double x, double y) const;
-
-#ifdef WITH_PROJ4
-  virtual QString proj4_definition() const;
-  inline QcProjection4 * projection4() const { return m_projection4; }
-#endif
 
  private:
   bool test_preserve_bit(PreserveBit preserve_bit) const;
@@ -190,9 +186,7 @@ class QC_EXPORT QcProjection
   QString m_unit;
   ProjectionSurface m_projection_surface;
   PreserveBit m_preserve_bit;
-#ifdef WITH_PROJ4
   QcProjection4 * m_projection4; // Fixme: QSharedPointer ?
-#endif
 };
 
 ENUM_FLAGS(QcProjection::PreserveBit, unsigned int)
@@ -227,14 +221,15 @@ class QC_EXPORT QcGeoCoordinateTrait
   inline double y() const { return m_y; }
   inline void set_y(double value) { m_y = value; }
 
-#ifdef WITH_PROJ4
-  void transform(QcGeoCoordinateTrait & other) const;
-  QcVectorDouble transform(const QcProjection & projection) const;
-#endif
-
   inline QcVectorDouble vector() const {
     return QcVectorDouble(m_x, m_y);
   }
+
+  void transform(QcGeoCoordinateTrait & other) const;
+  QcVectorDouble transform(const QcProjection & projection) const;
+
+ private:
+  void transform(const QcProjection & projection_to, double & to_x, double & to_y) const;
 
  private:
   // double[2] coordinates
@@ -274,12 +269,11 @@ class QC_EXPORT QcGeoCoordinate : public QcGeoCoordinateTrait
  public:
   QcGeoCoordinate() : QcGeoCoordinateTrait(), m_projection(nullptr) {}
   QcGeoCoordinate(const QcProjection * projection, double x, double y);
+  QcGeoCoordinate(const QcProjection * projection, QcVectorDouble vector);
 
   inline const QcProjection & projection() const { return *m_projection; }; // instance
 
-#ifdef WITH_PROJ4
   QcGeoCoordinate transform(const QcProjection * projection) const;
-#endif
 
  private:
   const QcProjection * m_projection; // class

@@ -6,7 +6,7 @@ QT *= core quick gui network positioning
 
 DEFINES += QTCARTO_LIBRARY
 
-DEFINES += WITH_PROJ4
+# DEFINES += WITH_PROJ4
 linux:!android {
 LIBS += -lproj
 }
