@@ -317,6 +317,34 @@ constexpr qreal MINIMUM_FLICK_VELOCITY = 75.0; // [px/s]
 
 /**************************************************************************************************/
 
+QMouseEvent *
+copy_mouse_event(const QMouseEvent * event)
+{
+  return new QMouseEvent(QEvent::MouseButtonPress,
+                         event->pos(),
+                         event->button(), event->buttons(),
+                         event->modifiers());
+}
+
+QTouchEvent::TouchPoint *
+create_touch_point_from_mouse_event(const QMouseEvent * event, Qt::TouchPointState state)
+{
+  // qInfo();
+
+  // this is only partially filled. But since it is only partially used it works
+  // more robust would be to store a list of QPointFs rather than TouchPoints
+
+  QTouchEvent::TouchPoint * new_point = new QTouchEvent::TouchPoint();
+  new_point->setPos(event->localPos()); // relative to the item
+  new_point->setScenePos(event->windowPos()); // relative to the window
+  new_point->setScreenPos(event->screenPos()); // relative to the screen
+  new_point->setState(state);
+  new_point->setId(0);
+  return new_point;
+}
+
+/**************************************************************************************************/
+
 QcMapGestureArea::QcMapGestureArea(QcMapItem * map)
   : QQuickItem(map),
     m_map(map),
@@ -341,6 +369,11 @@ QcMapGestureArea::QcMapGestureArea(QcMapItem * map)
   m_touch_point_state = TouchPoints0;
   m_pinch_state = PinchInactive;
   m_flick_state = FlickInactive;
+
+  m_press_timer.setSingleShot(true);
+  m_press_timer.setInterval(MINIMUM_PRESS_AND_HOLD_TIME);
+  connect(&m_press_timer, &QTimer::timeout,
+          this, &QcMapGestureArea::handle_press_timer_timeout);
 
   m_press_time.invalidate();
   m_double_press_time.invalidate();
@@ -558,23 +591,6 @@ QcMapGestureArea::set_flick_deceleration(qreal deceleration)
   }
 }
 
-QTouchEvent::TouchPoint *
-create_touch_point_from_mouse_event(QMouseEvent * event, Qt::TouchPointState state)
-{
-  // qInfo();
-
-  // this is only partially filled. But since it is only partially used it works
-  // more robust would be to store a list of QPointFs rather than TouchPoints
-
-  QTouchEvent::TouchPoint * new_point = new QTouchEvent::TouchPoint();
-  new_point->setPos(event->localPos()); // relative to the item
-  new_point->setScenePos(event->windowPos()); // relative to the window
-  new_point->setScreenPos(event->screenPos()); // relative to the screen
-  new_point->setState(state);
-  new_point->setId(0);
-  return new_point;
-}
-
 void
 QcMapGestureArea::clear_touch_data()
 {
@@ -620,6 +636,8 @@ QcMapGestureArea::handle_mouse_press_event(QMouseEvent * event)
   qInfo() << event;
 
   m_mouse_point.reset(create_touch_point_from_mouse_event(event, Qt::TouchPointPressed));
+  m_mouse_event.reset(copy_mouse_event(event));
+  m_press_timer.start();
   m_press_time.start(); // Fixme: start_one_touch_point ?
   if (m_touch_points.isEmpty()) {
     update();
@@ -652,8 +670,8 @@ QcMapGestureArea::handle_mouse_release_event(QMouseEvent * event)
     m_mouse_point.reset(create_touch_point_from_mouse_event(event, Qt::TouchPointReleased));
     if (m_touch_points.isEmpty()) {
       update();
-      if (is_press_and_hold())
-        m_map->on_press_and_hold(event);
+      // if (is_press_and_hold())
+      //   m_map->on_press_and_hold(event);
     }
   }
   // Reset touch point state
@@ -749,6 +767,15 @@ QcMapGestureArea::update()
 
 /**************************************************************************************************/
 
+void
+QcMapGestureArea::handle_press_timer_timeout()
+{
+  qInfo();
+  if (is_press_and_hold())
+    m_map->on_press_and_hold(m_mouse_event.data());
+  m_mouse_point.reset();
+}
+
 bool
 QcMapGestureArea::is_press_and_hold()
 {
@@ -760,13 +787,13 @@ QcMapGestureArea::is_press_and_hold()
   if (is_pan_active() or is_pinch_active())
     return false;
 
-  if (m_press_time.isValid() and m_press_time.elapsed() > MINIMUM_PRESS_AND_HOLD_TIME) {
-    QcVectorDouble p1 = first_point().pos();
-    QcVectorDouble delta_from_press = p1 - m_start_position1;
-    return (qAbs(delta_from_press.x()) <= MAXIMUM_PRESS_AND_HOLD_JITTER or
-            qAbs(delta_from_press.y()) <= MAXIMUM_PRESS_AND_HOLD_JITTER);
-  } else
-    return false;
+  // if (m_press_time.isValid() and m_press_time.elapsed() > MINIMUM_PRESS_AND_HOLD_TIME) {
+  QcVectorDouble p1 = first_point().pos();
+  QcVectorDouble delta_from_press = p1 - m_start_position1;
+  return (qAbs(delta_from_press.x()) <= MAXIMUM_PRESS_AND_HOLD_JITTER or
+          qAbs(delta_from_press.y()) <= MAXIMUM_PRESS_AND_HOLD_JITTER);
+  // } else
+  //   return false;
 }
 
 bool

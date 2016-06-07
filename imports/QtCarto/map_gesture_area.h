@@ -310,8 +310,9 @@ private:
   bool flick_enabled() const { return m_flick.m_enabled; }
   void set_flick_enabled(bool enabled);
 
-private Q_SLOTS:
+private slots:
   void handle_flick_animation_stopped();
+  void handle_press_timer_timeout();
 
 private:
   void stop_pan();
@@ -356,6 +357,8 @@ private:
   qreal m_velocity_x; // [px/s]
   qreal m_velocity_y;
 
+  QTimer m_press_timer; // used to detect press and hold
+  QScopedPointer<QMouseEvent> m_mouse_event;
   QElapsedTimer m_press_time; // used to detect press and hold
   QElapsedTimer m_double_press_time; // used to detect double click
   QcVectorDouble m_start_position1; // first point item position
