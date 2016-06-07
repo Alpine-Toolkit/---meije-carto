@@ -48,6 +48,10 @@ QcWgsCoordinate::QcWgsCoordinate(QcGeoSexagesimalAngle & longitude, QcGeoSexages
   : QcGeoCoordinateTemplate(longitude.decimal(), latitude.decimal())
 {}
 
+QcWgsCoordinate::QcWgsCoordinate(const QcVectorDouble & vector)
+  : QcGeoCoordinateTemplate(vector)
+{}
+
 bool
 QcWgsCoordinate::operator==(const QcWgsCoordinate & other) const
 {

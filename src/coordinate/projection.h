@@ -260,6 +260,7 @@ class QC_EXPORT QcGeoCoordinateTemplate : public QcGeoCoordinateTrait
  public:
   QcGeoCoordinateTemplate() : QcGeoCoordinateTrait() {}
   QcGeoCoordinateTemplate(double x, double y);
+  QcGeoCoordinateTemplate(const QcVectorDouble & vector);
 };
 
 /**************************************************************************************************/
@@ -269,7 +270,7 @@ class QC_EXPORT QcGeoCoordinate : public QcGeoCoordinateTrait
  public:
   QcGeoCoordinate() : QcGeoCoordinateTrait(), m_projection(nullptr) {}
   QcGeoCoordinate(const QcProjection * projection, double x, double y);
-  QcGeoCoordinate(const QcProjection * projection, QcVectorDouble vector);
+  QcGeoCoordinate(const QcProjection * projection, const QcVectorDouble & vector);
 
   inline const QcProjection & projection() const { return *m_projection; }; // instance
 

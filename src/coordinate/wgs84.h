@@ -159,6 +159,7 @@ class QC_EXPORT QcWgsCoordinate : public QcGeoCoordinateTemplate<QcWgs84Projecti
   QcWgsCoordinate();
   QcWgsCoordinate(double longitude, double latitude);
   QcWgsCoordinate(QcGeoSexagesimalAngle & longitude, QcGeoSexagesimalAngle & latitude);
+  QcWgsCoordinate(const QcVectorDouble & vector);
 
   bool operator==(const QcWgsCoordinate & other) const;
 

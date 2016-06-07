@@ -353,7 +353,7 @@ QcGeoCoordinate::QcGeoCoordinate(const QcProjection * projection, double x, doub
   }
 }
 
-QcGeoCoordinate::QcGeoCoordinate(const QcProjection * projection, QcVectorDouble vector)
+QcGeoCoordinate::QcGeoCoordinate(const QcProjection * projection, const QcVectorDouble & vector)
   : QcGeoCoordinate(projection, vector.x(), vector.y())
 {}
 

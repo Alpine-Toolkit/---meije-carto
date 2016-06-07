@@ -52,6 +52,11 @@ QcGeoCoordinateTemplate<Projection>::QcGeoCoordinateTemplate(double x, double y)
   }
 }
 
+template <typename Projection>
+QcGeoCoordinateTemplate<Projection>::QcGeoCoordinateTemplate(const QcVectorDouble & vector)
+  : QcGeoCoordinateTemplate(vector.x(), vector.y())
+{}
+
 /**************************************************************************************************/
 
 #endif /* __PROJECTION_HXX__ */
