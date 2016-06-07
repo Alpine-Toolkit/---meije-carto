@@ -75,6 +75,7 @@ class QC_EXPORT QcVector
   QcVector();
   QcVector(T x, T y);
   QcVector(const QcVector<T> & other);
+  QcVector(const QPoint & other);
   QcVector(const QPointF & other);
   QcVector(const QVector2D & other);
   ~QcVector();
@@ -171,6 +172,9 @@ class QC_EXPORT QcVector
 
 typedef QcVector<int> QcVectorInt; // Fixme: double computation ???
 typedef QcVector<double> QcVectorDouble;
+
+Q_DECLARE_METATYPE(QcVectorInt);
+Q_DECLARE_METATYPE(QcVectorDouble);
 
 #ifndef QT_NO_DEBUG_STREAM
 QC_EXPORT QDebug operator<<(QDebug debug, const QcVectorDouble & vector);

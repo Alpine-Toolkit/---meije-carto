@@ -59,6 +59,11 @@ QcVector<T>::QcVector(const QcVector<T> & other)
 }
 
 template <typename T>
+QcVector<T>::QcVector(const QPoint & other)
+  : m_x(other.x()), m_y(other.y())
+{}
+
+template <typename T>
 QcVector<T>::QcVector(const QPointF & other)
   : m_x(other.x()), m_y(other.y())
 {}
