@@ -36,6 +36,7 @@
 
 // Fixme:
 #include "coordinate/wgs84.h"
+#include "geometry/vector.h"
 #include "map/map_event_router.h"
 
 // QC_BEGIN_NAMESPACE
@@ -61,13 +62,11 @@ class QtCartoDeclarativeModule : public QQmlExtensionPlugin
 
       // Register the 1.0 types
 
+      qRegisterMetaType<QcVectorDouble>();
+      QMetaType::registerEqualsComparator<QcVectorDouble>();
+
       qRegisterMetaType<QcWgsCoordinate>();
       QMetaType::registerEqualsComparator<QcWgsCoordinate>();
-      qRegisterMetaType<QcWebMercatorCoordinate>();
-      QMetaType::registerEqualsComparator<QcWebMercatorCoordinate>();
-      qRegisterMetaType<QcPseudoWebMercatorCoordinate>();
-      QMetaType::registerEqualsComparator<QcPseudoWebMercatorCoordinate>();
-      qRegisterMetaType<QcNormalisedWebMercatorCoordinate>();
       // qRegisterAnimationInterpolator<QGeoCoordinate>(q_coordinateInterpolator);
 
       qRegisterMetaType<QcMapEvent>();
