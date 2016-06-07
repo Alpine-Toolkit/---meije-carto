@@ -139,7 +139,7 @@ QcProjection::QcProjection(const QString & srid,
                            // const QcVectorDouble & y_axis_orientation,
                            const QcInterval2DDouble & wgs84_interval,
                            const QcInterval2DDouble & projected_interval,
-                           const QString & unit, // Fixme: unused
+                           const QString & unit,
                            ProjectionSurface projection_surface,
                            PreserveBit preserve_bit,
                            bool proj4_support
@@ -149,6 +149,7 @@ QcProjection::QcProjection(const QString & srid,
     m_wgs84_origin(wgs84_origin),
     m_wgs84_interval(wgs84_interval),
     m_projected_interval(projected_interval),
+    m_unit(unit),
     m_projection_surface(projection_surface),
     m_preserve_bit(preserve_bit),
     m_projection4(nullptr)
