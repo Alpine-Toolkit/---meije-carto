@@ -99,7 +99,7 @@ QcPlatform::to_json() const
     platform_object[QLatin1Literal("windows_version")] = QSysInfo::windowsVersion();
   if (on_osx())
     platform_object[QLatin1Literal("osx_version")] = QSysInfo::macVersion();
-  platform_object[QLatin1Literal("pretty_product_name")] = QSslSocket::supportsSsl();
+  // platform_object[QLatin1Literal("pretty_product_name")] = QSslSocket::supportsSsl();
 
   QGuiApplication * application = static_cast<QGuiApplication *>(QGuiApplication::instance());
 
