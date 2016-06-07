@@ -40,16 +40,17 @@ QcMapEvent::QcMapEvent()
   : m_button(),
     m_buttons(),
     m_modifiers(),
-    m_was_held(),
+    m_projected_coordinate(),
     m_coordinate()
 {}
 
-QcMapEvent::QcMapEvent(int button, int buttons, int modifiers, int was_held,
+QcMapEvent::QcMapEvent(int button, int buttons, int modifiers,
+                       const QcVectorDouble & projected_coordinate,
                        const QcWgsCoordinate & coordinate)
   : m_button(button),
     m_buttons(buttons),
     m_modifiers(modifiers),
-    m_was_held(was_held),
+    m_projected_coordinate(projected_coordinate),
     m_coordinate(coordinate)
 {}
 
@@ -57,7 +58,7 @@ QcMapEvent::QcMapEvent(const QcMapEvent & other)
   : m_button(other.m_button),
     m_buttons(other.m_buttons),
     m_modifiers(other.m_modifiers),
-    m_was_held(other.m_was_held),
+    m_projected_coordinate(other.m_projected_coordinate),
     m_coordinate(other.m_coordinate)
 {}
 
@@ -71,7 +72,7 @@ QcMapEvent::operator=(const QcMapEvent & other)
     m_button = other.m_button;
     m_buttons = other.m_buttons;
     m_modifiers = other.m_modifiers;
-    m_was_held = other.m_was_held;
+    m_projected_coordinate = other.m_projected_coordinate;
     m_coordinate = other.m_coordinate;
   }
 
@@ -91,8 +92,8 @@ operator<<(QDebug debug, const QcMapEvent & map_event)
     debug << ',';
     debug << map_event.modifiers();
     debug << ',';
-    debug << map_event.was_held();
-    debug << ',';
+    debug << map_event.projected_coordinate();
+    debug << ')';
     debug << map_event.coordinate();
     debug << ')';
 
@@ -122,10 +123,12 @@ QcMapEventRouter::~QcMapEventRouter()
 }
 
 QcMapEvent
-QcMapEventRouter::create_map_event(int button, int buttons, int modifiers, int was_held,
+QcMapEventRouter::create_map_event(const QMouseEvent * event,
+                                   const QcVectorDouble & projected_coordinate,
                                    const QcWgsCoordinate & coordinate)
 {
-  return QcMapEvent(button, buttons, modifiers, was_held, coordinate);
+  return QcMapEvent(event->button(), event->buttons(), event->modifiers(),
+                    projected_coordinate, coordinate);
 }
 
 void

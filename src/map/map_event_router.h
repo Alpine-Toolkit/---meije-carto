@@ -63,12 +63,13 @@ class QcMapEvent
   Q_PROPERTY(int buttons READ buttons CONSTANT)
   Q_PROPERTY(int button READ button CONSTANT)
   Q_PROPERTY(int modifiers READ modifiers CONSTANT)
-  Q_PROPERTY(bool was_held READ was_held CONSTANT)
   Q_PROPERTY(QcWgsCoordinate coordinate READ coordinate CONSTANT)
+  Q_PROPERTY(QcVectorDouble projected_coordinate READ projected_coordinate CONSTANT)
 
 public:
   QcMapEvent();
-  QcMapEvent(int button, int buttons, int modifiers, int was_held,
+  QcMapEvent(int button, int buttons, int modifiers,
+             const QcVectorDouble & projected_coordinate,
              const QcWgsCoordinate & coordinate);
   QcMapEvent(const QcMapEvent & other);
   ~QcMapEvent();
@@ -78,14 +79,14 @@ public:
   int button() const { return m_button; }
   int buttons() const { return m_buttons; }
   int modifiers() const { return m_modifiers; }
-  bool was_held() const { return m_was_held; }
+  const QcVectorDouble & projected_coordinate() const { return m_projected_coordinate; }
   const QcWgsCoordinate & coordinate() const { return m_coordinate; }
 
 private:
   int m_button;
   int m_buttons;
   int m_modifiers;
-  bool m_was_held;
+  QcVectorDouble m_projected_coordinate;
   QcWgsCoordinate m_coordinate;
 };
 
@@ -136,7 +137,8 @@ public:
   QcMapEventRouter();
   ~QcMapEventRouter();
 
-  Q_INVOKABLE QcMapEvent create_map_event(int button, int buttons, int modifiers, int was_held,
+  Q_INVOKABLE QcMapEvent create_map_event(const QMouseEvent * event,
+                                          const QcVectorDouble & projected_coordinate,
                                           const QcWgsCoordinate & coordinate);
 
   Q_INVOKABLE void handle_mouse_press_event(const QcMapEvent & event);

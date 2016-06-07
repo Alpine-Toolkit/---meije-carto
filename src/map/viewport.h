@@ -214,8 +214,9 @@ class QC_EXPORT QcViewport : public QObject
   QcVectorDouble to_projected_coordinate(const QcWgsCoordinate & coordinate) const;
   QcWgsCoordinate from_projected_coordinate(const QcVectorDouble & coordinate) const;
 
-  QcWgsCoordinate to_coordinate(const QcVectorDouble & position, bool clip_to_viewport) const;
-  QcVectorDouble from_coordinate(const QcWgsCoordinate & coordinate, bool clip_to_viewport) const;
+  QcVectorDouble screen_to_projected_coordinate(const QcVectorDouble & screen_position, bool clip_to_viewport) const;
+  QcWgsCoordinate screen_to_coordinate(const QcVectorDouble & position, bool clip_to_viewport) const;
+  QcVectorDouble coordinate_to_screen(const QcWgsCoordinate & coordinate, bool clip_to_viewport) const;
 
   double from_px(double distance_px) const { return tiled_zoom_level().from_px(distance_px); }
   double to_px(double distance) const { return tiled_zoom_level().to_px(distance); }

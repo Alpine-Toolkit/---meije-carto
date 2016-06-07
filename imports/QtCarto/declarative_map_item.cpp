@@ -46,6 +46,16 @@
 
 /**************************************************************************************************/
 
+/*!
+  \qmlproperty MapGestureArea QtLocation::Map::gesture
+
+  Contains the MapGestureArea created with the Map. This covers pan, flick and pinch gestures.
+  Use \c{gesture.enabled: true} to enable basic gestures, or see \l{MapGestureArea} for
+  further details.
+*/
+
+/**************************************************************************************************/
+
 // QC_BEGIN_NAMESPACE
 
 /**************************************************************************************************/
@@ -114,16 +124,6 @@ QcMapItem::componentComplete()
   // m_component_completed = true;
   QQuickItem::componentComplete();
 }
-
-/**************************************************************************************************/
-
-/*!
-  \qmlproperty MapGestureArea QtLocation::Map::gesture
-
-  Contains the MapGestureArea created with the Map. This covers pan, flick and pinch gestures.
-  Use \c{gesture.enabled: true} to enable basic gestures, or see \l{MapGestureArea} for
-  further details.
-*/
 
 /**************************************************************************************************/
 
@@ -206,10 +206,13 @@ void
 QcMapItem::wheelEvent(QWheelEvent * event)
 {
   // qInfo();
-  if (is_interactive())
-    m_gesture_area->handle_wheel_event(event);
-  else
-    QQuickItem::wheelEvent(event);
+  on_wheel_event(event);
+  event->accept();
+
+  // if (is_interactive())
+  //   m_gesture_area->handle_wheel_event(event);
+  // else
+  //   QQuickItem::wheelEvent(event);
 }
 
 bool
@@ -364,6 +367,44 @@ QcMapItem::send_touch_event(QTouchEvent * event)
   }
 }
 
+void
+QcMapItem::on_wheel_event(const QWheelEvent * event)
+{
+  qInfo() << event;
+
+  int zoom_increment = event->angleDelta().y() > 0 ? 1 : -1;
+  stable_zoom_by_increment(event->posF(), zoom_increment);
+}
+
+void
+QcMapItem::on_double_clicked(const QMouseEvent * event)
+{
+  // Fixme: improve arguments
+  qInfo();
+
+  int zoom_increment = 0;
+  int button = event->button();
+  if (button == Qt::LeftButton)
+    zoom_increment = 1;
+  else if (button == Qt::RightButton)
+    zoom_increment = -1;
+  stable_zoom_by_increment(event->pos(), zoom_increment);
+}
+
+void
+QcMapItem::on_press_and_hold(const QMouseEvent * event)
+{
+  // Fixme: improve arguments
+  qInfo();
+
+  QcVectorDouble position_px(event->pos());
+  QcVectorDouble projected_coordinate = to_projected_coordinate(position_px);
+  QcWgsCoordinate coordinate = to_coordinate(position_px); // Fixme: from projected_coordinate but nan check
+  QcMapEvent map_event = m_map_event_router.create_map_event(event, projected_coordinate, coordinate);
+  m_map_event_router.handle_mouse_press_and_hold_event(map_event);
+  update();
+}
+
 /**************************************************************************************************/
 
 void
@@ -500,10 +541,17 @@ QcMapItem::updatePaintNode(QSGNode * old_node, UpdatePaintNodeData *)
   If \a cliptoViewPort is \c true, or not supplied then returns an invalid coordinate if
   \a position is not within the current viewport.
 */
+
+QcVectorDouble
+QcMapItem::to_projected_coordinate(const QcVectorDouble & position_px, bool clip_to_viewport) const
+{
+  return m_viewport->screen_to_projected_coordinate(position_px, clip_to_viewport);
+}
+
 QcWgsCoordinate
 QcMapItem::to_coordinate(const QcVectorDouble & position_px, bool clip_to_viewport) const
 {
-  return m_viewport->to_coordinate(position_px, clip_to_viewport);
+  return m_viewport->screen_to_coordinate(position_px, clip_to_viewport);
 }
 
 QGeoCoordinate
@@ -524,7 +572,7 @@ QcMapItem::to_coordinate_qt(const QVector2D & position_px, bool clip_to_viewport
 QcVectorDouble
 QcMapItem::from_coordinate(const QcWgsCoordinate & coordinate, bool clip_to_viewport) const
 {
-  return m_viewport->from_coordinate(coordinate, clip_to_viewport);
+  return m_viewport->coordinate_to_screen(coordinate, clip_to_viewport);
 }
 
 QVector2D

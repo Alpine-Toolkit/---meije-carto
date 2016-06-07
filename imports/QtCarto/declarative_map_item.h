@@ -45,6 +45,7 @@
 #include <QGeoCoordinate>
 #include <QHash>
 #include <QQuickItem>
+#include <QTouchEvent>
 
 /**************************************************************************************************/
 
@@ -105,6 +106,7 @@ public:
   Q_INVOKABLE QcMapScale make_scale(unsigned int max_length_px) const;
 
   // Fixme: QVector2D use float ...
+  Q_INVOKABLE QcVectorDouble to_projected_coordinate(const QcVectorDouble & position_px, bool clip_to_viewport = true) const;
   Q_INVOKABLE QcWgsCoordinate to_coordinate(const QcVectorDouble & position, bool clip_to_viewport = true) const;
   Q_INVOKABLE QcWgsCoordinate to_coordinate(const QPointF & position, bool clip_to_viewport = true) const {
     return to_coordinate(QcVectorDouble(position), clip_to_viewport);
@@ -125,6 +127,11 @@ public:
   QcMapEventRouter * map_event_router() { return &m_map_event_router; }
 
   bool childMouseEventFilter(QQuickItem * item, QEvent * event) Q_DECL_OVERRIDE ;
+
+  // called from map gesture area
+  void on_wheel_event(const QWheelEvent * event);
+  void on_press_and_hold(const QMouseEvent * event);
+  void on_double_clicked(const QMouseEvent * event);
 
 signals:
   void colorChanged(const QColor & color);

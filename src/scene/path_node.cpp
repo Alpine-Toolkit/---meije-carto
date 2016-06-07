@@ -144,14 +144,14 @@ void
 QcPathNode::update(const QcPathDouble & path)
 {
   QList<QcVectorDouble> path_vertexes;
+  // Fixme:
   const QcInterval2DDouble & middle_interval = m_viewport->middle_interval();
-  QcVectorDouble inf(middle_interval.x().inf(), middle_interval.y().inf());
-  qInfo() << middle_interval << inf;
+  QcVectorDouble inf_position(middle_interval.x().inf(), middle_interval.y().sup());
   for (const auto & vertex : path.vertexes()) {
-    // qInfo() << vertex << inf << (vertex - inf);
-    path_vertexes << m_viewport->to_px(vertex - inf);
+    QcVectorDouble screen_position = m_viewport->to_px((vertex - inf_position) * QcVectorDouble(1., -1.));
+    qInfo() << vertex << screen_position;
+    path_vertexes << screen_position;
   }
-  qInfo() << middle_interval << inf << path_vertexes;
 
   int number_of_path_vertexes = path_vertexes.size();
   int number_of_segments = number_of_path_vertexes -1;

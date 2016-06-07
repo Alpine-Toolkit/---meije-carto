@@ -173,33 +173,33 @@ QcMapItem {
             }
         }
 
-        onDoubleClicked: {
-            console.info("onDoubleClicked")
-            var position_px = Qt.point(mouse.x, mouse.y);
-            var zoom_increment = 0;
-            if (mouse.button === Qt.LeftButton)
-                zoom_increment = 1;
-            else if (mouse.button === Qt.RightButton)
-                zoom_increment = -1;
-            stable_zoom_by_increment(position_px, zoom_increment);
+        // onDoubleClicked: {
+        //     console.info("onDoubleClicked")
+        //     var position_px = Qt.point(mouse.x, mouse.y);
+        //     var zoom_increment = 0;
+        //     if (mouse.button === Qt.LeftButton)
+        //         zoom_increment = 1;
+        //     else if (mouse.button === Qt.RightButton)
+        //         zoom_increment = -1;
+        //     stable_zoom_by_increment(position_px, zoom_increment);
+        //
+        //     last_x = -1;
+        //     last_y = -1;
+        // }
 
-            last_x = -1;
-            last_y = -1;
-        }
-
-        onPressAndHold:{
-            // Check move distance is small enough
-            if (Math.abs(press_x - mouse.x ) < jitter_threshold
-            &&  Math.abs(press_y - mouse.y ) < jitter_threshold) {
-                console.info("onPressAndHold", last_coordinate)
-                // var map_event1 = new QcMapEvent(mouse.button, mouse.buttons, mouse.modifiers, mouse.wasHeld, last_coordinate)
-                // console.info(map_event1)
-                var map_event = map.map_event_router.create_map_event(mouse.button, mouse.buttons, mouse.modifiers, mouse.wasHeld, last_coordinate)
-                console.info(map_event)
-                map.map_event_router.handle_mouse_press_and_hold_event(map_event)
-                map.update()
-            }
-        }
+        // onPressAndHold:{
+        //     // Check move distance is small enough
+        //     if (Math.abs(press_x - mouse.x ) < jitter_threshold
+        //     &&  Math.abs(press_y - mouse.y ) < jitter_threshold) {
+        //         console.info("onPressAndHold", last_coordinate)
+        //         // var map_event1 = new QcMapEvent(mouse.button, mouse.buttons, mouse.modifiers, mouse.wasHeld, last_coordinate)
+        //         // console.info(map_event1)
+        //         var map_event = map.map_event_router.create_map_event(mouse.button, mouse.buttons, mouse.modifiers, mouse.wasHeld, last_coordinate)
+        //         console.info(map_event)
+        //         map.map_event_router.handle_mouse_press_and_hold_event(map_event)
+        //         map.update()
+        //     }
+        // }
     }
 
     ToolBar {

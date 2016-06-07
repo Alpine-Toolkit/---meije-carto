@@ -277,6 +277,9 @@ private:
 
   void update();
 
+  bool is_press_and_hold();
+  bool is_double_click();
+
   // Create general data relating to the touch points
   void touch_point_state_machine();
   void start_one_touch_point();
@@ -353,6 +356,8 @@ private:
   qreal m_velocity_x; // [px/s]
   qreal m_velocity_y;
 
+  QElapsedTimer m_press_time; // used to detect press and hold
+  QElapsedTimer m_double_press_time; // used to detect double click
   QcVectorDouble m_start_position1; // first point item position
   QcVectorDouble m_current_position; // first point or middle item position, then updated
   QcWgsCoordinate m_start_coordinate; // first point or middle coordinate, then updated when mouse pointer slides on the map

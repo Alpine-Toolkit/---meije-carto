@@ -302,6 +302,11 @@ constexpr int QML_MAP_FLICK_DEFAULT_DECELERATION = 2500;
 constexpr qreal QML_MAP_FLICK_MINIMUM_DECELERATION = 500.;
 constexpr qreal QML_MAP_FLICK_MAXIMUM_DECELERATION = 10000.;
 
+constexpr int MINIMUM_PRESS_AND_HOLD_TIME = 1000; // [ms]
+constexpr qreal MAXIMUM_PRESS_AND_HOLD_JITTER = 30.;
+
+constexpr qreal MAXIMUM_DOUBLE_PRESS_TIME = 300.; // [ms]
+
 constexpr int QML_MAP_FLICK_VELOCITY_SAMPLE_PERIOD = 50; // [s]
 
 // FlickThreshold determines how far the "mouse" must have moved before we perform a flick.
@@ -336,6 +341,9 @@ QcMapGestureArea::QcMapGestureArea(QcMapItem * map)
   m_touch_point_state = TouchPoints0;
   m_pinch_state = PinchInactive;
   m_flick_state = FlickInactive;
+
+  m_press_time.invalidate();
+  m_double_press_time.invalidate();
 }
 
 QcMapGestureArea::~QcMapGestureArea()
@@ -612,8 +620,12 @@ QcMapGestureArea::handle_mouse_press_event(QMouseEvent * event)
   qInfo() << event;
 
   m_mouse_point.reset(create_touch_point_from_mouse_event(event, Qt::TouchPointPressed));
-  if (m_touch_points.isEmpty())
+  m_press_time.start(); // Fixme: start_one_touch_point ?
+  if (m_touch_points.isEmpty()) {
     update();
+    if (is_double_click())
+      m_map->on_double_clicked(event);
+  }
   event->accept();
 }
 
@@ -638,10 +650,15 @@ QcMapGestureArea::handle_mouse_release_event(QMouseEvent * event)
     // and we reset the point already in handleTouchUngrabEvent
     // Fixme: ???
     m_mouse_point.reset(create_touch_point_from_mouse_event(event, Qt::TouchPointReleased));
-    if (m_touch_points.isEmpty())
+    if (m_touch_points.isEmpty()) {
       update();
+      if (is_press_and_hold())
+        m_map->on_press_and_hold(event);
+    }
   }
+  // Reset touch point state
   m_touch_point_state = TouchPoints0;
+  m_press_time.invalidate();
   event->accept();
 }
 
@@ -663,8 +680,8 @@ QcMapGestureArea::handle_touch_ungrab_event()
   // qInfo();
 
   m_touch_points.clear();
-  //this is needed since in some cases mouse release is not delivered
-  //(second touch point brakes mouse synthesized events)
+  // this is needed since in some cases mouse release is not delivered
+  // (second touch point brakes mouse synthesized events)
   m_mouse_point.reset();
   update();
 }
@@ -679,6 +696,7 @@ QcMapGestureArea::handle_touch_event(QTouchEvent * event)
   if (event->touchPoints().count() >= 2)
     event->accept();
   else
+    // Fixme: press_and_hold, double click
     event->ignore();
   update();
 }
@@ -688,14 +706,8 @@ QcMapGestureArea::handle_wheel_event(QWheelEvent * event)
 {
   qInfo() << event;
 
-  // Fixme: here ???
-
-  if (!m_map)
-    return;
-
-  int zoom_increment = event->angleDelta().y() > 0 ? 1 : -1;
-  m_map->stable_zoom_by_increment(event->posF(), zoom_increment);
-  event->accept();
+  if (m_map)
+    m_map->on_wheel_event(event);
 }
 
 /**************************************************************************************************/
@@ -733,6 +745,42 @@ QcMapGestureArea::update()
     pan_state_machine();
 
   qInfo() << "leave" << m_touch_point_state << m_flick_state << m_pinch_state;
+}
+
+/**************************************************************************************************/
+
+bool
+QcMapGestureArea::is_press_and_hold()
+{
+  qInfo();
+
+  if (!m_map)
+    return false;
+
+  if (is_pan_active() or is_pinch_active())
+    return false;
+
+  if (m_press_time.isValid() and m_press_time.elapsed() > MINIMUM_PRESS_AND_HOLD_TIME) {
+    QcVectorDouble p1 = first_point().pos();
+    QcVectorDouble delta_from_press = p1 - m_start_position1;
+    return (qAbs(delta_from_press.x()) <= MAXIMUM_PRESS_AND_HOLD_JITTER or
+            qAbs(delta_from_press.y()) <= MAXIMUM_PRESS_AND_HOLD_JITTER);
+  } else
+    return false;
+}
+
+bool
+QcMapGestureArea::is_double_click()
+{
+  if (!m_map)
+    return false;
+
+  if (is_pan_active() or is_pinch_active())
+    return false;
+
+  bool status = m_double_press_time.isValid() and m_double_press_time.elapsed() <= MAXIMUM_DOUBLE_PRESS_TIME;
+  m_double_press_time.restart();
+  return status;
 }
 
 /**************************************************************************************************/

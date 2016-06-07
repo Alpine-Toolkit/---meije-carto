@@ -240,7 +240,7 @@ QcViewport::set_viewport_size(const QSize & size, float device_pixel_ratio)
 void
 QcViewport::set_projection(const QcProjection * projection)
 {
-  m_projection = projection; // passing ‘const QcProjection’ as ‘this’ argument discards qualifiers
+  m_projection = projection; // Fixme: passing ‘const QcProjection’ as ‘this’ argument discards qualifiers
   m_is_web_mercator = *projection == QcWebMercatorCoordinate().cls_projection;
 }
 
@@ -329,14 +329,14 @@ QcViewport::stable_zoom(const QcVectorDouble & screen_position, unsigned int zoo
   // Fixme: (from map_gesture_area) event position == pre_zoom_point ???
 
   // Fixme: ???
-  QcWgsCoordinate coordinate = to_coordinate(screen_position, false);
-  QcVectorDouble pre_zoom_point = from_coordinate(coordinate, false);
+  QcWgsCoordinate coordinate = screen_to_coordinate(screen_position, false);
+  QcVectorDouble pre_zoom_point = coordinate_to_screen(coordinate, false);
   if (!isnan(pre_zoom_point.x()))
     qWarning() << "pre is undefined";
 
   set_zoom_level(zoom_level);
 
-  QcVectorDouble post_zoom_point = from_coordinate(coordinate, false);
+  QcVectorDouble post_zoom_point = coordinate_to_screen(coordinate, false);
   if (!isnan(post_zoom_point.x()))
     qWarning() << "post is undefined";
 
@@ -346,7 +346,7 @@ QcViewport::stable_zoom(const QcVectorDouble & screen_position, unsigned int zoo
     QcVectorDouble delta_px = post_zoom_point - pre_zoom_point;
     // Fixme: improve
     QcVectorDouble map_center_point = QcVectorDouble(width(), height()) * .5 + delta_px;
-    QcWgsCoordinate center_coordinate = to_coordinate(map_center_point, false);
+    QcWgsCoordinate center_coordinate = screen_to_coordinate(map_center_point, false);
     set_center(center_coordinate);
   }
 }
@@ -474,10 +474,10 @@ QcViewport::update_area()
     If \a cliptoViewPort is \c true, or not supplied then returns an invalid coordinate if
     \a position is not within the current viewport.
 */
-QcWgsCoordinate
-QcViewport::to_coordinate(const QcVectorDouble & screen_position, bool clip_to_viewport) const
+QcVectorDouble
+QcViewport::screen_to_projected_coordinate(const QcVectorDouble & screen_position, bool clip_to_viewport) const
 {
-  // qInfo() << screen_position << clip_to_viewport;
+  qInfo() << screen_position << clip_to_viewport;
 
   // Fixme: purpose
   if (clip_to_viewport) {
@@ -485,14 +485,24 @@ QcViewport::to_coordinate(const QcVectorDouble & screen_position, bool clip_to_v
     double x = screen_position.x();
     double y = screen_position.y();
     if ((x < 0) || (width() < x) || (y < 0) || (height() < y))
-      return QcWgsCoordinate();
+      return QcVectorDouble(qQNaN(), qQNaN());
   }
 
   const QcInterval2DDouble & interval = m_viewport_polygon.interval();
   QcVectorDouble projected_position(interval.x().inf(), interval.y().sup());
   projected_position += from_px(screen_position) * QcVectorDouble(1., -1.);
 
-  return from_projected_coordinate(projected_position);
+  return projected_position;
+}
+
+QcWgsCoordinate
+QcViewport::screen_to_coordinate(const QcVectorDouble & screen_position, bool clip_to_viewport) const
+{
+  QcVectorDouble projected_position = screen_to_projected_coordinate(screen_position, clip_to_viewport);
+  if (isnan(projected_position.x()))
+    return QcWgsCoordinate();
+  else
+    return from_projected_coordinate(projected_position);
 }
 
 /*!
@@ -504,7 +514,7 @@ QcViewport::to_coordinate(const QcVectorDouble & screen_position, bool clip_to_v
     \a coordinate is not within the current viewport.
 */
 QcVectorDouble
-QcViewport::from_coordinate(const QcWgsCoordinate & coordinate, bool clip_to_viewport) const
+QcViewport::coordinate_to_screen(const QcWgsCoordinate & coordinate, bool clip_to_viewport) const
 {
   // Note: it is not a bijection when m_number_of_full_maps is > 1
 
