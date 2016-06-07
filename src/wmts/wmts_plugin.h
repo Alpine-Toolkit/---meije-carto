@@ -105,6 +105,7 @@ public:
   const QString & name() const { return m_name; }
   const QString & title() const { return m_title; }
   QcTileMatrixSet & tile_matrix_set() { return *m_tile_matrix_set; } // Fixme: const ?
+  const QcProjection & projection() { return m_tile_matrix_set->projection(); }
 
   // Fixme: & or *
   QNetworkAccessManager * network_manager() { return m_network_manager; }

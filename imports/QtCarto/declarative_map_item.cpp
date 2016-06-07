@@ -603,8 +603,10 @@ QVariantList
 QcMapItem::plugins() const
 {
   QVariantList plugins;
+  const QcProjection & projection = m_viewport->projection();
   for (auto * plugin : m_plugin_manager.plugins())
-    plugins << QVariant::fromValue(QcWmtsPluginData(plugin->name(), plugin->title()));
+    if (plugin->projection() == projection)
+      plugins << QVariant::fromValue(QcWmtsPluginData(plugin->name(), plugin->title()));
   return plugins;
 }
 
@@ -654,7 +656,7 @@ QcMapItem::projections() const
   QSet<QString> projections;
   for (auto * plugin : m_plugin_manager.plugins())
     // Fixme: to func
-    projections.insert(plugin->tile_matrix_set().projection().title());
+    projections.insert(plugin->projection().title());
   return projections.toList();
 }
 
