@@ -49,6 +49,7 @@ QcMapItem {
         // map.plugin_layers('geoportail')[0].status = true
         // map.plugin_layers('artic-web-map')[0].status = true
         set_scale()
+        map.gps_horizontal_precision = 100.;
     }
 
     center {

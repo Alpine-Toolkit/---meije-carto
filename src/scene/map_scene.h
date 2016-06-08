@@ -130,14 +130,11 @@ public:
   QcMapLayerScene * add_layer(const QcWmtsPluginLayer * plugin_layer);
   void remove_layer(const QcWmtsPluginLayer * plugin_layer);
 
-  void update_path(const QcPathDouble & path) {
-    m_path = path;
-    m_dirty_path = true;
-  }
+  void update_path(const QcPathDouble & path);
+  void set_dirty_path();
 
-  void set_dirty_path() {
-    m_dirty_path = true;
-  }
+  void set_gps_horizontal_precision(double horizontal_precision);
+  double gps_horizontal_precision() const { return m_gps_horizontal_precision; }
 
 private:
   float width() { return m_viewport->width(); }
@@ -151,6 +148,9 @@ private:
 
   QcPathDouble m_path;
   bool m_dirty_path;
+
+  double m_gps_horizontal_precision;
+  bool m_dirty_location_circle;
 };
 
 /**************************************************************************************************/

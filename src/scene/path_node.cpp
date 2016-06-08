@@ -81,7 +81,7 @@ QSGGeometry::Attribute PathPoint2D_Attributes[] = {
 };
 
 QSGGeometry::AttributeSet PathPoint2D_AttributeSet = {
-    2, // count
+    2, // count Fixme: ???
     sizeof(PathPoint2D), // stride
     PathPoint2D_Attributes
 };
@@ -134,9 +134,9 @@ QcPathNode::QcPathNode(const QcViewport * viewport)
   state->g = 0;
   state->b = 1.;
   state->a = 1.;
-  state->cap_type = 1;
-  state->line_join = 1;
-  state->antialias_diameter = 1.;
+  // state->cap_type = 1;
+  // state->line_join = 1;
+  // state->antialias_diameter = 1.;
   material->setFlag(QSGMaterial::Blending);
   m_geometry_node->setMaterial(material);
   m_geometry_node->setFlag(QSGNode::OwnsMaterial);

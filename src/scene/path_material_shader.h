@@ -44,9 +44,9 @@
 struct QcPathMaterialShaderState
 {
   float r, g, b, a;
-  int cap_type;
-  int line_join;
-  float antialias_diameter;
+  // int cap_type;
+  // int line_join;
+  // float antialias_diameter;
 };
 
 class QcPathMaterialShader : public QSGSimpleMaterialShader<QcPathMaterialShaderState>

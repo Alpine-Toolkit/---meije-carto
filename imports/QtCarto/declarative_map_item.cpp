@@ -678,19 +678,19 @@ QcMapItem::set_bearing(double bearing)
 double
 QcMapItem::bearing() const
 {
-  return 0.; // Fixme:
+  return m_viewport->bearing();
 }
 
 void
 QcMapItem::set_gps_horizontal_precision(double horizontal_precision)
 {
-  Q_UNUSED(horizontal_precision)
+  m_map_view->set_gps_horizontal_precision(horizontal_precision);
 }
 
 double
 QcMapItem::gps_horizontal_precision() const
 {
-  return 0.; // Fixme:
+  return m_map_view->gps_horizontal_precision();
 }
 
 QcMapScale

@@ -65,6 +65,27 @@ QcMapScene::remove_layer(const QcWmtsPluginLayer * plugin_layer)
   }
 }
 
+void
+QcMapScene::update_path(const QcPathDouble & path) {
+  m_path = path;
+  m_dirty_path = true;
+}
+
+void
+QcMapScene::set_dirty_path()
+{
+  m_dirty_path = true;
+  // Fixme:
+  m_dirty_location_circle = true;
+}
+
+void
+QcMapScene::set_gps_horizontal_precision(double horizontal_precision)
+{
+  m_gps_horizontal_precision = horizontal_precision;
+  m_dirty_location_circle = true;
+}
+
 QSGNode *
 QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
 {
@@ -122,6 +143,12 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
     if (m_path.number_of_edges())
       map_root_node->path_node->update(m_path);
     m_dirty_path = false;
+  }
+
+  if (m_dirty_location_circle) {
+    qInfo() << "Location circle is dirty";
+    map_root_node->location_circle_node->update(m_gps_horizontal_precision);
+    m_dirty_location_circle = false;
   }
 
   // Fixme: map_root_node->grid_node->update();

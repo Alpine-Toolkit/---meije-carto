@@ -43,7 +43,7 @@
 
 struct QcLocationCircleMaterialShaderState
 {
-    float r, g, b, a;
+  float r, g, b, a;
 };
 
 class QcLocationCircleMaterialShader : public QSGSimpleMaterialShader<QcLocationCircleMaterialShaderState>

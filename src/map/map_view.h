@@ -125,6 +125,11 @@ class QC_EXPORT QcMapView : public QObject
     m_map_scene->update_path(path);
   }
 
+  void set_gps_horizontal_precision(double horizontal_precision) {
+    m_map_scene->set_gps_horizontal_precision(horizontal_precision);
+  }
+  double gps_horizontal_precision() const { return m_map_scene->gps_horizontal_precision(); }
+
  signals:
   void scene_graph_changed();
 

@@ -48,10 +48,11 @@ class QcLocationCircleNode : public QSGOpacityNode
 public:
   QcLocationCircleNode(const QcViewport * viewport);
 
-  void update();
+  void update(double gps_horizontal_precision);
 
 private:
   const QcViewport * m_viewport; // Fixme: &
+  QSGGeometryNode * m_geometry_node;
 };
 
 /**************************************************************************************************/

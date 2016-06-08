@@ -7,10 +7,16 @@ const float linewidth = 1.5;
 const float M_PI = 3.14159265358979323846;
 const float SQRT_2 = 1.4142135623730951;
 
+/**************************************************************************************************/
+
 uniform lowp float qt_Opacity;
+
 uniform lowp vec4 color;
 
+/**************************************************************************************************/
+
 varying highp vec2 tex_coord;
+varying highp float radius;
 
 /**************************************************************************************************/
 
@@ -99,7 +105,7 @@ outline(float distance, float linewidth, float antialias, vec4 stroke, vec4 fill
 float
 marker_ring(vec2 P)
 {
-  return length(P) - 100.;
+  return length(P) - radius;
 }
 
 /**************************************************************************************************/

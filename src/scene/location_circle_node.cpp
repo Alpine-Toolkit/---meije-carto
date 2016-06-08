@@ -38,47 +38,97 @@
 
 /**************************************************************************************************/
 
+struct LocationCirclePoint2D {
+  float x;
+  float y;
+  float u;
+  float v;
+  float radius;
+  // float r;
+  // float g;
+  // float b;
+  // float a;
+
+  void set(const QcVectorDouble & point,
+           const QcVectorDouble & uv,
+           float _radius
+           ) {
+    x = point.x();
+    y = point.y();
+    u = uv.x();
+    v = uv.y();
+    radius = _radius;
+    // r;
+    // g;
+    // b;
+    // a;
+  }
+};
+
+QSGGeometry::Attribute LocationCirclePoint2D_Attributes[] = {
+  QSGGeometry::Attribute::create(0, 2, GL_FLOAT, true),  // xy
+  QSGGeometry::Attribute::create(1, 2, GL_FLOAT, false), // uv
+  QSGGeometry::Attribute::create(2, 1, GL_FLOAT, false), // radius
+  // QSGGeometry::Attribute::create(5, 4, GL_FLOAT, false)  // colour
+};
+
+QSGGeometry::AttributeSet LocationCirclePoint2D_AttributeSet = {
+    3, // count Fixme: ???
+    sizeof(LocationCirclePoint2D), // stride
+    LocationCirclePoint2D_Attributes
+};
+
+/**************************************************************************************************/
+
 QcLocationCircleNode::QcLocationCircleNode(const QcViewport * viewport)
   : QSGOpacityNode(),
-    m_viewport(viewport)
+    m_viewport(viewport),
+    m_geometry_node(new QSGGeometryNode())
 {
   setOpacity(.25); // 1. black
 
-  QSGGeometryNode * geometry_node = new QSGGeometryNode();
-  // QSGGeometry * location_circle_geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 1);
-  // location_circle_geometry->setLineWidth(100); // point size, max is 255
-  // location_circle_geometry->setDrawingMode(GL_POINTS);
-  QSGGeometry * location_circle_geometry = new QSGGeometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 4);
-  location_circle_geometry->setDrawingMode(GL_TRIANGLE_STRIP);
-  geometry_node->setGeometry(location_circle_geometry);
-  geometry_node->setFlag(QSGNode::OwnsGeometry);
-
-  QSGGeometry::TexturedPoint2D * vertices = location_circle_geometry->vertexDataAsTexturedPoint2D();
-  float x = .5 * m_viewport->width(); // Fixme: vector
-  float y = .5 * m_viewport->height();
-  float radius = 110.;
-  vertices[0].set(x - radius, y - radius, -110, -110);
-  vertices[1].set(x - radius, y + radius, -110, 110);
-  vertices[2].set(x + radius, y - radius, 110, -110);
-  vertices[3].set(x + radius, y + radius, 110, 110);
+  QSGGeometry * geometry = new QSGGeometry(LocationCirclePoint2D_AttributeSet, 0); // Fixme:
+  geometry->setDrawingMode(GL_TRIANGLE_STRIP);
+  m_geometry_node->setGeometry(geometry);
+  m_geometry_node->setFlag(QSGNode::OwnsGeometry);
 
   QSGSimpleMaterial<QcLocationCircleMaterialShaderState> * material = QcLocationCircleMaterialShader::createMaterial();
-  material->state()->r = 0;
+  material->state()->r = 0; // Fixme: QColor
   material->state()->g = 0;
   material->state()->b = 1;
   material->state()->a = 1.;
   // QSGFlatColorMaterial * material = new QSGFlatColorMaterial();
   // material->setColor(QColor("black"));
   material->setFlag(QSGMaterial::Blending);
-  geometry_node->setMaterial(material);
-  geometry_node->setFlag(QSGNode::OwnsMaterial);
+  m_geometry_node->setMaterial(material);
+  m_geometry_node->setFlag(QSGNode::OwnsMaterial);
 
-  appendChildNode(geometry_node);
+  appendChildNode(m_geometry_node);
 }
 
 void
-QcLocationCircleNode::update()
+QcLocationCircleNode::update(double gps_horizontal_precision)
 {
+  // QSGGeometry * location_circle_geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 1);
+  // location_circle_geometry->setLineWidth(100); // point size, max is 255
+  // location_circle_geometry->setDrawingMode(GL_POINTS);
+
+  QSGGeometry * geometry = new QSGGeometry(LocationCirclePoint2D_AttributeSet, 4);
+  geometry->setDrawingMode(GL_TRIANGLE_STRIP);
+  m_geometry_node->setGeometry(geometry);
+  m_geometry_node->setFlag(QSGNode::OwnsGeometry);
+
+  LocationCirclePoint2D * vertices = static_cast<LocationCirclePoint2D *>(geometry->vertexData());
+  float x = .5 * m_viewport->width(); // Fixme: vector
+  float y = .5 * m_viewport->height();
+  float radius = qMax(m_viewport->to_px(gps_horizontal_precision), 10.); // Fixme
+  qInfo() << gps_horizontal_precision << radius;
+  float margin = 10;
+  float size = radius + margin;
+  vertices[0].set(QcVectorDouble(x - size, y - size), QcVectorDouble(-size, -size), radius);
+  vertices[1].set(QcVectorDouble(x - size, y + size), QcVectorDouble(-size,  size), radius);
+  vertices[2].set(QcVectorDouble(x + size, y - size), QcVectorDouble( size, -size), radius);
+  vertices[3].set(QcVectorDouble(x + size, y + size), QcVectorDouble( size,  size), radius);
 }
 
 /**************************************************************************************************/

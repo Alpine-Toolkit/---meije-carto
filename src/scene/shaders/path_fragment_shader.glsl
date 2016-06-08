@@ -7,12 +7,15 @@
 
 /* *********************************************************************************************** */
 
+const int cap_type = 1;
+const int line_join = 1;
+const float antialias_diameter = 1;
+
+/* *********************************************************************************************** */
+
 uniform lowp float qt_Opacity;
 
-uniform vec4 colour; // = vec4(1);
-uniform int cap_type; // = 1;
-uniform int line_join; // = 1;
-uniform float antialias_diameter; // = 1;
+uniform vec4 colour;
 
 /* *********************************************************************************************** */
 
