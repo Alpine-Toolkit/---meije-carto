@@ -43,6 +43,8 @@
 
 // QC_BEGIN_NAMESPACE
 
+/**************************************************************************************************/
+
 /*
  * wptType
  * <...
@@ -70,6 +72,10 @@
  * </...>
  */
 
+/**************************************************************************************************/
+
+// Fixme: QcGpxWayPoint
+
 class QC_EXPORT QcWayPoint
 {
  public:
@@ -81,59 +87,91 @@ class QC_EXPORT QcWayPoint
 
   // bool operator==(const QcWayPoint & rhs) const;
 
-  QcWgsElevationCoordinate coordinate() const;
-  void set_coordinate(const QcWgsElevationCoordinate & coordinate);
+  // Elevation (in meters) of the point.
+  QcWgsElevationCoordinate coordinate() const { return m_coordinate; }
+  void set_coordinate(const QcWgsElevationCoordinate & coordinate) { m_coordinate = coordinate; }
 
-  QDateTime time() const;
-  void set_time(const QDateTime & time);
+  /* Creation/modification timestamp for element. Date and time in are
+   * in Univeral Coordinated Time (UTC), not local time! Conforms to ISO
+   * 8601 specification for date/time representation. Fractional seconds
+   * are allowed for millisecond timing in tracklogs.
+   */
+  QDateTime time() const { return m_time; }
+  void set_time(const QDateTime & time) { m_time = time; }
 
-  qreal magnetic_variation() const;
-  void set_magnetic_variation(qreal magnetic_variation);
+  // Magnetic variation (in degrees) at the point.
+  qreal magnetic_variation() const { return m_magnetic_variation; }
+  void set_magnetic_variation(qreal magnetic_variation) { m_magnetic_variation = magnetic_variation; }
 
-  qreal geoid_height() const;
-  void set_geoid_height(qreal geoid_height);
+  // Height (in meters) of geoid (mean sea level) above WGS84 earth
+  // ellipsoid. As defined in NMEA GGA message.
+  qreal geoid_height() const { return m_geoid_height; }
+  void set_geoid_height(qreal geoid_height) { m_geoid_height = geoid_height; }
 
-  const QString & name() const;
-  void set_name(const QString & name);
+  /* The GPS name of the waypoint. This field will be transferred to
+   * and from the GPS. GPX does not place restrictions on the length
+   * of this field or the characters contained in it. It is up to the
+   * receiving application to validate the field before sending it to
+   * the GPS.
+   */
+  const QString & name() const { return m_name; }
+  void set_name(const QString & name) { m_name = name; }
 
-  const QString & comment() const;
-  void set_comment(const QString & comment);
+  // GPS waypoint comment. Sent to GPS as comment.
+  const QString & comment() const { return m_comment; }
+  void set_comment(const QString & comment) { m_comment = comment; }
 
-  const QString & description() const;
-  void set_description(const QString & description);
+  // A text description of the element. Holds additional information
+  // about the element intended for the user, not the GPS.
+  const QString & description() const { return m_description; }
+  void set_description(const QString & description) { m_description = description; }
 
-  const QString & source() const;
-  void set_source(const QString & source);
+  // Source of data. Included to give user some idea of reliability and
+  // accuracy of data. "Garmin eTrex", "USGS quad Boston North", e.g.
+  const QString & source() const { return m_source; }
+  void set_source(const QString & source) { m_source = source; }
 
-  const QList<QString> link() const;
-  void add_link(const QString & link);
+  // Link to additional information about the waypoint.
+  const QList<QString> link() const { return m_link; }
+  void add_link(const QString & link) { m_link.append(link); }
 
-  const QString & symbol() const;
-  void set_symbol(const QString & symbol);
+  // Text of GPS symbol name. For interchange with other programs, use
+  // the exact spelling of the symbol as displayed on the GPS. If the
+  // GPS abbreviates words, spell them out.
+  const QString & symbol() const { return m_symbol; }
+  void set_symbol(const QString & symbol) { m_symbol = symbol; }
 
-  const QString & type() const;
-  void set_type(const QString & type);
+  // Type (classification) of the waypoint.
+  const QString & type() const { return m_type; }
+  void set_type(const QString & type) { m_type = type; }
 
-  const QString & fix_type() const;
-  void set_fix_type(const QString & fix_type);
+  // Type of GPX fix.
+  const QString & fix_type() const { return m_fix_type; }
+  void set_fix_type(const QString & fix_type) { m_fix_type = fix_type; }
 
-  int number_of_satellites() const;
-  void set_number_of_satellites(int number_of_satellites);
+  // Number of satellites used to calculate the GPX fix.
+  int number_of_satellites() const { return m_number_of_satellites; }
+  void set_number_of_satellites(int number_of_satellites) { m_number_of_satellites = number_of_satellites; }
 
-  qreal hdop() const;
-  void set_hdop(qreal hdop);
+  // Horizontal dilution of precision.
+  qreal hdop() const { return m_hdop; }
+  void set_hdop(qreal hdop) { m_hdop = hdop; }
 
-  qreal vdop() const;
-  void set_vdop(qreal vdop);
+  // Vertical dilution of precision.
+  qreal vdop() const { return m_vdop; }
+  void set_vdop(qreal vdop) { m_vdop = vdop; }
 
-  qreal pdop() const;
-  void set_pdop(qreal pdop);
+  // Position dilution of precision.
+  qreal pdop() const { return m_pdop; }
+  void set_pdop(qreal pdop) { m_pdop = pdop; }
 
-  qreal age_of_dgps_data() const;
-  void set_age_of_dgps_data(qreal age_of_dgps_data);
+  // Number of seconds since last DGPS update.
+  qreal age_of_dgps_data() const { return m_age_of_dgps_data; }
+  void set_age_of_dgps_data(qreal age_of_dgps_data) { m_age_of_dgps_data = age_of_dgps_data; }
 
-  int dgps_id() const;
-  void set_dgps_id(int dgps_id);
+  // ID of DGPS station used in differential correction.
+  int dgps_id() const { return m_dgps_id; }
+  void set_dgps_id(int dgps_id) { m_dgps_id = dgps_id; }
 
  private:
   QcWgsElevationCoordinate m_coordinate;
@@ -156,6 +194,8 @@ class QC_EXPORT QcWayPoint
   unsigned int m_dgps_id;
   // You can add extend GPX by adding your own elements from another schema here.
 };
+
+/**************************************************************************************************/
 
 // QC_END_NAMESPACE
 

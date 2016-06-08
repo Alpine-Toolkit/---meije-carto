@@ -69,90 +69,6 @@ QcRouteMetaData::operator=(const QcRouteMetaData & other)
   return *this;
 }
 
-const QString &
-QcRouteMetaData::name() const
-{
-  return m_name;
-}
-
-void
-QcRouteMetaData::set_name(const QString & name)
-{
-  m_name = name;
-}
-
-const QString &
-QcRouteMetaData::comment() const
-{
-  return m_comment;
-}
-
-void
-QcRouteMetaData::set_comment(const QString & comment)
-{
-  m_comment = comment;
-}
-
-const QString &
-QcRouteMetaData::description() const
-{
-  return m_description;
-}
-
-void
-QcRouteMetaData::set_description(const QString & description)
-{
-  m_description = description;
-}
-
-const QString &
-QcRouteMetaData::source() const
-{
-  return m_source;
-}
-
-void
-QcRouteMetaData::set_source(const QString & source)
-{
-  m_source = source;
-}
-
-const QString &
-QcRouteMetaData::link() const
-{
-  return m_link;
-}
-
-void
-QcRouteMetaData::set_link(const QString & link)
-{
-  m_link = link;
-}
-
-unsigned int
-QcRouteMetaData::number() const
-{
-  return m_number;
-}
-
-void
-QcRouteMetaData::set_number(unsigned int number)
-{
-  m_number = number;
-}
-
-const QString &
-QcRouteMetaData::type() const
-{
-  return m_type;
-}
-
-void
-QcRouteMetaData::set_type(const QString & type)
-{
-  m_type = type;
-}
-
 /**************************************************************************************************/
 
 QcRoute::QcRoute()
@@ -177,12 +93,6 @@ QcRoute::operator=(const QcRoute & other)
   }
 
   return *this;
-}
-
-const QcWayPointList &
-QcRoute::waypoints() const
-{
-  return m_waypoints;
 }
 
 void
@@ -215,12 +125,6 @@ QcTrack::operator=(const QcTrack & other)
   }
 
   return *this;
-}
-
-const QList<QcWayPointList> &
-QcTrack::segments() const
-{
-  return m_segments;
 }
 
 void

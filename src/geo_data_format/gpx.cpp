@@ -88,132 +88,6 @@ QcGpx::operator=(const QcGpx & other)
   return *this;
 }
 
-const QString &
-QcGpx::creator() const
-{
-  return m_creator;
-}
-
-void
-QcGpx::set_creator(const QString & creator)
-{
-  m_creator = creator;
-}
-
-const QString &
-QcGpx::version() const
-{
-  return m_version;
-}
-
-void
-QcGpx::set_version(const QString & version)
-{
-  m_version = version;
-}
-
-const QString &
-QcGpx::name() const
-{
-  return m_name;
-}
-
-void
-QcGpx::set_name(const QString & name)
-{
-  m_name = name;
-}
-
-const QString &
-QcGpx::description() const
-{
-  return m_description;
-}
-
-void
-QcGpx::set_description(const QString & description)
-{
-  m_description = description;
-}
-
-const QString &
-QcGpx::author() const
-{
-  return m_author;
-}
-
-void
-QcGpx::set_author(const QString & author)
-{
-  m_author = author;
-}
-
-const QString &
-QcGpx::link() const
-{
-  return m_link;
-}
-
-void
-QcGpx::set_link(const QString & link)
-{
-  m_link = link;
-}
-
-QDateTime
-QcGpx::time() const
-{
-  return m_time;
-}
-
-void
-QcGpx::set_time(const QDateTime & time)
-{
-  m_time = time;
-}
-
-const QString &
-QcGpx::keywords() const
-{
-  return m_keywords;
-}
-
-void
-QcGpx::set_keywords(const QString & keywords)
-{
-  m_keywords = keywords;
-}
-
-QcInterval2DDouble
-QcGpx::bounds() const
-{
-  return m_bounds;
-}
-
-void
-QcGpx::set_bounds(const QcInterval2DDouble & bounds)
-{
-  m_bounds = bounds;
-}
-
-const QcWayPointList &
-QcGpx::waypoints() const
-{
-  return m_waypoints;
-}
-
-const QList<QcRoute> &
-QcGpx::routes() const
-{
-  return m_routes;
-}
-
-const QList<QcTrack> &
-QcGpx::tracks() const
-{
-  return m_tracks;
-}
-
 void
 QcGpx::add_waypoint(const QcWayPoint & waypoint)
 {
@@ -231,7 +105,6 @@ QcGpx::add_track(const QcTrack & track)
 {
   m_tracks.append(track);
 }
-
 
 /**************************************************************************************************/
 
@@ -650,7 +523,6 @@ QcGpxWriter::write_track(const QcTrack & track)
   }
   m_writer.writeEndElement(); // TRACK_ELEMENT
 }
-
 
 /**************************************************************************************************/
 

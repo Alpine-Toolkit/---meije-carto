@@ -72,6 +72,8 @@
 
 // QC_BEGIN_NAMESPACE
 
+/**************************************************************************************************/
+
 class QcRouteMetaData
 {
 public:
@@ -81,26 +83,26 @@ public:
 
   QcRouteMetaData & operator=(const QcRouteMetaData & other);
 
-  const QString & name() const;
-  void set_name(const QString & name);
+  const QString & name() const { return m_name; }
+  void set_name(const QString & name) { m_name = name; }
 
-  const QString & comment() const;
-  void set_comment(const QString & comment);
+  const QString & comment() const { return m_comment; }
+  void set_comment(const QString & comment) { m_comment = comment; }
 
-  const QString & description() const;
-  void set_description(const QString & description);
+  const QString & description() const { return m_description; }
+  void set_description(const QString & description) { m_description = description; }
 
-  const QString & source() const;
-  void set_source(const QString & source);
+  const QString & source() const { return m_source; }
+  void set_source(const QString & source) { m_source = source; }
 
-  const QString & link() const;
-  void set_link(const QString & link);
+  const QString & link() const { return m_link; }
+  void set_link(const QString & link) { m_link = link; }
 
-  unsigned int number() const;
-  void set_number(unsigned int number);
+  unsigned int number() const { return m_number; }
+  void set_number(unsigned int number) { m_number = number; }
 
-  const QString & type() const;
-  void set_type(const QString & type);
+  const QString & type() const { return m_type; }
+  void set_type(const QString & type) { m_type = type; }
 
 private:
   QString m_name;
@@ -125,7 +127,7 @@ public:
 
   QcRoute & operator=(const QcRoute & other);
 
-  const QcWayPointList & waypoints() const;
+  const QcWayPointList & waypoints() const { return m_waypoints; }
   void add_waypoint(const QcWayPoint & waypoint);
 
 private:
@@ -143,12 +145,14 @@ public:
 
   QcTrack & operator=(const QcTrack & other);
 
-  const QList<QcWayPointList> & segments() const;
+  const QList<QcWayPointList> & segments() const { return m_segments; }
   void add_segment(const QcWayPointList & segment);
 
 private:
   QList<QcWayPointList> m_segments;
 };
+
+/**************************************************************************************************/
 
 // QC_END_NAMESPACE
 

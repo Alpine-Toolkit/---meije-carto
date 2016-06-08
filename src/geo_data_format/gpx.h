@@ -88,6 +88,8 @@
 
 // QC_BEGIN_NAMESPACE
 
+/**************************************************************************************************/
+
 class QcGpx
 {
 public:
@@ -97,36 +99,36 @@ public:
 
   QcGpx & operator=(const QcGpx & other);
 
-  const QString & creator() const;
-  void set_creator(const QString & creator);
+  const QString & creator() const { return m_creator; }
+  void set_creator(const QString & creator) { m_creator = creator; }
 
-  const QString & version() const;
-  void set_version(const QString & version);
+  const QString & version() const { return m_version; }
+  void set_version(const QString & version) { m_version = version; }
 
-  const QString & name() const;
-  void set_name(const QString & name);
+  const QString & name() const { return m_name; }
+  void set_name(const QString & name) { m_name = name; }
 
-  const QString & description() const;
-  void set_description(const QString & description);
+  const QString & description() const { return m_description; }
+  void set_description(const QString & description) { m_description = description; }
 
-  const QString & author() const;
-  void set_author(const QString & author);
+  const QString & author() const { return m_author; }
+  void set_author(const QString & author) { m_author = author; }
 
-  const QString & link() const;
-  void set_link(const QString & link);
+  const QString & link() const { return m_link; }
+  void set_link(const QString & link) { m_link = link; }
 
-  QDateTime time() const;
-  void set_time(const QDateTime & time);
+  QDateTime time() const { return m_time; }
+  void set_time(const QDateTime & time) { m_time = time; }
 
-  const QString & keywords() const;
-  void set_keywords(const QString & keywords);
+  const QString & keywords() const { return m_keywords; }
+  void set_keywords(const QString & keywords) { m_keywords = keywords; }
 
-  QcInterval2DDouble bounds() const;
-  void set_bounds(const QcInterval2DDouble & bounds);
+  QcInterval2DDouble bounds() const { return m_bounds; }
+  void set_bounds(const QcInterval2DDouble & bounds) { m_bounds = bounds; }
 
-  const QcWayPointList & waypoints() const;
-  const QList<QcRoute> & routes() const;
-  const QList<QcTrack> & tracks() const;
+  const QcWayPointList & waypoints() const { return m_waypoints; }
+  const QList<QcRoute> & routes() const { return m_routes; }
+  const QList<QcTrack> & tracks() const { return m_tracks; }
 
   void add_waypoint(const QcWayPoint & waypoint);
   void add_route(const QcRoute & route);
@@ -190,6 +192,8 @@ private:
 private:
   QXmlStreamWriter m_writer;
 };
+
+/**************************************************************************************************/
 
 // QC_END_NAMESPACE
 
