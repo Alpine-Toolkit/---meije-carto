@@ -34,6 +34,7 @@
 /**************************************************************************************************/
 
 #include "cache/file_tile_cache.h"
+#include "map/location_circle_data.h"
 #include "map/viewport.h"
 #include "wmts/tile_matrix_set.h"
 #include "wmts/tile_spec.h"
@@ -65,6 +66,8 @@ class QcMapLayerRootNode;
 
 class QcMapLayerScene : public QObject
 {
+  Q_OBJECT
+
 public:
   QcMapLayerScene(const QcWmtsPluginLayer * plugin_layer, const QcViewport * viewport, QObject * parent = nullptr);
   ~QcMapLayerScene();
@@ -121,8 +124,12 @@ private:
 
 class QcMapScene : public QObject
 {
+  Q_OBJECT
+
 public:
-  QcMapScene(const QcViewport * viewport, QObject * parent = nullptr);
+  QcMapScene(const QcViewport * viewport,
+             const QcLocationCircleData & location_circle_data,
+             QObject * parent = nullptr);
   ~QcMapScene();
 
   QSGNode * update_scene_graph(QSGNode * old_node, QQuickWindow * window);
@@ -131,14 +138,14 @@ public:
   void remove_layer(const QcWmtsPluginLayer * plugin_layer);
 
   void update_path(const QcPathDouble & path);
-  void set_dirty_path();
-
-  void set_gps_horizontal_precision(double horizontal_precision);
-  double gps_horizontal_precision() const { return m_gps_horizontal_precision; }
+  void set_dirty_path(); // Fixme: name
 
 private:
   float width() { return m_viewport->width(); }
   float height() { return m_viewport->height(); }
+
+private slots:
+  void set_location_circle_data_dirty();
 
 private:
   const QcViewport * m_viewport; // Fixme: &
@@ -149,7 +156,7 @@ private:
   QcPathDouble m_path;
   bool m_dirty_path;
 
-  double m_gps_horizontal_precision;
+  const QcLocationCircleData & m_location_circle_data;
   bool m_dirty_location_circle;
 };
 

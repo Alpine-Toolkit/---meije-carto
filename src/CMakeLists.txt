@@ -51,6 +51,7 @@ set(qtcarto_files
   geometry/polygon.cpp
   geometry/vector.cpp
 
+  map/location_circle_data.cpp
   map/map_event_router.cpp
   map/map_path_editor.cpp
   map/map_view.cpp

@@ -107,7 +107,7 @@ QcLocationCircleNode::QcLocationCircleNode(const QcViewport * viewport)
 }
 
 void
-QcLocationCircleNode::update(double gps_horizontal_precision)
+QcLocationCircleNode::update(const QcLocationCircleData & location_circle_data)
 {
   // QSGGeometry * location_circle_geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 1);
   // location_circle_geometry->setLineWidth(100); // point size, max is 255
@@ -121,8 +121,7 @@ QcLocationCircleNode::update(double gps_horizontal_precision)
   LocationCirclePoint2D * vertices = static_cast<LocationCirclePoint2D *>(geometry->vertexData());
   float x = .5 * m_viewport->width(); // Fixme: vector
   float y = .5 * m_viewport->height();
-  float radius = qMax(m_viewport->to_px(gps_horizontal_precision), 10.); // Fixme
-  qInfo() << gps_horizontal_precision << radius;
+  float radius = qMax(m_viewport->to_px(location_circle_data.horizontal_precision()), 10.); // Fixme
   float margin = 10;
   float size = radius + margin;
   vertices[0].set(QcVectorDouble(x - size, y - size), QcVectorDouble(-size, -size), radius);

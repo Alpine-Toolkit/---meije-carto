@@ -62,7 +62,7 @@ class QcMapItem : public QQuickItem
   Q_PROPERTY(unsigned int zoom_level READ zoom_level WRITE set_zoom_level NOTIFY zoom_levelChanged)
   Q_PROPERTY(QcWgsCoordinate center READ center WRITE set_center NOTIFY centerChanged)
   Q_PROPERTY(double bearing READ bearing WRITE set_bearing NOTIFY bearingChanged)
-  Q_PROPERTY(double gps_horizontal_precision READ gps_horizontal_precision WRITE set_gps_horizontal_precision NOTIFY gps_horizontal_precisionChanged)
+  Q_PROPERTY(QcLocationCircleData * location_circle_data READ location_circle_data CONSTANT)
   Q_PROPERTY(QVariantList plugins READ plugins CONSTANT)
   Q_PROPERTY(QString projection READ projection CONSTANT)
   Q_PROPERTY(QStringList projections READ projections CONSTANT)
@@ -102,8 +102,7 @@ public:
   void set_bearing(double bearing);
   double bearing() const;
 
-  void set_gps_horizontal_precision(double horizontal_precision);
-  double gps_horizontal_precision() const;
+  QcLocationCircleData * location_circle_data();
 
   Q_INVOKABLE QcMapScale make_scale(unsigned int max_length_px) const;
 

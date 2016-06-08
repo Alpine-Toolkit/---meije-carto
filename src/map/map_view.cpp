@@ -208,7 +208,7 @@ QcMapView::QcMapView()
   // Fixme: cf. add_layer
   m_viewport->set_projection(&QcWebMercatorCoordinate::cls_projection);
 
-  m_map_scene = new QcMapScene(m_viewport); // parent
+  m_map_scene = new QcMapScene(m_viewport, m_location_circle_data); // parent
 
   connect(m_viewport, SIGNAL(viewport_changed()),
 	  this, SLOT(update_scene()),

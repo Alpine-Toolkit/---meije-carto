@@ -36,6 +36,7 @@
 #include <QList>
 #include <QObject>
 
+#include "map/location_circle_data.h"
 #include "map/viewport.h"
 #include "qtcarto_global.h"
 #include "scene/map_scene.h"
@@ -125,10 +126,8 @@ class QC_EXPORT QcMapView : public QObject
     m_map_scene->update_path(path);
   }
 
-  void set_gps_horizontal_precision(double horizontal_precision) {
-    m_map_scene->set_gps_horizontal_precision(horizontal_precision);
-  }
-  double gps_horizontal_precision() const { return m_map_scene->gps_horizontal_precision(); }
+  QcLocationCircleData & location_circle_data() { return m_location_circle_data; }
+  const QcLocationCircleData & location_circle_data() const { return m_location_circle_data; }
 
  signals:
   void scene_graph_changed();
@@ -142,6 +141,7 @@ class QC_EXPORT QcMapView : public QObject
  private:
   QcViewport * m_viewport;
   QcMapScene * m_map_scene;
+  QcLocationCircleData m_location_circle_data;
   QList<QcMapViewLayer *> m_layers;
   QHash<QString, QcMapViewLayer *> m_layer_map;
 };

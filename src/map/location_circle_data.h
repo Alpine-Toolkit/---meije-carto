@@ -28,41 +28,54 @@
 
 /**************************************************************************************************/
 
-#ifndef __LOCATION_CIRCLE_NODE_H__
-#define __LOCATION_CIRCLE_NODE_H__
+#ifndef __LOCATION_CIRCLE_DATA_H__
+#define __LOCATION_CIRCLE_DATA_H__
 
 /**************************************************************************************************/
 
-#include "map/location_circle_data.h"
-#include "map/viewport.h"
-
-#include <QSGOpacityNode>
+#include <QObject>
 
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
 
-/**************************************************************************************************/
-
-class QcLocationCircleNode : public QSGOpacityNode
+class QcLocationCircleData : public QObject
 {
-public:
-  QcLocationCircleNode(const QcViewport * viewport);
+  Q_OBJECT
+  Q_PROPERTY(double bearing READ bearing WRITE set_bearing NOTIFY bearingChanged)
+  Q_PROPERTY(double horizontal_precision READ horizontal_precision WRITE set_horizontal_precision NOTIFY horizontal_precisionChanged)
 
-  void update(const QcLocationCircleData & location_circle_data);
+public:
+  QcLocationCircleData(QObject * parent = nullptr);
+  QcLocationCircleData(const QcLocationCircleData & other, QObject * parent = nullptr);
+  ~QcLocationCircleData();
+
+  QcLocationCircleData & operator=(const QcLocationCircleData & other);
+
+  double bearing() const { return m_bearing; }
+  void set_bearing(double bearing);
+
+  double horizontal_precision() const { return m_horizontal_precision; }
+  void set_horizontal_precision(double horizontal_precision);
+
+signals:
+  void bearingChanged();
+  void horizontal_precisionChanged();
 
 private:
-  const QcViewport * m_viewport; // Fixme: &
-  QSGGeometryNode * m_geometry_node;
+  double m_bearing;
+  double m_horizontal_precision;
 };
 
 /**************************************************************************************************/
 
 // QC_END_NAMESPACE
 
+Q_DECLARE_METATYPE(QcLocationCircleData)
+
 /**************************************************************************************************/
 
-#endif /* __LOCATION_CIRCLE_NODE_H__ */
+#endif /* __LOCATION_CIRCLE_DATA_H__ */
 
 /***************************************************************************************************
  *

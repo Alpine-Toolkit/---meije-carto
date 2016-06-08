@@ -29,16 +29,26 @@
 #include "map_scene.h"
 #include "map_scene_private.h"
 
+#include <QtDebug>
+
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
 
 /**************************************************************************************************/
 
-QcMapScene::QcMapScene(const QcViewport * viewport, QObject * parent)
+QcMapScene::QcMapScene(const QcViewport * viewport,
+                       const QcLocationCircleData & location_circle_data,
+                       QObject * parent)
   : QObject(parent),
-    m_viewport(viewport)
-{}
+    m_viewport(viewport),
+    m_location_circle_data(location_circle_data)
+{
+  // connect(&m_location_circle_data, QcLocationCircleData::horizontal_precisionChanged,
+  //         this, QcMapScene::set_location_circle_data_dirty);
+  connect(&m_location_circle_data, SIGNAL(horizontal_precisionChanged()),
+          this, SLOT(set_location_circle_data_dirty()));
+}
 
 QcMapScene::~QcMapScene()
 {}
@@ -75,14 +85,12 @@ void
 QcMapScene::set_dirty_path()
 {
   m_dirty_path = true;
-  // Fixme:
-  m_dirty_location_circle = true;
 }
 
 void
-QcMapScene::set_gps_horizontal_precision(double horizontal_precision)
+QcMapScene::set_location_circle_data_dirty()
 {
-  m_gps_horizontal_precision = horizontal_precision;
+  qInfo();
   m_dirty_location_circle = true;
 }
 
@@ -147,7 +155,7 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
 
   if (m_dirty_location_circle) {
     qInfo() << "Location circle is dirty";
-    map_root_node->location_circle_node->update(m_gps_horizontal_precision);
+    map_root_node->location_circle_node->update(m_location_circle_data);
     m_dirty_location_circle = false;
   }
 

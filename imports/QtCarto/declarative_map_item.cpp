@@ -681,16 +681,22 @@ QcMapItem::bearing() const
   return m_viewport->bearing();
 }
 
-void
-QcMapItem::set_gps_horizontal_precision(double horizontal_precision)
-{
-  m_map_view->set_gps_horizontal_precision(horizontal_precision);
-}
+// void
+// QcMapItem::set_gps_horizontal_precision(double horizontal_precision)
+// {
+//   m_map_view->set_gps_horizontal_precision(horizontal_precision);
+// }
 
-double
-QcMapItem::gps_horizontal_precision() const
+// double
+// QcMapItem::gps_horizontal_precision() const
+// {
+//   return m_map_view->gps_horizontal_precision();
+// }
+
+QcLocationCircleData *
+QcMapItem::location_circle_data()
 {
-  return m_map_view->gps_horizontal_precision();
+  return &m_map_view->location_circle_data();
 }
 
 QcMapScale

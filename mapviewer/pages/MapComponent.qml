@@ -49,7 +49,7 @@ QcMapItem {
         // map.plugin_layers('geoportail')[0].status = true
         // map.plugin_layers('artic-web-map')[0].status = true
         set_scale()
-        map.gps_horizontal_precision = 100.;
+        map.location_circle_data.horizontal_precision = 100.;
     }
 
     center {
@@ -261,8 +261,8 @@ QcMapItem {
                 }
                 onClicked: {
                     // Fixme
-                    var position_px = Qt.point(map.width/2, map.height/2);
-                    stable_zoom_by_increment(position_px, 1);
+                    var position_px = Qt.point(map.width/2, map.height/2)
+                    stable_zoom_by_increment(position_px, 1)
                 }
             }
             ToolButton {
@@ -274,8 +274,8 @@ QcMapItem {
                     source: "qrc:/icons/remove-black.png"
                 }
                 onClicked: {
-                    var position_px = Qt.point(map.width/2, map.height/2);
-                    stable_zoom_by_increment(position_px, -1);
+                    var position_px = Qt.point(map.width/2, map.height/2)
+                    stable_zoom_by_increment(position_px, -1)
                 }
             }
 

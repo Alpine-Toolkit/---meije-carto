@@ -37,6 +37,7 @@
 // Fixme:
 #include "coordinate/wgs84.h"
 #include "geometry/vector.h"
+#include "map/location_circle_data.h"
 #include "map/map_event_router.h"
 
 // QC_BEGIN_NAMESPACE
@@ -73,6 +74,9 @@ class QtCartoDeclarativeModule : public QQmlExtensionPlugin
       qRegisterMetaType<QcMapScale>();
       qRegisterMetaType<QcWmtsPluginData>();
       qRegisterMetaType<QcWmtsPluginLayerData>();
+
+      qmlRegisterUncreatableType<QcLocationCircleData>(uri, major, minor, "QcLocationCircleData",
+                                                       QStringLiteral("QcLocationCircleData is not intended instantiable by developer."));
 
       // QDeclarativeGeoMap
       qmlRegisterType<QcMapItem>(uri, major, minor, "QcMapItem");

@@ -1,5 +1,3 @@
-// -*- mode: c++ -*-
-
 /***************************************************************************************************
 **
 ** $QTCARTO_BEGIN_LICENSE:GPL3$
@@ -28,41 +26,60 @@
 
 /**************************************************************************************************/
 
-#ifndef __LOCATION_CIRCLE_NODE_H__
-#define __LOCATION_CIRCLE_NODE_H__
+#include "location_circle_data.h"
+
+#include <QtDebug>
 
 /**************************************************************************************************/
 
-#include "map/location_circle_data.h"
-#include "map/viewport.h"
+QcLocationCircleData::QcLocationCircleData(QObject * parent)
+  : QObject(parent),
+    m_bearing(),
+    m_horizontal_precision()
+{}
 
-#include <QSGOpacityNode>
+QcLocationCircleData::QcLocationCircleData(const QcLocationCircleData & other, QObject * parent)
+  : QObject(parent),
+    m_bearing(other.m_bearing),
+    m_horizontal_precision(other.m_horizontal_precision)
+{}
 
-/**************************************************************************************************/
+QcLocationCircleData::~QcLocationCircleData()
+{}
 
-// QC_BEGIN_NAMESPACE
-
-/**************************************************************************************************/
-
-class QcLocationCircleNode : public QSGOpacityNode
+QcLocationCircleData &
+QcLocationCircleData::operator=(const QcLocationCircleData & other)
 {
-public:
-  QcLocationCircleNode(const QcViewport * viewport);
+  if (this != &other) {
+    m_bearing = other.m_bearing;
+    m_horizontal_precision = other.m_horizontal_precision;
+  }
 
-  void update(const QcLocationCircleData & location_circle_data);
+  return *this;
+}
 
-private:
-  const QcViewport * m_viewport; // Fixme: &
-  QSGGeometryNode * m_geometry_node;
-};
+void
+QcLocationCircleData::set_bearing(double bearing)
+{
+  if (bearing != m_bearing) {
+    m_bearing = bearing;
+    emit bearingChanged();
+  }
+}
+
+void
+QcLocationCircleData::set_horizontal_precision(double horizontal_precision)
+{
+  qInfo() << horizontal_precision;
+  if (horizontal_precision != m_horizontal_precision) {
+    m_horizontal_precision = horizontal_precision;
+    emit horizontal_precisionChanged();
+  }
+}
 
 /**************************************************************************************************/
 
 // QC_END_NAMESPACE
-
-/**************************************************************************************************/
-
-#endif /* __LOCATION_CIRCLE_NODE_H__ */
 
 /***************************************************************************************************
  *
