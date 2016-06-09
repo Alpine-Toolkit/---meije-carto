@@ -736,8 +736,8 @@ QcMapGestureArea::update()
 {
   qInfo() << "enter" << m_touch_point_state << m_flick_state << m_pinch_state;
 
-  if (!m_map)
-    return;
+  // if (!m_map)
+  //   return;
 
   // First state machine is for the number of touch points
 
@@ -781,7 +781,10 @@ QcMapGestureArea::is_press_and_hold()
 {
   qInfo();
 
-  if (!m_map)
+  // if (!m_map)
+  //   return false;
+
+  if (!m_all_points.size())
     return false;
 
   if (is_pan_active() or is_pinch_active())
@@ -799,8 +802,8 @@ QcMapGestureArea::is_press_and_hold()
 bool
 QcMapGestureArea::is_double_click()
 {
-  if (!m_map)
-    return false;
+  // if (!m_map)
+  //   return false;
 
   if (is_pan_active() or is_pinch_active())
     return false;
