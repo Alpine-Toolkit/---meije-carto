@@ -167,7 +167,7 @@ QcPathNode::update(const QcPathDouble & path)
   m_geometry_node->setFlag(QSGNode::OwnsGeometry);
 
   double line_width = 10;
-  double antialias_diameter = 1.;
+  double antialias_diameter = 1.; // Fixme: according shader !
   // Fixme: linewidth/2.0 + 1.5*antialias;
   double half_width = ceil(1.25*antialias_diameter + line_width) * .5;
 

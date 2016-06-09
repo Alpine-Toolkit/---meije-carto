@@ -9,7 +9,7 @@
 
 const int cap_type = 1;
 const int line_join = 1;
-const float antialias_diameter = 1;
+const float antialias_diameter = 1.;
 
 /* *********************************************************************************************** */
 
