@@ -109,8 +109,8 @@ class QC_EXPORT QcWgs84Projection : public QcProjection
   static constexpr double westward_longitude = -180.;
   static constexpr double eastward_longitude =  180.;
 
-  static constexpr double equator_latitude = 0;
-  static constexpr double south_pole_latitude = -90;
+  static constexpr double equator_latitude = .0;
+  static constexpr double south_pole_latitude = -90.;
   static constexpr double north_pole_latitude =  90.;
 
  public:

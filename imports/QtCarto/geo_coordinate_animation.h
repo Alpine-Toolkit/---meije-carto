@@ -60,6 +60,15 @@
 
 // QC_BEGIN_NAMESPACE
 
+/**************************************************************************************************/
+
+QVariant coordinate_east_interpolator(const QcWgsCoordinate & from, const QcWgsCoordinate & to, qreal progress);
+QVariant coordinate_west_interpolator(const QcWgsCoordinate & from, const QcWgsCoordinate & to, qreal progress);
+
+QVariant coordinate_shortest_interpolator(const QcWgsCoordinate & from, const QcWgsCoordinate & to, qreal progress);
+
+/**************************************************************************************************/
+
 class QcGeoCoordinateAnimationPrivate;
 
 class QcGeoCoordinateAnimation : public QQuickPropertyAnimation

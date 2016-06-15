@@ -141,10 +141,14 @@ coordinate_shortest_interpolator(const QcWgsCoordinate & _from, const QcWgsCoord
 }
 
 QVariant
-coordinate_west_interpolator(const QcWgsCoordinate & _from, const QcWgsCoordinate & _to, qreal progress)
+coordinate_west_interpolator(const QcWgsCoordinate & from, const QcWgsCoordinate & to, qreal progress)
 {
-  QcNormalisedWebMercatorCoordinate from = _from.normalised_web_mercator();
-  QcNormalisedWebMercatorCoordinate to = _to.normalised_web_mercator();
+  if (progress == .0)
+    return QVariant::fromValue(from);
+  else if (progress == 1.)
+    return QVariant::fromValue(to);
+  else if (from == to)
+    return QVariant::fromValue(from);
 
   double to_x = to.x();
   double to_y = to.y();
@@ -155,24 +159,26 @@ coordinate_west_interpolator(const QcWgsCoordinate & _from, const QcWgsCoordinat
 
   // <-|-
   if (from_x < to_x)
-    delta_x = 1 + delta_x;
+    delta_x = 360. - delta_x;
   double delta_x_abs = qAbs(delta_x);
   double x = from_x - delta_x_abs * progress;
-  if (x < 0.0) // we crossed date line
-    x += 1.0;
+  if (x < -180.) // we crossed date line
+    x += 360.;
 
   double y = from_y + delta_y * progress;
 
-  QcWgsCoordinate coordinate = QcNormalisedWebMercatorCoordinate(x, y).wgs84();
-  // qInfo() << progress << coordinate;
-  return QVariant::fromValue(coordinate);
+  return QVariant::fromValue(QcWgsCoordinate(x, y));
 }
 
 QVariant
-coordinate_east_interpolator(const QcWgsCoordinate & _from, const QcWgsCoordinate & _to, qreal progress)
+coordinate_east_interpolator(const QcWgsCoordinate & from, const QcWgsCoordinate & to, qreal progress)
 {
-  QcNormalisedWebMercatorCoordinate from = _from.normalised_web_mercator();
-  QcNormalisedWebMercatorCoordinate to = _to.normalised_web_mercator();
+  if (progress == .0)
+    return QVariant::fromValue(from);
+  else if (progress == 1.)
+    return QVariant::fromValue(to);
+  else if (from == to)
+    return QVariant::fromValue(from);
 
   double to_x = to.x();
   double to_y = to.y();
@@ -183,17 +189,15 @@ coordinate_east_interpolator(const QcWgsCoordinate & _from, const QcWgsCoordinat
 
   // -|->
   if (to_x < from_x)
-    delta_x = 1 + delta_x;
+    delta_x = 360. + delta_x;
   double delta_x_abs = qAbs(delta_x);
   double x = from_x + delta_x_abs * progress;
-  if (x > 1.0) // we crossed date line
-    x -= 1.0;
+  if (x > 180.) // we crossed date line
+    x -= 360.;
 
   double y = from_y + delta_y * progress;
 
-  QcWgsCoordinate coordinate = QcNormalisedWebMercatorCoordinate(x, y).wgs84();
-  // qInfo() << progress << coordinate << from << x << to;
-  return QVariant::fromValue(coordinate);
+  return QVariant::fromValue(QcWgsCoordinate(x, y));
 }
 
 /**************************************************************************************************/
