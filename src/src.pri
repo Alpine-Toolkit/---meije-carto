@@ -124,6 +124,7 @@ HEADERS += \
   geometry/vector.h
 
 HEADERS += \
+  map/location_circle_data.h \
   map/map_event_router.h \
   map/map_path_editor.h \
   map/map_view.h \
