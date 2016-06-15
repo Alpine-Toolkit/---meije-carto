@@ -31,6 +31,19 @@
 /**************************************************************************************************/
 
 template<>
+bool
+QcInterval<double>::contains(double x) const
+{
+  if (m_empty)
+    return false;
+  else
+    // m_inf <= x and x <= m_sup
+    return ((m_inf < x and x < m_sup) or
+            qFuzzyCompare(m_inf, x) or
+            qFuzzyCompare(m_sup, x));
+}
+
+template<>
 double
 QcIntervalDouble::wrap(double x) const
 {
