@@ -73,6 +73,7 @@
 #include "coordinate/mercator.h"
 #include "coordinate/wgs84.h"
 #include "geometry/vector.h"
+#include "math/interval.h"
 
 #include <QDebug> // Fixme: QtDebug ???
 #include <QElapsedTimer>
@@ -149,15 +150,13 @@ private:
 struct Zoom
 {
   Zoom()
-    : m_minimum(-1.0),
-      m_maximum(-1.0),
+    : m_interval(),
       m_start(0.0),
       m_previous(0.0),
       maximum_change(4.0)
   {}
 
-  qreal m_minimum;
-  qreal m_maximum;
+  QcIntervalInt m_interval;
   qreal m_start;
   qreal m_previous;
   qreal maximum_change;
@@ -238,11 +237,7 @@ public:
   qreal flick_deceleration() const { return m_flick.m_deceleration; }
   void set_flick_deceleration(qreal deceleration);
 
-  void set_minimum_zoom_level(qreal min);
-  qreal minimum_zoom_level() const;
-
-  void set_maximum_zoom_level(qreal max);
-  qreal maximum_zoom_level() const;
+  void set_zoom_level_interval(const QcIntervalInt interval);
 
   bool prevent_stealing() const { return m_prevent_stealing; }
   void set_prevent_stealing(bool prevent);

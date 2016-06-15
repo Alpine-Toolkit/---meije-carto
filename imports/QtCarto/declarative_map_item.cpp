@@ -79,10 +79,6 @@ QcMapItem::QcMapItem(QQuickItem * parent)
   m_map_view = new QcMapView();
   m_viewport = m_map_view->viewport();
 
-  // Fixme:
-  m_gesture_area->set_minimum_zoom_level(0);
-  m_gesture_area->set_maximum_zoom_level(20);
-
   // Fixme: direct ptr
   // Fixme: in map_view ?
   m_map_event_router.register_client(QcMapEventRouter::ClientSharedPointer(new QcMapPathEditor(m_map_view)));
@@ -635,6 +631,7 @@ QcMapItem::layer_status_changed(bool status)
     m_map_view->add_layer(plugin_layer);
   else
     m_map_view->remove_layer(plugin_layer);
+  m_gesture_area->set_zoom_level_interval(m_viewport->zoom_level_interval()); // Fixme: use signal ?
   update();
 }
 

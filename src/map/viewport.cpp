@@ -228,11 +228,36 @@ QcViewport::update_area_size()
 }
 
 void
+QcViewport::update_zoom_level_interval()
+{
+  if (m_smallest_tile_size != -1) {
+    int smallest_power_of_two_x = smallest_power_of_two(width() / m_smallest_tile_size);
+    int smallest_power_of_two_y = smallest_power_of_two(height() / m_smallest_tile_size);
+    qInfo() << "viewport size" << m_viewport_size << m_map_zoom_level_interval << smallest_power_of_two_x << smallest_power_of_two_y;
+    m_zoom_level_interval = QcIntervalInt(smallest_power_of_two_y, m_map_zoom_level_interval.sup());
+  } else {
+    // Fixme: ok ?
+    m_zoom_level_interval = QcIntervalInt(0, 0);
+  }
+}
+
+void
+QcViewport::set_zoom_level_interval(const QcIntervalInt & zoom_level_interval, int smallest_tile_size)
+{
+  m_smallest_tile_size = smallest_tile_size;
+  m_map_zoom_level_interval = zoom_level_interval;
+  update_zoom_level_interval();
+}
+
+void
 QcViewport::set_viewport_size(const QSize & size, float device_pixel_ratio)
 {
   // qInfo() << "viewport size" << size << device_pixel_ratio;
   m_viewport_size = size; // * device_pixel_ratio;
   m_device_pixel_ratio = 1; // device_pixel_ratio;
+
+  update_zoom_level_interval();
+
   update_area_size();
   update_area();
 }
@@ -270,7 +295,8 @@ QcViewport::set_bearing(double bearing)
 void
 QcViewport::set_zoom_level(unsigned int zoom_level)
 {
-  if (zoom_level != m_state.zoom_level()) {
+  // Fixme: check is not performed at init
+  if (zoom_level != m_state.zoom_level() and m_zoom_level_interval.contains(zoom_level)) {
     m_state.set_zoom_level(zoom_level);
     update_area_size();
     update_area(); // scale polygon
@@ -320,7 +346,7 @@ void
 QcViewport::zoom_at(const QcWgsCoordinate & coordinate, unsigned int zoom_level)
 {
   // qInfo() << coordinate << zoom_level;
-  if (zoom_level != m_state.zoom_level())
+  if (zoom_level != m_state.zoom_level() and m_zoom_level_interval.contains(zoom_level))
     m_state.set_zoom_level(zoom_level);
   set_center(coordinate); // move and scale polygon
 }
@@ -331,6 +357,9 @@ QcViewport::stable_zoom(const QcVectorDouble & screen_position, unsigned int zoo
   // qInfo() << screen_position << zoom_level;
 
   // Fixme: (from map_gesture_area) event position == pre_zoom_point ???
+
+  if (!m_zoom_level_interval.contains(zoom_level))
+    return;
 
   // Fixme: ???
   QcWgsCoordinate coordinate = screen_to_coordinate(screen_position, false);

@@ -232,6 +232,27 @@ QcMapView::set_projection(const QcProjection * new_projection)
   }
 }
 
+void
+QcMapView::update_zoom_level_interval()
+{
+  QcIntervalInt global_zoom_level_interval;
+  int smallest_tile_size = -1;
+  for (const auto * plugin_layer : layers()) {
+    const QcTileMatrixSet & tile_matrix_set = plugin_layer->plugin()->tile_matrix_set();
+    int tile_size = tile_matrix_set.tile_size();
+    int number_of_levels = tile_matrix_set.number_of_levels();
+    QcIntervalInt zoom_level_interval(0, number_of_levels);
+    if (smallest_tile_size == -1) {
+      smallest_tile_size = tile_size;
+      global_zoom_level_interval = zoom_level_interval;
+    } else {
+      smallest_tile_size = qMin(smallest_tile_size, tile_size);
+      global_zoom_level_interval |= zoom_level_interval;
+    }
+  }
+  m_viewport->set_zoom_level_interval(global_zoom_level_interval, smallest_tile_size);
+}
+
 QcMapViewLayer *
 QcMapView::get_layer(const QcWmtsPluginLayer * plugin_layer)
 {
@@ -249,6 +270,7 @@ QcMapView::add_layer(const QcWmtsPluginLayer * plugin_layer)
       QcMapViewLayer * layer = new QcMapViewLayer(plugin_layer, m_viewport, layer_scene);
       m_layers << layer;
       m_layer_map.insert(name, layer);
+      update_zoom_level_interval();
       connect(layer, SIGNAL(scene_graph_changed()),
               this, SIGNAL(scene_graph_changed()),
               Qt::QueuedConnection);
@@ -265,6 +287,7 @@ QcMapView::remove_layer(const QcWmtsPluginLayer * plugin_layer)
     m_layers.removeOne(layer);
     QString name = plugin_layer->hash_name();
     m_layer_map.remove(name);
+    update_zoom_level_interval();
     layer->deleteLater();
     // Fixme: disconnect scene_graph_changed ?
   }

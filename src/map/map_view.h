@@ -137,6 +137,7 @@ class QC_EXPORT QcMapView : public QObject
 
  private:
   QcMapViewLayer * get_layer(const QcWmtsPluginLayer * plugin_layer);
+  void update_zoom_level_interval();
 
  private:
   QcViewport * m_viewport;

@@ -90,7 +90,7 @@ class QC_EXPORT QcTileMatrixSet
                   const QcVectorDouble & origin,
                   const QcVectorDouble & scale,
                   const QcWgsCoordinate & default_center,
-                  int number_of_level,
+                  int number_of_level, // Fixme: can be an interval instead
                   int tile_size);
 
   inline const QcProjection & projection() const { return *m_projection; }

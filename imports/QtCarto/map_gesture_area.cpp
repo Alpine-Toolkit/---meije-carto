@@ -524,39 +524,11 @@ QcMapGestureArea::set_flick_enabled(bool enabled)
   for the map plugin. Negative values are ignored.
 */
 void
-QcMapGestureArea::set_minimum_zoom_level(qreal min)
+QcMapGestureArea::set_zoom_level_interval(const QcIntervalInt interval)
 {
   // qInfo();
 
-  if (min >= 0)
-    m_pinch.m_zoom.m_minimum = min;
-}
-
-qreal
-QcMapGestureArea::minimum_zoom_level() const
-{
-  return m_pinch.m_zoom.m_minimum;
-}
-
-/*!
-  \internal
-  Used internally to set the maximum zoom level of the gesture area.
-  The caller is responsible to only send values that are valid
-  for the map plugin. Negative values are ignored.
-*/
-void
-QcMapGestureArea::set_maximum_zoom_level(qreal max)
-{
-  // qInfo();
-
-  if (max >= 0)
-    m_pinch.m_zoom.m_maximum = max;
-}
-
-qreal
-QcMapGestureArea::maximum_zoom_level() const
-{
-  return m_pinch.m_zoom.m_maximum;
+  m_pinch.m_zoom.m_interval = interval;
 }
 
 qreal
@@ -1077,8 +1049,10 @@ QcMapGestureArea::update_pinch()
 
   if (m_accepted_gestures & PinchGesture) {
     // Take maximum and minimumzoomlevel into account
-    qreal per_pinch_minimum_zoom_level = qMax(m_pinch.m_zoom.m_start - m_pinch.m_zoom.maximum_change, m_pinch.m_zoom.m_minimum);
-    qreal per_pinch_maximum_zoom_level = qMin(m_pinch.m_zoom.m_start + m_pinch.m_zoom.maximum_change, m_pinch.m_zoom.m_maximum);
+    qreal per_pinch_minimum_zoom_level = qMax(m_pinch.m_zoom.m_start - m_pinch.m_zoom.maximum_change,
+                                              static_cast<qreal>(m_pinch.m_zoom.m_interval.inf()));
+    qreal per_pinch_maximum_zoom_level = qMin(m_pinch.m_zoom.m_start + m_pinch.m_zoom.maximum_change,
+                                              static_cast<qreal>(m_pinch.m_zoom.m_interval.sup()));
     new_zoom_level = qMin(qMax(per_pinch_minimum_zoom_level, new_zoom_level), per_pinch_maximum_zoom_level);
     m_map->set_zoom_level(new_zoom_level);
     m_pinch.m_zoom.m_previous = new_zoom_level;

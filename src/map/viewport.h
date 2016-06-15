@@ -198,6 +198,11 @@ class QC_EXPORT QcViewport : public QObject
   const QcProjection & projection() const { return *m_projection; }
   void set_projection(const QcProjection * projection);
 
+  // Fixme: add flag ready ?
+  // int smallest_tile_size() const { return m_smallest_tile_size; }
+  const QcIntervalInt & zoom_level_interval() const { return m_zoom_level_interval; }
+  void set_zoom_level_interval(const QcIntervalInt & zoom_level_interval, int smallest_tile_size);
+
   QcWgsCoordinate center() const { return m_state.coordinate(); }
   QcVectorDouble projected_center_coordinate() const;
   void set_center(const QcWgsCoordinate & coordinate);
@@ -256,6 +261,7 @@ class QC_EXPORT QcViewport : public QObject
 
  private:
   const QcTiledZoomLevel & tiled_zoom_level() const { return m_state.tiled_zoom_level(); }
+  void update_zoom_level_interval();
   void update_area_size();
   QcVectorDouble inf_point() const;
   void update_area();
@@ -264,10 +270,17 @@ class QC_EXPORT QcViewport : public QObject
   QcViewportState m_state;
   const QcProjection * m_projection; // Fixme: const
   bool m_is_web_mercator;
+
+  int m_smallest_tile_size = -1;
+  QcIntervalInt m_map_zoom_level_interval;
+  QcIntervalInt m_zoom_level_interval;
+
   QSize m_viewport_size; // px   Fixme: QcVectorInt ?
   float m_device_pixel_ratio;
+  int m_smallest_zoom_level;
   QcVectorDouble m_area_size_m;
   QcVectorDouble m_half_diagonal_m;
+
   QcPolygon m_viewport_polygon;
   QcPolygon m_west_polygon;
   QcPolygon m_middle_polygon;
