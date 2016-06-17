@@ -114,7 +114,7 @@ format_log_with_ansi(const QString & message_type, const QMessageLogContext & co
   if (!message.isEmpty()) {
     QString indented_messaged = message;
     indented_messaged.replace(QLatin1Literal("\n"), QLatin1Literal("\n  "));
-    full_message += "  " + indented_messaged + "\n";
+    full_message += "   " + indented_messaged + "\n";
   }
 
   return full_message;
