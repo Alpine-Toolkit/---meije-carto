@@ -90,7 +90,7 @@ class QC_EXPORT QcMapViewLayer : public QObject
   QcWmtsRequestManager * m_request_manager;
 
   QcTileSpecSet m_west_visible_tiles;
-  QcTileSpecSet m_middle_visible_tiles;
+  QcTileSpecSet m_central_visible_tiles;
   QcTileSpecSet m_east_visible_tiles;
   QcTileSpecSet m_visible_tiles;
 };

@@ -210,6 +210,98 @@ QcViewportState::operator==(const QcViewportState & other) const
 
 /**************************************************************************************************/
 
+QcViewportPart::QcViewportPart()
+  : m_viewport(nullptr),
+    m_position(),
+    m_screen_offset(),
+    m_offset(),
+    m_polygon()
+{}
+
+QcViewportPart::QcViewportPart(const QcViewport * viewport, int position, int screen_offset, double offset, const QcPolygon & polygon)
+  : m_viewport(viewport),
+    m_position(position),
+    m_screen_offset(screen_offset),
+    m_offset(offset),
+    m_polygon(polygon)
+{}
+
+QcViewportPart::QcViewportPart(const QcViewportPart & other)
+  : m_viewport(other.m_viewport),
+    m_position(other.m_position),
+    m_screen_offset(other.m_screen_offset),
+    m_offset(other.m_offset),
+    m_polygon(other.m_polygon)
+{}
+
+QcViewportPart::~QcViewportPart()
+{}
+
+QcViewportPart &
+QcViewportPart::operator=(const QcViewportPart & other)
+{
+  if (this != &other) {
+    m_viewport = other.m_viewport;
+    m_position = other.m_position;
+    m_screen_offset = other.m_screen_offset;
+    m_offset = other.m_offset;
+    m_polygon = other.m_polygon;
+  }
+
+  return *this;
+}
+
+void
+QcViewportPart::clear()
+{
+  m_position = -1;
+  m_polygon.clear();
+}
+
+bool
+QcViewportPart::contains(const QcVectorDouble & projected_coordinate) const
+{
+  return m_polygon.interval().contains(projected_coordinate.x(), projected_coordinate.y());
+}
+
+QcVectorDouble
+QcViewportPart::inf_position() const
+{
+  const QcInterval2DDouble & interval = m_polygon.interval();
+  return QcVectorDouble(interval.x().inf(), interval.y().sup());
+}
+
+QcVectorDouble
+QcViewportPart::map_vector(const QcVectorDouble & projected_coordinate) const
+{
+  return (projected_coordinate - inf_position()).mirror_y();
+}
+
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug debug, const QcViewportPart & viewport_part)
+{
+    QDebugStateSaver saver(debug);
+
+    debug.nospace() << "QcViewportPart(";
+    if (viewport_part) {
+      debug << viewport_part.position()
+            << ", " << viewport_part.screen_offset()
+            << ", " << viewport_part.offset();
+      try {
+        const QcProjection * projection = viewport_part.viewport()->projection_ptr();
+        debug << ", " << format_interval(viewport_part.interval(), projection).toStdString().c_str();
+      } catch(...) {
+        debug << ", bad interval"; // Fixme
+      }
+    }
+    debug << ')';
+
+    return debug;
+}
+#endif
+
+/**************************************************************************************************/
+
 QcViewport::QcViewport(const QcViewportState & viewport_state, const QSize & viewport_size)
   : m_state(viewport_state),
     m_projection(nullptr), // Fixme: QcWebMercatorCoordinate::cls_projection
@@ -392,22 +484,15 @@ QcViewport::pan(const QcVectorDouble & translation)
   set_center(from_projected_coordinate(position));
 }
 
+bool
+QcViewport::is_interval_defined() const {
+  return !m_viewport_polygon.interval().is_empty();
+}
+
 void
 QcViewport::update_area()
 {
-  // const QcInterval2DDouble & current_interval = middle_interval();
-  // qInfo() << "Current polygon interval [m]"
-  //         << "[" << (int) current_interval.x().inf() << ", " << (int) current_interval.x().sup() << "]"
-  //         << "x"
-  //         << "[" << (int) current_interval.y().inf() << ", " << (int) current_interval.y().sup() << "]";
-
-  // Use <<<pseudo mercator>>> to match the origin to the top-left corner
   QcVectorDouble center = projected_center_coordinate();
-
-  // qInfo() << "viewport_size" << viewport_size;
-  // qInfo() << "resolution" << resolution() << "m/px";
-  // qInfo() << "area_size" << m_area_size << "m";
-  // qInfo() << "center as pseudo mercator" << (int) center.x() << (int) center.y();
 
   // QcInterval2DDouble new_area = interval_from_center_and_radius(center, m_half_diagonal_m);
 
@@ -427,24 +512,20 @@ QcViewport::update_area()
   if (_bearing)
     polygon = polygon.rotate_counter_clockwise(_bearing); // Fixme: copy ?
 
+  // global polygon
   m_viewport_polygon = polygon;
 
-  const QcInterval2DDouble & _interval = polygon.interval();
-  // Fixme: check (-100187541,  100187541, -68481603,  49238758 );
-  // qInfo() << "polygon interval [m]"
-  //         << "[" << (int) _interval.x().inf() << ", " << (int) _interval.x().sup() << "]"
-  //         << "x"
-  //         << "[" << (int) _interval.y().inf() << ", " << (int) _interval.y().sup() << "]";
+  const QcInterval2DDouble & interval = polygon.interval();
+
   const QcIntervalDouble & x_projected_interval = m_projection->x_projected_interval();
-  m_number_of_full_maps = static_cast<int>(_interval.x().length() / x_projected_interval.length());
-  // qInfo() << "Number of maps" << m_number_of_full_maps;
+  m_number_of_full_maps = static_cast<int>(interval.x().length() / x_projected_interval.length());
 
   // Fixme. optimise
-  m_west_polygon.clear();
-  m_middle_polygon.clear();
-  m_east_polygon.clear();
+  m_west_part.clear();
+  m_central_part.clear();
+  m_east_part.clear();
 
-  m_cross_boundaries = !_interval.is_included_in(m_projection->projected_interval());
+  m_cross_boundaries = !interval.is_included_in(m_projection->projected_interval());
   // qInfo() << "Cross boudaries" << m_cross_boundaries;
   if (m_cross_boundaries) {
     if (_bearing) {
@@ -453,50 +534,84 @@ QcViewport::update_area()
       // interval matches polygon
       double projected_x_inf = x_projected_interval.inf();
       double projected_x_sup = x_projected_interval.sup();
-      double x_inf = _interval.x().inf();
-      double x_sup = _interval.x().sup();
+      double x_inf = interval.x().inf();
+      double x_sup = interval.x().sup();
       m_cross_west_line = x_inf < projected_x_inf;
       m_cross_east_line = projected_x_sup < x_sup;
       // qInfo() << "west / est" << m_cross_west_line << m_cross_east_line;
       QcInterval2DDouble west_interval;
-      QcInterval2DDouble middle_interval;
+      QcInterval2DDouble central_interval;
       QcInterval2DDouble east_interval;
 
-      // Fixme: cross both ?
-      if (m_cross_west_line) { // Fixme: tiles at east !
+      // Fixme: if cross both ?
+
+      int part_position = 0;
+      double x_offset = 0;
+
+      // West part
+      if (m_cross_west_line) { // eastern tiles !
         // x_inf < projected_x_inf
-        west_interval.x() = QcIntervalDouble(x_projected_interval.wrap(x_inf), projected_x_sup -1.); // Fixme: -1 else take tile on border
-        west_interval.y() = _interval.y();
-        m_west_polygon = interval_to_polygon(west_interval);
-        if (!m_cross_east_line)
-          middle_interval.x() = QcIntervalDouble(projected_x_inf, x_sup);
+        west_interval.x() = QcIntervalDouble(x_projected_interval.wrap(x_inf), projected_x_sup);
+        west_interval.y() = interval.y();
+        m_west_part = QcViewportPart(this, part_position++, to_px(x_offset), x_offset, interval_to_polygon(west_interval));
+        x_offset += west_interval.x().length();
       }
 
+      // Central part
+      if (m_cross_west_line and m_cross_east_line)
+        central_interval.x() = QcIntervalDouble(projected_x_inf, projected_x_sup);
+      else if (m_cross_west_line and !m_cross_east_line)
+        central_interval.x() = QcIntervalDouble(projected_x_inf, x_sup);
+      else if (!m_cross_west_line and m_cross_east_line)
+        central_interval.x() = QcIntervalDouble(x_inf, projected_x_sup);
+      central_interval.y() = interval.y();
+      QcPolygon central_polygon = interval_to_polygon(central_interval);
+      m_central_part = QcViewportPart(this, part_position++, to_px(x_offset), x_offset, central_polygon);
+      double central_offset = central_interval.x().length();
+      x_offset += central_offset;
+      m_central_part_clones.clear();
+      if (m_number_of_full_maps > 1) {
+        for (int i = 1; i < m_number_of_full_maps; i++) {
+          m_central_part_clones << QcViewportPart(this, part_position++, to_px(x_offset), x_offset, polygon);
+          x_offset += central_offset;
+        }
+      }
+
+      // East part
       if (m_cross_east_line) { // Fixme: tiles at west !
         // projected_x_sup < x_sup
         east_interval.x() = QcIntervalDouble(projected_x_inf, x_projected_interval.wrap(x_sup));
-        east_interval.y() = _interval.y();
-        m_east_polygon = interval_to_polygon(east_interval);
-        if (!m_cross_west_line)
-          middle_interval.x() = QcIntervalDouble(x_inf, projected_x_sup -1.);
-        else
-          middle_interval.x() = QcIntervalDouble(projected_x_inf, projected_x_sup -1.);
+        east_interval.y() = interval.y();
+        m_east_part = QcViewportPart(this, part_position, to_px(x_offset), x_offset, interval_to_polygon(east_interval));
       }
-
-      middle_interval.y() = _interval.y();
-      m_middle_polygon = interval_to_polygon(middle_interval);
     }
   } else {
     m_cross_west_line = false;
     m_cross_east_line = false;
-    m_middle_polygon = polygon;
+    m_central_part = QcViewportPart(this, 0, 0, 0, polygon);
   }
 
-  // qInfo() << "West interval   [m]" << format_interval(west_interval(), m_projection).toStdString().c_str() << '\n'
-  //         << "Middle interval [m]" << format_interval(middle_interval(), m_projection).toStdString().c_str() << '\n'
-  //         << "East interval   [m]" << format_interval(east_interval(), m_projection).toStdString().c_str();
+  qInfo() << "West part" << m_west_part << '\n'
+          << "Central part" << m_central_part << '\n'
+          << "East part" << m_east_part << '\n'
+          << "Number of full maps" << m_number_of_full_maps;
 
   emit viewport_changed();
+}
+
+const QcViewportPart *
+QcViewport::find_part(const QcVectorDouble & projected_coordinate) const
+{
+  // Note: it is not a bijection when m_number_of_full_maps is > 1
+
+  if (m_central_part.contains(projected_coordinate))
+    return &m_central_part;
+  else if (m_east_part.contains(projected_coordinate))
+    return &m_east_part;
+  else if (m_west_part.contains(projected_coordinate))
+    return &m_west_part;
+  else
+    return nullptr;
 }
 
 /*!
@@ -512,7 +627,7 @@ QcViewport::screen_to_projected_coordinate(const QcVectorDouble & screen_positio
 {
   qInfo() << screen_position << clip_to_viewport;
 
-  // Fixme: purpose
+  // Fixme: purpose ?
   if (clip_to_viewport) {
     // Fixme: use interval, int versus double
     double x = screen_position.x();
@@ -547,36 +662,18 @@ QcViewport::screen_to_coordinate(const QcVectorDouble & screen_position, bool cl
     \a coordinate is not within the current viewport.
 */
 QcVectorDouble
-QcViewport::coordinate_to_screen(const QcWgsCoordinate & coordinate, bool clip_to_viewport) const
+QcViewport::coordinate_to_screen(const QcVectorDouble & projected_coordinate, bool clip_to_viewport) const
 {
-  // Note: it is not a bijection when m_number_of_full_maps is > 1
-
-  QcVectorDouble projected_coordinate = to_projected_coordinate(coordinate);
   // qInfo() << coordinate << clip_to_viewport
   //         << (int)projected_coordinate.x() << (int)projected_coordinate.y();
 
-  const QcPolygon * polygon;
-  if (m_middle_polygon.interval().contains(projected_coordinate.x(), projected_coordinate.y())) { // Fixme: contains(projected_coordinate)
-    polygon = &m_middle_polygon;
-    // qInfo() << "middle polygon";
-  }
-  else if (m_east_polygon.interval().contains(projected_coordinate.x(), projected_coordinate.y())) {
-    polygon = &m_east_polygon;
-    // qInfo() << "east polygon";
-  }
-  else if (m_west_polygon.interval().contains(projected_coordinate.x(), projected_coordinate.y())) {
-    polygon = &m_west_polygon;
-    // qInfo() << "west polygon";
-  }
-  else {
+  const QcViewportPart * part = find_part(projected_coordinate);
+  if (!part) {
     qWarning() << "out of domain";
     return QcVectorDouble(qQNaN(), qQNaN());
   }
 
-  const QcInterval2DDouble & interval = polygon->interval();
-  QcVectorDouble inf_position(interval.x().inf(), interval.y().sup());
-
-  QcVectorDouble screen_position = to_px((projected_coordinate - inf_position) * QcVectorDouble(1., -1.));
+  QcVectorDouble screen_position = to_px(part->map_vector(projected_coordinate));
 
   // Fixme: purpose
   if (clip_to_viewport) {
@@ -591,6 +688,13 @@ QcViewport::coordinate_to_screen(const QcWgsCoordinate & coordinate, bool clip_t
   // qInfo() << screen_position;
 
   return screen_position;
+}
+
+QcVectorDouble
+QcViewport::coordinate_to_screen(const QcWgsCoordinate & coordinate, bool clip_to_viewport) const
+{
+  QcVectorDouble projected_coordinate = to_projected_coordinate(coordinate);
+  return coordinate_to_screen(projected_coordinate, clip_to_viewport);
 }
 
 double

@@ -50,16 +50,16 @@ QcMapLayerRootNode::QcMapLayerRootNode(const QcTileMatrixSet & tile_matrix_set, 
     m_viewport(viewport),
     // grid_node(new QcGridNode(tile_matrix_set, viewport)),
     west_map_node(new QcMapSideNode()),
-    middle_map_node(new QcMapSideNode()),
+    central_map_node(new QcMapSideNode()),
     east_map_node(new QcMapSideNode())
 {
   // qInfo();
 
   setOpacity(1.);
 
-  // middle_map_node->appendChildNode(grid_node); // Fixme:
+  // central_map_node->appendChildNode(grid_node); // Fixme:
   appendChildNode(west_map_node);
-  appendChildNode(middle_map_node);
+  appendChildNode(central_map_node);
   appendChildNode(east_map_node);
 }
 
@@ -69,21 +69,21 @@ QcMapLayerRootNode::~QcMapLayerRootNode()
 }
 
 void
-QcMapLayerRootNode::update_middle_maps()
+QcMapLayerRootNode::update_central_maps()
 {
   int number_of_full_maps = m_viewport->number_of_full_maps();
   int number_of_clones = qMax(number_of_full_maps - 1, 0);
-  while (number_of_clones < middle_map_nodes.size()) {
+  while (number_of_clones < central_map_nodes.size()) {
     qInfo() << "remove clone";
-    auto * node = middle_map_nodes.takeLast();
+    auto * node = central_map_nodes.takeLast();
     removeChildNode(node);
   }
   if (number_of_clones) {
-    while (middle_map_nodes.size() < number_of_clones) {
-    // for (int i = 0; i < (number_of_clones - middle_map_nodes.size()); i++) {
+    while (central_map_nodes.size() < number_of_clones) {
+    // for (int i = 0; i < (number_of_clones - central_map_nodes.size()); i++) {
       qInfo() << "add clone";
       auto * node = new QcMapSideNode();
-      middle_map_nodes << node;
+      central_map_nodes << node;
       appendChildNode(node);
     }
   }
@@ -204,7 +204,7 @@ QcMapLayerScene::add_tile(const QcTileSpec & tile_spec, QSharedPointer<QcTileTex
 void
 QcMapLayerScene::set_visible_tiles(const QcTileSpecSet & tile_specs,
                                    const QcTileSpecSet & west_tile_specs,
-                                   const QcTileSpecSet & middle_tile_specs,
+                                   const QcTileSpecSet & central_tile_specs,
                                    const QcTileSpecSet & east_tile_specs)
 {
   QcTileSpecSet to_remove = m_visible_tiles - tile_specs;
@@ -213,7 +213,7 @@ QcMapLayerScene::set_visible_tiles(const QcTileSpecSet & tile_specs,
   m_visible_tiles = tile_specs;
   // Fixme: better ?
   m_west_visible_tiles = west_tile_specs;
-  m_middle_visible_tiles = middle_tile_specs;
+  m_central_visible_tiles = central_tile_specs;
   m_east_visible_tiles = east_tile_specs;
 }
 
@@ -273,10 +273,11 @@ QcMapLayerScene::make_node()
   return m_scene_graph_node;
 }
 
+//! Transform the polygon to the tile referential
+// Fixme: cf. map_view
 QcPolygon
 QcMapLayerScene::transform_polygon(const QcPolygon & polygon) const
 {
-  // Fixme: cf. map_view
   QcPolygon transformed_polygon;
   for (const auto & vertex : polygon.vertexes()) {
     auto transformed_vertex = (vertex - m_tile_matrix_set.origin()) * m_tile_matrix_set.scale();
@@ -314,42 +315,43 @@ QcMapLayerScene::update_scene_graph(QcMapLayerRootNode * map_root_node, QQuickWi
 
   const QcTileMatrix & tile_matrix = m_tile_matrix_set[m_viewport->zoom_level()];
   double resolution = tile_matrix.resolution(); // [m/px]
+
+  // Fixme: should be called when west_part is true
   // when we cross west line
+  const QcViewportPart & west_part = m_viewport->west_part();
   map_root_node->update_tiles(this,
                               map_root_node->west_map_node,
                               m_west_visible_tiles,
-                              transform_polygon(m_viewport->west_polygon()),
+                              transform_polygon(west_part.polygon()),
                               .0);
 
-  double middle_offset = 0;
-  if (m_viewport->cross_west_line())
-    middle_offset = m_viewport->west_interval().x().length() / resolution; // Fixme: to_px
-  QcPolygon transformed_middle_polygon = transform_polygon(m_viewport->middle_polygon());
-  // qInfo() << "middle" << middle_offset;
+  const QcViewportPart & central_part = m_viewport->central_part();
+  QcPolygon transformed_central_polygon = transform_polygon(central_part.polygon());
+  // qInfo() << "central" << central_offset;
   map_root_node->update_tiles(this,
-                              map_root_node->middle_map_node,
-                              m_middle_visible_tiles,
-                              transformed_middle_polygon,
-                              middle_offset);
-  double middle_map_length = m_viewport->middle_interval().x().length() / resolution;
-  double east_offset = middle_offset + middle_map_length;
-  map_root_node->update_middle_maps();
-  for (auto * node : map_root_node->middle_map_nodes) {
+                              map_root_node->central_map_node,
+                              m_central_visible_tiles,
+                              transformed_central_polygon,
+                              central_part.screen_offset());
+  map_root_node->update_central_maps();
+  int clone_index = 0;
+  const QList<QcViewportPart> & clone_parts = m_viewport->central_part_clones();
+  for (auto * node : map_root_node->central_map_nodes) {
     // qInfo() << "clone" << east_offset;
     map_root_node->update_tiles(this,
                                 node,
-                                m_middle_visible_tiles,
-                                transformed_middle_polygon,
-                                east_offset);
-    east_offset += middle_map_length;
+                                m_central_visible_tiles,
+                                transformed_central_polygon,
+                                clone_parts[clone_index++].screen_offset());
   }
 
   // qInfo() << "east" << east_offset;
+  const QcViewportPart & east_part = m_viewport->east_part();
   map_root_node->update_tiles(this,
                               map_root_node->east_map_node,
                               m_east_visible_tiles,
-                              transform_polygon(m_viewport->east_polygon()),
-                              east_offset);
+                              transform_polygon(east_part.polygon()),
+                              east_part.screen_offset());
 }
 
 /**************************************************************************************************/

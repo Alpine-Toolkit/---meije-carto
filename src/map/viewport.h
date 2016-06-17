@@ -183,6 +183,58 @@ class QC_EXPORT QcViewportState
 
 /**************************************************************************************************/
 
+class QcViewport;
+
+class QcViewportPart
+{
+public:
+  QcViewportPart();
+  QcViewportPart(const QcViewport * m_viewport,
+                 int position, int screen_offset, double offset,
+                 const QcPolygon & polygon);
+  QcViewportPart(const QcViewportPart & other);
+  ~QcViewportPart();
+
+  QcViewportPart & operator=(const QcViewportPart & other);
+
+  const QcViewport * viewport() const { return m_viewport; }
+
+  int position() const { return m_position; }
+  // void set_position(int position) { m_position = position; }
+
+  int screen_offset() const { return m_screen_offset; }
+  // void set_screen_offset(int screen_offset) { m_screen_offset = screen_offset; }
+
+  double offset() const { return m_offset; }
+  // void set_offset(double offset) { m_offset = offset; }
+
+  const QcPolygon & polygon() const { return m_polygon; }
+  // void set_polygon(const QcPolygon & polygon) { m_polygon = polygon; }
+
+  const QcInterval2DDouble & interval() const  { return m_polygon.interval(); }
+
+  operator bool() const { return m_position != -1; }
+
+  void clear();
+
+  bool contains(const QcVectorDouble & projected_coordinate) const;
+  QcVectorDouble inf_position() const;
+  QcVectorDouble map_vector(const QcVectorDouble & projected_coordinate) const;
+
+private:
+  const QcViewport * m_viewport;
+  int m_position;
+  int m_screen_offset;
+  double m_offset;
+  QcPolygon m_polygon;
+};
+
+#ifndef QT_NO_DEBUG_STREAM
+QC_EXPORT QDebug operator<<(QDebug debug, const QcViewportPart & viewport_part);
+#endif
+
+/**************************************************************************************************/
+
 class QC_EXPORT QcViewport : public QObject
 {
   Q_OBJECT
@@ -195,7 +247,8 @@ class QC_EXPORT QcViewport : public QObject
 
   const QcViewportState & viewport_state() const { return m_state; }
 
-  const QcProjection & projection() const { return *m_projection; }
+  const QcProjection * projection_ptr() const { return m_projection; }
+  const QcProjection & projection() const { return *m_projection; } // Fixme: m_projection = nullptr
   void set_projection(const QcProjection * projection);
 
   // Fixme: add flag ready ?
@@ -219,9 +272,10 @@ class QC_EXPORT QcViewport : public QObject
   QcVectorDouble to_projected_coordinate(const QcWgsCoordinate & coordinate) const;
   QcWgsCoordinate from_projected_coordinate(const QcVectorDouble & coordinate) const;
 
-  QcVectorDouble screen_to_projected_coordinate(const QcVectorDouble & screen_position, bool clip_to_viewport) const;
-  QcWgsCoordinate screen_to_coordinate(const QcVectorDouble & position, bool clip_to_viewport) const;
-  QcVectorDouble coordinate_to_screen(const QcWgsCoordinate & coordinate, bool clip_to_viewport) const;
+  QcVectorDouble screen_to_projected_coordinate(const QcVectorDouble & screen_position, bool clip_to_viewport = false) const;
+  QcWgsCoordinate screen_to_coordinate(const QcVectorDouble & position, bool clip_to_viewport = false) const;
+  QcVectorDouble coordinate_to_screen(const QcVectorDouble & projected_coordinate, bool clip_to_viewport = false) const;
+  QcVectorDouble coordinate_to_screen(const QcWgsCoordinate & coordinate, bool clip_to_viewport = false) const;
 
   double from_px(double distance_px) const { return tiled_zoom_level().from_px(distance_px); }
   double to_px(double distance) const { return tiled_zoom_level().to_px(distance); }
@@ -242,17 +296,17 @@ class QC_EXPORT QcViewport : public QObject
     pan(QcVectorDouble(x, y));
   }
 
+  bool is_interval_defined() const;
+
   bool cross_boundaries() const { return m_cross_boundaries; }
   bool cross_west_line() const { return m_cross_west_line; }
   bool cross_east_line() const { return m_cross_east_line; }
   int number_of_full_maps() const { return m_number_of_full_maps; }
 
-  const QcPolygon & east_polygon() const { return m_east_polygon; }
-  const QcInterval2DDouble & east_interval() const { return m_east_polygon.interval(); }
-  const QcPolygon & middle_polygon() const { return m_middle_polygon; }
-  const QcInterval2DDouble & middle_interval() const { return m_middle_polygon.interval(); }
-  const QcPolygon & west_polygon() const { return m_west_polygon; }
-  const QcInterval2DDouble & west_interval() const { return m_west_polygon.interval(); }
+  const QcViewportPart & east_part() const { return m_east_part; }
+  const QcViewportPart & central_part() const { return m_central_part; }
+  const QList<QcViewportPart> & central_part_clones() const { return m_central_part_clones; }
+  const QcViewportPart & west_part() const { return m_west_part; }
 
   QcMapScale make_scale(unsigned int max_length_px);
 
@@ -265,6 +319,7 @@ class QC_EXPORT QcViewport : public QObject
   void update_area_size();
   QcVectorDouble inf_point() const;
   void update_area();
+  const QcViewportPart * find_part(const QcVectorDouble & projected_coordinate) const;
 
  private:
   QcViewportState m_state;
@@ -282,9 +337,12 @@ class QC_EXPORT QcViewport : public QObject
   QcVectorDouble m_half_diagonal_m;
 
   QcPolygon m_viewport_polygon;
-  QcPolygon m_west_polygon;
-  QcPolygon m_middle_polygon;
-  QcPolygon m_east_polygon;
+
+  QcViewportPart m_west_part;
+  QcViewportPart m_central_part;
+  QList<QcViewportPart> m_central_part_clones;
+  QcViewportPart m_east_part;
+
   bool m_cross_boundaries;
   bool m_cross_west_line;
   bool m_cross_east_line;

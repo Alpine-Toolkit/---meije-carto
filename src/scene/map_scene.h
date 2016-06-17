@@ -85,7 +85,7 @@ public:
 
   void set_visible_tiles(const QcTileSpecSet & tile_specs,
                          const QcTileSpecSet & west_tile_specs,
-                         const QcTileSpecSet & middle_tile_specs,
+                         const QcTileSpecSet & central_tile_specs,
                          const QcTileSpecSet & east_tile_specs);
   const QcTileSpecSet & visible_tiles() const { return m_visible_tiles; };
   QcTileSpecSet textured_tiles() const;
@@ -112,7 +112,7 @@ private:
 
   QcTileSpecSet m_visible_tiles;
   QcTileSpecSet m_west_visible_tiles;
-  QcTileSpecSet m_middle_visible_tiles;
+  QcTileSpecSet m_central_visible_tiles;
   QcTileSpecSet m_east_visible_tiles;
 
   float m_opacity;

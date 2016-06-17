@@ -149,10 +149,8 @@ QcPathNode::update(const QcPathDouble & path)
 {
   QList<QcVectorDouble> path_vertexes;
   // Fixme:
-  const QcInterval2DDouble & middle_interval = m_viewport->middle_interval();
-  QcVectorDouble inf_position(middle_interval.x().inf(), middle_interval.y().sup());
   for (const auto & vertex : path.vertexes()) {
-    QcVectorDouble screen_position = m_viewport->to_px((vertex - inf_position) * QcVectorDouble(1., -1.));
+    QcVectorDouble screen_position = m_viewport->coordinate_to_screen(vertex);
     qInfo() << vertex << screen_position;
     path_vertexes << screen_position;
   }

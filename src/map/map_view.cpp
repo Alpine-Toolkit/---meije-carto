@@ -77,6 +77,7 @@ QcMapViewLayer::update_tile(const QcTileSpec & tile_spec)
   }
 }
 
+//! Transform the polygon to the tile referential
 QcPolygon
 QcMapViewLayer::transform_polygon(const QcPolygon & polygon) // Fixme: const
 {
@@ -84,6 +85,7 @@ QcMapViewLayer::transform_polygon(const QcPolygon & polygon) // Fixme: const
   QcPolygon transformed_polygon;
   QList<QcVectorDouble> vertexes;
   for (const auto & vertex : polygon.vertexes()) {
+    // Fixme: [before in viewport] -1 else take tile on border
     auto transformed_vertex = (vertex - tile_matrix_set.origin()) * tile_matrix_set.scale();
     vertexes << transformed_vertex;
     // transformed_polygon.add_vertex(transformed_vertex);
@@ -131,40 +133,30 @@ QcMapViewLayer::update_scene()
 
   // Compute visible tile set in viewport
 
-  // Fixme: Done in map scene !!!
-  QcTileMatrixSet tile_matrix_set = plugin()->tile_matrix_set();
-  int zoom_level = m_viewport->zoom_level();
-  const QcTileMatrix & tile_matrix = tile_matrix_set[zoom_level];
-  double tile_length_m = tile_matrix.tile_length_m();
+  m_west_visible_tiles.clear();
+  m_central_visible_tiles.clear();
+  m_east_visible_tiles.clear();
+  m_visible_tiles.clear();
 
-  // Fixme: better check ?
-  // Fixme: clear first ?
-  const QcPolygon & polygon = m_viewport->middle_polygon();
-  const QcInterval2DDouble & interval = polygon.interval();
-  if (interval.is_empty()) {
-    m_west_visible_tiles.clear();
-    m_middle_visible_tiles.clear();
-    m_east_visible_tiles.clear();
-    m_visible_tiles.clear();
-    m_layer_scene->set_visible_tiles(m_visible_tiles, m_east_visible_tiles, m_middle_visible_tiles, m_west_visible_tiles);
-    emit scene_graph_changed();
-  } else {
-    // qInfo() << "Normalised Mercator polygon interval [m]"
-    //         << "[" << (int) interval.x().inf() << ", " << (int) interval.x().sup() << "]"
-    //         << "x"
-    //         << "[" << (int) interval.y().inf() << ", " << (int) interval.y().sup() << "]";
-    m_middle_visible_tiles = intersec_polygon_with_grid(polygon, tile_length_m, zoom_level);
+  if (m_viewport->is_interval_defined()) {
+    // Fixme: Done in map scene !!!
+    QcTileMatrixSet tile_matrix_set = plugin()->tile_matrix_set();
+    int zoom_level = m_viewport->zoom_level();
+    const QcTileMatrix & tile_matrix = tile_matrix_set[zoom_level];
+    double tile_length_m = tile_matrix.tile_length_m();
+
+    // Fixme: use if(m_viewport->west_part()) ?
     if (m_viewport->cross_west_line())
-      m_west_visible_tiles = intersec_polygon_with_grid(m_viewport->west_polygon(), tile_length_m, zoom_level);
-    else
-      m_west_visible_tiles.clear();
+      m_west_visible_tiles = intersec_polygon_with_grid(m_viewport->west_part().polygon(), tile_length_m, zoom_level);
+
+    m_central_visible_tiles = intersec_polygon_with_grid(m_viewport->central_part().polygon(), tile_length_m, zoom_level);
+
     if (m_viewport->cross_east_line())
-      m_east_visible_tiles = intersec_polygon_with_grid(m_viewport->east_polygon(), tile_length_m, zoom_level);
-    else
-      m_east_visible_tiles.clear();
-    QcTileSpecSet visible_tiles = m_east_visible_tiles + m_middle_visible_tiles + m_west_visible_tiles;
+      m_east_visible_tiles = intersec_polygon_with_grid(m_viewport->east_part().polygon(), tile_length_m, zoom_level);
+
+    QcTileSpecSet visible_tiles = m_east_visible_tiles + m_central_visible_tiles + m_west_visible_tiles;
     // qInfo() << "visible west tiles: " << m_west_visible_tiles << '\n'
-    //         << "visible middle tiles: " << m_middle_visible_tiles << '\n'
+    //         << "visible central tiles: " << m_central_visible_tiles << '\n'
     //         << "visible east tiles: " << m_east_visible_tiles << '\n'
     //         << "visible tiles: " << visible_tiles << '\n'
     //         << "new visible tiles: " << visible_tiles - m_visible_tiles;
@@ -173,7 +165,7 @@ QcMapViewLayer::update_scene()
     m_visible_tiles = visible_tiles;
 
     // Fixme: better ?
-    m_layer_scene->set_visible_tiles(m_visible_tiles, m_west_visible_tiles, m_middle_visible_tiles, m_east_visible_tiles);
+    m_layer_scene->set_visible_tiles(m_visible_tiles, m_west_visible_tiles, m_central_visible_tiles, m_east_visible_tiles);
 
     // Don't request tiles that are already built and textured
     QcTileSpecSet tile_to_request = m_visible_tiles - m_layer_scene->textured_tiles();
@@ -184,7 +176,11 @@ QcMapViewLayer::update_scene()
         if (!cached_tiles.isEmpty())
           emit scene_graph_changed();
     }
-  }
+  } else {
+    // Fixme: code
+    m_layer_scene->set_visible_tiles(m_visible_tiles, m_east_visible_tiles, m_central_visible_tiles, m_west_visible_tiles);
+    emit scene_graph_changed();
+ }
 
   // Fixme: else pan doesn't work
   emit scene_graph_changed();
