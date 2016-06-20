@@ -337,6 +337,7 @@ class QC_EXPORT QcViewport : public QObject
 
   QcPolygon m_viewport_polygon;
   bool m_center_map_vertically; // map height < item height
+  QcIntervalDouble m_y_screen_interval;
 
   QcViewportPart m_west_part;
   QcViewportPart m_central_part;

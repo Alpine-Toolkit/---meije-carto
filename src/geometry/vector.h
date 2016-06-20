@@ -84,6 +84,8 @@ class QC_EXPORT QcVector
 
   QPointF to_pointf() const;
 
+  // bool is_valid();
+
   T x() const;
   T y() const;
   void set_x(T value);

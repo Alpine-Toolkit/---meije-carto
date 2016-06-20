@@ -359,6 +359,35 @@ QcViewport::set_projection(const QcProjection * projection)
   }
 }
 
+QcVectorDouble
+QcViewport::to_projected_coordinate(const QcWgsCoordinate & coordinate) const
+{
+  if (m_is_web_mercator)
+    return coordinate.web_mercator().vector();
+  else
+    return coordinate.transform(*m_projection); // Fixme:
+}
+
+QcWgsCoordinate
+QcViewport::from_projected_coordinate(const QcVectorDouble & coordinate) const
+{
+  // adjust position if it is outside the valid domain (done ine QcWebMercatorCoordinate)
+  if (m_is_web_mercator)
+    return QcWebMercatorCoordinate(coordinate.x(), coordinate.y()).wgs84(); // Fixme:
+  else {
+    QcGeoCoordinate wgs = QcGeoCoordinate(m_projection, coordinate.x(), coordinate.y()).transform(&QcWgsCoordinate::cls_projection); // Fixme:
+    // QcVectorDouble wgs = QcGeoCoordinateTrait::projection()
+    return QcWgsCoordinate(wgs.x(), wgs.y());
+  }
+}
+
+QcVectorDouble
+QcViewport::projected_center_coordinate() const
+{
+  // Fixme: cache
+  return to_projected_coordinate(center());
+}
+
 void
 QcViewport::begin_state_transaction()
 {
@@ -418,35 +447,6 @@ QcViewport::set_resolution(double resolution)
   // require to compute zoom level
 }
 */
-
-QcVectorDouble
-QcViewport::to_projected_coordinate(const QcWgsCoordinate & coordinate) const
-{
-  if (m_is_web_mercator)
-    return coordinate.web_mercator().vector();
-  else
-    return coordinate.transform(*m_projection); // Fixme:
-}
-
-QcWgsCoordinate
-QcViewport::from_projected_coordinate(const QcVectorDouble & coordinate) const
-{
-  // adjust position if it is outside the valid domain (done ine QcWebMercatorCoordinate)
-  if (m_is_web_mercator)
-    return QcWebMercatorCoordinate(coordinate.x(), coordinate.y()).wgs84(); // Fixme:
-  else {
-    QcGeoCoordinate wgs = QcGeoCoordinate(m_projection, coordinate.x(), coordinate.y()).transform(&QcWgsCoordinate::cls_projection); // Fixme:
-    // QcVectorDouble wgs = QcGeoCoordinateTrait::projection()
-    return QcWgsCoordinate(wgs.x(), wgs.y());
-  }
-}
-
-QcVectorDouble
-QcViewport::projected_center_coordinate() const
-{
-  // Fixme: cache
-  return to_projected_coordinate(center());
-}
 
 void
 QcViewport::zoom_at(const QcWgsCoordinate & coordinate, unsigned int zoom_level)
@@ -599,18 +599,17 @@ QcViewport::update_area()
   const QcIntervalDouble & x_viewport_interval = viewport_interval.x();
   const QcIntervalDouble & y_viewport_interval = viewport_interval.y();
 
-  qInfo() << viewport_interval << resolution();
+  qInfo() << viewport_interval;
 
   // Center map ?
-  QcIntervalDouble y_screen_interval;
   if (m_center_map_vertically) {
     double map_height = to_px(y_projected_interval.length());
     double y_offset = (height() - map_height) / 2;
-    y_screen_interval = QcIntervalDouble(y_offset, y_offset + map_height);
+    m_y_screen_interval = QcIntervalDouble(y_offset, y_offset + map_height);
   } else
-    y_screen_interval = QcIntervalDouble(0, height()); // -1
+    m_y_screen_interval = QcIntervalDouble(0, height()); // -1
 
-  // Fixme. optimise
+  // Fixme: optimise
   m_west_part.clear();
   m_central_part.clear();
   m_east_part.clear();
@@ -665,10 +664,10 @@ QcViewport::update_area()
       // x_inf < projected_x_inf
       west_interval.x() = QcIntervalDouble(x_projected_interval.wrap(x_inf), projected_x_sup);
       west_interval.y() = y_viewport_interval;
-      x_offset += west_interval.x().length();
+      x_offset += west_interval.x_length();
       QcIntervalDouble x_screen_interval(0, to_px(x_offset));
       m_west_part = QcViewportPart(this, part_position++,
-                                   QcInterval2DDouble(x_screen_interval, y_screen_interval),
+                                   QcInterval2DDouble(x_screen_interval, m_y_screen_interval),
                                    interval_to_polygon(west_interval));
     }
 
@@ -683,11 +682,11 @@ QcViewport::update_area()
     central_interval.y() = y_viewport_interval;
     QcPolygon central_polygon = interval_to_polygon(central_interval);
     int x_screen_offset_inf = to_px(x_offset);
-    double central_offset = central_interval.x().length();
+    double central_offset = central_interval.x_length();
     x_offset += central_offset;
     QcIntervalDouble x_central_screen_interval(x_screen_offset_inf, to_px(x_offset));
     m_central_part = QcViewportPart(this, part_position++,
-                                    QcInterval2DDouble(x_central_screen_interval, y_screen_interval),
+                                    QcInterval2DDouble(x_central_screen_interval, m_y_screen_interval),
                                     central_polygon);
     m_central_part_clones.clear();
     double x_projected_interval_length = x_projected_interval.length();
@@ -698,7 +697,7 @@ QcViewport::update_area()
       x_offset += x_projected_interval_length;
       QcIntervalDouble x_screen_interval(x_screen_offset_inf, to_px(x_offset));
       QcViewportPart clone_part = QcViewportPart(this, part_position++,
-                                                 QcInterval2DDouble(x_screen_interval, y_screen_interval),
+                                                 QcInterval2DDouble(x_screen_interval, m_y_screen_interval),
                                                  central_polygon);
       m_central_part_clones << clone_part;
     }
@@ -710,7 +709,7 @@ QcViewport::update_area()
       east_interval.y() = y_viewport_interval;
       QcIntervalDouble x_screen_interval(to_px(x_offset), width()); // -1
       m_east_part = QcViewportPart(this, part_position,
-                                   QcInterval2DDouble(x_screen_interval, y_screen_interval),
+                                   QcInterval2DDouble(x_screen_interval, m_y_screen_interval),
                                    interval_to_polygon(east_interval));
       // }
     }
@@ -719,7 +718,7 @@ QcViewport::update_area()
     m_cross_east_line = false;
     QcIntervalDouble x_screen_interval(0, width()); // -1
     m_central_part = QcViewportPart(this, 0,
-                                    QcInterval2DDouble(x_screen_interval, y_screen_interval),
+                                    QcInterval2DDouble(x_screen_interval, m_y_screen_interval),
                                     m_viewport_polygon);
   }
 
@@ -736,6 +735,7 @@ QcViewport::find_part(const QcVectorDouble & projected_coordinate) const
 {
   // Note: it is not a bijection when m_number_of_full_maps is > 1
 
+  // Try central part first
   if (m_central_part.contains(projected_coordinate))
     return &m_central_part;
   else if (m_east_part.contains(projected_coordinate))
@@ -768,9 +768,17 @@ QcViewport::screen_to_projected_coordinate(const QcVectorDouble & screen_positio
       return QcVectorDouble(qQNaN(), qQNaN());
   }
 
+  // Fixme: screen_to_coordinate while return QcWgsCoordinate(0, 0)
+  if (m_center_map_vertically and
+      !m_y_screen_interval.contains(screen_position.y())) {
+    qWarning() << "y screen position is out of map";
+    return QcVectorDouble(qQNaN(), qQNaN());
+  }
+
   const QcInterval2DDouble & interval = m_viewport_polygon.interval();
   QcVectorDouble projected_position(interval.x().inf(), interval.y().sup());
-  projected_position += from_px(screen_position).mirror_y();
+  QcVectorDouble screen_offset(0, m_y_screen_interval.inf());
+  projected_position += from_px(screen_position - screen_offset).mirror_y();
 
   return projected_position; // Fixme: not wrapped !
 }
@@ -857,10 +865,6 @@ QcViewport::make_scale(unsigned int max_length_px)
 
   return QcMapScale(length, ceil(to_px(length) / m_device_pixel_ratio));
 }
-
-/**************************************************************************************************/
-
-// #include "viewport.moc"
 
 /***************************************************************************************************
  *

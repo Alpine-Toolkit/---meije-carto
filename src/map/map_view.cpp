@@ -114,10 +114,13 @@ QcMapViewLayer::intersec_polygon_with_grid(const QcPolygon & polygon, double til
       // qWarning() << "Tile columns is out of range" << y;
       y = qMax(qMin(y, number_of_tiles -1), 0); // Fixme: to func
     }
-    if (!run_interval.is_included_in(valid_interval)) {
-      qWarning() << "Tile row is out of range" << run_interval;
-      run_interval &= valid_interval;
-    }
+    // It arises when the polygon vertexes are at the border
+    if (run_interval.sup() >= number_of_tiles)
+      run_interval.set_sup(valid_interval.sup());
+    // if (!run_interval.is_included_in(valid_interval)) {
+    //   // qWarning() << "Tile row is out of range" << run_interval;
+    //   run_interval &= valid_interval;
+    // }
     for (int x = run_interval.inf(); x <= run_interval.sup(); x++)
       visible_tiles.insert(m_plugin_layer->create_tile_spec(zoom_level, x, y));
   }

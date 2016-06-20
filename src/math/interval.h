@@ -166,6 +166,9 @@ class QC_EXPORT QcInterval2D
   inline const QcInterval<T> & x() const { return m_x; }
   inline const QcInterval<T> & y() const { return m_y; }
 
+  inline T x_length() const { return m_x.length(); }
+  inline T y_length() const { return m_y.length(); }
+
   bool is_empty() const;
 
   bool operator==(const QcInterval2D<T> & other) const;
