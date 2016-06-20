@@ -191,8 +191,8 @@ public:
   QcViewportPart();
   QcViewportPart(const QcViewport * m_viewport,
                  int position,
-                 int screen_offset,
-                 double offset,
+                 const QcInterval2DDouble screen_interval,
+                 // double offset,
                  const QcPolygon & polygon // Fixme: interval ?
                  );
   QcViewportPart(const QcViewportPart & other);
@@ -203,17 +203,8 @@ public:
   const QcViewport * viewport() const { return m_viewport; }
 
   int position() const { return m_position; }
-  // void set_position(int position) { m_position = position; }
-
-  int screen_offset() const { return m_screen_offset; }
-  // void set_screen_offset(int screen_offset) { m_screen_offset = screen_offset; }
-
-  double offset() const { return m_offset; }
-  // void set_offset(double offset) { m_offset = offset; }
-
+  const QcInterval2DDouble & screen_interval() const  { return m_screen_interval; }
   const QcPolygon & polygon() const { return m_polygon; }
-  // void set_polygon(const QcPolygon & polygon) { m_polygon = polygon; }
-
   const QcInterval2DDouble & interval() const  { return m_polygon.interval(); }
 
   operator bool() const { return m_position != -1; }
@@ -227,9 +218,7 @@ public:
 private:
   const QcViewport * m_viewport;
   int m_position;
-  int m_screen_offset;
-  double m_offset;
-  // QcInterval2DDouble m_screen_interval;
+  QcInterval2DDouble m_screen_interval;
   QcPolygon m_polygon;
 };
 
@@ -347,6 +336,7 @@ class QC_EXPORT QcViewport : public QObject
   QcVectorDouble m_half_diagonal_m;
 
   QcPolygon m_viewport_polygon;
+  bool m_center_map_vertically; // map height < item height
 
   QcViewportPart m_west_part;
   QcViewportPart m_central_part;

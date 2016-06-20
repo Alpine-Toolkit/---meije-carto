@@ -213,24 +213,24 @@ QcViewportState::operator==(const QcViewportState & other) const
 QcViewportPart::QcViewportPart()
   : m_viewport(nullptr),
     m_position(),
-    m_screen_offset(),
-    m_offset(),
+    m_screen_interval(),
     m_polygon()
 {}
 
-QcViewportPart::QcViewportPart(const QcViewport * viewport, int position, int screen_offset, double offset, const QcPolygon & polygon)
+QcViewportPart::QcViewportPart(const QcViewport * viewport,
+                               int position,
+                               const QcInterval2DDouble screen_interval,
+                               const QcPolygon & polygon)
   : m_viewport(viewport),
     m_position(position),
-    m_screen_offset(screen_offset),
-    m_offset(offset),
+    m_screen_interval(screen_interval),
     m_polygon(polygon)
 {}
 
 QcViewportPart::QcViewportPart(const QcViewportPart & other)
   : m_viewport(other.m_viewport),
     m_position(other.m_position),
-    m_screen_offset(other.m_screen_offset),
-    m_offset(other.m_offset),
+    m_screen_interval(other.m_screen_interval),
     m_polygon(other.m_polygon)
 {}
 
@@ -243,8 +243,7 @@ QcViewportPart::operator=(const QcViewportPart & other)
   if (this != &other) {
     m_viewport = other.m_viewport;
     m_position = other.m_position;
-    m_screen_offset = other.m_screen_offset;
-    m_offset = other.m_offset;
+    m_screen_interval = other.m_screen_interval;
     m_polygon = other.m_polygon;
   }
 
@@ -286,8 +285,7 @@ QDebug operator<<(QDebug debug, const QcViewportPart & viewport_part)
     if (viewport_part) {
       const QcProjection * projection = viewport_part.viewport()->projection_ptr();
       debug << viewport_part.position()
-            << ", " << viewport_part.screen_offset()
-            << ", " << viewport_part.offset()
+            << ", " << viewport_part.screen_interval()
             << ", " << format_interval(viewport_part.interval(), projection);
     }
     debug << ')';
@@ -531,6 +529,7 @@ QcViewport::compute_polygon() const
   polygon.add_vertex(point1);
   polygon.add_vertex(point4);
 
+  // Bearing: make only sense for local map, with eventually one wrapping
   double _bearing = bearing();
   if (_bearing)
     polygon = polygon.rotate_counter_clockwise(_bearing); // Fixme: copy ?
@@ -542,26 +541,41 @@ void
 QcViewport::adjust_center()
 {
   QcPolygon polygon = compute_polygon();
+  qInfo() << polygon.interval();
 
   // const QcIntervalDouble & x_projected_interval = m_projection->x_projected_interval();
   const QcIntervalDouble & y_projected_interval = m_projection->y_projected_interval();
 
-  const QcInterval2DDouble & interval = polygon.interval();
-  // const QcIntervalDouble & x_interval = interval.x();
-  const QcIntervalDouble & y_interval = interval.y();
+  const QcInterval2DDouble & viewport_interval = polygon.interval();
+  const QcIntervalDouble & x_viewport_interval = viewport_interval.x();
+  const QcIntervalDouble & y_viewport_interval = viewport_interval.y();
 
-  if (!y_interval.is_included_in(y_projected_interval)) {
+  // Adjust y to fit in the projection domain
+  m_center_map_vertically = false;
+  if (!y_viewport_interval.is_included_in(y_projected_interval)) {
     qInfo() << "Adjust y";
     QcVectorDouble projected_center = projected_center_coordinate();
-    double y = projected_center.y();
-    if (y_projected_interval.sup() < y_interval.sup())
-      y += y_projected_interval.sup() - y_interval.sup(); // < 0
-    else if (y_interval.inf() < y_projected_interval.inf())
-      y += y_projected_interval.inf() - y_interval.inf(); // > 0
-    QcWgsCoordinate center = from_projected_coordinate(QcVectorDouble(projected_center.x(), y));
-    m_state.set_coordinate(center);
-    polygon = compute_polygon();
+    // Item height is larger than the map, map is centered
+    if (y_projected_interval.length() < y_viewport_interval.length()) {
+      QcWgsCoordinate center = from_projected_coordinate(QcVectorDouble(projected_center.x(), 0));
+      m_state.set_coordinate(center);
+      // reduce to the projected domain and center map
+      polygon = interval_to_polygon(QcInterval2DDouble(x_viewport_interval, y_projected_interval));
+      m_center_map_vertically = true;
+    } else {
+      // Ensure we cannot go outside of the projection domain
+      double y = projected_center.y();
+      if (y_projected_interval.sup() < y_viewport_interval.sup())
+        y += y_projected_interval.sup() - y_viewport_interval.sup(); // < 0
+      else if (y_viewport_interval.inf() < y_projected_interval.inf())
+        y += y_projected_interval.inf() - y_viewport_interval.inf(); // > 0
+      QcWgsCoordinate center = from_projected_coordinate(QcVectorDouble(projected_center.x(), y));
+      m_state.set_coordinate(center);
+      polygon = compute_polygon();
+    }
   }
+
+  qInfo() << "final" << polygon.interval();
 
   // global polygon
   m_viewport_polygon = polygon;
@@ -570,6 +584,8 @@ QcViewport::adjust_center()
 void
 QcViewport::update_area()
 {
+  // Fixme: to_px truncate to int, thus we have an incertitude of 1 px, ok ?
+
   // Skip if no map layer
   if (m_smallest_tile_size == -1)
     return;
@@ -577,15 +593,22 @@ QcViewport::update_area()
   adjust_center();
 
   const QcIntervalDouble & x_projected_interval = m_projection->x_projected_interval();
+  const QcIntervalDouble & y_projected_interval = m_projection->y_projected_interval();
 
   const QcInterval2DDouble & viewport_interval = m_viewport_polygon.interval();
   const QcIntervalDouble & x_viewport_interval = viewport_interval.x();
   const QcIntervalDouble & y_viewport_interval = viewport_interval.y();
 
-  qInfo() << viewport_interval;
+  qInfo() << viewport_interval << resolution();
 
-  // double number_of_full_maps_y = viewport_interval.y().length() / y_projected_interval.length();
-  // m_number_of_full_maps = static_cast<int>(viewport_interval.x().length() / x_projected_interval.length());
+  // Center map ?
+  QcIntervalDouble y_screen_interval;
+  if (m_center_map_vertically) {
+    double map_height = to_px(y_projected_interval.length());
+    double y_offset = (height() - map_height) / 2;
+    y_screen_interval = QcIntervalDouble(y_offset, y_offset + map_height);
+  } else
+    y_screen_interval = QcIntervalDouble(0, height()); // -1
 
   // Fixme. optimise
   m_west_part.clear();
@@ -595,68 +618,109 @@ QcViewport::update_area()
   m_cross_boundaries = !x_viewport_interval.is_included_in(x_projected_interval);
   // qInfo() << "Cross boudaries" << m_cross_boundaries;
   if (m_cross_boundaries) {
-    double _bearing = bearing();
-    if (_bearing) {
-      // Fixme: bearing and date line crossing
-    } else {
-      // interval matches polygon
-      double projected_x_inf = x_projected_interval.inf();
-      double projected_x_sup = x_projected_interval.sup();
-      double x_inf = x_viewport_interval.inf();
-      double x_sup = x_viewport_interval.sup();
-      m_cross_west_line = x_inf < projected_x_inf;
-      m_cross_east_line = projected_x_sup < x_sup;
-      // qInfo() << "west / est" << m_cross_west_line << m_cross_east_line;
-      QcInterval2DDouble west_interval;
-      QcInterval2DDouble central_interval;
-      QcInterval2DDouble east_interval;
+    // double _bearing = bearing();
+    // if (_bearing) {
+    //   // Fixme: bearing and date line crossing
+    // } else {
+    // interval matches polygon
+    double projected_x_inf = x_projected_interval.inf();
+    double projected_x_sup = x_projected_interval.sup();
+    double x_inf = x_viewport_interval.inf();
+    double x_sup = x_viewport_interval.sup();
+    m_cross_west_line = x_inf < projected_x_inf;
+    m_cross_east_line = projected_x_sup < x_sup;
+    // qInfo() << "west / est" << m_cross_west_line << m_cross_east_line;
+    QcInterval2DDouble west_interval;
+    QcInterval2DDouble central_interval;
+    QcInterval2DDouble east_interval;
 
-      // Fixme: if cross both ?
+    // Fixme: if cross both ?
 
-      int part_position = 0;
-      double x_offset = 0;
-
-      // West part
-      if (m_cross_west_line) { // eastern tiles !
-        // x_inf < projected_x_inf
-        west_interval.x() = QcIntervalDouble(x_projected_interval.wrap(x_inf), projected_x_sup);
-        west_interval.y() = y_viewport_interval;
-        m_west_part = QcViewportPart(this, part_position++, to_px(x_offset), x_offset, interval_to_polygon(west_interval));
-        x_offset += west_interval.x().length();
+    /*
+    QList<QcIntervalDouble> sub_intervals;
+    double x_cut = x_viewport_interval.inf();
+    int cut_count = 0;
+    while (true) {
+      double remainder = (!cut_count) ?
+        fmod(fabs(x_cut), x_projected_interval.sup()) :
+        x_projected_interval.sup();
+      double next_x_cut = x_cut + remainder;
+      if (next_x_cut < x_viewport_interval.sup())
+        sub_intervals << QcIntervalDouble(x_cut, next_x_cut);
+      else {
+        sub_intervals << QcIntervalDouble(x_cut, x_viewport_interval.sup());
+        break;
       }
+      x_cut = next_x_cut;
+      cut_count++;
+    }
+    qInfo() << sub_intervals;
+    */
 
-      // Central part
-      if (m_cross_west_line and m_cross_east_line)
-        central_interval.x() = QcIntervalDouble(projected_x_inf, projected_x_sup);
-      else if (m_cross_west_line and !m_cross_east_line)
-        central_interval.x() = QcIntervalDouble(projected_x_inf, x_sup);
-      else if (!m_cross_west_line and m_cross_east_line)
-        central_interval.x() = QcIntervalDouble(x_inf, projected_x_sup);
-      central_interval.y() = y_viewport_interval;
-      QcPolygon central_polygon = interval_to_polygon(central_interval);
-      m_central_part = QcViewportPart(this, part_position++, to_px(x_offset), x_offset, central_polygon);
-      double central_offset = central_interval.x().length();
-      x_offset += central_offset;
-      m_central_part_clones.clear();
-      if (m_number_of_full_maps > 1) {
-        for (int i = 1; i < m_number_of_full_maps; i++) {
-          m_central_part_clones << QcViewportPart(this, part_position++, to_px(x_offset), x_offset, central_polygon);
-          x_offset += central_offset;
-        }
-      }
+    int part_position = 0;
+    double x_offset = .0;
 
-      // East part
-      if (m_cross_east_line) { // Fixme: tiles at west !
-        // projected_x_sup < x_sup
-        east_interval.x() = QcIntervalDouble(projected_x_inf, x_projected_interval.wrap(x_sup));
-        east_interval.y() = y_viewport_interval;
-        m_east_part = QcViewportPart(this, part_position, to_px(x_offset), x_offset, interval_to_polygon(east_interval));
-      }
+    // West part
+    if (m_cross_west_line) { // eastern tiles !
+      // x_inf < projected_x_inf
+      west_interval.x() = QcIntervalDouble(x_projected_interval.wrap(x_inf), projected_x_sup);
+      west_interval.y() = y_viewport_interval;
+      x_offset += west_interval.x().length();
+      QcIntervalDouble x_screen_interval(0, to_px(x_offset));
+      m_west_part = QcViewportPart(this, part_position++,
+                                   QcInterval2DDouble(x_screen_interval, y_screen_interval),
+                                   interval_to_polygon(west_interval));
+    }
+
+    // Central part
+    if (m_cross_west_line and m_cross_east_line) {
+      central_interval.x() = QcIntervalDouble(projected_x_inf, projected_x_sup);
+      m_number_of_full_maps = 1;
+    } else if (m_cross_west_line and !m_cross_east_line)
+      central_interval.x() = QcIntervalDouble(projected_x_inf, x_sup);
+    else if (!m_cross_west_line and m_cross_east_line)
+      central_interval.x() = QcIntervalDouble(x_inf, projected_x_sup);
+    central_interval.y() = y_viewport_interval;
+    QcPolygon central_polygon = interval_to_polygon(central_interval);
+    int x_screen_offset_inf = to_px(x_offset);
+    double central_offset = central_interval.x().length();
+    x_offset += central_offset;
+    QcIntervalDouble x_central_screen_interval(x_screen_offset_inf, to_px(x_offset));
+    m_central_part = QcViewportPart(this, part_position++,
+                                    QcInterval2DDouble(x_central_screen_interval, y_screen_interval),
+                                    central_polygon);
+    m_central_part_clones.clear();
+    double x_projected_interval_length = x_projected_interval.length();
+    double x_viewport_interval_length = x_viewport_interval.length();
+    while ((x_viewport_interval_length - x_offset) > x_projected_interval_length) {
+      m_number_of_full_maps++;
+      int x_screen_offset_inf = to_px(x_offset);
+      x_offset += x_projected_interval_length;
+      QcIntervalDouble x_screen_interval(x_screen_offset_inf, to_px(x_offset));
+      QcViewportPart clone_part = QcViewportPart(this, part_position++,
+                                                 QcInterval2DDouble(x_screen_interval, y_screen_interval),
+                                                 central_polygon);
+      m_central_part_clones << clone_part;
+    }
+
+    // East part
+    if (m_cross_east_line) { // Fixme: tiles at west !
+      // projected_x_sup < x_sup
+      east_interval.x() = QcIntervalDouble(projected_x_inf, x_projected_interval.wrap(x_sup));
+      east_interval.y() = y_viewport_interval;
+      QcIntervalDouble x_screen_interval(to_px(x_offset), width()); // -1
+      m_east_part = QcViewportPart(this, part_position,
+                                   QcInterval2DDouble(x_screen_interval, y_screen_interval),
+                                   interval_to_polygon(east_interval));
+      // }
     }
   } else {
     m_cross_west_line = false;
     m_cross_east_line = false;
-    m_central_part = QcViewportPart(this, 0, 0, 0, m_viewport_polygon);
+    QcIntervalDouble x_screen_interval(0, width()); // -1
+    m_central_part = QcViewportPart(this, 0,
+                                    QcInterval2DDouble(x_screen_interval, y_screen_interval),
+                                    m_viewport_polygon);
   }
 
   qInfo() << "West part" << m_west_part << '\n'

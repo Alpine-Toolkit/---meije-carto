@@ -94,14 +94,17 @@ QcMapLayerRootNode::update_tiles(QcMapLayerScene * map_scene,
                                  QcMapSideNode * map_side_node,
                                  const QcTileSpecSet & visible_tiles,
                                  const QcPolygon & polygon,
-                                 double offset)
+                                 const QcViewportPart & part)
 {
   // float width = map_scene->width();
   // float height = map_scene->height();
 
   QMatrix4x4 space_matrix;
   space_matrix.setToIdentity();
-  space_matrix.translate(offset, .0);
+  const QcInterval2DDouble & screen_interval = part.screen_interval();
+  double x_offset = screen_interval.x().inf();
+  double y_offset = screen_interval.y().inf();
+  space_matrix.translate(x_offset, y_offset);
   map_side_node->setMatrix(space_matrix);
   // qInfo() << "map side space matrix" << space_matrix;
 
@@ -109,7 +112,7 @@ QcMapLayerRootNode::update_tiles(QcMapLayerScene * map_scene,
   QcTileSpecSet to_remove = tiles_in_scene - visible_tiles;
   QcTileSpecSet to_add = visible_tiles - tiles_in_scene;
 
-  // qInfo() << "Offset" << offset
+  // qInfo() << "Offset" << x_offset
   //         << "tiles_in_scene" << tiles_in_scene
   //         << "\nvisible_tiles" << visible_tiles
   //         << "\nto_remove" << to_remove
@@ -323,7 +326,7 @@ QcMapLayerScene::update_scene_graph(QcMapLayerRootNode * map_root_node, QQuickWi
                               map_root_node->west_map_node,
                               m_west_visible_tiles,
                               transform_polygon(west_part.polygon()),
-                              .0);
+                              west_part);
 
   const QcViewportPart & central_part = m_viewport->central_part();
   QcPolygon transformed_central_polygon = transform_polygon(central_part.polygon());
@@ -332,7 +335,7 @@ QcMapLayerScene::update_scene_graph(QcMapLayerRootNode * map_root_node, QQuickWi
                               map_root_node->central_map_node,
                               m_central_visible_tiles,
                               transformed_central_polygon,
-                              central_part.screen_offset());
+                              central_part);
   map_root_node->update_central_maps();
   int clone_index = 0;
   const QList<QcViewportPart> & clone_parts = m_viewport->central_part_clones();
@@ -342,7 +345,7 @@ QcMapLayerScene::update_scene_graph(QcMapLayerRootNode * map_root_node, QQuickWi
                                 node,
                                 m_central_visible_tiles,
                                 transformed_central_polygon,
-                                clone_parts[clone_index++].screen_offset());
+                                clone_parts[clone_index++]);
   }
 
   // qInfo() << "east" << east_offset;
@@ -351,7 +354,7 @@ QcMapLayerScene::update_scene_graph(QcMapLayerRootNode * map_root_node, QQuickWi
                               map_root_node->east_map_node,
                               m_east_visible_tiles,
                               transform_polygon(east_part.polygon()),
-                              east_part.screen_offset());
+                              east_part);
 }
 
 /**************************************************************************************************/

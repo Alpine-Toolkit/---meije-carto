@@ -61,7 +61,7 @@ public:
   void update_central_maps();
   void update_tiles(QcMapLayerScene * map_scene,
                     QcMapSideNode * map_side_node, const QcTileSpecSet & visible_tiles, const QcPolygon & polygon,
-                    double offset);
+                    const QcViewportPart & part);
 
 private:
   const QcTileMatrixSet & m_tile_matrix_set;
