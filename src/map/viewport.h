@@ -190,8 +190,11 @@ class QcViewportPart
 public:
   QcViewportPart();
   QcViewportPart(const QcViewport * m_viewport,
-                 int position, int screen_offset, double offset,
-                 const QcPolygon & polygon);
+                 int position,
+                 int screen_offset,
+                 double offset,
+                 const QcPolygon & polygon // Fixme: interval ?
+                 );
   QcViewportPart(const QcViewportPart & other);
   ~QcViewportPart();
 
@@ -226,6 +229,7 @@ private:
   int m_position;
   int m_screen_offset;
   double m_offset;
+  // QcInterval2DDouble m_screen_interval;
   QcPolygon m_polygon;
 };
 
@@ -320,11 +324,17 @@ class QC_EXPORT QcViewport : public QObject
   QcVectorDouble inf_point() const;
   void update_area();
   const QcViewportPart * find_part(const QcVectorDouble & projected_coordinate) const;
+  void begin_state_transaction();
+  void end_state_transaction();
+  QcPolygon compute_polygon() const;
+  void adjust_center();
 
  private:
   QcViewportState m_state;
-  const QcProjection * m_projection; // Fixme: const
-  bool m_is_web_mercator;
+  QcViewportState m_previous_state;
+  int m_state_transaction = 0;
+  const QcProjection * m_projection = nullptr; // Fixme: const
+  bool m_is_web_mercator = false;
 
   int m_smallest_tile_size = -1;
   QcIntervalInt m_map_zoom_level_interval;
