@@ -348,7 +348,9 @@ QcGeoCoordinate::QcGeoCoordinate(const QcProjection * projection, double x, doub
     set_x(x);
     set_y(y);
   } else {
-    qWarning() << "Invalid coordinate" << projection->srid() << x << y;
+    qWarning() << "Invalid coordinate" << projection->srid()
+               << static_cast<int>(x) << m_projection->is_valid_x(x)
+               << static_cast<int>(y) << m_projection->is_valid_y(y);
     // Fixme: nan ?
     throw std::invalid_argument("Invalid coordinate");
   }

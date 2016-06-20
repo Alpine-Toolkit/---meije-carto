@@ -38,14 +38,14 @@
 
 /**************************************************************************************************/
 
-QcWebMercatorCoordinate::QcWebMercatorCoordinate(double _x, double y)
+QcWebMercatorCoordinate::QcWebMercatorCoordinate(double x, double y)
 // : QcGeoCoordinateTemplate(x, y)
 {
   // Adjust coordinate if outside domain
-  set_x(cls_projection.x_projected_interval().wrap(_x));
+  set_x(cls_projection.x_projected_interval().wrap(x));
   set_y(cls_projection.y_projected_interval().truncate(y));
 
-  // qInfo() << "x adjust" << static_cast<int>(_x) << "->" << static_cast<int>(x());
+  // qInfo() << "x adjust" << static_cast<int>(x) << "->" << static_cast<int>(x());
 }
 
 QcWebMercatorCoordinate::QcWebMercatorCoordinate()

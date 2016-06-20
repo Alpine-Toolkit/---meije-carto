@@ -159,11 +159,12 @@ QC_EXPORT QDebug operator<<(QDebug debug, const QcIntervalDouble & interval)
 {
   QDebugStateSaver saver(debug); // Fixme: ???
 
-  debug.nospace() << QLatin1Literal("QcIntervalDouble(");
-  debug << interval.inf();
-  debug << QLatin1Literal(", ");
-  debug << interval.sup();
-  debug << ')';
+  debug.nospace().noquote()
+    << QLatin1Literal("QcIntervalDouble(")
+    << QString::number(interval.inf(), 'f', 2)
+    << QLatin1Literal(", ")
+    << QString::number(interval.sup(), 'f', 2)
+    << ')';
 
   return debug;
 }
@@ -174,15 +175,16 @@ QC_EXPORT QDebug operator<<(QDebug debug, const QcInterval2DInt & interval)
 {
   QDebugStateSaver saver(debug); // Fixme: ???
 
-  debug.nospace() << QLatin1Literal("QcInterval2DInt( [");
-  debug << interval.x().inf();
-  debug << QLatin1Literal(", ");
-  debug << interval.x().sup();
-  debug << QLatin1Literal("] , [");
-  debug << interval.y().inf();
-  debug << QLatin1Literal(", ");
-  debug << interval.y().sup();
-  debug << QLatin1Literal("] )");
+  debug.nospace().noquote()
+    << QLatin1Literal("QcInterval2DInt( [")
+    << interval.x().inf()
+    << QLatin1Literal(", ")
+    << interval.x().sup()
+    << QLatin1Literal("] , [")
+    << interval.y().inf()
+    << QLatin1Literal(", ")
+    << interval.y().sup()
+    << QLatin1Literal("] )");
 
   return debug;
 }
@@ -193,15 +195,16 @@ QC_EXPORT QDebug operator<<(QDebug debug, const QcInterval2DDouble & interval)
 {
   QDebugStateSaver saver(debug); // Fixme: ???
 
-  debug.nospace() << QLatin1Literal("QcInterval2DDouble( [");
-  debug << interval.x().inf();
-  debug << QLatin1Literal(", "); // Fixme: duplicated
-  debug << interval.x().sup();
-  debug << QLatin1Literal("], [");
-  debug << interval.y().inf();
-  debug << QLatin1Literal(", ");
-  debug << interval.y().sup();
-  debug << QLatin1Literal("] )");
+  debug.nospace().noquote()
+    << QLatin1Literal("QcInterval2DDouble( [")
+    << QString::number(interval.x().inf(), 'f', 2)
+    << QLatin1Literal(", ")
+    << QString::number(interval.x().sup(), 'f', 2)
+    << QLatin1Literal("] , [")
+    << QString::number(interval.y().inf(), 'f', 2)
+    << QLatin1Literal(", ")
+    << QString::number(interval.y().sup(), 'f', 2)
+    << QLatin1Literal("] )");
 
   return debug;
 }
