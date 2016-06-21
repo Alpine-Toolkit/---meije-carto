@@ -63,10 +63,11 @@ set(qtcarto_files
 
   scene/location_circle_material_shader.cpp
   scene/location_circle_node.cpp
-  scene/path_material_shader.cpp
-  scene/path_node.cpp
   scene/map_layer_scene.cpp
   scene/map_scene.cpp
+  scene/path_material_shader.cpp
+  scene/path_node.cpp
+  scene/point_material_shader.cpp
 
   tools/debug_data.cpp
   tools/logger.cpp

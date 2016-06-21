@@ -54,7 +54,8 @@ public:
 
 private:
   const QcViewport * m_viewport; // Fixme: &
-  QSGGeometryNode * m_geometry_node;
+  QSGGeometryNode * m_path_geometry_node;
+  QSGGeometryNode * m_point_geometry_node;
 };
 
 /**************************************************************************************************/

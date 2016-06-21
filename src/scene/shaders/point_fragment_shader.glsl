@@ -103,7 +103,7 @@ outline(float distance, float linewidth, float antialias, vec4 stroke, vec4 fill
 }
 
 float
-marker_ring(vec2 P)
+marker_ring(vec2 P, float radius)
 {
   return length(P) - radius;
 }
@@ -112,9 +112,9 @@ marker_ring(vec2 P)
 
 void
 main() {
-  // float d = marker_ring(gl_PointCoord);
-  float d = marker_ring(tex_coord);
+  float d = marker_ring(tex_coord, radius);
   vec4 frag_color = filled(d, linewidth, antialias, color);
+
   gl_FragColor = frag_color * qt_Opacity;
 }
 

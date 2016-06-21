@@ -1,3 +1,5 @@
+// -*- mode: c++ -*-
+
 /***************************************************************************************************
  **
  ** $QTCARTO_BEGIN_LICENSE:GPL3$
@@ -26,7 +28,12 @@
 
 /**************************************************************************************************/
 
-#include "location_circle_material_shader.h"
+#ifndef __POINT_MATERIAL_SHADER_H__
+#define __POINT_MATERIAL_SHADER_H__
+
+/**************************************************************************************************/
+
+#include <QSGSimpleMaterialShader>
 
 /**************************************************************************************************/
 
@@ -34,34 +41,26 @@
 
 /**************************************************************************************************/
 
-#include "shaders/location_circle_shader.h"
-
-const char *
-QcLocationCircleMaterialShader::vertexShader() const
+struct QcPointMaterialShaderState
 {
-  return vertex_shader_location_circle;
-}
+  float r, g, b, a;
+};
 
-const char *
-QcLocationCircleMaterialShader::fragmentShader() const
+class QcPointMaterialShader : public QSGSimpleMaterialShader<QcPointMaterialShaderState>
 {
-  return fragment_shader_location_circle;
-}
+    QSG_DECLARE_SIMPLE_SHADER(QcPointMaterialShader, QcPointMaterialShaderState)
 
-QList<QByteArray>
-QcLocationCircleMaterialShader::attributes() const
-{
-  return QList<QByteArray>() << "a_vertex" << "a_tex_coord" << "a_radius" << "a_angle";
-}
-
-void
-QcLocationCircleMaterialShader::updateState(const QcLocationCircleMaterialShaderState * state,
-                                            const QcLocationCircleMaterialShaderState *)
-{
-  program()->setUniformValue("color", state->r, state->g, state->b, state->a);
-}
+public:
+  const char * vertexShader() const Q_DECL_OVERRIDE ;
+  const char * fragmentShader() const Q_DECL_OVERRIDE ;
+  QList<QByteArray> attributes() const Q_DECL_OVERRIDE ;
+  void updateState(const QcPointMaterialShaderState * color,
+                   const QcPointMaterialShaderState *) Q_DECL_OVERRIDE ;
+};
 
 // QC_END_NAMESPACE
+
+#endif /* __POINT_MATERIAL_SHADER_H__ */
 
 /***************************************************************************************************
  *

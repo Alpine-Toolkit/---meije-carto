@@ -28,6 +28,7 @@
 
 #include "path_node.h"
 #include "path_material_shader.h"
+#include "point_material_shader.h"
 
 #include <QSGFlatColorMaterial>
 #include <QtDebug>
@@ -88,6 +89,48 @@ QSGGeometry::AttributeSet PathPoint2D_AttributeSet = {
 
 /**************************************************************************************************/
 
+struct CirclePoint2D {
+  float x;
+  float y;
+  float u;
+  float v;
+  float radius;
+  // float r;
+  // float g;
+  // float b;
+  // float a;
+
+  void set(const QcVectorDouble & point,
+           const QcVectorDouble & uv,
+           float _radius
+           ) {
+    x = point.x();
+    y = point.y();
+    u = uv.x();
+    v = uv.y();
+    radius = _radius;
+    // r;
+    // g;
+    // b;
+    // a;
+  }
+};
+
+QSGGeometry::Attribute CirclePoint2D_Attributes[] = {
+  QSGGeometry::Attribute::create(0, 2, GL_FLOAT, true),  // xy
+  QSGGeometry::Attribute::create(1, 2, GL_FLOAT, false), // uv
+  QSGGeometry::Attribute::create(2, 1, GL_FLOAT, false), // radius
+  // QSGGeometry::Attribute::create(5, 4, GL_FLOAT, false)  // colour
+};
+
+QSGGeometry::AttributeSet CirclePoint2D_AttributeSet = {
+  3, // count Fixme: ???
+  sizeof(CirclePoint2D), // stride
+  CirclePoint2D_Attributes
+};
+
+/**************************************************************************************************/
+
 QcVectorDouble
 compute_offsets(const QcVectorDouble & dir1, const QcVectorDouble & dir2, double half_width,
                 double & u_offset)
@@ -119,29 +162,50 @@ compute_offsets(const QcVectorDouble & dir1, const QcVectorDouble & dir2, double
 QcPathNode::QcPathNode(const QcViewport * viewport)
   : QSGOpacityNode(),
     m_viewport(viewport),
-    m_geometry_node(new QSGGeometryNode())
+    m_path_geometry_node(new QSGGeometryNode()),
+    m_point_geometry_node(new QSGGeometryNode())
 {
   setOpacity(1.); // 1. black
 
-  QSGGeometry * geometry = new QSGGeometry(PathPoint2D_AttributeSet, 0); // Fixme:
-  geometry->setDrawingMode(GL_TRIANGLE_STRIP);
-  m_geometry_node->setGeometry(geometry);
-  m_geometry_node->setFlag(QSGNode::OwnsGeometry);
+  // Path
+  QSGGeometry * path_geometry = new QSGGeometry(PathPoint2D_AttributeSet, 0); // Fixme:
+  path_geometry->setDrawingMode(GL_TRIANGLE_STRIP);
+  m_path_geometry_node->setGeometry(path_geometry);
+  m_path_geometry_node->setFlag(QSGNode::OwnsGeometry);
 
-  QSGSimpleMaterial<QcPathMaterialShaderState> * material = QcPathMaterialShader::createMaterial();
-  QcPathMaterialShaderState * state = material->state();
-  state->r = 0;
-  state->g = 0;
-  state->b = 1.;
-  state->a = 1.;
+  QSGSimpleMaterial<QcPathMaterialShaderState> * path_material = QcPathMaterialShader::createMaterial();
+  QcPathMaterialShaderState * path_state = path_material->state();
+  path_state->r = 0;
+  path_state->g = 0;
+  path_state->b = 1.;
+  path_state->a = 1.;
   // state->cap_type = 1;
   // state->line_join = 1;
   // state->antialias_diameter = 1.;
-  material->setFlag(QSGMaterial::Blending);
-  m_geometry_node->setMaterial(material);
-  m_geometry_node->setFlag(QSGNode::OwnsMaterial);
+  path_material->setFlag(QSGMaterial::Blending);
+  m_path_geometry_node->setMaterial(path_material);
+  m_path_geometry_node->setFlag(QSGNode::OwnsMaterial);
 
-  appendChildNode(m_geometry_node);
+  appendChildNode(m_path_geometry_node);
+
+  // Point
+  QSGGeometry * point_geometry = new QSGGeometry(CirclePoint2D_AttributeSet, 0); // Fixme:
+  point_geometry->setDrawingMode(GL_TRIANGLE_STRIP);
+  m_point_geometry_node->setGeometry(point_geometry);
+  m_point_geometry_node->setFlag(QSGNode::OwnsGeometry);
+
+  QSGSimpleMaterial<QcPointMaterialShaderState> * point_material = QcPointMaterialShader::createMaterial();
+  point_material->state()->r = 0; // Fixme: QColor
+  point_material->state()->g = 0;
+  point_material->state()->b = 1;
+  point_material->state()->a = 1.;
+  // QSGFlatColorMaterial * material = new QSGFlatColorMaterial();
+  // material->setColor(QColor("black"));
+  point_material->setFlag(QSGMaterial::Blending);
+  m_point_geometry_node->setMaterial(point_material);
+  m_point_geometry_node->setFlag(QSGNode::OwnsMaterial);
+
+  appendChildNode(m_point_geometry_node);
 }
 
 void
@@ -159,17 +223,17 @@ QcPathNode::update(const QcPathDouble & path)
   int number_of_segments = number_of_path_vertexes -1;
   int number_of_vertexes = number_of_segments * 4;
 
-  QSGGeometry * geometry = new QSGGeometry(PathPoint2D_AttributeSet, number_of_vertexes);
-  geometry->setDrawingMode(GL_TRIANGLE_STRIP);
-  m_geometry_node->setGeometry(geometry);
-  m_geometry_node->setFlag(QSGNode::OwnsGeometry);
+  QSGGeometry * path_geometry = new QSGGeometry(PathPoint2D_AttributeSet, number_of_vertexes);
+  path_geometry->setDrawingMode(GL_TRIANGLE_STRIP);
+  m_path_geometry_node->setGeometry(path_geometry);
+  m_path_geometry_node->setFlag(QSGNode::OwnsGeometry);
 
   double line_width = 10;
   double antialias_diameter = 1.; // Fixme: according shader !
   // Fixme: linewidth/2.0 + 1.5*antialias;
   double half_width = ceil(1.25*antialias_diameter + line_width) * .5;
 
-  PathPoint2D * vertices = static_cast<PathPoint2D *>(geometry->vertexData());
+  PathPoint2D * path_points = static_cast<PathPoint2D *>(path_geometry->vertexData());
   int last_i = number_of_path_vertexes -2;
   for (int i = 0; i <= last_i; i++) {
     QcVectorDouble point1 = path_vertexes[i];
@@ -196,11 +260,11 @@ QcPathNode::update(const QcPathDouble & path)
 
       vertex = point1 - normal_offset1;
       // qInfo() << "1   0 == 1" << vertex;
-      // vertices[j].set(vertex.x(), vertex.y());
-      vertices[j].set(vertex, QcVectorDouble(-half_width, -half_width), segment_length, line_width, cap1);
+      // path_points[j].set(vertex.x(), vertex.y());
+      path_points[j].set(vertex, QcVectorDouble(-half_width, -half_width), segment_length, line_width, cap1);
       vertex = point1 + normal_offset1;
       // qInfo() << "2   0 == 1" << vertex;
-      vertices[j+1].set(vertex, QcVectorDouble(-half_width, half_width), segment_length, line_width, cap1);
+      path_points[j+1].set(vertex, QcVectorDouble(-half_width, half_width), segment_length, line_width, cap1);
     } else {
       QcVectorDouble dir0 = point1 - point0;
       dir0.normalise();
@@ -210,10 +274,10 @@ QcPathNode::update(const QcPathDouble & path)
 
       vertex = point1 - offset1;
       // qInfo() << "1" << vertex;
-      vertices[j].set(vertex, QcVectorDouble(-u1, -half_width), segment_length, line_width, cap1);
+      path_points[j].set(vertex, QcVectorDouble(-u1, -half_width), segment_length, line_width, cap1);
       vertex = point1 + offset1;
       // qInfo() << "2" << vertex;
-      vertices[j+1].set(vertex, QcVectorDouble(u1, half_width), segment_length, line_width, cap1);
+      path_points[j+1].set(vertex, QcVectorDouble(u1, half_width), segment_length, line_width, cap1);
     }
 
     double cap2 = 0;
@@ -224,10 +288,10 @@ QcPathNode::update(const QcPathDouble & path)
 
       vertex = point2 - normal_offset1;
       // qInfo() << "3   2 == 3" << vertex;
-      vertices[j+2].set(vertex, QcVectorDouble(u, -half_width), segment_length, line_width, cap2);
+      path_points[j+2].set(vertex, QcVectorDouble(u, -half_width), segment_length, line_width, cap2);
       vertex = point2 + normal_offset1;
       // qInfo() << "4   2 == 3"  << vertex;
-      vertices[j+3].set(vertex, QcVectorDouble(u, half_width), segment_length, line_width, cap2);
+      path_points[j+3].set(vertex, QcVectorDouble(u, half_width), segment_length, line_width, cap2);
     } else {
       QcVectorDouble dir2 = point3 - point2;
       dir2.normalise();
@@ -237,11 +301,36 @@ QcPathNode::update(const QcPathDouble & path)
 
       vertex = point2 - offset2;
       // qInfo() << "3" << vertex;
-      vertices[j+2].set(vertex, QcVectorDouble(segment_length + u2, -half_width), segment_length, line_width, cap2);
+      path_points[j+2].set(vertex, QcVectorDouble(segment_length + u2, -half_width), segment_length, line_width, cap2);
       vertex = point2 + offset2;
       // qInfo() << "4" << vertex;
-      vertices[j+3].set(vertex, QcVectorDouble(segment_length - u2,  half_width), segment_length, line_width, cap2);
+      path_points[j+3].set(vertex, QcVectorDouble(segment_length - u2,  half_width), segment_length, line_width, cap2);
     }
+  }
+
+  // Points
+  number_of_vertexes = number_of_path_vertexes * 6;
+
+  QSGGeometry * point_geometry = new QSGGeometry(CirclePoint2D_AttributeSet, number_of_vertexes);
+  point_geometry->setDrawingMode(GL_TRIANGLES);
+  m_point_geometry_node->setGeometry(point_geometry);
+  m_point_geometry_node->setFlag(QSGNode::OwnsGeometry);
+
+  CirclePoint2D * circle_points = static_cast<CirclePoint2D *>(point_geometry->vertexData());
+  float radius = 10;
+  float margin = 10;
+  float size = radius + margin;
+  int vertex_index = 0;
+  for (const auto & vertex : path_vertexes) {
+    double x = vertex.x();
+    double y = vertex.y();
+    circle_points[vertex_index].set(QcVectorDouble(x - size, y - size), QcVectorDouble(-size, -size), radius);
+    circle_points[vertex_index + 1].set(QcVectorDouble(x - size, y + size), QcVectorDouble(-size,  size), radius);
+    circle_points[vertex_index + 2].set(QcVectorDouble(x + size, y - size), QcVectorDouble( size, -size), radius);
+    circle_points[vertex_index + 3].set(QcVectorDouble(x - size, y + size), QcVectorDouble(-size,  size), radius);
+    circle_points[vertex_index + 4].set(QcVectorDouble(x + size, y + size), QcVectorDouble( size,  size), radius);
+    circle_points[vertex_index + 5].set(QcVectorDouble(x + size, y - size), QcVectorDouble( size, -size), radius);
+    vertex_index += 6;
   }
 }
 

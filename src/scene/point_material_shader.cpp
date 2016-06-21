@@ -26,7 +26,7 @@
 
 /**************************************************************************************************/
 
-#include "location_circle_material_shader.h"
+#include "point_material_shader.h"
 
 /**************************************************************************************************/
 
@@ -34,29 +34,29 @@
 
 /**************************************************************************************************/
 
-#include "shaders/location_circle_shader.h"
+#include "shaders/point_shader.h"
 
 const char *
-QcLocationCircleMaterialShader::vertexShader() const
+QcPointMaterialShader::vertexShader() const
 {
-  return vertex_shader_location_circle;
+  return vertex_shader_point;
 }
 
 const char *
-QcLocationCircleMaterialShader::fragmentShader() const
+QcPointMaterialShader::fragmentShader() const
 {
-  return fragment_shader_location_circle;
+  return fragment_shader_point;
 }
 
 QList<QByteArray>
-QcLocationCircleMaterialShader::attributes() const
+QcPointMaterialShader::attributes() const
 {
-  return QList<QByteArray>() << "a_vertex" << "a_tex_coord" << "a_radius" << "a_angle";
+  return QList<QByteArray>() << "a_vertex" << "a_tex_coord" << "a_radius";
 }
 
 void
-QcLocationCircleMaterialShader::updateState(const QcLocationCircleMaterialShaderState * state,
-                                            const QcLocationCircleMaterialShaderState *)
+QcPointMaterialShader::updateState(const QcPointMaterialShaderState * state,
+                                            const QcPointMaterialShaderState *)
 {
   program()->setUniformValue("color", state->r, state->g, state->b, state->a);
 }

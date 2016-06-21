@@ -44,6 +44,7 @@ struct LocationCirclePoint2D {
   float u;
   float v;
   float radius;
+  float angle;
   // float r;
   // float g;
   // float b;
@@ -51,13 +52,15 @@ struct LocationCirclePoint2D {
 
   void set(const QcVectorDouble & point,
            const QcVectorDouble & uv,
-           float _radius
+           float _radius,
+           float _angle
            ) {
     x = point.x();
     y = point.y();
     u = uv.x();
     v = uv.y();
     radius = _radius;
+    angle = _angle;
     // r;
     // g;
     // b;
@@ -69,11 +72,12 @@ QSGGeometry::Attribute LocationCirclePoint2D_Attributes[] = {
   QSGGeometry::Attribute::create(0, 2, GL_FLOAT, true),  // xy
   QSGGeometry::Attribute::create(1, 2, GL_FLOAT, false), // uv
   QSGGeometry::Attribute::create(2, 1, GL_FLOAT, false), // radius
+  QSGGeometry::Attribute::create(3, 1, GL_FLOAT, false) // angle
   // QSGGeometry::Attribute::create(5, 4, GL_FLOAT, false)  // colour
 };
 
 QSGGeometry::AttributeSet LocationCirclePoint2D_AttributeSet = {
-    3, // count Fixme: ???
+    4, // count Fixme: ???
     sizeof(LocationCirclePoint2D), // stride
     LocationCirclePoint2D_Attributes
 };
@@ -121,13 +125,14 @@ QcLocationCircleNode::update(const QcLocationCircleData & location_circle_data)
   LocationCirclePoint2D * vertices = static_cast<LocationCirclePoint2D *>(geometry->vertexData());
   float x = .5 * m_viewport->width(); // Fixme: vector
   float y = .5 * m_viewport->height();
-  float radius = qMax(m_viewport->to_px(location_circle_data.horizontal_precision()), 10.); // Fixme
+  float radius = qMax(m_viewport->to_px(location_circle_data.horizontal_precision()), 100.); // Fixme
   float margin = 10;
   float size = radius + margin;
-  vertices[0].set(QcVectorDouble(x - size, y - size), QcVectorDouble(-size, -size), radius);
-  vertices[1].set(QcVectorDouble(x - size, y + size), QcVectorDouble(-size,  size), radius);
-  vertices[2].set(QcVectorDouble(x + size, y - size), QcVectorDouble( size, -size), radius);
-  vertices[3].set(QcVectorDouble(x + size, y + size), QcVectorDouble( size,  size), radius);
+  float angle = location_circle_data.bearing();
+  vertices[0].set(QcVectorDouble(x - size, y - size), QcVectorDouble(-size, -size), radius, angle);
+  vertices[1].set(QcVectorDouble(x - size, y + size), QcVectorDouble(-size,  size), radius, angle);
+  vertices[2].set(QcVectorDouble(x + size, y - size), QcVectorDouble( size, -size), radius, angle);
+  vertices[3].set(QcVectorDouble(x + size, y + size), QcVectorDouble( size,  size), radius, angle);
 }
 
 /**************************************************************************************************/
