@@ -70,6 +70,9 @@ main(int argc, char *argv[])
   QcConfig & config = QcConfig::instance();
   config.init();
 
+  // Set environment variable PROJ_LIB for proj4 so as to find (epsg) date files
+  setenv("PROJ_LIB", config.application_user_directory().toStdString().c_str(), 1);
+
   QcDebugData debug_data;
   debug_data.write_json(config.join_application_user_directory(QLatin1Literal("debug_data.json")));
   qInfo() << debug_data.to_json();

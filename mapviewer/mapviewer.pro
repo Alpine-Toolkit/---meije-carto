@@ -41,6 +41,12 @@ contains(ANDROID_TARGET_ARCH, armeabi-v7a) {
     # /opt/Qt-dev-5.7.0-android/lib/libqtcarto.so
 }
 
+# android {
+#     proj4_data.path = /assets/proj4_data
+#     proj4_data.files += $$PWD/../third-parties/proj4/proj.4.git/nad/epsg
+#     INSTALLS += proj4_data
+# }
+
 ####################################################################################################
 #
 # End

@@ -40,18 +40,28 @@
 
 /**************************************************************************************************/
 
+/*
+void
+proj4_logger(void * context, int error, const char * message)
+{
+  qWarning() << context << error << message;
+}
+*/
+
 QcProjection4::QcProjection4(const QString & definition, projCtx context)
   : m_definition(definition),
     m_projection(nullptr)
 {
-  qInfo() << definition;
-
   // cf. https://trac.osgeo.org/proj/wiki/ThreadSafety
   if (!context)
     context = pj_get_default_ctx();
   // context = pj_ctx_alloc();
 
+  // pj_ctx_set_logger(context, proj4_logger);
+
   m_projection = pj_init_plus_ctx(context, definition.toStdString().c_str());
+  if (!m_projection)
+    qWarning() << "Proj4 initialisation failed for" << definition;
 }
 
 QcProjection4::~QcProjection4()
