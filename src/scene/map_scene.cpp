@@ -46,8 +46,10 @@ QcMapScene::QcMapScene(const QcViewport * viewport,
 {
   // connect(&m_location_circle_data, QcLocationCircleData::horizontal_precisionChanged,
   //         this, QcMapScene::set_location_circle_data_dirty);
-  connect(&m_location_circle_data, SIGNAL(horizontal_precisionChanged()),
-          this, SLOT(set_location_circle_data_dirty()));
+  connect(&m_location_circle_data, &QcLocationCircleData::horizontal_precision_changed,
+          this, &QcMapScene::set_location_circle_data_dirty);
+  connect(&m_location_circle_data, &QcLocationCircleData::bearing_changed,
+          this, &QcMapScene::set_location_circle_data_dirty);
 }
 
 QcMapScene::~QcMapScene()

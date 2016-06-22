@@ -4,6 +4,7 @@ import QtQuick.Window 2.2
 import QtQuick.Controls 2.0
 import QtQuick.Layouts 1.3
 
+import QtSensors 5.1
 import QtPositioning 5.5
 
 import QtCarto 1.0 // fr.alpine_toolkit.
@@ -50,7 +51,10 @@ QcMapItem {
         // map.plugin_layers('artic-web-map')[0].status = true
         map.zoom_level = 10; // set after layer
         set_scale()
-        map.location_circle_data.horizontal_precision = 100.;
+
+	console.log("Component.onCompleted")
+        map.location_circle_data.horizontal_precision = 10.
+        map.location_circle_data.bearing = 10.
     }
 
     center {
@@ -71,9 +75,16 @@ QcMapItem {
         active: position_locked
 
         onPositionChanged: {
-            var coordinate = position_source.position.coordinate
-            if (coordinate.isValid)
-                center = map.cast_QGeoCoordinate(coordinate)
+            var position = position_source.position;
+            var coordinate = position.coordinate
+            if (position.horizontalAccuracyValid) {
+                map.location_circle_data.horizontal_precision = position.horizontalAccuracy;
+            }
+            if (coordinate.isValid) {
+                center = map.cast_QGeoCoordinate(coordinate) // Fixme: map.center
+                console.log("coordinate", coordinate)
+            }
+            // magneticVariation
         }
     }
 
@@ -82,6 +93,15 @@ QcMapItem {
             if (center != map.cast_QGeoCoordinate(position_source.position.coordinate))
                 position_locked = false
     }
+
+   Compass {
+       id: compass
+       active: true
+       onReadingChanged: {
+           // Fixme: multiple pass: viewport and location_circle_data
+           map.location_circle_data.bearing = compass.reading.azimuth;
+       }
+   }
 
     function set_scale() {
         var max_width = map.width

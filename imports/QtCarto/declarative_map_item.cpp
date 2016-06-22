@@ -87,6 +87,7 @@ QcMapItem::QcMapItem(QQuickItem * parent)
     m_plugin_layers.insert(plugin_name, make_plugin_layers(plugin_name));
 
   connect(m_map_view, &QcMapView::scene_graph_changed, this, &QQuickItem::update);
+  connect(location_circle_data(), &QcLocationCircleData::bearing_changed, this, &QQuickItem::update);
 
   // Fixme: remove
   // Set default viewport center and zoom level

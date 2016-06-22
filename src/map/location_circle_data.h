@@ -42,8 +42,8 @@
 class QcLocationCircleData : public QObject
 {
   Q_OBJECT
-  Q_PROPERTY(double bearing READ bearing WRITE set_bearing NOTIFY bearingChanged)
-  Q_PROPERTY(double horizontal_precision READ horizontal_precision WRITE set_horizontal_precision NOTIFY horizontal_precisionChanged)
+  Q_PROPERTY(double bearing READ bearing WRITE set_bearing NOTIFY bearing_changed)
+  Q_PROPERTY(double horizontal_precision READ horizontal_precision WRITE set_horizontal_precision NOTIFY horizontal_precision_changed)
 
 public:
   QcLocationCircleData(QObject * parent = nullptr);
@@ -59,8 +59,8 @@ public:
   void set_horizontal_precision(double horizontal_precision);
 
 signals:
-  void bearingChanged();
-  void horizontal_precisionChanged();
+  void bearing_changed();
+  void horizontal_precision_changed();
 
 private:
   double m_bearing;

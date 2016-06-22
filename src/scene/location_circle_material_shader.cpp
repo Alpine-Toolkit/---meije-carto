@@ -58,7 +58,8 @@ void
 QcLocationCircleMaterialShader::updateState(const QcLocationCircleMaterialShaderState * state,
                                             const QcLocationCircleMaterialShaderState *)
 {
-  program()->setUniformValue("color", state->r, state->g, state->b, state->a);
+  program()->setUniformValue("cone_color", state->cone_r, state->cone_g, state->cone_b, state->cone_a);
+  program()->setUniformValue("accuracy_color", state->accuracy_r, state->accuracy_g, state->accuracy_b, state->accuracy_a);
 }
 
 // QC_END_NAMESPACE

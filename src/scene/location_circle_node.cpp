@@ -43,7 +43,9 @@ struct LocationCirclePoint2D {
   float y;
   float u;
   float v;
-  float radius;
+  float cone_radius;
+  float dot_radius;
+  float accuracy_radius;
   float angle;
   // float r;
   // float g;
@@ -52,14 +54,18 @@ struct LocationCirclePoint2D {
 
   void set(const QcVectorDouble & point,
            const QcVectorDouble & uv,
-           float _radius,
+           float _cone_radius,
+           float _dot_radius,
+           float _accuracy_radius,
            float _angle
            ) {
     x = point.x();
     y = point.y();
     u = uv.x();
     v = uv.y();
-    radius = _radius;
+    cone_radius = _cone_radius;
+    dot_radius = _dot_radius;
+    accuracy_radius = _accuracy_radius;
     angle = _angle;
     // r;
     // g;
@@ -71,7 +77,7 @@ struct LocationCirclePoint2D {
 QSGGeometry::Attribute LocationCirclePoint2D_Attributes[] = {
   QSGGeometry::Attribute::create(0, 2, GL_FLOAT, true),  // xy
   QSGGeometry::Attribute::create(1, 2, GL_FLOAT, false), // uv
-  QSGGeometry::Attribute::create(2, 1, GL_FLOAT, false), // radius
+  QSGGeometry::Attribute::create(2, 3, GL_FLOAT, false), // radius
   QSGGeometry::Attribute::create(3, 1, GL_FLOAT, false) // angle
   // QSGGeometry::Attribute::create(5, 4, GL_FLOAT, false)  // colour
 };
@@ -97,10 +103,14 @@ QcLocationCircleNode::QcLocationCircleNode(const QcViewport * viewport)
   m_geometry_node->setFlag(QSGNode::OwnsGeometry);
 
   QSGSimpleMaterial<QcLocationCircleMaterialShaderState> * material = QcLocationCircleMaterialShader::createMaterial();
-  material->state()->r = 0; // Fixme: QColor
-  material->state()->g = 0;
-  material->state()->b = 1;
-  material->state()->a = 1.;
+  material->state()->cone_r = 0; // Fixme: QColor
+  material->state()->cone_g = 0;
+  material->state()->cone_b = 1;
+  material->state()->cone_a = 1.;
+  material->state()->accuracy_r = 1;
+  material->state()->accuracy_g = 0;
+  material->state()->accuracy_b = 0;
+  material->state()->accuracy_a = 1.;
   // QSGFlatColorMaterial * material = new QSGFlatColorMaterial();
   // material->setColor(QColor("black"));
   material->setFlag(QSGMaterial::Blending);
@@ -125,14 +135,18 @@ QcLocationCircleNode::update(const QcLocationCircleData & location_circle_data)
   LocationCirclePoint2D * vertices = static_cast<LocationCirclePoint2D *>(geometry->vertexData());
   float x = .5 * m_viewport->width(); // Fixme: vector
   float y = .5 * m_viewport->height();
-  float radius = qMax(m_viewport->to_px(location_circle_data.horizontal_precision()), 100.); // Fixme
+  float accuracy_radius = m_viewport->to_px(location_circle_data.horizontal_precision());
+  constexpr float dot_radius_minimum = 10.;
+  constexpr float cone_scale_factor = 5.;
+  float dot_radius = qMax(accuracy_radius, dot_radius_minimum);
+  float radius = cone_scale_factor * dot_radius_minimum;
   float margin = 10;
   float size = radius + margin;
-  float angle = location_circle_data.bearing();
-  vertices[0].set(QcVectorDouble(x - size, y - size), QcVectorDouble(-size, -size), radius, angle);
-  vertices[1].set(QcVectorDouble(x - size, y + size), QcVectorDouble(-size,  size), radius, angle);
-  vertices[2].set(QcVectorDouble(x + size, y - size), QcVectorDouble( size, -size), radius, angle);
-  vertices[3].set(QcVectorDouble(x + size, y + size), QcVectorDouble( size,  size), radius, angle);
+  float angle = location_circle_data.bearing() + 90.; // North point to y
+  vertices[0].set(QcVectorDouble(x - size, y - size), QcVectorDouble(-size, -size), radius, dot_radius, accuracy_radius, angle);
+  vertices[1].set(QcVectorDouble(x - size, y + size), QcVectorDouble(-size,  size), radius, dot_radius, accuracy_radius, angle);
+  vertices[2].set(QcVectorDouble(x + size, y - size), QcVectorDouble( size, -size), radius, dot_radius, accuracy_radius, angle);
+  vertices[3].set(QcVectorDouble(x + size, y + size), QcVectorDouble( size,  size), radius, dot_radius, accuracy_radius, angle);
 }
 
 /**************************************************************************************************/

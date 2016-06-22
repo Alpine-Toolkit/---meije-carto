@@ -61,19 +61,20 @@ QcLocationCircleData::operator=(const QcLocationCircleData & other)
 void
 QcLocationCircleData::set_bearing(double bearing)
 {
-  if (bearing != m_bearing) {
+  if (qAbs(bearing - m_bearing) > 1.) {
+    // qInfo() << "bearing changed" << bearing;
     m_bearing = bearing;
-    emit bearingChanged();
+    emit bearing_changed();
   }
 }
 
 void
 QcLocationCircleData::set_horizontal_precision(double horizontal_precision)
 {
-  qInfo() << horizontal_precision;
   if (horizontal_precision != m_horizontal_precision) {
+    qInfo() << "horizontal precision changed" << horizontal_precision;
     m_horizontal_precision = horizontal_precision;
-    emit horizontal_precisionChanged();
+    emit horizontal_precision_changed();
   }
 }
 

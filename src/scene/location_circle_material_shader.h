@@ -43,7 +43,8 @@
 
 struct QcLocationCircleMaterialShaderState
 {
-  float r, g, b, a;
+  float cone_r, cone_g, cone_b, cone_a;
+  float accuracy_r, accuracy_g, accuracy_b, accuracy_a;
 };
 
 class QcLocationCircleMaterialShader : public QSGSimpleMaterialShader<QcLocationCircleMaterialShaderState>
@@ -54,7 +55,7 @@ public:
   const char * vertexShader() const Q_DECL_OVERRIDE ;
   const char * fragmentShader() const Q_DECL_OVERRIDE ;
   QList<QByteArray> attributes() const Q_DECL_OVERRIDE ;
-  void updateState(const QcLocationCircleMaterialShaderState * color,
+  void updateState(const QcLocationCircleMaterialShaderState * state,
                    const QcLocationCircleMaterialShaderState *) Q_DECL_OVERRIDE ;
 };
 
