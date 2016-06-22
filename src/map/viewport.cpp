@@ -599,7 +599,7 @@ QcViewport::update_area()
   const QcIntervalDouble & x_viewport_interval = viewport_interval.x();
   const QcIntervalDouble & y_viewport_interval = viewport_interval.y();
 
-  qInfo() << viewport_interval;
+  qInfo() << width() << height() << viewport_interval;
 
   // Center map ?
   if (m_center_map_vertically) {
@@ -672,9 +672,10 @@ QcViewport::update_area()
     }
 
     // Central part
+    m_number_of_full_maps = 0;
     if (m_cross_west_line and m_cross_east_line) {
       central_interval.x() = QcIntervalDouble(projected_x_inf, projected_x_sup);
-      m_number_of_full_maps = 1;
+      m_number_of_full_maps++;
     } else if (m_cross_west_line and !m_cross_east_line)
       central_interval.x() = QcIntervalDouble(projected_x_inf, x_sup);
     else if (!m_cross_west_line and m_cross_east_line)
@@ -716,6 +717,7 @@ QcViewport::update_area()
   } else {
     m_cross_west_line = false;
     m_cross_east_line = false;
+    m_number_of_full_maps = 0;
     QcIntervalDouble x_screen_interval(0, width()); // -1
     m_central_part = QcViewportPart(this, 0,
                                     QcInterval2DDouble(x_screen_interval, m_y_screen_interval),
