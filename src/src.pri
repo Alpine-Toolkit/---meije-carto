@@ -59,10 +59,11 @@ SOURCES += \
 SOURCES += \
   scene/location_circle_material_shader.cpp \
   scene/location_circle_node.cpp \
+  scene/map_layer_scene.cpp \
+  scene/map_scene.cpp \
   scene/path_material_shader.cpp \
   scene/path_node.cpp \
-  scene/map_layer_scene.cpp \
-  scene/map_scene.cpp
+  scene/point_material_shader.cpp
 
 SOURCES += \
   tools/debug_data.cpp \
@@ -138,9 +139,10 @@ HEADERS += \
 HEADERS += \
   scene/location_circle_material_shader.h \
   scene/location_circle_node.h \
+  scene/map_scene.h \
   scene/path_material_shader.h \
   scene/path_node.h \
-  scene/map_scene.h
+  scene/point_material_shader.h
 
 HEADERS += \
   tools/debug_data.h \
