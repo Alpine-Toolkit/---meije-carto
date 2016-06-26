@@ -42,6 +42,7 @@ SOURCES += \
   geometry/line.cpp \
   geometry/path.cpp \
   geometry/polygon.cpp \
+  geometry/polygon_seidler_triangulation.cpp \
   geometry/vector.cpp
 
 SOURCES += \

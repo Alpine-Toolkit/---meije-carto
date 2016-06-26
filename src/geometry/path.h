@@ -51,6 +51,10 @@
 
 /**************************************************************************************************/
 
+class QcPolygonTriangulation;
+
+/**************************************************************************************************/
+
 template <typename T, template<typename T> class Vector = QcVector>
 class QC_EXPORT QcPath
 {
@@ -103,6 +107,8 @@ class QC_EXPORT QcPath
 
   bool is_self_intersecting() const;
 
+  // QcPolygonTriangulation triangulate() const;
+
  private:
   // Fixme: QVector
   VertexListType m_vertexes;
@@ -116,6 +122,56 @@ template<> QcPathDouble::QcPath(const QVector<double> & coordinates, bool closed
 
 typedef QcPath<double, QcVector3D> QcPath3DDouble;
 template<> QcPath3DDouble::QcPath(const QVector<double> & coordinates, bool closed);
+
+/**************************************************************************************************/
+
+struct QcTriangleIndex
+{
+public:
+  QcTriangleIndex(int p1, int p2, int p3)
+    : p1(p1), p2(p2), p3(p3)
+  {}
+
+  int p1, p2, p3;
+};
+
+struct QcTriangleVertex
+{
+public:
+  QcTriangleVertex();
+  QcTriangleVertex(const QcVectorDouble & p1, const QcVectorDouble & p2, const QcVectorDouble & p3);
+  QcTriangleVertex(const QcTriangleVertex & other);
+  ~QcTriangleVertex();
+
+  QcTriangleVertex & operator=(const QcTriangleVertex & other);
+
+  // const QcVectorDouble & p1() const { return m_p1; }
+  // void set_p1(const QcVectorDouble & p1) { m_p1 = p1; }
+
+  // const QcVectorDouble & p2() const { return m_p2; }
+  // void set_p2(const QcVectorDouble & p2) { m_p2 = p2; }
+
+  // const QcVectorDouble & p3() const { return m_p3; }
+  // void set_p3(const QcVectorDouble & p3) { m_p3 = p3; }
+
+public:
+  QcVectorDouble p1; // const &
+  QcVectorDouble p2;
+  QcVectorDouble p3;
+};
+
+class QC_EXPORT QcPolygonTriangulation
+{
+ public:
+  QcPolygonTriangulation(const QcPathDouble & path);
+
+  const QList<QcTriangleIndex> & triangle_indexes() const { return m_triangles; }
+  QList<QcTriangleVertex> triangle_vertexes() const;
+
+ private:
+  const QcPathDouble & m_path;
+  QList<QcTriangleIndex> m_triangles;
+};
 
 /**************************************************************************************************/
 

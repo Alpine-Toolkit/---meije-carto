@@ -45,8 +45,7 @@ QcPath<T, Vector>::QcPath()
     m_edges(),
     m_interval(),
     m_closed(false)
-{
-}
+{}
 
 /*
 QcPath<T>::QcPath(int number_of_vertexes)

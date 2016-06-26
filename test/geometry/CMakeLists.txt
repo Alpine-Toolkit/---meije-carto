@@ -16,6 +16,7 @@ foreach(name
     line
     path
     polygon
+    triangulation
     vector
     )
   add_executable(test_${name} test_${name}.cpp)

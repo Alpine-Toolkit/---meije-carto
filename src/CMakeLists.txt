@@ -49,6 +49,7 @@ set(qtcarto_files
   geometry/line.cpp
   geometry/path.cpp
   geometry/polygon.cpp
+  geometry/polygon_seidler_triangulation.cpp
   geometry/vector.cpp
 
   map/location_circle_data.cpp
