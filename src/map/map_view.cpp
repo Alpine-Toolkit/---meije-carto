@@ -326,8 +326,6 @@ QcMapView::set_opacity(const QcWmtsPluginLayer * plugin_layer, float opacity)
     layer->set_opacity(opacity);
 }
 
-  void set_gps_horizontal_precision(double horizontal_precision);
-
 void
 QcMapView::update_scene()
 {

@@ -28,73 +28,55 @@
 
 /**************************************************************************************************/
 
-#ifndef __MAP_PATH_EDITOR_H__
-#define __MAP_PATH_EDITOR_H__
+#ifndef __PATH_PROPERTY_H__
+#define __PATH_PROPERTY_H__
 
 /**************************************************************************************************/
 
-#include "geometry/path.h"
-#include "map/map_event_router.h"
-#include "map/map_view.h"
-#include "map/path_property.h"
+#include <QObject>
 
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
 
-/**************************************************************************************************/
-
-class QcMapPathEditor : public QcMapEventClient
+class QcPathProperty : public QObject
 {
   Q_OBJECT
-  Q_PROPERTY(QcPathProperty * path_property READ path_property_ptr CONSTANT)
+  // FIXME: CONSTANT
+  Q_PROPERTY(double length READ length WRITE set_length NOTIFY length_changed)
+  Q_PROPERTY(double area READ area WRITE set_area NOTIFY area_changed)
 
 public:
-  QcMapPathEditor(QcMapView * map_view);
-  ~QcMapPathEditor();
+  QcPathProperty(QObject * parent = nullptr);
+  QcPathProperty(const QcPathProperty & other, QObject * parent = nullptr);
+  ~QcPathProperty();
 
-  // void handle_mouse_press_event(const QcMapEvent & event) override;
-  void handle_mouse_move_event(const QcMapEvent & event) override;
-  // void handle_mouse_release_event(const QcMapEvent & event) override;
-  // void handle_mouse_wheel_event(const QcMapEvent & event) override;
+  QcPathProperty & operator=(const QcPathProperty & other);
 
-  void handle_mouse_press_and_hold_event(const QcMapEvent & event) override;
+  double length() const { return m_length; }
+  void set_length(double length);
 
-  // void handle_clicked_event(const QcMapEvent & event) override;
-  // void handle_double_clicked_event(const QcMapEvent & event) override;
-
-  Q_INVOKABLE void clear();
-  Q_INVOKABLE void set_closed(bool value);
-  Q_INVOKABLE void set_vertex_edition_mode(bool value) { m_vertex_edition_mode = value; }
-
-  QcPathDouble path() const { return m_path; }
-  void set_path(const QcPathDouble & path) { m_path = path ;}
-
-  QcPathProperty path_property() const { return m_path_property; }
+  double area() const { return m_area; }
+  void set_area(double area);
 
 signals:
-  void path_changed();
+  void length_changed();
+  void area_changed();
 
 private:
-  void update_path();
-  QcPathProperty * path_property_ptr() { return &m_path_property; } // const
-
-private:
-  QcPathDouble m_path;
-  QcPathProperty m_path_property;
-  QcMapView * m_map_view;
-  bool m_vertex_edition_mode = false;
+  double m_length;
+  double m_area;
 };
 
 /**************************************************************************************************/
 
 // QC_END_NAMESPACE
 
-// Q_DECLARE_METATYPE(QcMapPathEditor)
+Q_DECLARE_METATYPE(QcPathProperty)
 
 /**************************************************************************************************/
 
-#endif /* __MAP_PATH_EDITOR_H__ */
+#endif /* __PATH_PROPERTY_H__ */
 
 /***************************************************************************************************
  *

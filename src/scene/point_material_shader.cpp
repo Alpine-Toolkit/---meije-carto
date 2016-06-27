@@ -51,14 +51,14 @@ QcPointMaterialShader::fragmentShader() const
 QList<QByteArray>
 QcPointMaterialShader::attributes() const
 {
-  return QList<QByteArray>() << "a_vertex" << "a_tex_coord" << "a_radius";
+  return QList<QByteArray>() << "a_vertex" << "a_tex_coord" << "a_radius" << "a_colour";
 }
 
 void
 QcPointMaterialShader::updateState(const QcPointMaterialShaderState * state,
                                             const QcPointMaterialShaderState *)
 {
-  program()->setUniformValue("color", state->r, state->g, state->b, state->a);
+  // program()->setUniformValue("colour", state->r, state->g, state->b, state->a);
 }
 
 // QC_END_NAMESPACE

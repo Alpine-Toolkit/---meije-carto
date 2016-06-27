@@ -43,7 +43,7 @@
 
 struct QcPointMaterialShaderState
 {
-  float r, g, b, a;
+  // float r, g, b, a;
 };
 
 class QcPointMaterialShader : public QSGSimpleMaterialShader<QcPointMaterialShaderState>
@@ -54,7 +54,7 @@ public:
   const char * vertexShader() const Q_DECL_OVERRIDE ;
   const char * fragmentShader() const Q_DECL_OVERRIDE ;
   QList<QByteArray> attributes() const Q_DECL_OVERRIDE ;
-  void updateState(const QcPointMaterialShaderState * color,
+  void updateState(const QcPointMaterialShaderState * state,
                    const QcPointMaterialShaderState *) Q_DECL_OVERRIDE ;
 };
 

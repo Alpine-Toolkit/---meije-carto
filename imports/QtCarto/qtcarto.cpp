@@ -39,6 +39,8 @@
 #include "geometry/vector.h"
 #include "map/location_circle_data.h"
 #include "map/map_event_router.h"
+#include "map/map_path_editor.h"
+#include "map/path_property.h"
 
 // QC_BEGIN_NAMESPACE
 
@@ -77,6 +79,12 @@ class QtCartoDeclarativeModule : public QQmlExtensionPlugin
 
       qmlRegisterUncreatableType<QcLocationCircleData>(uri, major, minor, "QcLocationCircleData",
                                                        QStringLiteral("QcLocationCircleData is not intended instantiable by developer."));
+
+      qmlRegisterUncreatableType<QcMapPathEditor>(uri, major, minor, "QcMapPathEditor",
+                                                  QStringLiteral("QcMapPathEditor is not intended instantiable by developer."));
+
+      qmlRegisterUncreatableType<QcPathProperty>(uri, major, minor, "QcPathProperty",
+                                                  QStringLiteral("QcPathProperty is not intended instantiable by developer."));
 
       // QDeclarativeGeoMap
       qmlRegisterType<QcMapItem>(uri, major, minor, "QcMapItem");

@@ -51,20 +51,26 @@ QcPathMaterialShader::fragmentShader() const
 QList<QByteArray>
 QcPathMaterialShader::attributes() const
 {
-  return QList<QByteArray>() << "a_vertex" << "a_tex_coord"
-                             << "a_line_length" << "a_line_width"
-                             << "a_cap";
+  return QList<QByteArray>()
+    << "a_vertex"
+    << "a_tex_coord"
+    << "a_line_length"
+    << "a_line_width"
+    << "a_cap"
+    << "a_colour";
 }
 
 void
 QcPathMaterialShader::updateState(const QcPathMaterialShaderState * state,
                                   const QcPathMaterialShaderState *)
 {
-  program()->setUniformValue("colour", state->r, state->g, state->b, state->a);
+  // program()->setUniformValue("colour", state->r, state->g, state->b, state->a);
   // program()->setUniformValue("cap_type", state->cap_type);
   // program()->setUniformValue("line_join", state->line_join);
   // program()->setUniformValue("antialias_diameter", state->antialias_diameter);
 }
+
+/**************************************************************************************************/
 
 // QC_END_NAMESPACE
 

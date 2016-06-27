@@ -37,6 +37,7 @@
 #include "plugin_data.h"
 
 #include "map/map_event_router.h"
+#include "map/map_path_editor.h"
 #include "map/map_view.h"
 #include "map/viewport.h"
 #include "wmts/wmts_plugin_manager.h"
@@ -66,7 +67,8 @@ class QcMapItem : public QQuickItem
   Q_PROPERTY(QVariantList plugins READ plugins CONSTANT)
   Q_PROPERTY(QString projection READ projection CONSTANT)
   Q_PROPERTY(QStringList projections READ projections CONSTANT)
-  Q_PROPERTY(QcMapEventRouter * map_event_router READ map_event_router CONSTANT)
+  Q_PROPERTY(QcMapEventRouter * event_router READ event_router CONSTANT)
+  Q_PROPERTY(QcMapPathEditor * path_editor READ path_editor CONSTANT)
 
 public:
   Q_INVOKABLE static QcWgsCoordinate cast_QGeoCoordinate(const QGeoCoordinate & coordinate) {
@@ -103,6 +105,7 @@ public:
   double bearing() const;
 
   QcLocationCircleData * location_circle_data();
+  QcMapPathEditor * path_editor() { return m_path_editor; }
 
   Q_INVOKABLE QcMapScale make_scale(unsigned int max_length_px) const;
 
@@ -129,7 +132,7 @@ public:
   QStringList projections() const;
   void set_projection(const QcProjection * projection);
 
-  QcMapEventRouter * map_event_router() { return &m_map_event_router; }
+  QcMapEventRouter * event_router() { return &m_event_router; }
 
   bool childMouseEventFilter(QQuickItem * item, QEvent * event) Q_DECL_OVERRIDE ;
 
@@ -175,7 +178,8 @@ private:
   QColor m_color;
   QcMapGestureArea * m_gesture_area;
   QcWmtsPluginManager & m_plugin_manager;
-  QcMapEventRouter m_map_event_router;
+  QcMapPathEditor * m_path_editor;
+  QcMapEventRouter m_event_router;
   QcMapView * m_map_view;
   QcViewport * m_viewport; // ???
   QHash<QString, QVariantList> m_plugin_layers;

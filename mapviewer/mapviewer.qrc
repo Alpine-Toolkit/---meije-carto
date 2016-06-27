@@ -8,6 +8,10 @@
     <file>icons/add-white@3x.png</file>
     <file>icons/arrow-back-white.png</file>
     <file>icons/arrow-back-white@3x.png</file>
+    <file>icons/close-black.png</file>
+    <file>icons/close-black@3x.png</file>
+    <file>icons/delete-black.png</file>
+    <file>icons/delete-black@3x.png</file>
     <file>icons/explore-black.png</file>
     <file>icons/explore-black@3x.png</file>
     <file>icons/explore-white.png</file>
@@ -29,6 +33,12 @@
     <file>icons/remove-white.png</file>
     <file>icons/remove-white@3x.png</file>
 
+    <file>icons/svg/area-black.png</file>
+    <file>icons/svg/area-black@3x.png</file>
+    <file>icons/svg/polyline-black.png</file>
+    <file>icons/svg/polyline-black@3x.png</file>
+    <file>icons/svg/polyline-dot-black.png</file>
+    <file>icons/svg/polyline-dot-black@3x.png</file>
     <file>icons/svg/ruler-black.png</file>
     <file>icons/svg/ruler-black@3x.png</file>
 

@@ -1,6 +1,3 @@
-
-// -*- mode: c++ -*-
-
 /***************************************************************************************************
 **
 ** $QTCARTO_BEGIN_LICENSE:GPL3$
@@ -29,56 +26,59 @@
 
 /**************************************************************************************************/
 
-#ifndef __PATH_NODE_H__
-#define __PATH_NODE_H__
+#include "path_property.h"
+
+#include <QtDebug>
 
 /**************************************************************************************************/
 
-#include "geometry/path.h"
-#include "map/viewport.h"
+QcPathProperty::QcPathProperty(QObject * parent)
+  : QObject(parent),
+    m_length(),
+    m_area()
+{}
 
-#include <QSGOpacityNode>
+QcPathProperty::QcPathProperty(const QcPathProperty & other, QObject * parent)
+  : QObject(parent),
+    m_length(other.m_length),
+    m_area(other.m_area)
+{}
 
-/**************************************************************************************************/
+QcPathProperty::~QcPathProperty()
+{}
 
-// QC_BEGIN_NAMESPACE
-
-struct PathPoint2D;
-
-/**************************************************************************************************/
-
-class QcPathNode : public QSGOpacityNode
+QcPathProperty &
+QcPathProperty::operator=(const QcPathProperty & other)
 {
-public:
-  QcPathNode(const QcViewport * viewport);
+  if (this != &other) {
+    m_length = other.m_length;
+    m_area = other.m_area;
+  }
 
-  void update(const QcPathDouble & path);
+  return *this;
+}
 
-private:
-  void set_path_points(PathPoint2D * path_points,
-                       int i,
-                       QcVectorDouble & point0,
-                       QcVectorDouble & point1,
-                       QcVectorDouble & point2,
-                       QcVectorDouble & point3,
-                       double line_width,
-                       double half_width,
-                       const QColor & colour);
+void
+QcPathProperty::set_length(double length)
+{
+  if (!qFuzzyCompare(length, m_length)) {
+    m_length = length;
+    emit length_changed();
+  };
+}
 
-private:
-  const QcViewport * m_viewport; // Fixme: &
-  QSGGeometryNode * m_path_geometry_node;
-  QSGGeometryNode * m_polygon_geometry_node;
-  QSGGeometryNode * m_point_geometry_node;
-};
+void
+QcPathProperty::set_area(double area)
+{
+  if (!qFuzzyCompare(area, m_area)) {
+    m_area = area;
+    emit area_changed();
+  }
+}
 
 /**************************************************************************************************/
 
 // QC_END_NAMESPACE
-
-/**************************************************************************************************/
-
-#endif /* __PATH_NODE_H__ */
 
 /***************************************************************************************************
  *

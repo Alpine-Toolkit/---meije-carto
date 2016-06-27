@@ -7,17 +7,20 @@ uniform highp mat4 qt_Matrix;
 attribute highp vec4 a_vertex;
 attribute highp vec2 a_tex_coord;
 attribute highp float a_radius;
+attribute lowp vec4 a_colour;
 
 /* *********************************************************************************************** */
 
 varying highp vec2 tex_coord;
 varying highp float radius;
+varying lowp vec4 colour;
 
 /* *********************************************************************************************** */
 
 void main() {
   tex_coord = a_tex_coord;
   radius = a_radius;
+  colour = a_colour;
   gl_Position = qt_Matrix * a_vertex;
 }
 

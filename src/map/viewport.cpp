@@ -316,11 +316,11 @@ QcViewport::update_area_size()
 void
 QcViewport::update_zoom_level_interval()
 {
-  qInfo();
+  // qInfo();
   if (m_smallest_tile_size != -1) {
     int smallest_power_of_two_x = smallest_power_of_two(width() / m_smallest_tile_size);
     int smallest_power_of_two_y = smallest_power_of_two(height() / m_smallest_tile_size);
-    qInfo() << "viewport size" << m_viewport_size << m_map_zoom_level_interval << smallest_power_of_two_x << smallest_power_of_two_y;
+    // qInfo() << "viewport size" << m_viewport_size << m_map_zoom_level_interval << smallest_power_of_two_x << smallest_power_of_two_y;
     m_zoom_level_interval = QcIntervalInt(smallest_power_of_two_y, m_map_zoom_level_interval.sup());
   } else {
     m_zoom_level_interval = QcIntervalInt(-1, -1);
@@ -338,7 +338,7 @@ QcViewport::set_zoom_level_interval(const QcIntervalInt & zoom_level_interval, i
 void
 QcViewport::set_viewport_size(const QSize & size, float device_pixel_ratio)
 {
-  qInfo() << "viewport size" << size << device_pixel_ratio;
+  // qInfo() << "viewport size" << size << device_pixel_ratio;
   m_viewport_size = size; // * device_pixel_ratio;
   m_device_pixel_ratio = 1; // device_pixel_ratio;
 
@@ -406,7 +406,7 @@ QcViewport::end_state_transaction()
 void
 QcViewport::set_center(const QcWgsCoordinate & coordinate)
 {
-  qInfo() << coordinate;
+  // qInfo() << coordinate;
   if (coordinate != m_state.coordinate()) {
     begin_state_transaction();
     m_state.set_coordinate(coordinate);
@@ -541,7 +541,7 @@ void
 QcViewport::adjust_center()
 {
   QcPolygon polygon = compute_polygon();
-  qInfo() << polygon.interval();
+  // qInfo() << polygon.interval();
 
   // const QcIntervalDouble & x_projected_interval = m_projection->x_projected_interval();
   const QcIntervalDouble & y_projected_interval = m_projection->y_projected_interval();
@@ -553,7 +553,7 @@ QcViewport::adjust_center()
   // Adjust y to fit in the projection domain
   m_center_map_vertically = false;
   if (!y_viewport_interval.is_included_in(y_projected_interval)) {
-    qInfo() << "Adjust y";
+    // qInfo() << "Adjust y";
     QcVectorDouble projected_center = projected_center_coordinate();
     // Item height is larger than the map, map is centered
     if (y_projected_interval.length() < y_viewport_interval.length()) {
@@ -575,7 +575,7 @@ QcViewport::adjust_center()
     }
   }
 
-  qInfo() << "final" << polygon.interval();
+  // qInfo() << "final" << polygon.interval();
 
   // global polygon
   m_viewport_polygon = polygon;
@@ -599,7 +599,7 @@ QcViewport::update_area()
   const QcIntervalDouble & x_viewport_interval = viewport_interval.x();
   const QcIntervalDouble & y_viewport_interval = viewport_interval.y();
 
-  qInfo() << width() << height() << viewport_interval;
+  // qInfo() << width() << height() << viewport_interval;
 
   // Center map ?
   if (m_center_map_vertically) {
@@ -724,10 +724,10 @@ QcViewport::update_area()
                                     m_viewport_polygon);
   }
 
-  qInfo() << "West part" << m_west_part << '\n'
-          << "Central part" << m_central_part << '\n'
-          << "East part" << m_east_part << '\n'
-          << "Number of full maps" << m_number_of_full_maps;
+  // qInfo() << "West part" << m_west_part << '\n'
+  //         << "Central part" << m_central_part << '\n'
+  //         << "East part" << m_east_part << '\n'
+  //         << "Number of full maps" << m_number_of_full_maps;
 
   emit viewport_changed();
 }
@@ -759,7 +759,7 @@ QcViewport::find_part(const QcVectorDouble & projected_coordinate) const
 QcVectorDouble
 QcViewport::screen_to_projected_coordinate(const QcVectorDouble & screen_position, bool clip_to_viewport) const
 {
-  qInfo() << screen_position << clip_to_viewport;
+  // qInfo() << screen_position << clip_to_viewport;
 
   // Fixme: purpose ?
   if (clip_to_viewport) {

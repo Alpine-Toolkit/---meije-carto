@@ -51,16 +51,22 @@ QcLocationCircleMaterialShader::fragmentShader() const
 QList<QByteArray>
 QcLocationCircleMaterialShader::attributes() const
 {
-  return QList<QByteArray>() << "a_vertex" << "a_tex_coord" << "a_radius" << "a_angle";
+  return QList<QByteArray>()
+    << "a_vertex"
+    << "a_tex_coord"
+    << "a_radius"
+    << "a_angle";
 }
 
 void
 QcLocationCircleMaterialShader::updateState(const QcLocationCircleMaterialShaderState * state,
                                             const QcLocationCircleMaterialShaderState *)
 {
-  program()->setUniformValue("cone_color", state->cone_r, state->cone_g, state->cone_b, state->cone_a);
-  program()->setUniformValue("accuracy_color", state->accuracy_r, state->accuracy_g, state->accuracy_b, state->accuracy_a);
+  program()->setUniformValue("cone_colour", state->cone_r, state->cone_g, state->cone_b, state->cone_a);
+  program()->setUniformValue("accuracy_colour", state->accuracy_r, state->accuracy_g, state->accuracy_b, state->accuracy_a);
 }
+
+/**************************************************************************************************/
 
 // QC_END_NAMESPACE
 

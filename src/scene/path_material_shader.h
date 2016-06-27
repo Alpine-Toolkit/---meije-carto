@@ -43,7 +43,7 @@
 
 struct QcPathMaterialShaderState
 {
-  float r, g, b, a;
+  // float r, g, b, a;
   // int cap_type;
   // int line_join;
   // float antialias_diameter;
@@ -51,7 +51,7 @@ struct QcPathMaterialShaderState
 
 class QcPathMaterialShader : public QSGSimpleMaterialShader<QcPathMaterialShaderState>
 {
-    QSG_DECLARE_SIMPLE_SHADER(QcPathMaterialShader, QcPathMaterialShaderState)
+  QSG_DECLARE_SIMPLE_SHADER(QcPathMaterialShader, QcPathMaterialShaderState)
 
 public:
   const char * vertexShader() const Q_DECL_OVERRIDE ;
@@ -61,6 +61,8 @@ public:
   void updateState(const QcPathMaterialShaderState * state,
                    const QcPathMaterialShaderState *) Q_DECL_OVERRIDE ;
 };
+
+/**************************************************************************************************/
 
 // QC_END_NAMESPACE
 

@@ -30,19 +30,22 @@ QcMapItem {
     gesture.enabled: true
     focus: true
 
-    function enter_measure_state() {
-        console.info("Enter Measure state")
-        map.map_event_router.push_client("path-editor")
+    function enter_path_editor_state() {
+        console.info("Enter Path Editor state")
+        map.event_router.push_client("path-editor")
     }
 
     states: [
-    State {
-        name: "Measure"
-        StateChangeScript {
-            name: "enter_measure_state"
-            script: enter_measure_state()
+        State {
+            name: "Start"
+        },
+        State {
+            name: "PathEditor"
+            StateChangeScript {
+                name: "enter_path_editor_state"
+                script: enter_path_editor_state()
+            }
         }
-    }
     ]
 
     Component.onCompleted: {
@@ -197,6 +200,7 @@ QcMapItem {
     }
 
     ToolBar {
+        id: map_toolbar
         anchors.top: parent.top
         anchors.right: parent.right
         ColumnLayout {
@@ -232,16 +236,19 @@ QcMapItem {
                 onClicked: position_locked = !position_locked
             }
             ToolButton {
-                id: ruler_tool_icon
+                id: path_tool_icon
                 checkable: true
                 contentItem: Image {
                     fillMode: Image.Pad
                     horizontalAlignment: Image.AlignHCenter
                     verticalAlignment: Image.AlignVCenter
-                    source: "qrc:/icons/svg/ruler-black.png"
+                    source: "qrc:/icons/svg/polyline-black.png"
                 }
                 onClicked: {
-                    map.state = "Measure"
+                    if (path_tool_icon.checked)
+                        map.state = "PathEditor"
+                    else
+                        map.state = ""
                 }
             }
             ToolButton {
@@ -271,7 +278,96 @@ QcMapItem {
                     stable_zoom_by_increment(position_px, -1)
                 }
             }
+        }
+    } // End ToolBar
 
+    ToolBar {
+        id: path_toolbar
+        anchors.top: parent.top
+        anchors.right: map_toolbar.left
+        visible: map.state == "PathEditor"
+        ColumnLayout {
+            /*
+            ToolButton {
+                id: close_path_toolbar_icon
+                checkable: true
+                contentItem: Image {
+                    fillMode: Image.Pad
+                    horizontalAlignment: Image.AlignHCenter
+                    verticalAlignment: Image.AlignVCenter
+                    source: "qrc:/icons/close-black.png"
+                }
+                onClicked: {
+                    map.state = "Start"
+                }
+            }
+            */
+            ToolButton {
+                id: delete_path_icon
+                contentItem: Image {
+                    fillMode: Image.Pad
+                    horizontalAlignment: Image.AlignHCenter
+                    verticalAlignment: Image.AlignVCenter
+                    source: "qrc:/icons/delete-black.png"
+                }
+                onClicked: {
+                    map.path_editor.clear()
+                    map.path_editor.set_closed(area_icon.checked)
+                }
+            }
+            ToolButton {
+                id: polyline_dot_icon
+                checkable: true
+                contentItem: Image {
+                    fillMode: Image.Pad
+                    horizontalAlignment: Image.AlignHCenter
+                    verticalAlignment: Image.AlignVCenter
+                    source: "qrc:/icons/svg/polyline-dot-black.png"
+                }
+                onClicked: {
+                    map.path_editor.set_vertex_edition_mode(polyline_dot_icon.checked)
+                }
+            }
+            ToolButton {
+                id: area_icon
+                checkable: true
+                contentItem: Image {
+                    fillMode: Image.Pad
+                    horizontalAlignment: Image.AlignHCenter
+                    verticalAlignment: Image.AlignVCenter
+                    source: "qrc:/icons/svg/area-black.png"
+                }
+                onClicked: {
+                    map.path_editor.set_closed(area_icon.checked)
+                }
+            }
+            ToolButton {
+                id: ruler_tool_icon
+                checkable: true
+                contentItem: Image {
+                    fillMode: Image.Pad
+                    horizontalAlignment: Image.AlignHCenter
+                    verticalAlignment: Image.AlignVCenter
+                    source: "qrc:/icons/svg/ruler-black.png"
+                }
+            }
+        }
+    } // End ToolBar
+
+    Frame {
+        anchors.top: parent.top
+        anchors.left: parent.left
+        background: Rectangle {
+            color: white
+        }
+        ColumnLayout {
+        anchors.fill: parent
+            Text {
+                id: path_property_label
+                visible: ruler_tool_icon.checked
+                text: "Path length "  + Number(map.path_editor.path_property.length).toLocaleString(Qt.locale("fr_FR"), 'f', 2) + " m"
+            }
         }
     }
-}
+
+} // end QcMapItem

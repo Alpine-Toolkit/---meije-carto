@@ -56,6 +56,7 @@ set(qtcarto_files
   map/map_event_router.cpp
   map/map_path_editor.cpp
   map/map_view.cpp
+  map/path_property.cpp
   map/viewport.cpp
 
   math/interval.cpp

@@ -8,12 +8,18 @@ import argparse
 
 argument_parser = argparse.ArgumentParser(description='Make shader.')
 
-argument_parser.add_argument('shader_prefix', metavar='ShaderPrefix',
-                             help='shader prefix')
+# argument_parser.add_argument('shader_prefix', metavar='ShaderPrefix',
+#                              help='shader prefix')
+
+argument_parser.add_argument('shader_paths', metavar='File.glsl', nargs='+',
+                             help='shader file names')
+
+argument_parser.add_argument('-o', dest='output_path', metavar='OUTPUT',
+                             help='output')
 
 args = argument_parser.parse_args()
 
-shader_prefix = args.shader_prefix
+# shader_prefix = args.shader_prefix
 
 ####################################################################################################
 
@@ -25,13 +31,26 @@ def format_shader_for_c_string(shader_source):
 
 ####################################################################################################
 
-with open(shader_prefix + '_vertex_shader.glsl', 'r') as f:
+vertex_shader_path = '' # shader_prefix + '_vertex_shader.glsl'
+fragment_shader_path = '' # shader_prefix + '_fragment_shader.glsl'
+
+output_path = args.output_path # shader_prefix + '_shader.h'
+shader_prefix = output_path[:output_path.find('_shader.h')]
+
+for file_name in args.shader_paths:
+    print(file_name)
+    if 'vertex' in file_name:
+        vertex_shader_path = file_name
+    elif 'fragment' in file_name:
+        fragment_shader_path = file_name
+
+with open(vertex_shader_path, 'r') as f:
     vertex_shader_source = f.read()
 
-with open(shader_prefix + '_fragment_shader.glsl', 'r') as f:
+with open(fragment_shader_path, 'r') as f:
     fragment_shader_source = f.read()
 
-with open(shader_prefix + '_shader.h', 'w') as f:
+with open(output_path, 'w') as f:
     f.write('const char * vertex_shader_{} =\n'.format(shader_prefix)
             + format_shader_for_c_string(vertex_shader_source) + '\n;\n')
     f.write('\n')

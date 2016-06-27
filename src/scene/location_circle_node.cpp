@@ -78,7 +78,7 @@ QSGGeometry::Attribute LocationCirclePoint2D_Attributes[] = {
   QSGGeometry::Attribute::create(0, 2, GL_FLOAT, true),  // xy
   QSGGeometry::Attribute::create(1, 2, GL_FLOAT, false), // uv
   QSGGeometry::Attribute::create(2, 3, GL_FLOAT, false), // radius
-  QSGGeometry::Attribute::create(3, 1, GL_FLOAT, false) // angle
+  QSGGeometry::Attribute::create(3, 1, GL_FLOAT, false)  // angle
   // QSGGeometry::Attribute::create(5, 4, GL_FLOAT, false)  // colour
 };
 

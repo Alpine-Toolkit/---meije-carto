@@ -30,16 +30,12 @@
 
 #include "earth.h"
 #include "coordinate/wgs84.h"
-#include "map/map_path_editor.h"
 
 #include <cmath>
 
-#include <QDir>
-#include <QStandardPaths>
-
 #include <QSGSimpleRectNode>
 #include <QtDebug>
-#include <QtQuick/qsgnode.h>
+// #include <QtQuick/qsgnode.h>
 
 // Fixme: Use QtQuick Private API !!!
 #include <private/qquickwindow_p.h>
@@ -81,7 +77,9 @@ QcMapItem::QcMapItem(QQuickItem * parent)
 
   // Fixme: direct ptr
   // Fixme: in map_view ?
-  m_map_event_router.register_client(QcMapEventRouter::ClientSharedPointer(new QcMapPathEditor(m_map_view)));
+  m_path_editor = new QcMapPathEditor(m_map_view);
+  connect(m_path_editor, &QcMapPathEditor::path_changed, this, &QQuickItem::update);
+  m_event_router.register_client(QcMapEventRouter::ClientSharedPointer(m_path_editor));
 
   for (const auto & plugin_name : m_plugin_manager.plugin_names())
     m_plugin_layers.insert(plugin_name, make_plugin_layers(plugin_name));
@@ -269,12 +267,14 @@ QcMapItem::send_mouse_event(QMouseEvent * event)
   QPointF local_position = mapFromScene(event->windowPos());
   QQuickWindow * _window = window();
   QQuickItem * grabber = _window ? _window->mouseGrabberItem() : nullptr;
+  // Fixme: faster ? / duplicated
+  bool is_mouse_area = QString(grabber->metaObject()->className()).startsWith(QStringLiteral("QQuickMouseArea"));
   bool steal_event = m_gesture_area->is_active(); // means pan or pinch is active
 
   // grabber is QQuickMouseArea, steal_event is false first then true
-  qInfo() << event << "\ngrabber" << grabber << "\nsteal_event" << steal_event;
+  // qInfo() << event << "\ngrabber" << grabber << "\nsteal_event" << steal_event << is_mouse_area;
 
-  if ((steal_event or contains(local_position)) and (!grabber or !grabber->keepMouseGrab())) {
+  if (is_mouse_area and (steal_event or contains(local_position)) and (!grabber or !grabber->keepMouseGrab())) {
     QScopedPointer<QMouseEvent> mouseEvent(QQuickWindowPrivate::cloneMouseEvent(event, &local_position));
     mouseEvent->setAccepted(false);
 
@@ -295,7 +295,7 @@ QcMapItem::send_mouse_event(QMouseEvent * event)
     steal_event = m_gesture_area->is_active(); // recheck value
     // Fixme: duplicated code ???
     grabber = _window ? _window->mouseGrabberItem() : nullptr;
-    qInfo() << "grabber" << grabber << "\nsteal_event" << steal_event;
+    // qInfo() << "grabber" << grabber << "\nsteal_event" << steal_event;
 
     if (grabber and steal_event and !grabber->keepMouseGrab() and grabber != this) {
       // qInfo() << "grab mouse";
@@ -324,11 +324,13 @@ QcMapItem::send_touch_event(QTouchEvent * event)
   QQuickWindowPrivate * _window = window() ? QQuickWindowPrivate::get(window()) : nullptr;
   const QTouchEvent::TouchPoint & point = event->touchPoints().first();
   QQuickItem * grabber = _window ? _window->itemForTouchPointId.value(point.id()) : nullptr;
+  // Fixme: faster ?
+  bool is_mouse_area = QString(grabber->metaObject()->className()).startsWith(QStringLiteral("QQuickMouseArea"));
 
   bool steal_event = m_gesture_area->is_active();
   bool contains_point = contains(mapFromScene(point.scenePos()));
 
-  if ((steal_event or contains_point) and (!grabber or !grabber->keepTouchGrab())) {
+  if (is_mouse_area and (steal_event or contains_point) and (!grabber or !grabber->keepTouchGrab())) {
     QScopedPointer<QTouchEvent> touch_event(new QTouchEvent(event->type(), event->device(), event->modifiers(),
                                                             event->touchPointStates(), event->touchPoints()));
     touch_event->setTimestamp(event->timestamp());
@@ -397,9 +399,9 @@ QcMapItem::on_press_and_hold(const QMouseEvent * event)
   QcVectorDouble position_px(event->pos());
   QcVectorDouble projected_coordinate = to_projected_coordinate(position_px);
   QcWgsCoordinate coordinate = to_coordinate(position_px); // Fixme: from projected_coordinate but nan check
-  QcMapEvent map_event = m_map_event_router.create_map_event(event, projected_coordinate, coordinate);
-  m_map_event_router.handle_mouse_press_and_hold_event(map_event);
-  update();
+  QcMapEvent map_event = m_event_router.create_map_event(event, projected_coordinate, coordinate);
+  m_event_router.handle_mouse_press_and_hold_event(map_event);
+  // update();
 }
 
 /**************************************************************************************************/
@@ -712,8 +714,6 @@ QcMapItem::prefetch_data()
 }
 
 /**************************************************************************************************/
-
-// #include "declarative_map_item.moc"
 
 // QC_END_NAMESPACE
 

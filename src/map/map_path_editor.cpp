@@ -45,6 +45,16 @@ QcMapPathEditor::~QcMapPathEditor()
 {}
 
 void
+QcMapPathEditor::update_path()
+{
+  m_path_property.set_length(m_path.length());
+  // Fixme: QcPolygon
+  // m_path_property.set_area(m_path.closed() ? m_path.area() : .0);
+  m_map_view->update_path(m_path);
+  emit path_changed();
+}
+
+void
 QcMapPathEditor::handle_mouse_move_event(const QcMapEvent & event)
 {
   qInfo() << event;
@@ -53,17 +63,34 @@ QcMapPathEditor::handle_mouse_move_event(const QcMapEvent & event)
 void
 QcMapPathEditor::handle_mouse_press_and_hold_event(const QcMapEvent & event)
 {
-  // Fixme: store wgs coordinate
-  QcVectorDouble position = event.projected_coordinate();
-  m_path.add_vertex(position);
-  qInfo() << event << position << m_path.number_of_edges();
-  m_map_view->update_path(m_path);
+  if (m_vertex_edition_mode) {
+    QcVectorDouble position = event.projected_coordinate();
+    double distance;
+    QcVectorDouble vertex = m_path.nearest_vertex(position, distance);
+    qInfo() << "closest point" << position << vertex << distance;
+  } else {
+    // Fixme: store wgs coordinate
+    QcVectorDouble position = event.projected_coordinate();
+    m_path.add_vertex(position);
+    qInfo() << event << position << m_path.number_of_edges();
+    update_path();
+  }
 }
 
 void
 QcMapPathEditor::clear()
 {
+  qInfo();
   m_path.clear();
+  update_path();
+}
+
+void
+QcMapPathEditor::set_closed(bool value)
+{
+  qInfo();
+  m_path.set_closed(value);
+  update_path();
 }
 
 /**************************************************************************************************/

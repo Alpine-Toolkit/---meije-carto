@@ -15,15 +15,13 @@ const float antialias_diameter = 1.;
 
 uniform lowp float qt_Opacity;
 
-uniform vec4 colour;
-
 /* *********************************************************************************************** */
 
 varying highp vec2 uv;
-varying float line_length;
-varying float line_width;
-/* varying vec4 colour; */
-varying float cap;
+varying highp float line_length;
+varying highp float line_width;
+varying lowp float cap;
+varying lowp vec4 colour;
 
 /* *********************************************************************************************** */
 
@@ -57,7 +55,7 @@ void main()
   if (colour.a <= .0)
     discard;
 
-  vec4 frag_color;
+  vec4 frag_colour;
 
   float u = uv.x;
   float v = uv.y;
@@ -82,16 +80,16 @@ void main()
   // Anti-alias test, distance to border
   d -= t;
   if (d < .0) {
-    frag_color = colour;
-    /* frag_color = vec4(0, 1, 1, 1); */
+    frag_colour = colour;
+    /* frag_colour = vec4(0, 1, 1, 1); */
   } else {
     d /= antialias_diameter;
-    frag_color = vec4(colour.xyz, exp(-d*d) * colour.a);
-    /* frag_color = vec4(1, v, u, 1); */
+    frag_colour = vec4(colour.xyz, exp(-d*d) * colour.a);
+    // frag_colour = vec4(1, d, 0, 1);
   }
 
-  // frag_color = vec4(0, 0, 0, 1);
-  gl_FragColor = frag_color * qt_Opacity;
+  // frag_colour = vec4(0, 0, 0, 1);
+  gl_FragColor = frag_colour * qt_Opacity;
 }
 
 /* *********************************************************************************************** *
