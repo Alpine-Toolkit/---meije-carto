@@ -164,11 +164,13 @@ message_handler(QtMsgType type, const QMessageLogContext & context, const QStrin
     break;
   case QtFatalMsg:
     formated_message = formater(QLatin1Literal("Fatal"), context, message);
-    abort();
   }
 
   // stderr
   fprintf(stdout, formated_message.toStdString().c_str()); //  # QByteArray local_message = message.toLocal8Bit();
+
+  if (type == QtFatalMsg)
+    abort();
 }
 
 /**************************************************************************************************/
