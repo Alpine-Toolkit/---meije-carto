@@ -358,7 +358,7 @@ QcMapItem {
         anchors.top: parent.top
         anchors.left: parent.left
         background: Rectangle {
-            color: white
+            color: "white"
         }
         ColumnLayout {
         anchors.fill: parent
