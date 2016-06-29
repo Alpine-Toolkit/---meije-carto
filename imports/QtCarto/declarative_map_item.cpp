@@ -268,7 +268,7 @@ QcMapItem::send_mouse_event(QMouseEvent * event)
   QQuickWindow * _window = window();
   QQuickItem * grabber = _window ? _window->mouseGrabberItem() : nullptr;
   // Fixme: faster ? / duplicated
-  bool is_mouse_area = QString(grabber->metaObject()->className()).startsWith(QStringLiteral("QQuickMouseArea"));
+  bool is_mouse_area = !grabber or QString(grabber->metaObject()->className()).startsWith(QStringLiteral("QQuickMouseArea"));
   bool steal_event = m_gesture_area->is_active(); // means pan or pinch is active
 
   // grabber is QQuickMouseArea, steal_event is false first then true
