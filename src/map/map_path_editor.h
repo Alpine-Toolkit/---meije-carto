@@ -60,6 +60,7 @@ public:
   // void handle_mouse_wheel_event(const QcMapEvent & event) override;
 
   void handle_mouse_press_and_hold_event(const QcMapEvent & event) override;
+  void handle_mouse_press_and_hold_released_event(const QcMapEvent & event) override;
 
   // void handle_clicked_event(const QcMapEvent & event) override;
   // void handle_double_clicked_event(const QcMapEvent & event) override;

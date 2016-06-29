@@ -404,6 +404,21 @@ QcMapItem::on_press_and_hold(const QMouseEvent * event)
   // update();
 }
 
+void
+QcMapItem::on_press_and_hold_released(const QMouseEvent * event)
+{
+  // Fixme: improve arguments
+  qInfo();
+
+  // Fixme: duplicated
+  QcVectorDouble position_px(event->pos());
+  QcVectorDouble projected_coordinate = to_projected_coordinate(position_px);
+  QcWgsCoordinate coordinate = to_coordinate(position_px); // Fixme: from projected_coordinate but nan check
+  QcMapEvent map_event = m_event_router.create_map_event(event, projected_coordinate, coordinate);
+  m_event_router.handle_mouse_press_and_hold_released_event(map_event);
+  // update();
+}
+
 /**************************************************************************************************/
 
 void

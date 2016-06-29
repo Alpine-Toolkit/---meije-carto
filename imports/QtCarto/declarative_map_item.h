@@ -139,6 +139,7 @@ public:
   // called from map gesture area
   void on_wheel_event(const QWheelEvent * event);
   void on_press_and_hold(const QMouseEvent * event);
+  void on_press_and_hold_released(const QMouseEvent * event);
   void on_double_clicked(const QMouseEvent * event);
 
 signals:

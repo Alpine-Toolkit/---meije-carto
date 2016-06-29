@@ -59,7 +59,7 @@ QcGeoportailElevationServiceReply::process_payload()
       double longitude = json_object["lon"].toDouble();
       double latitude = json_object["lat"].toDouble();
       double elevation = json_object["z"].toDouble();
-      double elevation_accuracy = json_object["acc"].toDouble(); // unused
+      // double elevation_accuracy = json_object["acc"].toDouble(); // unused
       elevations() << QcWgsElevationCoordinate(longitude, latitude, elevation);
     }
   }

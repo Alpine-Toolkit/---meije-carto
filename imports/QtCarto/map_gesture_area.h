@@ -353,6 +353,7 @@ private:
   qreal m_velocity_y;
 
   QTimer m_press_timer; // used to detect press and hold
+  bool m_was_press_and_hold;
   QScopedPointer<QMouseEvent> m_mouse_event;
   QElapsedTimer m_press_time; // used to detect press and hold
   QElapsedTimer m_double_press_time; // used to detect double click

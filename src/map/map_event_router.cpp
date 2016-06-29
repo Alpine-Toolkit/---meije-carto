@@ -168,6 +168,14 @@ QcMapEventRouter::handle_mouse_press_and_hold_event(const QcMapEvent & event)
 }
 
 void
+QcMapEventRouter::handle_mouse_press_and_hold_released_event(const QcMapEvent & event)
+{
+  qInfo() << event;
+  if (!m_current_client.isNull())
+    m_current_client->handle_mouse_press_and_hold_released_event(event);
+}
+
+void
 QcMapEventRouter::handle_clicked_event(const QcMapEvent & event)
 {
   if (!m_current_client)

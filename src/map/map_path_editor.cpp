@@ -84,21 +84,10 @@ QcMapPathEditor::handle_mouse_press_and_hold_event(const QcMapEvent & event)
     bool selected_point = m_selected_vertex_index != -1;
     qInfo() << "closest point" << position << m_path.vertex_at(vertex_index) << distance << distance_px << on_point << selected_point;
     if (on_point) {
-      // if (selected_point) {
-      //   m_path.set_attribute_at(m_selected_vertex_index, QcDecoratedPathDouble::AttributeType::Normal);
-      //   if (vertex_index != m_selected_vertex_index) {
-      //     m_path.set_attribute_at(vertex_index, QcDecoratedPathDouble::AttributeType::Selected);
-      //     m_selected_vertex_index = vertex_index;
-      //   } else
-      //     m_selected_vertex_index = -1;
-      // } else {
-      //   m_path.set_attribute_at(vertex_index, QcDecoratedPathDouble::AttributeType::Selected);
-      //   m_selected_vertex_index = vertex_index;
-      // }
       if (selected_point)
         m_path.set_attribute_at(m_selected_vertex_index, QcDecoratedPathDouble::AttributeType::Normal);
       if (vertex_index != m_selected_vertex_index) {
-        m_path.set_attribute_at(vertex_index, QcDecoratedPathDouble::AttributeType::Selected);
+        m_path.set_attribute_at(vertex_index, QcDecoratedPathDouble::AttributeType::Selected | QcDecoratedPathDouble::AttributeType::Touched);
         m_selected_vertex_index = vertex_index;
       } else
         m_selected_vertex_index = -1;
@@ -108,22 +97,32 @@ QcMapPathEditor::handle_mouse_press_and_hold_event(const QcMapEvent & event)
       QcDecoratedPathDouble::VertexListType vertexes = m_path.vertexes();
       vertexes[m_selected_vertex_index] = position;
       m_path = QcDecoratedPathDouble(vertexes, m_path.closed());
-      m_path.set_attribute_at(m_selected_vertex_index, QcDecoratedPathDouble::AttributeType::Selected);
+      m_path.set_attribute_at(m_selected_vertex_index, QcDecoratedPathDouble::AttributeType::Selected | QcDecoratedPathDouble::AttributeType::Touched);
       update_path();
     }
   } else {
     // Fixme: store wgs coordinate
     QcVectorDouble position = event.projected_coordinate();
     m_path.add_vertex(position);
-    qInfo() << event << position << m_path.number_of_edges();
+    m_path.set_attribute_at(m_path.last_vertex_index(), QcDecoratedPathDouble::AttributeType::Touched);
     update_path();
   }
 }
 
 void
+QcMapPathEditor::handle_mouse_press_and_hold_released_event(const QcMapEvent & event)
+{
+  qInfo() << event;
+  if (m_selected_vertex_index != -1)
+    m_path.set_attribute_at(m_selected_vertex_index, QcDecoratedPathDouble::AttributeType::Selected);
+  else
+    m_path.set_attribute_at(m_path.last_vertex_index(), QcDecoratedPathDouble::AttributeType::Normal);
+  update_path();
+}
+
+void
 QcMapPathEditor::clear()
 {
-  qInfo();
   m_path.clear();
   // Fixme: coherent with QML, duplicated
   m_selected_vertex_index = -1;
@@ -134,7 +133,6 @@ QcMapPathEditor::clear()
 void
 QcMapPathEditor::set_closed(bool value)
 {
-  qInfo();
   m_path.set_closed(value);
   update_path();
 }

@@ -89,6 +89,7 @@ class QC_EXPORT QcPath
   // inline const EdgeType & edge(int i) const { return m_edges[i]; }
 
   inline int number_of_vertexes() const { return m_vertexes.size(); }
+  inline int last_vertex_index() const { return number_of_vertexes() -1; }
   inline const VertexListType & vertexes() const { return m_vertexes; }
   inline const IntervalType & interval() const { return m_interval; } // Fixme: any vertexes
 

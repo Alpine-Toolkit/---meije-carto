@@ -635,6 +635,11 @@ QcMapGestureArea::handle_mouse_release_event(QMouseEvent * event)
 {
   qInfo() << event;
 
+  if (m_was_press_and_hold) {
+    m_map->on_press_and_hold_released(event);
+    m_was_press_and_hold = false;
+  }
+
   if (!m_mouse_point.isNull()) {
     // this looks super ugly , however is required in case we do not get synthesized MouseReleaseEvent
     // and we reset the point already in handleTouchUngrabEvent
@@ -743,8 +748,10 @@ void
 QcMapGestureArea::handle_press_timer_timeout()
 {
   qInfo();
-  if (is_press_and_hold())
+  if (is_press_and_hold()) {
     m_map->on_press_and_hold(m_mouse_event.data());
+    m_was_press_and_hold = true;
+  }
   m_mouse_point.reset();
 }
 

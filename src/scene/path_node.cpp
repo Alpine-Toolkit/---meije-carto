@@ -395,12 +395,18 @@ QcPathNode::update(const QcDecoratedPathDouble * path)
   m_point_geometry_node->setFlag(QSGNode::OwnsGeometry);
   if (number_of_path_vertexes) {
     CirclePoint2D * circle_points = static_cast<CirclePoint2D *>(point_geometry->vertexData());
-    float radius = 10;
-    float margin = 10;
-    float size = radius + margin;
+    constexpr float point_radius = 10; // Fixme: setting
+    constexpr float margin = 10;
     int path_vertex_index = 0;
     int vertex_index = 0;
     for (const auto & vertex : path_vertexes) {
+      QcDecoratedPathDouble::AttributeType attribute_type = path->attribute_at(path_vertex_index);
+      QColor colour = test_bit(attribute_type, QcDecoratedPathDouble::AttributeType::Selected) ? selected_colour : path_colour;
+      float radius = point_radius;
+      if (test_bit(attribute_type, QcDecoratedPathDouble::AttributeType::Touched))
+        // Fixme: set larger than a finger 2cm
+        radius *= 4;
+      float size = radius + margin;
       double x = vertex.x();
       double y = vertex.y();
       QcVectorDouble point1(x - size, y - size);
@@ -411,8 +417,6 @@ QcPathNode::update(const QcDecoratedPathDouble * path)
       QcVectorDouble uv2(-size,  size);
       QcVectorDouble uv3( size, -size);
       QcVectorDouble uv4( size,  size);
-      QColor colour = path->attribute_at(path_vertex_index) == QcDecoratedPathDouble::AttributeType::Selected ?
-        selected_colour : path_colour;
       circle_points[vertex_index    ].set(point1, uv1, radius, colour);
       circle_points[vertex_index + 1].set(point2, uv2, radius, colour);
       circle_points[vertex_index + 2].set(point3, uv3, radius, colour);

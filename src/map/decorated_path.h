@@ -33,6 +33,8 @@
 
 /**************************************************************************************************/
 
+#include "qtcarto_global.h"
+#include "enum_flag.h"
 #include "geometry/path.h"
 
 #include <QList>
@@ -50,7 +52,11 @@
 class QcDecoratedPathDouble : public QcPathDouble
 {
 public:
-  enum class AttributeType {Normal, Selected};
+  enum class AttributeType {
+    Normal = 1,
+    Selected = 2,
+    Touched = 4
+  };
 
 public:
   QcDecoratedPathDouble();
@@ -75,6 +81,8 @@ private:
 public:
   QList<AttributeType> m_attributes;
 };
+
+ENUM_FLAGS(QcDecoratedPathDouble::AttributeType, unsigned int)
 
 /**************************************************************************************************/
 
