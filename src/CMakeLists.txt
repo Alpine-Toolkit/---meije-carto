@@ -58,6 +58,7 @@ set(qtcarto_files
   map/map_view.cpp
   map/path_property.cpp
   map/viewport.cpp
+  map/decorated_path.cpp
 
   math/interval.cpp
   math/qc_math.cpp

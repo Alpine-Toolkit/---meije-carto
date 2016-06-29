@@ -1,6 +1,3 @@
-
-// -*- mode: c++ -*-
-
 /***************************************************************************************************
 **
 ** $QTCARTO_BEGIN_LICENSE:GPL3$
@@ -29,56 +26,91 @@
 
 /**************************************************************************************************/
 
-#ifndef __PATH_NODE_H__
-#define __PATH_NODE_H__
+#include "decorated_path.h"
 
-/**************************************************************************************************/
-
-#include "map/decorated_path.h"
-#include "map/viewport.h"
-
-#include <QSGOpacityNode>
+#include <QtDebug>
 
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
 
-struct PathPoint2D;
-
 /**************************************************************************************************/
 
-class QcPathNode : public QSGOpacityNode
+QcDecoratedPathDouble::QcDecoratedPathDouble()
+  : QcPathDouble(),
+    m_attributes()
+{}
+
+QcDecoratedPathDouble::QcDecoratedPathDouble(const VertexListType & vertexes, bool closed)
+  : QcPathDouble(vertexes, closed)
 {
-public:
-  QcPathNode(const QcViewport * viewport);
+  set_attributes(AttributeType::Normal);
+}
 
-  void update(const QcDecoratedPathDouble * path);
+/*
+QcDecoratedPathDouble::QcDecoratedPathDouble(const QcVectorDouble & coordinates, bool closed)
+  : QcPathDouble(coordinates, closed)
+{
+  set_attributes(AttributeType::Normal);
+}
+*/
 
-private:
-  void set_path_points(PathPoint2D * path_points,
-                       int i,
-                       QcVectorDouble & point0,
-                       QcVectorDouble & point1,
-                       QcVectorDouble & point2,
-                       QcVectorDouble & point3,
-                       double line_width,
-                       double half_width,
-                       const QColor & colour);
+QcDecoratedPathDouble::QcDecoratedPathDouble(const QcDecoratedPathDouble & path)
+  : QcPathDouble(path),
+    m_attributes(path.m_attributes)
+{}
 
-private:
-  const QcViewport * m_viewport; // Fixme: &
-  QSGGeometryNode * m_path_geometry_node;
-  QSGGeometryNode * m_polygon_geometry_node;
-  QSGGeometryNode * m_point_geometry_node;
-};
+QcDecoratedPathDouble::QcDecoratedPathDouble(const QcPathDouble & path)
+  : QcPathDouble(path),
+    m_attributes()
+{
+  set_attributes(AttributeType::Normal);
+}
+
+QcDecoratedPathDouble::~QcDecoratedPathDouble()
+{}
+
+QcDecoratedPathDouble &
+QcDecoratedPathDouble::operator=(const QcDecoratedPathDouble & other)
+{
+  QcPathDouble::operator=(other);
+  m_attributes = other.m_attributes;
+  return *this;
+}
+
+QcDecoratedPathDouble &
+QcDecoratedPathDouble::operator=(const QcPathDouble & other)
+{
+  QcPathDouble::operator=(other);
+  set_attributes(AttributeType::Normal);
+  return *this;
+}
+
+void
+QcDecoratedPathDouble::clear()
+{
+  QcPathDouble::clear();
+  m_attributes.clear();
+}
+
+void
+QcDecoratedPathDouble::set_attributes(AttributeType value)
+{
+  m_attributes.clear();
+  for (int i = 0; i < number_of_vertexes(); i++)
+    m_attributes << value;
+}
+
+void
+QcDecoratedPathDouble::add_vertex(const VertexType & vertex)
+{
+  QcPathDouble::add_vertex(vertex);
+  m_attributes << AttributeType::Normal;
+}
 
 /**************************************************************************************************/
 
 // QC_END_NAMESPACE
-
-/**************************************************************************************************/
-
-#endif /* __PATH_NODE_H__ */
 
 /***************************************************************************************************
  *

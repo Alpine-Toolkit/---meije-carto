@@ -28,16 +28,14 @@
 
 /**************************************************************************************************/
 
-#ifndef __MAP_PATH_EDITOR_H__
-#define __MAP_PATH_EDITOR_H__
+#ifndef __DECORATED_PATH_H__
+#define __DECORATED_PATH_H__
 
 /**************************************************************************************************/
 
 #include "geometry/path.h"
-#include "map/decorated_path.h"
-#include "map/map_event_router.h"
-#include "map/map_view.h"
-#include "map/path_property.h"
+
+#include <QList>
 
 /**************************************************************************************************/
 
@@ -45,58 +43,46 @@
 
 /**************************************************************************************************/
 
-class QcMapPathEditor : public QcMapEventClient
+// Fixme: vertex must be const
+//  how to extend QcVectorDouble ? Union (const vertex, attribute)
+//  how to get vertex and attribute as one object ?
+
+class QcDecoratedPathDouble : public QcPathDouble
 {
-  Q_OBJECT
-  Q_PROPERTY(QcPathProperty * path_property READ path_property_ptr CONSTANT)
+public:
+  enum class AttributeType {Normal, Selected};
 
 public:
-  QcMapPathEditor(QcMapView * map_view);
-  ~QcMapPathEditor();
+  QcDecoratedPathDouble();
+  QcDecoratedPathDouble(const VertexListType & vertexes, bool closed = false);
+  // QcDecoratedPathDouble(const QcVectorDouble & coordinates, bool closed = false);
+  QcDecoratedPathDouble(const QcDecoratedPathDouble & path);
+  QcDecoratedPathDouble(const QcPathDouble & path);
+  ~QcDecoratedPathDouble();
 
-  // void handle_mouse_press_event(const QcMapEvent & event) override;
-  void handle_mouse_move_event(const QcMapEvent & event) override;
-  // void handle_mouse_release_event(const QcMapEvent & event) override;
-  // void handle_mouse_wheel_event(const QcMapEvent & event) override;
+  QcDecoratedPathDouble & operator=(const QcDecoratedPathDouble & other);
+  QcDecoratedPathDouble & operator=(const QcPathDouble & other);
 
-  void handle_mouse_press_and_hold_event(const QcMapEvent & event) override;
+  void clear();
+  void add_vertex(const VertexType & vertex);
 
-  // void handle_clicked_event(const QcMapEvent & event) override;
-  // void handle_double_clicked_event(const QcMapEvent & event) override;
-
-  Q_INVOKABLE void clear();
-  Q_INVOKABLE void set_closed(bool value);
-  Q_INVOKABLE void set_vertex_edition_mode(bool value);
-
-  QcDecoratedPathDouble path() const { return m_path; }
-  void set_path(const QcPathDouble & path) { m_path = path ;}
-
-  QcPathProperty path_property() const { return m_path_property; }
-
-signals:
-  void path_changed();
+  AttributeType attribute_at(int i) const { return m_attributes[i]; }
+  void set_attribute_at(int i, AttributeType value) { m_attributes[i] = value; }
 
 private:
-  void update_path();
-  QcPathProperty * path_property_ptr() { return &m_path_property; } // const
+  void set_attributes(AttributeType value);
 
-private:
-  QcDecoratedPathDouble m_path;
-  QcPathProperty m_path_property;
-  QcMapView * m_map_view;
-  bool m_vertex_edition_mode = false;
-  int m_selected_vertex_index = -1;
+public:
+  QList<AttributeType> m_attributes;
 };
 
 /**************************************************************************************************/
 
 // QC_END_NAMESPACE
 
-// Q_DECLARE_METATYPE(QcMapPathEditor)
-
 /**************************************************************************************************/
 
-#endif /* __MAP_PATH_EDITOR_H__ */
+#endif /* __DECORATED_PATH_H__ */
 
 /***************************************************************************************************
  *

@@ -317,7 +317,7 @@ QcMapLayerScene::update_scene_graph(QcMapLayerRootNode * map_root_node, QQuickWi
   }
 
   const QcTileMatrix & tile_matrix = m_tile_matrix_set[m_viewport->zoom_level()];
-  double resolution = tile_matrix.resolution(); // [m/px]
+  // double resolution = tile_matrix.resolution(); // [m/px]
 
   // Fixme: should be called when west_part is true
   // when we cross west line

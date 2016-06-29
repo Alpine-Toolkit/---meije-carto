@@ -229,8 +229,8 @@ QcPath<T, Vector>::barycenter() const
 }
 
 template <typename T, template<typename T> class Vector>
-typename QcPath<T, Vector>::VertexType
-QcPath<T, Vector>::nearest_vertex(const VertexType & point, T & distance) const
+int
+QcPath<T, Vector>::nearest_vertex_index(const VertexType & point, T & distance) const
 {
   int vertex_index = 0;
   int vertex_index_min = -1;
@@ -245,11 +245,18 @@ QcPath<T, Vector>::nearest_vertex(const VertexType & point, T & distance) const
   }
 
   distance = sqrt(distance_min);
-  return m_vertexes[vertex_index_min];
+  return vertex_index_min;
 }
 
 template <typename T, template<typename T> class Vector>
-typename QcPath<T, Vector>::EdgeType
+const typename QcPath<T, Vector>::VertexType &
+QcPath<T, Vector>::nearest_vertex(const VertexType & point, T & distance) const
+{
+  return m_vertexes[nearest_vertex_index(point, distance)];
+}
+
+template <typename T, template<typename T> class Vector>
+const typename QcPath<T, Vector>::EdgeType &
 QcPath<T, Vector>::nearest_edge(const VertexType & point, T & distance, T & abscissa) const
 {
   int edge_index = 0;

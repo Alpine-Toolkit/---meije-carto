@@ -45,12 +45,23 @@ QcMapPathEditor::~QcMapPathEditor()
 {}
 
 void
+QcMapPathEditor::set_vertex_edition_mode(bool value)
+{
+  if (m_vertex_edition_mode and !value and m_selected_vertex_index != -1) {
+    m_path.set_attribute_at(m_selected_vertex_index, QcDecoratedPathDouble::AttributeType::Normal);
+    update_path();
+  }
+  m_vertex_edition_mode = value;
+  m_selected_vertex_index = -1;
+}
+
+void
 QcMapPathEditor::update_path()
 {
   m_path_property.set_length(m_path.length());
   // Fixme: QcPolygon
   // m_path_property.set_area(m_path.closed() ? m_path.area() : .0);
-  m_map_view->update_path(m_path);
+  m_map_view->update_path(&m_path);
   emit path_changed();
 }
 
@@ -66,8 +77,40 @@ QcMapPathEditor::handle_mouse_press_and_hold_event(const QcMapEvent & event)
   if (m_vertex_edition_mode) {
     QcVectorDouble position = event.projected_coordinate();
     double distance;
-    QcVectorDouble vertex = m_path.nearest_vertex(position, distance);
-    qInfo() << "closest point" << position << vertex << distance;
+    int vertex_index = m_path.nearest_vertex_index(position, distance);
+    double distance_px = m_map_view->viewport()->to_px(distance);
+    constexpr double distance_px_max = 20; // Fixme: hidpi
+    bool on_point = distance_px <= distance_px_max;
+    bool selected_point = m_selected_vertex_index != -1;
+    qInfo() << "closest point" << position << m_path.vertex_at(vertex_index) << distance << distance_px << on_point << selected_point;
+    if (on_point) {
+      // if (selected_point) {
+      //   m_path.set_attribute_at(m_selected_vertex_index, QcDecoratedPathDouble::AttributeType::Normal);
+      //   if (vertex_index != m_selected_vertex_index) {
+      //     m_path.set_attribute_at(vertex_index, QcDecoratedPathDouble::AttributeType::Selected);
+      //     m_selected_vertex_index = vertex_index;
+      //   } else
+      //     m_selected_vertex_index = -1;
+      // } else {
+      //   m_path.set_attribute_at(vertex_index, QcDecoratedPathDouble::AttributeType::Selected);
+      //   m_selected_vertex_index = vertex_index;
+      // }
+      if (selected_point)
+        m_path.set_attribute_at(m_selected_vertex_index, QcDecoratedPathDouble::AttributeType::Normal);
+      if (vertex_index != m_selected_vertex_index) {
+        m_path.set_attribute_at(vertex_index, QcDecoratedPathDouble::AttributeType::Selected);
+        m_selected_vertex_index = vertex_index;
+      } else
+        m_selected_vertex_index = -1;
+      update_path();
+    } else if (selected_point) {
+      qInfo() << "update point" << m_selected_vertex_index;
+      QcDecoratedPathDouble::VertexListType vertexes = m_path.vertexes();
+      vertexes[m_selected_vertex_index] = position;
+      m_path = QcDecoratedPathDouble(vertexes, m_path.closed());
+      m_path.set_attribute_at(m_selected_vertex_index, QcDecoratedPathDouble::AttributeType::Selected);
+      update_path();
+    }
   } else {
     // Fixme: store wgs coordinate
     QcVectorDouble position = event.projected_coordinate();
@@ -82,6 +125,9 @@ QcMapPathEditor::clear()
 {
   qInfo();
   m_path.clear();
+  // Fixme: coherent with QML, duplicated
+  m_selected_vertex_index = -1;
+  m_vertex_edition_mode = false;
   update_path();
 }
 

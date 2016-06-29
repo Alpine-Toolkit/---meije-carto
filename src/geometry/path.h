@@ -83,6 +83,7 @@ class QC_EXPORT QcPath
 
   void clear();
   void add_vertex(const VertexType & vertex);
+  // remove_vertex // Fixme: recreate path ?
 
   inline const VertexType & vertex_at(int i) const { return m_vertexes[i]; }
   // inline const EdgeType & edge(int i) const { return m_edges[i]; }
@@ -102,8 +103,9 @@ class QC_EXPORT QcPath
   EdgeType closing_edge() const { return EdgeType(m_vertexes.constLast(), m_vertexes.constFirst()); }
 
   VertexType barycenter() const;
-  VertexType nearest_vertex(const VertexType & point, T & distance) const;
-  EdgeType nearest_edge(const VertexType & point, T & distance, T & abscissa) const;
+  int nearest_vertex_index(const VertexType & point, T & distance) const;
+  const VertexType & nearest_vertex(const VertexType & point, T & distance) const;
+  const EdgeType & nearest_edge(const VertexType & point, T & distance, T & abscissa) const;
 
   bool is_self_intersecting() const;
 

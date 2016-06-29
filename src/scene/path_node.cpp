@@ -302,21 +302,23 @@ QcPathNode::set_path_points(PathPoint2D * path_points,
 }
 
 void
-QcPathNode::update(const QcPathDouble & path)
+QcPathNode::update(const QcDecoratedPathDouble * path)
 {
   QList<QcVectorDouble> path_vertexes;
   // Fixme:
-  for (const auto & vertex : path.vertexes()) {
-    QcVectorDouble screen_position = m_viewport->coordinate_to_screen(vertex);
-    // qInfo() << vertex << screen_position;
-    path_vertexes << screen_position;
-  }
+  if (path)
+    for (const auto & vertex : path->vertexes()) {
+      QcVectorDouble screen_position = m_viewport->coordinate_to_screen(vertex);
+      // qInfo() << vertex << screen_position;
+      path_vertexes << screen_position;
+    }
   int number_of_path_vertexes = path_vertexes.size();
   int number_of_vertexes = 0;
 
-  bool path_closed = number_of_path_vertexes >= 3 and path.closed();
+  bool path_closed = number_of_path_vertexes >= 3 and path->closed();
 
-  const QColor colour(0, 0, 255, 255);
+  const QColor path_colour(0, 0, 255, 255);
+  const QColor selected_colour(255, 0, 0, 255);
 
   // Polygon
   /*
@@ -374,14 +376,14 @@ QcPathNode::update(const QcPathDouble & path)
       QcVectorDouble point0 = i > 0      ? path_vertexes[i-1] : point1;
       QcVectorDouble point3 = i < last_i ? path_vertexes[i+2] : point2;
       // qInfo() << i << point0 << point1 << point2 << point3;
-      set_path_points(path_points, i, point0, point1, point2, point3, line_width, half_width, colour);
+      set_path_points(path_points, i, point0, point1, point2, point3, line_width, half_width, path_colour);
     }
     if (path_closed) {
       QcVectorDouble point0 = path_vertexes[last_i];
       QcVectorDouble point1 = path_vertexes[last_i +1];
       QcVectorDouble point2 = path_vertexes[0];
       QcVectorDouble point3 = path_vertexes[1];
-      set_path_points(path_points, number_of_segments -1, point0, point1, point2, point3, line_width, half_width, colour);
+      set_path_points(path_points, number_of_segments -1, point0, point1, point2, point3, line_width, half_width, path_colour);
     }
   }
 
@@ -396,6 +398,7 @@ QcPathNode::update(const QcPathDouble & path)
     float radius = 10;
     float margin = 10;
     float size = radius + margin;
+    int path_vertex_index = 0;
     int vertex_index = 0;
     for (const auto & vertex : path_vertexes) {
       double x = vertex.x();
@@ -408,12 +411,15 @@ QcPathNode::update(const QcPathDouble & path)
       QcVectorDouble uv2(-size,  size);
       QcVectorDouble uv3( size, -size);
       QcVectorDouble uv4( size,  size);
+      QColor colour = path->attribute_at(path_vertex_index) == QcDecoratedPathDouble::AttributeType::Selected ?
+        selected_colour : path_colour;
       circle_points[vertex_index    ].set(point1, uv1, radius, colour);
       circle_points[vertex_index + 1].set(point2, uv2, radius, colour);
       circle_points[vertex_index + 2].set(point3, uv3, radius, colour);
       circle_points[vertex_index + 3].set(point2, uv2, radius, colour);
       circle_points[vertex_index + 4].set(point4, uv4, radius, colour);
       circle_points[vertex_index + 5].set(point3, uv3, radius, colour);
+      path_vertex_index++;
       vertex_index += 6;
     }
   }

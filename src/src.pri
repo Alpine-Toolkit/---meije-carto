@@ -50,7 +50,9 @@ SOURCES += \
   map/map_event_router.cpp \
   map/map_path_editor.cpp \
   map/map_view.cpp \
-  map/viewport.cpp
+  map/path_property.cpp \
+  map/viewport.cpp \
+  map/decorated_path.cpp
 
 SOURCES += \
   math/interval.cpp \
@@ -130,7 +132,9 @@ HEADERS += \
   map/map_event_router.h \
   map/map_path_editor.h \
   map/map_view.h \
-  map/viewport.h
+  map/path_property.h \
+  map/viewport.h \
+  map/decorated_path.h
 
 HEADERS += \
   math/interval.h \

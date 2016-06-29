@@ -78,7 +78,7 @@ QcMapScene::remove_layer(const QcWmtsPluginLayer * plugin_layer)
 }
 
 void
-QcMapScene::update_path(const QcPathDouble & path) {
+QcMapScene::update_path(const QcDecoratedPathDouble * path) {
   m_path = path;
   m_dirty_path = true;
 }
@@ -149,7 +149,7 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
   }
 
   if (m_dirty_path) {
-    qInfo() << "Path is dirty" << m_path.number_of_edges();
+    // Fixme: m_path is null
     map_root_node->path_node->update(m_path);
     m_dirty_path = false;
   }

@@ -122,7 +122,7 @@ class QC_EXPORT QcMapView : public QObject
     return m_map_scene->update_scene_graph(old_node, window);
   }
 
-  void update_path(const QcPathDouble & path) {
+  void update_path(const QcDecoratedPathDouble * path) {
     m_map_scene->update_path(path);
   }
 

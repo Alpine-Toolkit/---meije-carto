@@ -313,6 +313,7 @@ QcMapItem {
                 onClicked: {
                     map.path_editor.clear()
                     map.path_editor.set_closed(area_icon.checked)
+                    polyline_dot_icon.checked = false
                 }
             }
             ToolButton {

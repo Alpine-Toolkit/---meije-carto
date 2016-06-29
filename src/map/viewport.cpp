@@ -318,7 +318,7 @@ QcViewport::update_zoom_level_interval()
 {
   // qInfo();
   if (m_smallest_tile_size != -1) {
-    int smallest_power_of_two_x = smallest_power_of_two(width() / m_smallest_tile_size);
+    // int smallest_power_of_two_x = smallest_power_of_two(width() / m_smallest_tile_size);
     int smallest_power_of_two_y = smallest_power_of_two(height() / m_smallest_tile_size);
     // qInfo() << "viewport size" << m_viewport_size << m_map_zoom_level_interval << smallest_power_of_two_x << smallest_power_of_two_y;
     m_zoom_level_interval = QcIntervalInt(smallest_power_of_two_y, m_map_zoom_level_interval.sup());
@@ -338,6 +338,7 @@ QcViewport::set_zoom_level_interval(const QcIntervalInt & zoom_level_interval, i
 void
 QcViewport::set_viewport_size(const QSize & size, float device_pixel_ratio)
 {
+  Q_UNUSED(device_pixel_ratio);
   // qInfo() << "viewport size" << size << device_pixel_ratio;
   m_viewport_size = size; // * device_pixel_ratio;
   m_device_pixel_ratio = 1; // device_pixel_ratio;

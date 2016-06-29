@@ -34,6 +34,7 @@
 /**************************************************************************************************/
 
 #include "cache/file_tile_cache.h"
+#include "map/decorated_path.h"
 #include "map/location_circle_data.h"
 #include "map/viewport.h"
 #include "wmts/tile_matrix_set.h"
@@ -137,7 +138,7 @@ public:
   QcMapLayerScene * add_layer(const QcWmtsPluginLayer * plugin_layer);
   void remove_layer(const QcWmtsPluginLayer * plugin_layer);
 
-  void update_path(const QcPathDouble & path);
+  void update_path(const QcDecoratedPathDouble * path);
   void set_dirty_path(); // Fixme: name
 
 private:
@@ -153,7 +154,7 @@ private:
   QHash<QString, QcMapLayerScene *> m_layer_map;
   QList<QSGNode *> m_scene_graph_nodes_to_remove;
 
-  QcPathDouble m_path;
+  const QcDecoratedPathDouble * m_path;
   bool m_dirty_path;
 
   const QcLocationCircleData & m_location_circle_data;
