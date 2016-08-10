@@ -133,9 +133,9 @@ constexpr int KILO2 = 1024;
 constexpr int MEGA = KILO * KILO;
 constexpr int MEGA2 = KILO2 * KILO2;
 
-constexpr int MAX_DISK_USAGE = 20 * MEGA2;
-constexpr int MAX_MEMORY_USAGE = 3 * MEGA2;
-constexpr int EXTRA_TEXTURE_USAGE = 6 * MEGA2;
+constexpr int MAX_DISK_USAGE = 512 * MEGA2;
+constexpr int MAX_MEMORY_USAGE = 128 * MEGA2;
+constexpr int EXTRA_TEXTURE_USAGE = 16 * MEGA2;
 
 constexpr int NUMBER_OF_QUEUES = 4;
 
@@ -506,7 +506,8 @@ QcFileTileCache::insert(const QcTileSpec & tile_spec, const QByteArray & bytes, 
 void
 QcFileTileCache::evict_from_disk_cache(QcCachedTileDisk * tile_directory)
 {
-  QFile::remove(tile_directory->filename);
+  qWarning() << "evict_from_disk_cache disabled";
+  // QFile::remove(tile_directory->filename);
 }
 
 void
