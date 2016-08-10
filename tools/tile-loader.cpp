@@ -39,8 +39,7 @@
 #include "geometry/polygon.h"
 #include "geometry/vector.h"
 #include "tools/logger.h"
-
-#include "wmts/providers/geoportail/geoportail_plugin.h"
+#include "wmts/wmts_plugin_manager.h"
 
 // #include "map/tile_loader.h"
 
@@ -97,21 +96,42 @@ Application::Application(int & argc, char ** argv)
 void
 Application::main_task()
 {
-  QString json_path("geoportail-license.json");
-  QcGeoportailWmtsLicense geoportail_license(json_path);
-  QcGeoportailPlugin geoportail_plugin(geoportail_license);
+  QcWmtsPluginManager & plugin_manager = QcWmtsPluginManager::instance();
 
-  const QcTileMatrixSet & tile_matrix_set = geoportail_plugin.tile_matrix_set();
+  QcWmtsPlugin * geoportail_plugin = plugin_manager["geoportail"];
+
+  const QcTileMatrixSet & tile_matrix_set = geoportail_plugin->tile_matrix_set();
 
   // QcTileLoader tile_loader(geoportail_plugin);
 
-  double longitude = 6.311331853277862;
-  double latitude = 45.956298260767284;
-  // geoportail-0-16-33915-23329
+  // Annecy
+  // double longitude = 6.311331853277862;
+  // double latitude = 45.956298260767284;
+
+  // Bezons
+  // double longitude = 2.206142;
+  // double latitude = 48.924482;
+
+  // Bérarde
+  // double longitude = 6.2914;
+  // double latitude = 44.9328;
+
+  // Vallouise
+  // double longitude = 6.4895;
+  // double latitude = 44.8461;
+
+  // Centre
+  // double longitude = 3;
+  // double latitude = 46.5;
+
+  // Freissinieres
+  double longitude = 6.5383;
+  double latitude = 44.7523;
+
   QcWgsCoordinate center_wsg84(longitude, latitude);
   QcPseudoWebMercatorCoordinate center_mercator = center_wsg84.pseudo_web_mercator();
   QcVectorDouble center = center_mercator.vector();;
-  double radius_m = 100 * 1000; // 20 km
+  double radius_m = 40 * 1000;
   QcVectorDouble half_diagonal_m(radius_m, radius_m);
 
   QcVectorDouble point1 = center + half_diagonal_m;
@@ -130,36 +150,30 @@ Application::main_task()
           << "x"
           << "[" << interval.y().inf() << ", " << interval.y().sup() << "]";
 
-  QcWmtsNetworkTileFetcher * tile_fetcher = geoportail_plugin.tile_fetcher(); // subclass QcGeoportailPlugin ???
+  QcWmtsNetworkTileFetcher * tile_fetcher = geoportail_plugin->tile_fetcher(); // subclass QcGeoportailPlugin ???
 
-  QcOfflineTileCache * offline_cache = geoportail_plugin.wmts_manager()->tile_cache()->offline_cache();
+  QcOfflineTileCache * offline_cache = geoportail_plugin->wmts_manager()->tile_cache()->offline_cache();
   TileFetcherHelper tile_fetcher_helper(offline_cache);
   QObject::connect(tile_fetcher, &QcWmtsNetworkTileFetcher::tile_finished,
                    &tile_fetcher_helper, &TileFetcherHelper::tile_finished);
 
-
-  // 0 2 / 0 - 10 / 1000 km **
-  // 0 2 / 10 - 14 / 100 km **
-  // 0 2 / 14 - 16 / 20 km **
-  // 0 2 / 16 - 17 / 15 km
-
   QString layer_title = "Carte topographique";
   // QString layer_title = "Carte"; // error
   // QString layer_title = "Vue aérienne";
-  int map_id = geoportail_plugin.layer(layer_title)->map_id();
+  int map_id = geoportail_plugin->layer(layer_title)->map_id();
 
   QSet<QcTileSpec> tiles_added;
   QSet<QcTileSpec> tiles_removed;
 
   // Fixme: level <= 10 : any tiles
-  for (int level = 0; level <= 14; level++) {
+  for (int level = 0; level <= 16; level++) {
     double tile_length_m = tile_matrix_set[level].tile_length_m();
     QcTiledPolygon tiled_polygon = polygon.intersec_with_grid(tile_length_m);
     for (const QcTiledPolygonRun & run:  tiled_polygon.runs()) {
       const QcIntervalInt & run_interval = run.interval();
       qInfo() << "Run " << run.y() << " [" << run_interval.inf() << ", " << run_interval.sup() << "]";
       for (int x = run_interval.inf(); x <= run_interval.sup(); x++) {
-        QcTileSpec tile_spec = geoportail_plugin.create_tile_spec(map_id, level, x, run.y());
+        QcTileSpec tile_spec = geoportail_plugin->create_tile_spec(map_id, level, x, run.y());
         if (offline_cache->contains(tile_spec)) {
           qInfo() << "Ok" << tile_spec;
         }
