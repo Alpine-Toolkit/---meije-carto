@@ -28,18 +28,20 @@
 
 /**************************************************************************************************/
 
-#ifndef __OFFLINE_CACHE_H__
-#define __OFFLINE_CACHE_H__
+#ifndef __OFFLINE_CACHE_DATABASE_H__
+#define __OFFLINE_CACHE_DATABASE_H__
 
 /**************************************************************************************************/
 
-#include <QHash>
-#include <QSharedPointer>
-#include <QString>
-
-#include "qtcarto_global.h"
-#include "cache/offline_cache_database.h"
 #include "wmts/tile_spec.h"
+
+#include <QHash>
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QSqlRecord>
+#include <QString>
+#include <QStringList>
+#include <QVariant>
 
 /**************************************************************************************************/
 
@@ -47,57 +49,52 @@
 
 /**************************************************************************************************/
 
-/*
- * count tile
- * per layer
- *
- */
-
-class QcOfflineCachedTileDisk
+class QcOfflineCacheDatabase
 {
 public:
-  QcOfflineCachedTileDisk();
-  QcOfflineCachedTileDisk(const QcOfflineCachedTileDisk & other);
+  QcOfflineCacheDatabase(QString sqlite_path);
+  ~QcOfflineCacheDatabase();
 
-  QcOfflineCachedTileDisk & operator=(const QcOfflineCachedTileDisk & other);
+  void insert_tile(const QcTileSpec & tile_spec);
+  int has_tile(const QcTileSpec & tile_spec);
+  void delete_tile(const QcTileSpec & tile_spec);
 
-public:
-  QcTileSpec tile_spec;
-  QString filename;
-  QString format;
-};
+private:
+  typedef QHash<QString, QVariant> KeyValuePair;
 
-class QC_EXPORT QcOfflineTileCache // : public QObject
-{
-  // Q_OBJECT
+private:
+  QSqlQuery new_query() const;
+  bool commit();
+  QString format_kwarg(const KeyValuePair & kwargs, const QString & sperator = QStringLiteral(","));
+  QString format_simple_where(const KeyValuePair & kwargs);
+  QSqlQuery select(const QString & table, const QStringList & fields, const QString & where = QStringLiteral(""));
+  QSqlRecord select_one(const QString & table, const QStringList & fields, const QString & where = QStringLiteral(""));
+  QSqlQuery insert(const QString & table, const KeyValuePair & kwargs, bool commit = false);
+  QSqlQuery update(const QString & table, const KeyValuePair & kwargs, const QString & where = QStringLiteral(""));
+  QSqlQuery delete_row(const QString & table, const QString & where);
+  void create_tables();
+  void init_cache();
+  void load_providers();
+  void load_map_levels();
+  void init_version();
+  int get_provider_id(const QString & provider);
+  unsigned int hash_tile_spec(int provider_id, int map_id, int level);
+  int get_map_level_id(const QcTileSpec & tile_spec);
+  QString tile_where_clause(const QcTileSpec & tile_spec);
 
- public:
-  QcOfflineTileCache(const QString & directory = QString());
-  ~QcOfflineTileCache();
-
-  void clear_all();
-
-  bool contains(const QcTileSpec & tile_spec) const;
-  // QSharedPointer<QcOfflineCachedTileDisk> get(const QcTileSpec & tile_spec); //  const
-  QcOfflineCachedTileDisk get(const QcTileSpec & tile_spec); //  const
-  void insert(const QcTileSpec & tile_spec, const QByteArray & bytes, const QString & format);
-
- private:
-  void load_tiles();
-  void add_to_disk_cache(const QcTileSpec & tile_spec, const QString & filename);
-
- private:
-  QString m_directory;
-  QcOfflineCacheDatabase * m_database;
-  // QHash<QcTileSpec, QSharedPointer<QcOfflineCachedTileDisk>> m_offline_cache;
-  QHash<QcTileSpec, QcOfflineCachedTileDisk> m_offline_cache;
+private:
+  QSqlDatabase m_database;
+  QHash<QString, int> m_providers;
+  QHash<unsigned int, int> m_map_levels;
 };
 
 /**************************************************************************************************/
 
 // QC_END_NAMESPACE
 
-#endif /* __OFFLINE_CACHE_H__ */
+/**************************************************************************************************/
+
+#endif /* __OFFLINE_CACHE_DATABASE_H__ */
 
 /***************************************************************************************************
  *

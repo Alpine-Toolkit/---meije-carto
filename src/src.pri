@@ -2,7 +2,7 @@
 
 ####################################################################################################
 
-QT *= core quick gui network positioning
+QT *= core quick gui network positioning sql
 
 DEFINES += QTCARTO_LIBRARY
 
@@ -20,6 +20,7 @@ LIBS += -L$$PWD/../android-cmake-build/third-parties/proj4 -lqtcarto_proj4
 SOURCES += \
   cache/file_tile_cache.cpp \
   cache/offline_cache.cpp \
+  cache/offline_cache_database.cpp \
   cache/tile_image.cpp
 
 SOURCES += \
@@ -103,6 +104,7 @@ SOURCES += \
 HEADERS += \
   cache/file_tile_cache.h \
   cache/offline_cache.h \
+  cache/offline_cache_database.h \
   cache/tile_image.h
 
 HEADERS += \

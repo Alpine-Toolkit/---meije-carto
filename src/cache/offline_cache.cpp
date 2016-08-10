@@ -64,11 +64,13 @@ QcOfflineCachedTileDisk::operator=(const QcOfflineCachedTileDisk & other)
 /**************************************************************************************************/
 
 QcOfflineTileCache::QcOfflineTileCache(const QString & directory)
-  : m_directory(directory)
+  : m_directory(directory),
+    m_database(nullptr)
 {
   QDir::root().mkpath(m_directory);
+  QString sqlite_file_path = QDir(directory).absoluteFilePath(QStringLiteral("offline_cache.sqlite"));
 
-  load_tiles();
+  m_database = new QcOfflineCacheDatabase(sqlite_file_path);
 }
 
 QcOfflineTileCache::~QcOfflineTileCache()
@@ -88,6 +90,8 @@ QcOfflineTileCache::clear_all()
     for(QString file : directory.entryList())
     directory.remove(file);
   }
+
+  // Fixme: clear db
 }
 
 void
@@ -120,14 +124,30 @@ QcOfflineTileCache::load_tiles()
 bool
 QcOfflineTileCache::contains(const QcTileSpec & tile_spec) const
 {
-  return m_offline_cache.contains(tile_spec);
+  qInfo() << tile_spec;
+
+  return m_database->has_tile(tile_spec) > 0;
+
+  // return m_offline_cache.contains(tile_spec);
 }
 
 // QSharedPointer<QcOfflineCachedTileDisk>
 QcOfflineCachedTileDisk
 QcOfflineTileCache::get(const QcTileSpec & tile_spec)
 {
-  return m_offline_cache.value(tile_spec);
+  // Fixme: if not in cache ?
+
+  QString directory = m_directory + QDir::separator() + QString::number(tile_spec.level());
+  const QString format = "jpeg"; // Fixme:
+  QString filename = tile_spec_to_filename(tile_spec, format, directory);
+
+  QcOfflineCachedTileDisk tile_directory;
+  tile_directory.tile_spec = tile_spec;
+  tile_directory.filename = filename;
+
+  return tile_directory;
+
+  // return m_offline_cache.value(tile_spec);
 
   /*
   if (m_offline_cache.contains(tile_spec)) {
@@ -146,8 +166,11 @@ QcOfflineTileCache::insert(const QcTileSpec & tile_spec, const QByteArray & byte
     return;
 
   QString directory = m_directory + QDir::separator() + QString::number(tile_spec.level());
+  QDir::root().mkpath(directory);
   QString filename = tile_spec_to_filename(tile_spec, format, directory);
   write_tile_image(filename, bytes);
+
+  m_database->insert_tile(tile_spec);
 }
 
 void
@@ -168,6 +191,8 @@ QcOfflineTileCache::add_to_disk_cache(const QcTileSpec & tile_spec, const QStrin
   } else
     qWarning() << "Hash collision" << tile_spec;
 }
+
+/**************************************************************************************************/
 
 // QC_END_NAMESPACE
 
