@@ -46,6 +46,10 @@ QcMapScene::QcMapScene(const QcViewport * viewport,
 {
   // connect(&m_location_circle_data, QcLocationCircleData::horizontal_precisionChanged,
   //         this, QcMapScene::set_location_circle_data_dirty);
+  connect(&m_location_circle_data, &QcLocationCircleData::visible_changed,
+          this, &QcMapScene::set_location_circle_data_dirty);
+  connect(&m_location_circle_data, &QcLocationCircleData::coordinate_changed,
+          this, &QcMapScene::set_location_circle_data_dirty);
   connect(&m_location_circle_data, &QcLocationCircleData::horizontal_precision_changed,
           this, &QcMapScene::set_location_circle_data_dirty);
   connect(&m_location_circle_data, &QcLocationCircleData::bearing_changed,
@@ -126,7 +130,7 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
    */
   QMatrix4x4 item_space_matrix;
   qreal device_pixel_ratio_inverse = 1.; // / window->devicePixelRatio();
-  item_space_matrix.scale(device_pixel_ratio_inverse, device_pixel_ratio_inverse);
+  // item_space_matrix.scale(device_pixel_ratio_inverse, device_pixel_ratio_inverse);
   map_root_node->root->setMatrix(item_space_matrix);
   // qInfo() << "item_space_matrix" << item_space_matrix;
 
@@ -155,7 +159,7 @@ QcMapScene::update_scene_graph(QSGNode * old_node, QQuickWindow * window)
   }
 
   if (m_dirty_location_circle) {
-    qInfo() << "Location circle is dirty";
+    // qInfo() << "Location circle is dirty";
     map_root_node->location_circle_node->update(m_location_circle_data);
     m_dirty_location_circle = false;
   }

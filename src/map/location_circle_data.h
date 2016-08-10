@@ -35,6 +35,8 @@
 
 #include <QObject>
 
+#include "coordinate/wgs84.h"
+
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
@@ -42,6 +44,8 @@
 class QcLocationCircleData : public QObject
 {
   Q_OBJECT
+  Q_PROPERTY(bool visible READ visible WRITE set_visible NOTIFY visible_changed)
+  Q_PROPERTY(QcWgsCoordinate coordinate READ coordinate WRITE set_coordinate NOTIFY coordinate_changed)
   Q_PROPERTY(double bearing READ bearing WRITE set_bearing NOTIFY bearing_changed)
   Q_PROPERTY(double horizontal_precision READ horizontal_precision WRITE set_horizontal_precision NOTIFY horizontal_precision_changed)
 
@@ -52,6 +56,12 @@ public:
 
   QcLocationCircleData & operator=(const QcLocationCircleData & other);
 
+  void set_visible(bool visible);
+  bool visible() const { return m_visible; }
+
+  void set_coordinate(const QcWgsCoordinate & coordinate);
+  QcWgsCoordinate coordinate() const { return m_coordinate; }
+
   double bearing() const { return m_bearing; }
   void set_bearing(double bearing);
 
@@ -59,10 +69,14 @@ public:
   void set_horizontal_precision(double horizontal_precision);
 
 signals:
+  void visible_changed();
+  void coordinate_changed();
   void bearing_changed();
   void horizontal_precision_changed();
 
 private:
+  bool m_visible;
+  QcWgsCoordinate m_coordinate;
   double m_bearing;
   double m_horizontal_precision;
 };

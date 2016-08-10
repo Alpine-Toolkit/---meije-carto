@@ -49,26 +49,29 @@ QcMapItem {
     ]
 
     Component.onCompleted: {
-        map.plugin_layers('osm')[0].status = true
-        // map.plugin_layers('geoportail')[0].status = true
+        /* map.plugin_layers('osm')[0].status = true */
+        map.plugin_layers('geoportail')[0].status = true
         // map.plugin_layers('artic-web-map')[0].status = true
-        map.zoom_level = 10; // set after layer
+        map.zoom_level = 16; // set after layer
         set_scale()
 
 	console.log("Component.onCompleted")
+        map.location_circle_data.enabled = false
         map.location_circle_data.horizontal_precision = 10.
-        map.location_circle_data.bearing = 10.
+        map.location_circle_data.bearing = 0.
     }
 
     center {
         // latitude: 0
         // longitude: 0
-        // latitude: 44.6900
-        // longitude: 6.1639
-        latitude: 45.956
-        longitude: 6.311
-        // latitude: 0.
-        // longitude: 0.
+
+        // Bezons
+        // latitude: 48.924482
+        // longitude: 2.206142
+
+        // Paris
+        latitude: 48.8533
+        longitude: 2.3488
     }
     // zoomLevel: (maximum_zoom_level - minimum_zoom_level) / 2
     // zoom_level: 10
@@ -84,9 +87,13 @@ QcMapItem {
                 map.location_circle_data.horizontal_precision = position.horizontalAccuracy;
             }
             if (coordinate.isValid) {
-                center = map.cast_QGeoCoordinate(coordinate) // Fixme: map.center
+                map.location_circle_data.visible = true;
+                var wgs84_coordinate = map.cast_QGeoCoordinate(coordinate)
+                center = wgs84_coordinate; // Fixme: map.center
+                map.location_circle_data.coordinate = wgs84_coordinate;
                 console.log("coordinate", coordinate)
-            }
+            } else
+                map.location_circle_data.visible = false;
             // magneticVariation
         }
     }
@@ -201,9 +208,12 @@ QcMapItem {
 
     ToolBar {
         id: map_toolbar
+        // Fixme: how to change layout ?
         anchors.top: parent.top
-        anchors.right: parent.right
-        ColumnLayout {
+        // anchors.right: parent.right
+        anchors.left: parent.left
+        // ColumnLayout {
+        RowLayout {
             ToolButton {
                 id: bearing_lock_icon
                 // background: Rectangle {
@@ -283,10 +293,13 @@ QcMapItem {
 
     ToolBar {
         id: path_toolbar
-        anchors.top: parent.top
-        anchors.right: map_toolbar.left
+        // anchors.top: parent.top
+        // anchors.right: map_toolbar.left
+        anchors.top: map_toolbar.bottom
+        anchors.left: parent.left
         visible: map.state == "PathEditor"
-        ColumnLayout {
+        // ColumnLayout {
+        RowLayout {
             /*
             ToolButton {
                 id: close_path_toolbar_icon
@@ -356,8 +369,12 @@ QcMapItem {
     } // End ToolBar
 
     Frame {
-        anchors.top: parent.top
+        id: path_property_frame
+        // anchors.top: parent.top
+        // anchors.left: parent.left
+        anchors.top: path_toolbar.bottom
         anchors.left: parent.left
+        visible: ruler_tool_icon.checked
         background: Rectangle {
             color: "white"
         }
@@ -365,7 +382,6 @@ QcMapItem {
         anchors.fill: parent
             Text {
                 id: path_property_label
-                visible: ruler_tool_icon.checked
                 text: "Path length "  + Number(map.path_editor.path_property.length).toLocaleString(Qt.locale("fr_FR"), 'f', 2) + " m"
             }
         }

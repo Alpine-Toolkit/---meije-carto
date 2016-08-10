@@ -34,12 +34,16 @@
 
 QcLocationCircleData::QcLocationCircleData(QObject * parent)
   : QObject(parent),
+    m_visible(false),
+    m_coordinate(),
     m_bearing(),
     m_horizontal_precision()
 {}
 
 QcLocationCircleData::QcLocationCircleData(const QcLocationCircleData & other, QObject * parent)
   : QObject(parent),
+    m_visible(other.m_visible),
+    m_coordinate(other.m_coordinate),
     m_bearing(other.m_bearing),
     m_horizontal_precision(other.m_horizontal_precision)
 {}
@@ -51,11 +55,33 @@ QcLocationCircleData &
 QcLocationCircleData::operator=(const QcLocationCircleData & other)
 {
   if (this != &other) {
+    m_visible = other.m_visible;
+    m_coordinate = other.m_coordinate;
     m_bearing = other.m_bearing;
     m_horizontal_precision = other.m_horizontal_precision;
   }
 
   return *this;
+}
+
+void
+QcLocationCircleData::set_visible(bool visible)
+{
+  if (visible != m_visible) {
+    qInfo() << "visible changed" << visible;
+    m_visible = visible;
+    emit visible_changed();
+  }
+}
+
+void
+QcLocationCircleData::set_coordinate(const QcWgsCoordinate & coordinate)
+{
+  if (coordinate != m_coordinate) {
+    qInfo() << "coordinate changed" << coordinate;
+    m_coordinate = coordinate;
+    emit coordinate_changed();
+  }
 }
 
 void

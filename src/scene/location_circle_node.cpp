@@ -133,8 +133,16 @@ QcLocationCircleNode::update(const QcLocationCircleData & location_circle_data)
   m_geometry_node->setFlag(QSGNode::OwnsGeometry);
 
   LocationCirclePoint2D * vertices = static_cast<LocationCirclePoint2D *>(geometry->vertexData());
-  float x = .5 * m_viewport->width(); // Fixme: vector
-  float y = .5 * m_viewport->height();
+  float x, y;
+  if (location_circle_data.visible()) {
+    QcVectorDouble screen_coordinate = m_viewport->coordinate_to_screen(location_circle_data.coordinate());
+    x = screen_coordinate.x();
+    y = screen_coordinate.y();
+    qInfo() << screen_coordinate;
+  } else {
+    x = .5 * m_viewport->width(); // Fixme: vector
+    y = .5 * m_viewport->height();
+  }
   float accuracy_radius = m_viewport->to_px(location_circle_data.horizontal_precision());
   constexpr float dot_radius_minimum = 10.;
   constexpr float cone_scale_factor = 5.;
