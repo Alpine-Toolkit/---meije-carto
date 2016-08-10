@@ -145,6 +145,7 @@ bool QcTileSpec::operator<(const QcTileSpec & rhs) const
 unsigned int
 qHash(const QcTileSpec & tile_spec)
 {
+  // 31 is coded on 5-bit
   unsigned int result = (qHash(tile_spec.plugin()) * 13) % 31;
   result += ((tile_spec.map_id() * 17) % 31) << 5;
   result += ((tile_spec.level() * 19) % 31) << 10;
