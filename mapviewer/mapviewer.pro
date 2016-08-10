@@ -35,9 +35,9 @@ DEPENDPATH += $$PWD/../imports/QtCarto
 
 contains(ANDROID_TARGET_ARCH, armeabi-v7a) {
     ANDROID_EXTRA_LIBS = \
-    $$PWD/../android-cmake-build/third-parties/proj4/libqtcarto_proj4.so # \
-    # $$PWD/../third-parties/openssl-1.0.2h/libcrypto.so \
-    # $$PWD/../third-parties/openssl-1.0.2h/libssl.so
+    $$PWD/../android-cmake-build/third-parties/proj4/libqtcarto_proj4.so \
+    $$PWD/../third-parties/openssl-1.0.2h/libcrypto.so \
+    $$PWD/../third-parties/openssl-1.0.2h/libssl.so
     # /opt/Qt-dev-5.7.0-android/lib/libqtcarto.so
 }
 
