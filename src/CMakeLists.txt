@@ -46,6 +46,7 @@ set(qtcarto_files
   geo_data_format/route.cpp
   geo_data_format/waypoint.cpp
   geo_data_format/xml_reader.cpp
+  geo_data_format/wkb.cpp
 
   geometry/line.cpp
   geometry/path.cpp
