@@ -61,7 +61,7 @@ QcPooledString::add_string(const QString & string)
 }
 
 QcPooledString::QcPooledString()
-  : m_id(0)
+  : m_id(0), m_data(nullptr)
 {}
 
 QcPooledString::QcPooledString(const QString & string)
@@ -74,6 +74,7 @@ QcPooledString::QcPooledString(const QString & string)
       increment_ref_counter(id);
   } else
     m_id = add_string(string);
+  m_data = &m_id_map[m_id];
   m_mutex.unlock();
 }
 
@@ -81,6 +82,7 @@ QcPooledString::QcPooledString(const QcPooledString & other)
 {
   m_mutex.lock();
   m_id = other.m_id;
+  m_data = other.m_data;
   if (is_defined())
     increment_ref_counter(m_id);
   m_mutex.unlock();
@@ -110,6 +112,7 @@ QcPooledString::operator=(const QcPooledString & other)
   if (this != &other) {
     m_mutex.lock();
     m_id = other.m_id;
+    m_data = other.m_data;
     if (is_defined())
       increment_ref_counter(m_id);
     m_mutex.unlock();

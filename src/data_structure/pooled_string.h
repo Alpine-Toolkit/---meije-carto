@@ -68,11 +68,11 @@ public:
 
   bool is_defined() const { return m_id != 0; };
   inline IdType id() const { return m_id; }
-  inline const QString & string() const { return is_defined() ? m_id_map[m_id].string : UndefinedString; }
+  inline const QString & string() const { return is_defined() ? m_data->string : UndefinedString; }
   inline const QString & operator*() const { return string(); }
   // inline const QString * string() const { return is_defined() ? &m_id_map[m_id].string : nullptr; }
   // inline const QString * operator*() const { return string(); }
-  inline IdType reference_counter() const { return is_defined() ? m_id_map[m_id].reference_counter : 0; }
+  inline IdType reference_counter() const { return is_defined() ? m_data->reference_counter : 0; }
 
 private:
   static inline IdType string_to_id(const QString & string) {
@@ -109,6 +109,7 @@ private:
   static QMap<QString, IdType> m_string_map;
 
   IdType m_id;
+  const QcPooledStringData * m_data;
 };
 
 // QC_END_NAMESPACE
