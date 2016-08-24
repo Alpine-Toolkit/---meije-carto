@@ -50,18 +50,19 @@ QcPooledString::has_string(const QString & string)
   return rc;
 }
 
-QcPooledString::IdType
+QcPooledString::QcPooledStringData *
 QcPooledString::add_string(const QString & string)
 {
   IdType id = m_last_id++;
-  m_id_map.insert(id, QcPooledStringData(string));
+  QcPooledStringData data(id, string);
+  m_id_map.insert(id, data);
   m_string_map.insert(string, id);
   qDebug() << "Added" << string << m_id_map.keys() << m_string_map.keys();
-  return id;
+  return &m_id_map[id];
 }
 
 QcPooledString::QcPooledString()
-  : m_id(0), m_data(nullptr)
+  : m_data(nullptr)
 {}
 
 QcPooledString::QcPooledString(const QString & string)
@@ -69,36 +70,34 @@ QcPooledString::QcPooledString(const QString & string)
   m_mutex.lock();
   IdType id = string_to_id(string);
   if (id) {
-    m_id = id;
+    m_data = &m_id_map[id];
     if (is_defined())
-      increment_ref_counter(id);
+      increment_ref_counter(m_data);
   } else
-    m_id = add_string(string);
-  m_data = &m_id_map[m_id];
+    m_data = add_string(string);
   m_mutex.unlock();
 }
 
 QcPooledString::QcPooledString(const QcPooledString & other)
 {
   m_mutex.lock();
-  m_id = other.m_id;
   m_data = other.m_data;
   if (is_defined())
-    increment_ref_counter(m_id);
+    increment_ref_counter(m_data);
   m_mutex.unlock();
 }
 
 QcPooledString::~QcPooledString()
 {
-  qDebug() << "Delete" << m_id;
+  qDebug() << "Delete" << id();
   if (is_defined()) {
     m_mutex.lock();
-    IdType counter = reference_counter();
+    uint counter = reference_counter();
     if (counter > 1)
-      decrement_ref_counter(m_id);
+      decrement_ref_counter(m_data);
     else {
       QString s = string(); // mandatory in order to remove the string
-      m_id_map.remove(m_id);
+      m_id_map.remove(id());
       m_string_map.remove(s);
       qDebug() << "Remove string" << s << m_id_map.keys() << m_string_map.keys();
     }
@@ -111,10 +110,9 @@ QcPooledString::operator=(const QcPooledString & other)
 {
   if (this != &other) {
     m_mutex.lock();
-    m_id = other.m_id;
     m_data = other.m_data;
     if (is_defined())
-      increment_ref_counter(m_id);
+      increment_ref_counter(m_data);
     m_mutex.unlock();
   }
 

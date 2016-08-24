@@ -44,9 +44,24 @@
 class QcPooledString
 {
 public:
-  typedef unsigned int IdType;
+  typedef unsigned int IdType; // Fixme: useful ?
 
   static QString UndefinedString;
+
+private:
+  struct QcPooledStringData
+  {
+    QcPooledStringData()
+      : id(0), string(), reference_counter(0)
+    {}
+    QcPooledStringData(IdType id, QString string)
+      : id(id), string(string), reference_counter(1)
+    {}
+
+    IdType id;
+    QString string;
+    uint reference_counter;
+  };
 
 public:
   static bool has_string(const QString & string); // only use for test !
@@ -54,25 +69,24 @@ public:
 public:
   QcPooledString();
   QcPooledString(const QString & string);
+  // QcPooledString(const char * string);
   QcPooledString(const QcPooledString & other);
   ~QcPooledString();
 
   QcPooledString & operator=(const QcPooledString & other);
 
   inline bool operator==(const QcPooledString & other) {
-    return m_id == other.m_id;
+    return m_data == other.m_data;
   }
   inline bool operator!=(const QcPooledString & other) {
     return !operator==(other);
   }
 
-  bool is_defined() const { return m_id != 0; };
-  inline IdType id() const { return m_id; }
+  bool is_defined() const { return m_data != nullptr; };
+  inline IdType id() const { return is_defined() ? m_data->id : 0; }
   inline const QString & string() const { return is_defined() ? m_data->string : UndefinedString; }
   inline const QString & operator*() const { return string(); }
-  // inline const QString * string() const { return is_defined() ? &m_id_map[m_id].string : nullptr; }
-  // inline const QString * operator*() const { return string(); }
-  inline IdType reference_counter() const { return is_defined() ? m_data->reference_counter : 0; }
+  inline uint reference_counter() const { return is_defined() ? m_data->reference_counter : 0; }
 
 private:
   static inline IdType string_to_id(const QString & string) {
@@ -81,35 +95,21 @@ private:
   // static inline const QString * id_to_string(IdType id) {
   //     return m_id_map.contains(id) ? &m_id_map[id].string : nullptr;
   // }
-  static inline void increment_ref_counter(IdType id) {
-    m_id_map[id].reference_counter++;
+  static inline void increment_ref_counter(QcPooledStringData * data) {
+    data->reference_counter++;
   }
-  static inline void decrement_ref_counter(IdType id) {
-    m_id_map[id].reference_counter--;
+  static inline void decrement_ref_counter(QcPooledStringData * data) {
+    data->reference_counter--;
   }
-  static IdType add_string(const QString & string);
+  static QcPooledStringData * add_string(const QString & string);
 
 private:
-  struct QcPooledStringData
-  {
-    QcPooledStringData()
-      : string(), reference_counter(0)
-    {}
-    QcPooledStringData(QString string)
-      : string(string), reference_counter(1)
-    {}
-
-    QString string;
-    IdType reference_counter;
-  };
-
   static QMutex m_mutex;
   static IdType m_last_id;
   static QMap<IdType, QcPooledStringData> m_id_map;
   static QMap<QString, IdType> m_string_map;
 
-  IdType m_id;
-  const QcPooledStringData * m_data;
+  QcPooledStringData * m_data;
 };
 
 // QC_END_NAMESPACE
