@@ -35,6 +35,7 @@
 
 #include "coordinate/sexagesimal_angle.h"
 #include "coordinate/projection.h"
+#include "data_structure/simd.h"
 
 #include <QGeoCoordinate>
 #include <QtCore/QMetaType>
@@ -250,6 +251,46 @@ QC_EXPORT QDebug operator<<(QDebug, const QcWgsElevationCoordinate &);
 QC_EXPORT QDataStream &operator<<(QDataStream & stream, const QcWgsElevationCoordinate & coordinate);
 QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcWgsElevationCoordinate & coordinate);
 #endif
+
+/**************************************************************************************************/
+
+/* WGS coordinate stored as an int32 pair (8 bytes) with a resolution of 1e-7 degree, roughly 1 cm
+ *   1e-7 is the largest scale fitting the int32 range for 180 degrees
+ *   resolution = 6 371 000 * 2 * π / 360 * 1e-7 for an earth perimeter of 6 371 km
+ */
+class QC_EXPORT QcWgsCoordinateSmallFootprint
+{
+ public:
+  static constexpr int32_t SCALE = 10 * 1000 * 1000;
+
+ public:
+  QcWgsCoordinateSmallFootprint()
+    : m_pair() {}
+  QcWgsCoordinateSmallFootprint(int32_t longitude, int32_t latitude)
+    : m_pair(longitude, latitude) {}
+  QcWgsCoordinateSmallFootprint(double longitude, double latitude)
+    : m_pair(longitude * SCALE, latitude * SCALE) {}
+  QcWgsCoordinateSmallFootprint(const QcWgsCoordinate & coordinate)
+    : m_pair(coordinate.longitude() * SCALE, coordinate.latitude() * SCALE) {}
+
+  inline bool operator==(const QcWgsCoordinateSmallFootprint & other) const {
+    return m_pair == other.m_pair;
+  }
+
+  inline void set_scaled_longitude(int32_t longitude) { m_pair.set_x(longitude); }
+  inline int32_t scaled_longitude() const { return m_pair.x(); }
+
+  inline void set_scaled_latitude(int32_t latitude) { m_pair.set_y(latitude); }
+  inline int32_t scaled_latitude() const { return m_pair.y(); }
+
+  inline QcWgsCoordinate to_wgs_coordinate() const {
+    QcSimdPairInt32 pair = m_pair * SCALE;
+    return QcWgsCoordinate(pair.x(), pair.y());
+  }
+
+ private:
+  QcSimdPairInt32 m_pair;
+};
 
 /**************************************************************************************************/
 
