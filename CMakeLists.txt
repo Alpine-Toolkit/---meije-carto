@@ -168,6 +168,23 @@ if(NOT ANDROID)
 endif(NOT ANDROID)
 
 ####################################################################################################
+#
+# Find Protobuf
+#
+
+include(FindProtobuf)
+find_package(Protobuf REQUIRED)
+include_directories(${PROTOBUF_INCLUDE_DIR})
+
+####################################################################################################
+#
+# Find Zlib
+#
+
+find_package(ZLIB REQUIRED)
+include_directories(${ZLIB_INCLUDE_DIR})
+
+####################################################################################################
 
 configure_file(config.h.in config.h @ONLY)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})

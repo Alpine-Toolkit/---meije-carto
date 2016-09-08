@@ -13,6 +13,7 @@ add_subdirectory(geometry)
 add_subdirectory(imports)
 add_subdirectory(map)
 add_subdirectory(math)
+add_subdirectory(openstreetmap)
 
 ####################################################################################################
 #

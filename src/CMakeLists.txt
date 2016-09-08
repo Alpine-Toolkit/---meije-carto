@@ -5,7 +5,7 @@
 # Include directories
 #
 
-# include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 ####################################################################################################
 
@@ -20,6 +20,11 @@ foreach(shader_name location_circle path)
     map/shaders/${shader_name}_fragment_shader.glsl
     )
 endforeach(shader_name)
+
+# add_subdirectory(openstreetmap)
+# Generate in source !
+# https://cmake.org/cmake/help/v3.6/module/FindProtobuf.html
+PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS openstreetmap/fileformat.proto openstreetmap/osmformat.proto)
 
 ####################################################################################################
 #
@@ -71,6 +76,12 @@ set(qtcarto_files
   math/qc_math.cpp
   math/rational.cpp
 
+  openstreetmap/osm.cpp
+  openstreetmap/osm_database.cpp
+  openstreetmap/osm_pbf.cpp
+  ${PROTO_SRCS}
+  # ${PROTO_HDRS}
+
   scene/location_circle_material_shader.cpp
   scene/location_circle_node.cpp
   scene/map_layer_scene.cpp
@@ -110,7 +121,17 @@ set(qtcarto_files
   wmts/wmts_tile_fetcher.cpp
   )
 add_library(qtcarto SHARED ${qtcarto_files})
-target_link_libraries(qtcarto Qt5::Core Qt5::Quick Qt5::Gui Qt5::Network Qt5::Positioning Qt5::Sql ${PROJ4_LIBRARIES})
+target_link_libraries(qtcarto
+  Qt5::Core
+  Qt5::Quick
+  Qt5::Gui
+  Qt5::Network
+  Qt5::Positioning
+  Qt5::Sql
+  ${PROJ4_LIBRARIES}
+  ${ZLIB_LIBRARY}
+  ${PROTOBUF_LITE_LIBRARIES}
+  )
 
 ####################################################################################################
 #
