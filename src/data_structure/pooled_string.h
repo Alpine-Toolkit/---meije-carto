@@ -34,6 +34,7 @@
 /**************************************************************************************************/
 
 #include <QMap>
+#include <QMetaType>
 #include <QMutex>
 #include <QString>
 
@@ -88,29 +89,27 @@ public:
   inline const QString & operator*() const { return string(); }
   inline uint reference_counter() const { return is_defined() ? m_data->reference_counter : 0; }
 
+  bool operator<(const QcPooledString & other) const { return string() < other.string(); }
+
 private:
-  static inline IdType string_to_id(const QString & string) {
-      return m_string_map.contains(string) ? m_string_map[string] : 0;
-  }
-  // static inline const QString * id_to_string(IdType id) {
-  //     return m_id_map.contains(id) ? &m_id_map[id].string : nullptr;
-  // }
   static inline void increment_ref_counter(QcPooledStringData * data) {
     data->reference_counter++;
   }
   static inline void decrement_ref_counter(QcPooledStringData * data) {
     data->reference_counter--;
   }
-  static QcPooledStringData * add_string(const QString & string);
 
 private:
   static QMutex m_mutex;
+  static QMap<QString, QcPooledStringData *> m_string_map;
+  // Informative usage
   static IdType m_last_id;
-  static QMap<IdType, QcPooledStringData> m_id_map;
-  static QMap<QString, IdType> m_string_map;
+  static QMap<IdType, QcPooledStringData *> m_id_map;
 
   QcPooledStringData * m_data;
 };
+
+Q_DECLARE_METATYPE(QcPooledString)
 
 // QC_END_NAMESPACE
 
