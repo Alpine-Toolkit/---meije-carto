@@ -30,6 +30,10 @@
 
 /**************************************************************************************************/
 
+const QString separator = ", ";
+
+// Fixme: duplicated code
+
 #ifndef QT_NO_DEBUG_STREAM
 QC_EXPORT QDebug operator<<(QDebug debug, const QcVectorDouble & vector)
 {
@@ -37,7 +41,7 @@ QC_EXPORT QDebug operator<<(QDebug debug, const QcVectorDouble & vector)
 
   debug.nospace() << QLatin1Literal("QcVectorDouble(");
   debug << vector.x();
-  debug << QLatin1Literal(", ");
+  debug << separator;
   debug << vector.y();
   debug << ')';
 
@@ -52,10 +56,29 @@ QC_EXPORT QDebug operator<<(QDebug debug, const QcVector3DDouble & vector)
 
   debug.nospace() << QLatin1Literal("QcVector3DDouble(");
   debug << vector.x();
-  debug << QLatin1Literal(", ");
+  debug << separator;
   debug << vector.y();
-  debug << QLatin1Literal(", ");
+  debug << separator;
   debug << vector.z();
+  debug << ')';
+
+  return debug;
+}
+#endif
+
+#ifndef QT_NO_DEBUG_STREAM
+QC_EXPORT QDebug operator<<(QDebug debug, const QcVector4DDouble & vector)
+{
+  QDebugStateSaver saver(debug); // Fixme: ???
+
+  debug.nospace() << QLatin1Literal("QcVector4DDouble(");
+  debug << vector.x();
+  debug << separator;
+  debug << vector.y();
+  debug << separator;
+  debug << vector.z();
+  debug << separator;
+  debug << vector.t();
   debug << ')';
 
   return debug;

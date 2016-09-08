@@ -26,6 +26,8 @@
 **
 ***************************************************************************************************/
 
+// See devel-test for an implementation based on "data_structure/simd.h"
+
 /**************************************************************************************************/
 
 #ifndef __VECTOR_H__
@@ -308,6 +310,77 @@ QC_EXPORT QDebug operator<<(QDebug debug, const QcVector3DDouble & vector);
 // #ifndef QT_NO_DATASTREAM
 // QC_EXPORT QDataStream &operator<<(QDataStream & stream, const QcVector3D & vector);
 // QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcVector3D & vector);
+// #endif
+
+/**************************************************************************************************/
+
+template <typename T> class QcVector4D;
+
+template <typename T> QcVector4D<T> operator+(const QcVector4D<T> & vector1, const QcVector4D<T> & vector2);
+template <typename T> QcVector4D<T> operator-(const QcVector4D<T> & vector1, const QcVector4D<T> & vector2);
+template <typename T> QcVector4D<T> operator*(const QcVector4D<T> & vector, T factor);
+template <typename T> QcVector4D<T> operator/(const QcVector4D<T> & vector, T factor);
+
+template <typename T>
+class QC_EXPORT QcVector4D : public QcVector3D<T>
+{
+ public:
+  // typedef QcInterval4D<T> IntervalType;
+
+ public:
+  static constexpr int dimension() { return 4; }
+
+ public:
+  QcVector4D();
+  QcVector4D(T x, T y, T z, T t);
+  QcVector4D(const QcVector4D<T> & other);
+  ~QcVector4D();
+
+  QcVector4D<T> & operator=(const QcVector4D<T> & other);
+
+  QcVector3D<T> to_3d() const;
+
+  T t() const;
+  void set_t(T value);
+
+  T & operator[](int i);
+  T operator[](int i) const;
+
+  // T magnitude_square() const;
+  // T magnitude() const;
+  // void normalise();
+  // QcVector4D<T> normalised() const;
+  bool is_null() const;
+
+  bool operator==(const QcVector4D<T> & other) const;
+  bool operator!=(const QcVector4D<T> & other) const;
+
+  QcVector4D<T> & operator+=(const QcVector4D<T> & other);
+  QcVector4D<T> & operator-=(const QcVector4D<T> & other);
+  QcVector4D<T> & operator*=(T factor);
+  QcVector4D<T> & operator/=(T factor);
+
+  friend QcVector4D<T> operator+<>(const QcVector4D<T> & vector1, const QcVector4D<T> & vector2);
+  friend QcVector4D<T> operator-<>(const QcVector4D<T> & vector1, const QcVector4D<T> & vector2);
+  friend QcVector4D<T> operator*<>(const QcVector4D<T> & vector, T factor);
+  friend QcVector4D<T> operator/<>(const QcVector4D<T> & vector, T factor);
+
+  // IntervalType to_interval() const;
+
+ private:
+  T m_t;
+};
+
+typedef QcVector4D<int> QcVector4DInt; // Fixme: double computation ???
+typedef QcVector4D<double> QcVector4DDouble;
+
+#ifndef QT_NO_DEBUG_STREAM
+QC_EXPORT QDebug operator<<(QDebug debug, const QcVector4DDouble & vector);
+#endif
+
+// #ifndef QT_NO_DATASTREAM
+// QC_EXPORT QDataStream &operator<<(QDataStream & stream, const QcVector4D & vector);
+// QC_EXPORT QDataStream &operator>>(QDataStream & stream, QcVector4D & vector);
 // #endif
 
 /**************************************************************************************************/

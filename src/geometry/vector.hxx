@@ -40,23 +40,17 @@
 template <typename T>
 QcVector<T>::QcVector()
   : QcVector(0, 0)
-{
-  // qInfo() << "QcVector()" << *this << this;
-}
+{}
 
 template <typename T>
 QcVector<T>::QcVector(T x, T y)
   : m_x(x), m_y(y)
-{
-  // qInfo() << "QcVector(x, y)" << *this << this;
-}
+{}
 
 template <typename T>
 QcVector<T>::QcVector(const QcVector<T> & other)
   : m_x(other.m_x), m_y(other.m_y)
-{
-  // qInfo() << "QcVector(const QcVector<T> & other)" << *this << &other << this;
-}
+{}
 
 template <typename T>
 QcVector<T>::QcVector(const QPoint & other)
@@ -75,16 +69,12 @@ QcVector<T>::QcVector(const QVector2D & other)
 
 template <typename T>
 QcVector<T>::~QcVector()
-{
-  // qInfo() << "~QcVector()" << *this << this;
-}
+{}
 
 template <typename T>
 QcVector<T> &
 QcVector<T>::operator=(const QcVector<T> & other)
 {
-  // qInfo() << "operator=(const QcVector<T> & other)" << *this;
-
   if (this != &other) {
     m_x = other.m_x;
     m_y = other.m_y;
@@ -294,7 +284,6 @@ operator/(const QcVector<T> & vector1, const QcVector<T> & vector2)
 {
   return QcVector<T>(vector1.m_x / vector2.m_x, vector1.m_y / vector2.m_y);
 }
-
 
 // Return the orientation in degree
 template <typename T>
@@ -534,38 +523,28 @@ middle(const QcVector<T> & vector1, const QcVector<T> & vector2)
 template <typename T>
 QcVector3D<T>::QcVector3D()
   : QcVector3D(0, 0, 0)
-{
-  // qInfo() << "QcVector3D()" << *this << this;
-}
+{}
 
 template <typename T>
 QcVector3D<T>::QcVector3D(T x, T y, T z)
   : QcVector<T>(x, y),
     m_z(z)
-{
-  // qInfo() << "QcVector3D(x, y, z)" << *this << this;
-}
+{}
 
 template <typename T>
 QcVector3D<T>::QcVector3D(const QcVector3D<T> & other)
   : QcVector<T>(other),
     m_z(other.m_z)
-{
-  // qInfo() << "QcVector3D(const QcVector3D<T> & other)" << *this << &other << this;
-}
+{}
 
 template <typename T>
 QcVector3D<T>::~QcVector3D()
-{
-  // qInfo() << "~QcVector3D()" << *this << this;
-}
+{}
 
 template <typename T>
 QcVector3D<T> &
 QcVector3D<T>::operator=(const QcVector3D<T> & other)
 {
-  // qInfo() << "operator=(const QcVector3D<T> & other)" << *this;
-
   if (this != &other) {
     QcVector<T>::operator=(other);
     m_z = other.m_z;
@@ -943,6 +922,187 @@ QcVector3D<T>::to_interval() const
   T x = this->x();
   T y = this->y();
   return QcInterval3D<T>(x, x, y, y, m_z, m_z);
+}
+
+/**************************************************************************************************/
+
+template <typename T>
+QcVector4D<T>::QcVector4D()
+  : QcVector4D(0, 0, 0, 0)
+{}
+
+template <typename T>
+QcVector4D<T>::QcVector4D(T x, T y, T z, T t)
+  : QcVector3D<T>(x, y, z),
+    m_t(t)
+{}
+
+template <typename T>
+QcVector4D<T>::QcVector4D(const QcVector4D<T> & other)
+  : QcVector3D<T>(other),
+    m_t(other.m_t)
+{}
+
+template <typename T>
+QcVector4D<T>::~QcVector4D()
+{}
+
+template <typename T>
+QcVector4D<T> &
+QcVector4D<T>::operator=(const QcVector4D<T> & other)
+{
+  if (this != &other) {
+    QcVector3D<T>::operator=(other);
+    m_t = other.m_t;
+  }
+
+  return *this;
+}
+
+template <typename T>
+inline T
+QcVector4D<T>::t() const
+{
+  return m_t;
+}
+
+template <typename T>
+inline void
+QcVector4D<T>::set_t(T value)
+{
+  m_t = value;
+}
+
+template <typename T>
+T &
+QcVector4D<T>::operator[](int i)
+{
+  if (i == 0)
+    return this->x();
+  else if (i == 1)
+    return this->y();
+  else if (i == 2)
+    return this->z();
+  else if (i == 3)
+    return m_t;
+  else
+    throw std::invalid_argument("invalid index");
+}
+
+template <typename T>
+T
+QcVector4D<T>::operator[](int i) const
+{
+  if (i == 0)
+    return this->x();
+  else if (i == 1)
+    return this->y();
+  else if (i == 2)
+    return this->z();
+  else if (i == 3)
+    return m_t;
+  else
+    throw std::invalid_argument("invalid index");
+}
+
+template <typename T>
+inline bool
+QcVector4D<T>::is_null() const
+{
+  return QcVector3D<T>::is_null() and m_t == 0;
+}
+
+template <typename T>
+bool
+QcVector4D<T>::operator==(const QcVector4D<T> & other) const
+{
+  return QcVector3D<T>::operator==(other) and (m_t == other.m_t);
+}
+
+/*
+template <typename T>
+inline bool
+QcVector4D<T>::operator!=(const QcVector4D<T> & other) const
+{
+  return !operator==(other);
+}
+*/
+
+template <typename T>
+QcVector4D<T> &
+QcVector4D<T>::operator+=(const QcVector4D<T> & other)
+{
+  QcVector3D<T>::operator+(other);
+  m_t += other.m_t;
+  return *this;
+}
+
+template <typename T>
+QcVector4D<T>
+operator+(const QcVector4D<T> & vector1, const QcVector4D<T> & vector2)
+{
+  return QcVector4D<T>(vector1.x() + vector2.x(),
+                       vector1.y() + vector2.y(),
+                       vector1.z() + vector2.z(),
+                       vector1.m_t + vector2.m_t);
+}
+
+template <typename T>
+QcVector4D<T> &
+QcVector4D<T>::operator-=(const QcVector4D<T> & other) {
+  QcVector3D<T>::operator-=(other);
+  m_t -= other.m_t;
+  return *this;
+}
+
+template <typename T>
+QcVector4D<T>
+operator-(const QcVector4D<T> & vector1, const QcVector4D<T> & vector2)
+{
+  return QcVector4D<T>(vector1.x() - vector2.x(),
+                       vector1.y() - vector2.y(),
+                       vector1.z() - vector2.z(),
+                       vector1.m_t - vector2.m_t
+                       );
+}
+
+template <typename T>
+QcVector4D<T> &
+QcVector4D<T>::operator*=(T factor)
+{
+  QcVector3D<T>::operator*=(factor);
+  m_t *= factor;
+  return *this;
+}
+
+template <typename T>
+QcVector4D<T>
+operator*(const QcVector4D<T> & vector, T factor)
+{
+  return QcVector4D<T>(vector.x() * factor,
+                       vector.y() * factor,
+                       vector.z() * factor,
+                       vector.m_t * factor);
+}
+
+template <typename T>
+QcVector4D<T> &
+QcVector4D<T>::operator/=(T factor)
+{
+  QcVector3D<T>::operator/=(factor);
+  m_t /= factor;
+  return *this;
+}
+
+template <typename T>
+QcVector4D<T>
+operator/(const QcVector4D<T> & vector, T factor)
+{
+  return QcVector4D<T>(vector.x() / factor,
+                       vector.y() / factor,
+                       vector.z() / factor,
+                       vector.m_t / factor
+                       );
 }
 
 /**************************************************************************************************/
