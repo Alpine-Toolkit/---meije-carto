@@ -34,14 +34,9 @@
 /**************************************************************************************************/
 
 #include "wmts/tile_spec.h"
+#include "database/database.h"
 
 #include <QHash>
-#include <QSqlDatabase>
-#include <QSqlQuery>
-#include <QSqlRecord>
-#include <QString>
-#include <QStringList>
-#include <QVariant>
 
 /**************************************************************************************************/
 
@@ -49,7 +44,7 @@
 
 /**************************************************************************************************/
 
-class QcOfflineCacheDatabase
+class QcOfflineCacheDatabase : public QcSqliteDatabase
 {
 public:
   QcOfflineCacheDatabase(QString sqlite_path);
@@ -60,19 +55,8 @@ public:
   void delete_tile(const QcTileSpec & tile_spec);
 
 private:
-  typedef QHash<QString, QVariant> KeyValuePair;
-
-private:
-  QSqlQuery new_query() const;
-  bool commit();
-  QString format_kwarg(const KeyValuePair & kwargs, const QString & sperator = QStringLiteral(","));
-  QString format_simple_where(const KeyValuePair & kwargs);
-  QSqlQuery select(const QString & table, const QStringList & fields, const QString & where = QStringLiteral(""));
-  QSqlRecord select_one(const QString & table, const QStringList & fields, const QString & where = QStringLiteral(""));
-  QSqlQuery insert(const QString & table, const KeyValuePair & kwargs, bool commit = false);
-  QSqlQuery update(const QString & table, const KeyValuePair & kwargs, const QString & where = QStringLiteral(""));
-  QSqlQuery delete_row(const QString & table, const QString & where);
   void create_tables();
+
   void init_cache();
   void load_providers();
   void load_map_levels();
@@ -83,7 +67,6 @@ private:
   QString tile_where_clause(const QcTileSpec & tile_spec);
 
 private:
-  QSqlDatabase m_database;
   QHash<QString, int> m_providers;
   QHash<unsigned int, int> m_map_levels;
 };

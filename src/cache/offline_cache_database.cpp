@@ -28,9 +28,7 @@
 
 #include "offline_cache_database.h"
 
-#include <QFile>
 #include <QSqlError>
-#include <QSqlQuery>
 #include <QtDebug>
 
 /**************************************************************************************************/
@@ -55,152 +53,14 @@ const QString TILE = "tile";
 
 QcOfflineCacheDatabase::QcOfflineCacheDatabase(QString sqlite_path)
 {
-  bool create = !QFile(sqlite_path).exists();
+  bool created = open(sqlite_path);
 
-  m_database = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), sqlite_path);
-  m_database.setDatabaseName(sqlite_path);
-  if (!m_database.open())
-    qWarning() << m_database.lastError().text();
-
-  if (create)
-    create_tables();
-  else
+  if (!created)
     init_cache();
 }
 
 QcOfflineCacheDatabase::~QcOfflineCacheDatabase()
-{
-  m_database.close();
-}
-
-QSqlQuery
-QcOfflineCacheDatabase::new_query() const
-{
-  return QSqlQuery(m_database);
-}
-
-bool
-QcOfflineCacheDatabase::commit()
-{
-  return m_database.commit();
-}
-
-QSqlQuery
-QcOfflineCacheDatabase::insert(const QString & table, const KeyValuePair & kwargs, bool commit_request)
-{
-  QSqlQuery query = new_query();
-  QStringList fields = kwargs.keys();
-  QString sql_query =
-    QStringLiteral("INSERT INTO ") + table +
-    QStringLiteral(" (") + fields.join(',') + QStringLiteral(") VALUES (");
-  for (int i = 0; i < fields.size(); i++) {
-    if (i > 0)
-      sql_query += ',';
-    sql_query += '?';
-  }
-  sql_query += ')';
-  qInfo() << sql_query << kwargs;
-  query.prepare(sql_query);
-
-  for (const auto & value : kwargs.values())
-    query.addBindValue(value);
-
-  if (!query.exec())
-    qWarning() << query.lastError().text();
-
-  if (commit_request)
-    commit();
-
-  return query;
-}
-
-QSqlQuery
-QcOfflineCacheDatabase::select(const QString & table, const QStringList & fields, const QString & where)
-{
-  QSqlQuery query = new_query();
-  QString sql_query = QStringLiteral("SELECT ") + fields.join(',') + QStringLiteral(" FROM ") + table;
-  if (!where.isEmpty())
-    sql_query += QStringLiteral(" WHERE ") + where;
-  qInfo() << sql_query << fields;
-
-  if (!query.exec(sql_query))
-    qWarning() << query.lastError().text();
-
-  return query;
-}
-
-QSqlRecord
-QcOfflineCacheDatabase::select_one(const QString & table, const QStringList & fields, const QString & where)
-{
-  QSqlQuery query = select(table, fields, where);
-  QSqlRecord record;
-  if (query.next()) {
-    record = query.record();
-    if (query.next())
-      qWarning() << "More than one rows returned";
-  } else
-    qWarning() << "Any row";
-
-  return record; // test with isEmpty()
-}
-
-QSqlQuery
-QcOfflineCacheDatabase::delete_row(const QString & table, const QString & where)
-{
-  QSqlQuery query = new_query();
-  QString sql_query = QStringLiteral("DELETE FROM ") + table;
-  if (!where.isEmpty())
-    sql_query += QStringLiteral(" WHERE ") + where;
-  qInfo() << sql_query;
-
-  if (!query.exec(sql_query))
-    qWarning() << query.lastError().text();
-
-  return query;
-}
-
-QString
-QcOfflineCacheDatabase::format_kwarg(const KeyValuePair & kwargs, const QString & separator)
-{
-  QString kwarg_string;
-  int i = 0;
-  // for (const auto & pair: kwargs) {
-  for (const auto & field: kwargs.keys()) {
-    if (i)
-      kwarg_string += separator;
-    kwarg_string += field + '=';
-    QVariant variant = kwargs[field];
-    bool is_string = variant.canConvert<QString>();
-    if (is_string)
-      kwarg_string += '"';
-    kwarg_string += variant.toString();
-    if (is_string)
-      kwarg_string += '"';
-    i++;
-  }
-  return kwarg_string;
-}
-
-QString
-QcOfflineCacheDatabase::format_simple_where(const KeyValuePair & kwargs)
-{
-  return format_kwarg(kwargs, QStringLiteral(" AND "));
-}
-
-QSqlQuery
-QcOfflineCacheDatabase::update(const QString & table, const KeyValuePair & kwargs, const QString & where)
-{
-  QSqlQuery query = new_query();
-  QString sql_query = QStringLiteral("UPDATE ") + table + QStringLiteral(" SET ") + format_kwarg(kwargs);
-  if (!where.isEmpty())
-    sql_query += QStringLiteral(" WHERE ") + where;
-  qInfo() << sql_query << kwargs;
-
-  if (!query.exec(sql_query))
-    qWarning() << query.lastError().text();
-
-  return query;
-}
+{}
 
 void
 QcOfflineCacheDatabase::create_tables()

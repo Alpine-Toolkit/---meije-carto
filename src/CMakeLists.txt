@@ -44,7 +44,9 @@ set(qtcarto_files
 
   data_structure/pooled_string.cpp
   data_structure/simd.cpp
-  
+
+  database/database.cpp
+
   geo_data_format/gpx.cpp
   geo_data_format/route.cpp
   geo_data_format/waypoint.cpp
