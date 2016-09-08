@@ -30,20 +30,22 @@
 
 #include <QtDebug>
 
+#include <QtEndian>
+
 /**************************************************************************************************/
 
 // QC_BEGIN_NAMESPACE
 
 /**************************************************************************************************/
 
-QString Point("Point");
-QString LineString("LineString");
-QString Polygon("Polygon");
-QString MultiPoint("MultiPoint");
-QString MultiLineString("MultiLineString");
-QString MultiPolygon("MultiPolygon");
-QString GeometryCollection("GeometryCollection");
-QString Empty("Empty");
+const QString Point("Point");
+const QString LineString("LineString");
+const QString Polygon("Polygon");
+const QString MultiPoint("MultiPoint");
+const QString MultiLineString("MultiLineString");
+const QString MultiPolygon("MultiPolygon");
+const QString GeometryCollection("GeometryCollection");
+const QString Empty("Empty");
 
 /**************************************************************************************************/
 
@@ -208,6 +210,39 @@ public:
     return QcVectorDouble(x, y);
   }
 
+  QcVector3DDouble
+  parse_point_3d()
+  {
+    qDebug() << "parse_point_3d";
+
+    // Start after (
+    // a space is mandatory in the grammar in order to separate coordinate components
+    int separator_position = m_stream.indexOf(' ', m_location);
+    if (separator_position == -1)
+      throw_parser_error(QStringLiteral("expected ' '"));
+    double x = slice_stream(m_location, separator_position).toDouble();
+
+    skip_space();
+
+    m_location = separator_position + 1;
+    int next_location = find_next_char(QStringLiteral(",)")); // space ?
+    if (next_location == -1)
+      throw_parser_error(QStringLiteral("expected ',' or ')'"));
+    double y = slice_stream(m_location, next_location).toDouble();
+
+    skip_space();
+
+    m_location = separator_position + 1;
+    next_location = find_next_char(QStringLiteral(",)")); // space ?
+    if (next_location == -1)
+      throw_parser_error(QStringLiteral("expected ',' or ')'"));
+    double z = slice_stream(m_location, next_location).toDouble();
+
+    m_location = next_location;
+    qDebug() << x << y << z;
+    return QcVector3DDouble(x, y, z);
+  }
+
   QcVectorDoubleList
   parse_points()
   {
@@ -339,6 +374,7 @@ private:
 /**************************************************************************************************/
 
 QcWkbGeometryObject::QcWkbGeometryObject()
+  : m_srid(-1)
 {}
 
 bool
@@ -347,7 +383,7 @@ QcWkbGeometryObject::read_byte_order(QDataStream & stream)
   quint8 byte_order;
   stream >> byte_order;
   bool is_big_endian = byte_order == 0; // Fixme: WkbByteOrder::Xdr
-  // qDebug() << "is big endian" << is_big_endian;
+  qDebug() << "is big endian" << is_big_endian;
   stream.setByteOrder(is_big_endian ? QDataStream::BigEndian : QDataStream::LittleEndian);
   return is_big_endian;
 }
@@ -360,16 +396,23 @@ QcWkbGeometryObject::write_byte_order(QDataStream & stream, bool use_big_endian)
 }
 
 QcWkbGeometryType
-QcWkbGeometryObject::read_header(QDataStream & stream)
+QcWkbGeometryObject::read_header(QDataStream & stream, bool & is_ewkb)
 {
   read_byte_order(stream);
 
   quint32 type;
   stream >> type;
+
+  is_ewkb = type & static_cast<quint32>(QcWkbGeometryType::SRID);
+  if (is_ewkb)
+    type -= static_cast<quint32>(QcWkbGeometryType::SRID);
+
   qDebug() << "geometry type is" << type;
   switch (type) {
   case static_cast<quint32>(QcWkbGeometryType::Point):
     return QcWkbGeometryType::Point;
+  case static_cast<quint32>(QcWkbGeometryType::PointM):
+    return QcWkbGeometryType::PointM;
   case static_cast<quint32>(QcWkbGeometryType::LineString):
     return QcWkbGeometryType::LineString;
   case static_cast<quint32>(QcWkbGeometryType::Polygon):
@@ -387,18 +430,35 @@ QcWkbGeometryObject::read_header(QDataStream & stream)
   }
 }
 
-QcWkbGeometryObject *
-QcWkbGeometryObject::init_from_wkt(const QString & stream)
+int
+QcWkbGeometryObject::read_srid(QDataStream & stream)
 {
-  QcWktParser parser(stream);
-  return parser.parse_geometry();
+  quint32 srid;
+  stream >> srid;
+  qDebug() << "SRID" << srid;
+  return srid;
 }
 
 void
-QcWkbGeometryObject::write_header(QDataStream & stream, bool use_big_endian) const
+QcWkbGeometryObject::write_srid(QDataStream & stream)
+{
+  if (has_srid())
+    stream << static_cast<quint32>(m_srid);
+}
+
+void
+QcWkbGeometryObject::write_header(QDataStream & stream, bool use_big_endian, bool use_ewkb) const
 {
   write_byte_order(stream, use_big_endian);
-  stream << static_cast<quint32>(geometry_type());
+  quint32 type = static_cast<quint32>(geometry_type());
+  if (use_ewkb) {
+    if (!has_srid())
+      throw std::invalid_argument("ewkb require a valid srid");;
+    type |= static_cast<quint32>(QcWkbGeometryType::SRID);
+  }
+  stream << type;
+  if (use_ewkb)
+    stream << static_cast<quint32>(srid());
 }
 
 QcWkbGeometryObject *
@@ -428,7 +488,8 @@ QcWkbGeometryObject::new_geometry_object(QcWkbGeometryType type)
 QcWkbGeometryObject *
 QcWkbGeometryObject::read_geometry_object(QDataStream & stream)
 {
-  QcWkbGeometryType type = read_header(stream);
+  bool is_ewkb;
+  QcWkbGeometryType type = read_header(stream, is_ewkb);
 
   QcWkbGeometryObject * object;
   switch (type) {
@@ -451,6 +512,9 @@ QcWkbGeometryObject::read_geometry_object(QDataStream & stream)
   if (object)
     object->set_from_binary(stream);
 
+  if (is_ewkb)
+    object->set_srid(read_srid(stream));
+
   return object;
 }
 
@@ -458,7 +522,10 @@ void
 QcWkbGeometryObject::init_from_binary(const QByteArray & bytes)
 {
   QDataStream stream(bytes);
-  QcWkbGeometryType type = read_header(stream);
+  bool is_ewkb;
+  QcWkbGeometryType type = read_header(stream, is_ewkb);
+  if (is_ewkb)
+    set_srid(read_srid(stream));
   if (type != geometry_type())
     throw std::invalid_argument("wrong type");
   set_from_binary(stream);
@@ -472,19 +539,43 @@ QcWkbGeometryObject::read_point(QDataStream & stream)
   return QcVectorDouble(x, y);
 }
 
+QcVector3DDouble
+QcWkbGeometryObject::read_point_3d(QDataStream & stream)
+{
+  double x, y, z;
+  stream >> x >> y >> z;
+  return QcVector3DDouble(x, y, z);
+}
+
+/*
+QcVector4DDouble
+QcWkbGeometryObject::read_point_4d(QDataStream & stream)
+{
+  double x, y, z, m;
+  stream >> x >> y >> z >> m;
+  return QcVector4DDouble(x, y, z, m);
+}
+*/
+
 void
 QcWkbGeometryObject::write_point(QDataStream & stream, const QcVectorDouble & point)
 {
   stream << point.x() << point.y();
 }
 
-QString
-QcWkbGeometryObject::point_to_wkt(const QcVectorDouble & point)
+void
+QcWkbGeometryObject::write_point_3d(QDataStream & stream, const QcVector3DDouble & point)
 {
-  QString wkt;
-  wkt += QString::number(point.x()) + ' ' + QString::number(point.y());
-  return wkt;
+  stream << point.x() << point.y() << point.z();
 }
+
+/*
+void
+QcWkbGeometryObject::write_point_4d(QDataStream & stream, const QcVector4DDouble & point)
+{
+  stream << point.x() << point.y() << point.z() << point.t();
+}
+*/
 
 void
 QcWkbGeometryObject::read_points(QDataStream & stream, QcVectorDoubleList & points)
@@ -503,6 +594,57 @@ QcWkbGeometryObject::write_points(QDataStream & stream, const QcVectorDoubleList
     write_point(stream, point);
 }
 
+QByteArray
+QcWkbGeometryObject::to_wkb(bool use_big_endian) const
+{
+  QByteArray bytes;
+  QDataStream stream(&bytes, QIODevice::WriteOnly);
+  to_binary(stream, use_big_endian);
+  return bytes;
+}
+
+QcWkbGeometryObject *
+QcWkbGeometryObject::init_from_wkt(const QString & stream)
+{
+  QcWktParser parser(stream);
+  return parser.parse_geometry();
+}
+
+QString
+QcWkbGeometryObject::srid_to_ewkt() const
+{
+  if (has_srid())
+    return QStringLiteral("SRID=") + QString::number(m_srid) + ';';
+  else
+    return QString();
+}
+
+QString
+QcWkbGeometryObject::point_to_wkt(const QcVectorDouble & point)
+{
+  QString wkt;
+  wkt += QString::number(point.x()) + ' ' + QString::number(point.y());
+  return wkt;
+}
+
+QString
+QcWkbGeometryObject::point_3d_to_wkt(const QcVector3DDouble & point)
+{
+  QString wkt;
+  wkt += point_to_wkt(point) + ' ' + QString::number(point.z());
+  return wkt;
+}
+
+/*
+QString
+QcWkbGeometryObject::point_4d_to_wkt(const QcVector4DDouble & point)
+{
+  QString wkt;
+  wkt += point_3d_to_wkt(point) + ' ' + QString::number(point.t());
+  return wkt;
+}
+*/
+
 QString
 QcWkbGeometryObject::points_to_wkt(const QcVectorDoubleList & points)
 {
@@ -518,15 +660,6 @@ QcWkbGeometryObject::points_to_wkt(const QcVectorDoubleList & points)
     wkt += ')';
   }
   return wkt;
-}
-
-QByteArray
-QcWkbGeometryObject::to_wkb(bool use_big_endian) const
-{
-  QByteArray bytes;
-  QDataStream stream(&bytes, QIODevice::WriteOnly);
-  to_binary(stream, use_big_endian);
-  return bytes;
 }
 
 /**************************************************************************************************/
@@ -589,10 +722,141 @@ QcWkbPoint::to_binary(QDataStream & stream, bool use_big_endian) const
 QString
 QcWkbPoint::to_wkt() const
 {
+  QString wkt = srid_to_ewkt();
+  wkt += geometry_type_name() + '(' + point_to_wkt(m_point) + ')';
+  return wkt;
+}
+
+/**************************************************************************************************/
+
+QcWkbPointM::QcWkbPointM()
+  : QcWkbGeometryObject(),
+    m_point()
+{}
+
+QcWkbPointM::QcWkbPointM(const QByteArray & bytes)
+  : QcWkbPointM()
+{
+  init_from_binary(bytes);
+}
+
+QcWkbPointM::QcWkbPointM(double x, double y, double m)
+  : QcWkbGeometryObject(),
+  m_point(x, y, m)
+{}
+
+QcWkbPointM::QcWkbPointM(const QcWkbPointM & other)
+  : QcWkbPointM(other.x(), other.y(), other.m())
+{}
+
+QcWkbPointM &
+QcWkbPointM::operator=(const QcWkbPointM & other)
+{
+  if (this != &other) {
+    m_point = other.m_point;
+  }
+
+  return *this;
+}
+
+bool
+QcWkbPointM::operator==(const QcWkbPointM & other) const
+{
+  return m_point == other.m_point;
+}
+
+void
+QcWkbPointM::set_from_wkt(QcWktParser * parser)
+{
+  m_point = parser->parse_point_3d();
+}
+
+void
+QcWkbPointM::set_from_binary(QDataStream & stream)
+{
+  m_point = read_point_3d(stream);
+}
+
+void
+QcWkbPointM::to_binary(QDataStream & stream, bool use_big_endian) const
+{
+  write_header(stream, use_big_endian);
+  write_point_3d(stream, m_point);
+}
+
+QString
+QcWkbPointM::to_wkt() const
+{
+  QString wkt;
+  wkt += geometry_type_name() + '(' + point_3d_to_wkt(m_point) + ')';
+  return wkt;
+}
+
+/*
+QcWkbPointM::QcWkbPointM()
+  : QcWkbPoint(),
+  m_m()
+{}
+
+QcWkbPointM::QcWkbPointM(const QByteArray & bytes)
+  : QcWkbPointM()
+{
+  init_from_binary(bytes);
+}
+
+QcWkbPointM::QcWkbPointM(double x, double y, double m)
+  : QcWkbPoint(x, y),
+    m_m(m)
+{}
+
+QcWkbPointM::QcWkbPointM(const QcWkbPointM & other)
+  : QcWkbPointM(other.x(), other.y(), other.m())
+{}
+
+QcWkbPointM &
+QcWkbPointM::operator=(const QcWkbPointM & other)
+{
+  if (this != &other) {
+    QcWkbPoint::operator=(other);
+    m_m = other.m_m;
+  }
+
+  return *this;
+}
+
+bool
+QcWkbPointM::operator==(const QcWkbPointM & other) const
+{
+  return QcWkbPoint::operator==(operator) and m_m == other.m_m;
+}
+
+void
+QcWkbPointM::set_from_wkt(QcWktParser * parser)
+{
+  m_point = parser->parse_point();
+}
+
+void
+QcWkbPointM::set_from_binary(QDataStream & stream)
+{
+  m_point = read_point(stream);
+}
+
+void
+QcWkbPointM::to_binary(QDataStream & stream, bool use_big_endian) const
+{
+  write_header(stream, use_big_endian);
+  write_point(stream, m_point);
+}
+
+QString
+QcWkbPointM::to_wkt() const
+{
   QString wkt;
   wkt += geometry_type_name() + '(' + point_to_wkt(m_point) + ')';
   return wkt;
 }
+*/
 
 /**************************************************************************************************/
 

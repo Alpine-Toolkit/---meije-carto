@@ -122,6 +122,8 @@ struct WkbGeometryCollection {
 
 enum class QcWkbGeometryType
 {
+  SRID = 0x20000000,
+
   Point               = 1,
   LineString          = 2,
   Polygon             = 3,
@@ -220,12 +222,23 @@ public:
   static bool read_byte_order(QDataStream & stream);
   static void write_byte_order(QDataStream & stream, bool use_big_endian = true);
 
-  static QcWkbGeometryType read_header(QDataStream & stream);
-  void write_header(QDataStream & stream, bool use_big_endian = true) const;
+  static QcWkbGeometryType read_header(QDataStream & stream, bool & is_ewkb);
+  void write_header(QDataStream & stream, bool use_big_endian = true, bool use_ewkb = false) const;
+
+  static int read_srid(QDataStream & stream);
+  void write_srid(QDataStream & stream);
 
   static QcVectorDouble read_point(QDataStream & stream);
+  static QcVector3DDouble read_point_3d(QDataStream & stream);
+  // static QcVector4DDouble read_point_4d(QDataStream & stream;)
+
   static void write_point(QDataStream & stream, const QcVectorDouble & point);
+  static void write_point_3d(QDataStream & stream, const QcVector3DDouble & point);
+  // static void write_point_4d(QDataStream & stream, const QcVector4DDouble & point);
+
   static QString point_to_wkt(const QcVectorDouble & point);
+  static QString point_3d_to_wkt(const QcVector3DDouble & point);
+  // static QString point_4d_to_wkt(const QcVector4DDouble & point);
 
   static void read_points(QDataStream & stream, QcVectorDoubleList & points);
   static void write_points(QDataStream & stream, const QcVectorDoubleList & points);
@@ -241,6 +254,14 @@ public:
   virtual void to_binary(QDataStream & stream, bool use_big_endian = true) const = 0;
   virtual QString to_wkt() const = 0;
   QByteArray to_wkb(bool use_big_endian = true) const;
+
+  bool has_srid() const { return m_srid != -1; }
+  inline int srid() const { return m_srid; }
+  inline void set_srid(int srid) { m_srid = srid; }
+  QString srid_to_ewkt() const;
+
+private:
+  int m_srid;
 };
 
 /**************************************************************************************************/
@@ -277,6 +298,76 @@ public:
 private:
   QcVectorDouble m_point;
 };
+
+/**************************************************************************************************/
+
+/**************************************************************************************************/
+
+class QcWkbPointM : public QcWkbGeometryObject
+{
+public:
+  inline QcWkbGeometryType geometry_type() const { return QcWkbGeometryType::PointM; }
+  inline QString geometry_type_name() const { return QStringLiteral("Point M"); }
+
+public:
+  QcWkbPointM();
+  QcWkbPointM(const QByteArray & bytes);
+  QcWkbPointM(double x, double y, double m);
+  QcWkbPointM(const QcWkbPointM & other);
+
+  QcWkbPointM & operator=(const QcWkbPointM & other);
+
+  bool operator==(const QcWkbPointM & other) const;
+
+  inline const QcVector3DDouble & vector() { return m_point; }
+
+  inline double x() const { return m_point.x(); }
+  inline double y() const { return m_point.y(); }
+  inline double m() const { return m_point.z(); }
+
+  inline void set_x(double x) { m_point.set_x(x); }
+  inline void set_y(double y) { m_point.set_y(y); }
+  inline void set_m(double m) { m_point.set_z(m); }
+
+  void set_from_binary(QDataStream & stream);
+  void set_from_wkt(QcWktParser * parser);
+  void to_binary(QDataStream & stream, bool use_big_endian = true) const;
+  QString to_wkt() const;
+
+private:
+  QcVector3DDouble m_point;
+};
+
+/*
+class QcWkbPointM : public QcWkbPoint
+{
+public:
+  inline QcWkbGeometryType geometry_type() const { return QcWkbGeometryType::PointM; }
+
+public:
+  QcWkbPointM();
+  QcWkbPointM(const QByteArray & bytes);
+  QcWkbPointM(double x, double y, double m);
+  QcWkbPointM(const QcWkbPointM & other);
+
+  QcWkbPointM & operator=(const QcWkbPointM & other);
+
+  bool operator==(const QcWkbPointM & other) const;
+
+  inline double m() const { return m_m; }
+
+  inline void set_m(double m) { m_m = m; }
+
+  void set_from_binary(QDataStream & stream);
+  void set_from_wkt(QcWktParser * parser);
+  void to_binary(QDataStream & stream, bool use_big_endian = true) const;
+  QString to_wkt() const;
+
+private:
+  QcVectorDouble m_point;
+  double m_m;
+};
+*/
 
 /**************************************************************************************************/
 

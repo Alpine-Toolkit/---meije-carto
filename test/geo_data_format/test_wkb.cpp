@@ -47,8 +47,8 @@ void
 TestQcWkb::test_wkt(const QString & input, const QString & truth)
 {
   QcWkbGeometryObject * geometry_object = QcWkbGeometryObject::init_from_wkt(input);
- qInfo() << geometry_object->to_wkt();
- QVERIFY(geometry_object->to_wkt() == truth);
+  qInfo() << geometry_object->to_wkt();
+  QVERIFY(geometry_object->to_wkt() == truth);
 }
 
 void
