@@ -43,7 +43,8 @@ set(qtcarto_files
   coordinate/debug_tools.cpp
 
   data_structure/pooled_string.cpp
-
+  data_structure/simd.cpp
+  
   geo_data_format/gpx.cpp
   geo_data_format/route.cpp
   geo_data_format/waypoint.cpp
