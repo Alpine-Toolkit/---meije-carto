@@ -120,82 +120,78 @@ struct WkbGeometryCollection {
 
 /**************************************************************************************************/
 
-enum class QcWkbGeometryType
+class QcWkbGeometryObject;
+
+class QcWkbGeometryType
 {
-  SRID = 0x20000000,
+public:
+  enum
+  {
+    Z_MASK = 1000,
+    M_MASK = 2000,
+    ZM_MASK = 3000,
 
-  Point               = 1,
-  LineString          = 2,
-  Polygon             = 3,
-  MultiPoint          = 4,
-  MultiLineString     = 5,
-  MultiPolygon        = 6,
-  GeometryCollection  = 7,
-  CircularString      = 8,
-  CompoundCurve       = 9,
-  CurvePolygon        = 10,
-  MultiCurve          = 11,
-  MultiSurface        = 12,
-  Curve               = 13,
-  Surface             = 14,
-  PolyhedralSurface   = 15,
-  Tin                 = 16,
-  Triangle            = 17,
+    // http://svn.osgeo.org/postgis/trunk/doc/ZMSgeoms.txt
+    SRID_MASK = 0x20000000,
 
-  PointZ              = 1001,
-  LineStringZ         = 1002,
-  PolygonZ            = 1003,
-  MultiPointZ         = 1004,
-  MultiLineStringZ    = 1005,
-  MultiPolygonZ       = 1006,
-  GeometryCollectionZ = 1007,
-  CircularStringZ     = 1008,
-  CompoundCurveZ      = 1009,
-  CurvePolygonZ       = 1010,
-  MultiCurveZ         = 1011,
-  MultiSurfaceZ       = 1012,
-  CurveZ              = 1013,
-  SurfaceZ            = 1014,
-  PolyhedralSurfaceZ  = 1015,
-  TinZ                = 1016,
-  TriangleZ           = 1017,
+    Point               = 1,
+    LineString          = 2,
+    Polygon             = 3,
+    MultiPoint          = 4,
+    MultiLineString     = 5,
+    MultiPolygon        = 6,
+    GeometryCollection  = 7,
+    CircularString      = 8,
+    CompoundCurve       = 9,
+    CurvePolygon        = 10,
+    MultiCurve          = 11,
+    MultiSurface        = 12,
+    Curve               = 13,
+    Surface             = 14,
+    PolyhedralSurface   = 15,
+    Tin                 = 16,
+    Triangle            = 17,
+  };
 
-  PointM              = 2001,
-  LineStringM         = 2002,
-  PolygonM            = 2003,
-  MultiPointM         = 2004,
-  MultiLineStringM    = 2005,
-  MultiPolygonM       = 2006,
-  GeometryCollectionM = 2007,
-  CircularStringM     = 2008,
-  CompoundCurveM      = 2009,
-  CurvePolygonM       = 2010,
-  MultiCurveM         = 2011,
-  MultiSurfaceM       = 2012,
-  CurveM              = 2013,
-  SurfaceM            = 2014,
-  PolyhedralSurfaceM  = 2015,
-  TinM                = 2016,
-  TriangleM           = 2017,
+public:
+  QcWkbGeometryType();
+  QcWkbGeometryType(int base_type, bool has_z = false, bool has_m = false, bool has_srid = false);
+  QcWkbGeometryType(const QcWkbGeometryType & other);
+  QcWkbGeometryType(quint32 type);
+  QcWkbGeometryType(const QString & type_name);
 
-  PointZM              = 3001,
-  LineStringZM         = 3002,
-  PolygonZM            = 3003,
-  MultiPointZM         = 3004,
-  MultiLineStringZM    = 3005,
-  MultiPolygonZM       = 3006,
-  GeometryCollectionZM = 3007,
-  CircularStringZM     = 3008,
-  CompoundCurveZM      = 3009,
-  CurvePolygonZM       = 3010,
-  MultiCurveZM         = 3011,
-  MultiSurfaceZM       = 3012,
-  CurveZM              = 3013,
-  SurfaceZM            = 3014,
-  PolyhedralSurfaceZM  = 3015,
-  TinZM                = 3016,
-  TriangleZM           = 3017
+  QcWkbGeometryType & operator=(const QcWkbGeometryType & other);
+
+  bool operator==(const QcWkbGeometryType & other) const;
+  inline bool operator!=(const QcWkbGeometryType & other) const {
+    return not(*this == other);
+  }
+
+  inline int base_type() const { return m_base_type; }
+  inline void set_base_type(int base_type) { m_base_type = base_type; }
+
+  inline int has_z() const { return m_has_z; }
+  inline void set_has_z(bool has_z) { m_has_z = has_z; }
+
+  inline int has_m() const { return m_has_m; }
+  inline void set_has_m(bool has_m) { m_has_m = has_m; }
+
+  inline bool has_srid() const { return m_has_srid; }
+  inline void set_has_srid(int has_srid) { m_has_srid = has_srid; }
+
+  quint32 to_wkb() const;
+  QString to_wkt() const;
+
+  QcWkbGeometryObject * new_geometry_object();
+
+private:
+  int m_base_type;
+  bool m_has_z;
+  bool m_has_m;
+  bool m_has_srid;
 };
+
+/**************************************************************************************************/
 
 enum class QcWkbByteOrder
 {
@@ -216,13 +212,12 @@ class QcWkbGeometryObject
 public:
   QcWkbGeometryObject();
 
-  virtual QcWkbGeometryType geometry_type() const = 0;
-  virtual QString geometry_type_name() const = 0;
+  virtual const QcWkbGeometryType & geometry_type() const = 0;
 
   static bool read_byte_order(QDataStream & stream);
   static void write_byte_order(QDataStream & stream, bool use_big_endian = true);
 
-  static QcWkbGeometryType read_header(QDataStream & stream, bool & is_ewkb);
+  static QcWkbGeometryType read_header(QDataStream & stream);
   void write_header(QDataStream & stream, bool use_big_endian = true, bool use_ewkb = false) const;
 
   static int read_srid(QDataStream & stream);
@@ -230,21 +225,20 @@ public:
 
   static QcVectorDouble read_point(QDataStream & stream);
   static QcVector3DDouble read_point_3d(QDataStream & stream);
-  // static QcVector4DDouble read_point_4d(QDataStream & stream;)
+  static QcVector4DDouble read_point_4d(QDataStream & stream);
 
   static void write_point(QDataStream & stream, const QcVectorDouble & point);
   static void write_point_3d(QDataStream & stream, const QcVector3DDouble & point);
-  // static void write_point_4d(QDataStream & stream, const QcVector4DDouble & point);
+  static void write_point_4d(QDataStream & stream, const QcVector4DDouble & point);
 
   static QString point_to_wkt(const QcVectorDouble & point);
   static QString point_3d_to_wkt(const QcVector3DDouble & point);
-  // static QString point_4d_to_wkt(const QcVector4DDouble & point);
+  static QString point_4d_to_wkt(const QcVector4DDouble & point);
 
   static void read_points(QDataStream & stream, QcVectorDoubleList & points);
   static void write_points(QDataStream & stream, const QcVectorDoubleList & points);
   static QString points_to_wkt(const QcVectorDoubleList & points);
 
-  static QcWkbGeometryObject * new_geometry_object(QcWkbGeometryType type);
   static QcWkbGeometryObject * read_geometry_object(QDataStream & stream);
   virtual void init_from_binary(const QByteArray & stream);
   static QcWkbGeometryObject * init_from_wkt(const QString & stream);
@@ -268,9 +262,11 @@ private:
 
 class QcWkbPoint : public QcWkbGeometryObject
 {
+private:
+  static const QcWkbGeometryType m_type;
+
 public:
-  inline QcWkbGeometryType geometry_type() const { return QcWkbGeometryType::Point; }
-  inline QString geometry_type_name() const { return QStringLiteral("Point"); }
+  inline const QcWkbGeometryType & geometry_type() const { return m_type; }
 
 public:
   QcWkbPoint();
@@ -301,13 +297,13 @@ private:
 
 /**************************************************************************************************/
 
-/**************************************************************************************************/
-
 class QcWkbPointM : public QcWkbGeometryObject
 {
+private:
+  static const QcWkbGeometryType m_type;
+
 public:
-  inline QcWkbGeometryType geometry_type() const { return QcWkbGeometryType::PointM; }
-  inline QString geometry_type_name() const { return QStringLiteral("Point M"); }
+  inline const QcWkbGeometryType & geometry_type() const { return m_type; }
 
 public:
   QcWkbPointM();
@@ -342,7 +338,7 @@ private:
 class QcWkbPointM : public QcWkbPoint
 {
 public:
-  inline QcWkbGeometryType geometry_type() const { return QcWkbGeometryType::PointM; }
+  inline const QcWkbGeometryType & geometry_type() const { return QcWkbGeometryType::PointM; }
 
 public:
   QcWkbPointM();
@@ -394,9 +390,11 @@ private:
 
 class QcWkbLineString : public QcWkbPointList
 {
+private:
+  static const QcWkbGeometryType m_type;
+
 public:
-  inline QcWkbGeometryType geometry_type() const { return QcWkbGeometryType::LineString; }
-  inline QString geometry_type_name() const { return QStringLiteral("LineString"); }
+  inline const QcWkbGeometryType & geometry_type() const { return m_type; }
 
 public:
   QcWkbLineString();
@@ -411,9 +409,11 @@ public:
 
 class QcWkbPolygon : public QcWkbGeometryObject
 {
+private:
+  static const QcWkbGeometryType m_type;
+
 public:
-  inline QcWkbGeometryType geometry_type() const { return QcWkbGeometryType::Polygon; }
-  inline QString geometry_type_name() const { return QStringLiteral("Polygon"); }
+  inline const QcWkbGeometryType & geometry_type() const { return m_type; }
 
 public:
   QcWkbPolygon();
@@ -438,9 +438,11 @@ private:
 
 class QcWkbMultiPoint : public QcWkbPointList
 {
+private:
+  static const QcWkbGeometryType m_type;
+
 public:
-  inline QcWkbGeometryType geometry_type() const { return QcWkbGeometryType::MultiPoint; }
-  inline QString geometry_type_name() const { return QStringLiteral("MultiPoint"); }
+  inline const QcWkbGeometryType & geometry_type() const { return m_type; }
 
 public:
   QcWkbMultiPoint();
@@ -455,9 +457,11 @@ public:
 
 class QcWkbGeometryCollection : public QcWkbGeometryObject
 {
+private:
+  static const QcWkbGeometryType m_type;
+
 public:
-  inline QcWkbGeometryType geometry_type() const { return QcWkbGeometryType::GeometryCollection; }
-  inline QString geometry_type_name() const { return QStringLiteral("GeometryCollection"); }
+  inline const QcWkbGeometryType & geometry_type() const { return m_type; }
 
 public:
   QcWkbGeometryCollection();

@@ -38,16 +38,197 @@
 
 /**************************************************************************************************/
 
-const QString Point("Point");
-const QString LineString("LineString");
-const QString Polygon("Polygon");
-const QString MultiPoint("MultiPoint");
-const QString MultiLineString("MultiLineString");
-const QString MultiPolygon("MultiPolygon");
-const QString GeometryCollection("GeometryCollection");
-const QString Empty("Empty");
+bool
+are_string_equal(const QString & string1, const QString & string2) {
+  return string1.compare(string2, Qt::CaseInsensitive) == 0;
+}
 
 /**************************************************************************************************/
+
+const QString PointLabel("Point");
+const QString LineStringLabel("LineString");
+const QString PolygonLabel("Polygon");
+const QString MultiPointLabel("MultiPoint");
+const QString MultiLineStringLabel("MultiLineString");
+const QString MultiPolygonLabel("MultiPolygon");
+const QString GeometryCollectionLabel("GeometryCollection");
+
+QcWkbGeometryType::QcWkbGeometryType()
+  : m_base_type(0),
+  m_has_z(false),
+  m_has_m(false),
+  m_has_srid(false)
+{}
+
+QcWkbGeometryType::QcWkbGeometryType(int base_type, bool has_z, bool has_m, bool has_srid)
+  : m_base_type(base_type),
+  m_has_z(has_z),
+  m_has_m(has_m),
+  m_has_srid(has_srid)
+{}
+
+QcWkbGeometryType::QcWkbGeometryType(const QcWkbGeometryType & other)
+  : QcWkbGeometryType(other.base_type(), other.has_z(), other.has_m(), other.has_srid())
+{}
+
+QcWkbGeometryType::QcWkbGeometryType(quint32 type)
+  : QcWkbGeometryType()
+{
+  m_has_srid = type & SRID_MASK;
+  if (m_has_srid)
+    type -= SRID_MASK;
+
+  if (type < Z_MASK)
+    m_base_type = type;
+  else if (type < M_MASK) {
+    m_base_type = type - Z_MASK;
+    m_has_z = true;
+  } else if (type < ZM_MASK) {
+    m_base_type = type - M_MASK;
+    m_has_m = true;
+  } else {
+    m_base_type = type - ZM_MASK;
+    m_has_z = true;
+    m_has_m = true;
+  }
+
+  if (m_base_type < 1 or m_base_type > Triangle)
+    throw std::invalid_argument("bad type");
+}
+
+QcWkbGeometryType::QcWkbGeometryType(const QString & type_name)
+  : QcWkbGeometryType()
+{
+  // Fixme: ZM
+  // QString type_name = _type_name.toLower();
+
+  if (are_string_equal(type_name, PointLabel))
+    m_base_type = Point;
+  else if (are_string_equal(type_name, LineStringLabel))
+    m_base_type = LineString;
+  else if (are_string_equal(type_name, PolygonLabel))
+    m_base_type = Polygon;
+  else if (are_string_equal(type_name, MultiPointLabel))
+    m_base_type = MultiPoint;
+  else if (are_string_equal(type_name, MultiLineStringLabel))
+    m_base_type = MultiLineString;
+  else if (are_string_equal(type_name, MultiPolygonLabel))
+    m_base_type = MultiPolygon;
+  else if (are_string_equal(type_name, GeometryCollectionLabel))
+    m_base_type = GeometryCollection;
+  else
+    throw std::invalid_argument("bad type");
+}
+
+QcWkbGeometryType &
+QcWkbGeometryType::operator=(const QcWkbGeometryType & other)
+{
+  if (this != &other) {
+    m_base_type = other.m_base_type;
+    m_has_z = other.m_has_z;
+    m_has_m = other.m_has_m;
+    m_has_srid = other.m_has_srid;
+  }
+
+  return *this;
+}
+
+bool
+QcWkbGeometryType::operator==(const QcWkbGeometryType & other) const
+{
+  return (m_base_type == other.m_base_type and
+          m_has_z == other.m_has_z and
+          m_has_m == other.m_has_m
+          // and m_has_srid == other.m_has_srid
+          );
+}
+
+quint32
+QcWkbGeometryType::to_wkb() const
+{
+  quint32 type = m_base_type;
+
+  if (m_has_z) {
+    if (!m_has_m)
+      type += Z_MASK;
+    else
+      type += ZM_MASK;
+  }
+  else if (m_has_m)
+    type += M_MASK;
+
+  if (m_has_srid)
+    type |= SRID_MASK;
+
+  return type;
+}
+
+QString
+QcWkbGeometryType::to_wkt() const
+{
+  QString type_name;
+
+  switch (m_base_type) {
+    case Point:
+      type_name = PointLabel;
+      break;
+    case Polygon:
+      type_name = PolygonLabel;
+      break;
+    case LineString:
+      type_name = LineStringLabel;
+      break;
+    case MultiPoint:
+      type_name = MultiPointLabel;
+      break;
+    case GeometryCollection:
+      type_name = GeometryCollectionLabel;
+      break;
+    // default:
+  }
+
+  if (m_has_z) {
+    if (m_has_m)
+      type_name += QStringLiteral(" ZM");
+    else
+      type_name += QStringLiteral(" Z");
+  } else if (m_has_m)
+    type_name += QStringLiteral(" M");
+
+  return type_name;
+}
+
+QcWkbGeometryObject *
+QcWkbGeometryType::new_geometry_object()
+{
+  if (!m_has_z and !m_has_m) {
+    switch (m_base_type) {
+    case Point:
+      return new QcWkbPoint;
+      break;
+    case Polygon:
+      return new QcWkbPolygon;
+      break;
+    case LineString:
+      return new QcWkbLineString;
+      break;
+    case MultiPoint:
+      return new QcWkbMultiPoint;
+      break;
+    case GeometryCollection:
+      return new QcWkbGeometryCollection;
+      break;
+    default:
+      return nullptr;
+    }
+  }
+
+  return nullptr;
+}
+
+/**************************************************************************************************/
+
+const QString Empty("Empty");
 
 class QcWktParser
 {
@@ -124,10 +305,6 @@ public:
     return true;
   }
 
-  bool are_string_equal(const QString & string1, const QString & string2) {
-    return string1.compare(string2, Qt::CaseInsensitive) == 0;
-  }
-
   void
   throw_parser_error(const QString & error_message)
   {
@@ -148,43 +325,31 @@ public:
     m_location = location;
 
     // Lookup for Z, M or ZM prefix
-    QString type_name_dimension;
+    bool has_z = false;
+    bool has_m = false;
     if (lookup_current_char() == ' ') {
       skip_space();
       QChar next_char = lookup_current_char().toLower();
       if (next_char == 'z' or next_char == 'm') {
-        type_name_dimension = next_char;
         if (next_char == 'z') {
+          has_z = true;
           next_char = read_next_char().toLower();
           if (next_char == 'm')
-            type_name_dimension += 'm';
-        }
+            has_m = true;
+        } else
+          has_m = true;
         skip_space();
       }
     } // else '(
 
     qDebug() << "geometry type is" << type_name;
-    QcWkbGeometryType type;
-    if (are_string_equal(type_name, Point))
-      type = QcWkbGeometryType::Point;
-    else if (are_string_equal(type_name, LineString))
-      type = QcWkbGeometryType::LineString;
-    else if (are_string_equal(type_name, Polygon))
-      type = QcWkbGeometryType::Polygon;
-    else if (are_string_equal(type_name, MultiPoint))
-      type = QcWkbGeometryType::MultiPoint;
-    else if (are_string_equal(type_name, MultiLineString))
-      type = QcWkbGeometryType::MultiLineString;
-    else if (are_string_equal(type_name, MultiPolygon))
-      type = QcWkbGeometryType::MultiPolygon;
-    else if (are_string_equal(type_name, GeometryCollection))
-      type = QcWkbGeometryType::GeometryCollection;
-    else
-      throw std::invalid_argument("bad type");
+    // Fixme: has_z/m srid
+    QcWkbGeometryType type(type_name);
 
     return type;
   }
 
+  // Fixme: use an inner function to read n double
   QcVectorDouble
   parse_point()
   {
@@ -243,6 +408,7 @@ public:
     return QcVector3DDouble(x, y, z);
   }
 
+  // Fixme: how to handle nd ?
   QcVectorDoubleList
   parse_points()
   {
@@ -277,6 +443,7 @@ public:
     return points;
   }
 
+  // Fixme: how to handle nd ?
   QList<QcVectorDoubleList>
   parse_list_of_list()
   {
@@ -308,7 +475,7 @@ public:
   parse_geometry()
   {
     QcWkbGeometryType type = parse_geometry_type();
-    QcWkbGeometryObject * geometry_object = QcWkbGeometryObject::new_geometry_object(type);
+    QcWkbGeometryObject * geometry_object = type.new_geometry_object();
     if (!geometry_object)
       throw_parser_error(QStringLiteral("Unimplemented geometry type"));
     parse_geometry_values(geometry_object);
@@ -396,38 +563,13 @@ QcWkbGeometryObject::write_byte_order(QDataStream & stream, bool use_big_endian)
 }
 
 QcWkbGeometryType
-QcWkbGeometryObject::read_header(QDataStream & stream, bool & is_ewkb)
+QcWkbGeometryObject::read_header(QDataStream & stream)
 {
   read_byte_order(stream);
-
   quint32 type;
   stream >> type;
 
-  is_ewkb = type & static_cast<quint32>(QcWkbGeometryType::SRID);
-  if (is_ewkb)
-    type -= static_cast<quint32>(QcWkbGeometryType::SRID);
-
-  qDebug() << "geometry type is" << type;
-  switch (type) {
-  case static_cast<quint32>(QcWkbGeometryType::Point):
-    return QcWkbGeometryType::Point;
-  case static_cast<quint32>(QcWkbGeometryType::PointM):
-    return QcWkbGeometryType::PointM;
-  case static_cast<quint32>(QcWkbGeometryType::LineString):
-    return QcWkbGeometryType::LineString;
-  case static_cast<quint32>(QcWkbGeometryType::Polygon):
-    return QcWkbGeometryType::Polygon;
-  case static_cast<quint32>(QcWkbGeometryType::MultiPoint):
-    return QcWkbGeometryType::MultiPoint;
-  case static_cast<quint32>(QcWkbGeometryType::MultiLineString):
-    return QcWkbGeometryType::MultiLineString;
-  case static_cast<quint32>(QcWkbGeometryType::MultiPolygon):
-    return QcWkbGeometryType::MultiPolygon;
-  case static_cast<quint32>(QcWkbGeometryType::GeometryCollection):
-    return QcWkbGeometryType::GeometryCollection;
-  default:
-    throw std::invalid_argument("bad type");
-  }
+  return QcWkbGeometryType(type);
 }
 
 int
@@ -435,7 +577,8 @@ QcWkbGeometryObject::read_srid(QDataStream & stream)
 {
   quint32 srid;
   stream >> srid;
-  qDebug() << "SRID" << srid;
+  // qDebug() << "SRID" << srid;
+
   return srid;
 }
 
@@ -449,70 +592,26 @@ QcWkbGeometryObject::write_srid(QDataStream & stream)
 void
 QcWkbGeometryObject::write_header(QDataStream & stream, bool use_big_endian, bool use_ewkb) const
 {
+  // Fixme: use_ewkb
+  if (use_ewkb and !has_srid())
+    throw std::invalid_argument("ewkb require a valid srid");;
   write_byte_order(stream, use_big_endian);
-  quint32 type = static_cast<quint32>(geometry_type());
-  if (use_ewkb) {
-    if (!has_srid())
-      throw std::invalid_argument("ewkb require a valid srid");;
-    type |= static_cast<quint32>(QcWkbGeometryType::SRID);
-  }
+  quint32 type = geometry_type().to_wkb();
   stream << type;
   if (use_ewkb)
     stream << static_cast<quint32>(srid());
 }
 
 QcWkbGeometryObject *
-QcWkbGeometryObject::new_geometry_object(QcWkbGeometryType type)
-{
-  switch (type) {
-  case QcWkbGeometryType::Point:
-    return new QcWkbPoint;
-    break;
-  case QcWkbGeometryType::Polygon:
-    return new QcWkbPolygon;
-    break;
-  case QcWkbGeometryType::LineString:
-    return new QcWkbLineString;
-    break;
-  case QcWkbGeometryType::MultiPoint:
-    return new QcWkbMultiPoint;
-    break;
-  case QcWkbGeometryType::GeometryCollection:
-    return new QcWkbGeometryCollection;
-    break;
-  default:
-    return nullptr;
-  }
-}
-
-QcWkbGeometryObject *
 QcWkbGeometryObject::read_geometry_object(QDataStream & stream)
 {
-  bool is_ewkb;
-  QcWkbGeometryType type = read_header(stream, is_ewkb);
-
-  QcWkbGeometryObject * object;
-  switch (type) {
-  case QcWkbGeometryType::Point:
-    object = new QcWkbPoint;
-    break;
-  case QcWkbGeometryType::Polygon:
-    object = new QcWkbPolygon;
-    break;
-  case QcWkbGeometryType::LineString:
-    object = new QcWkbLineString;
-    break;
-  case QcWkbGeometryType::MultiPoint:
-    object = new QcWkbMultiPoint;
-    break;
-  default:
-    object = nullptr;
-  }
+  QcWkbGeometryType type = read_header(stream);
+  QcWkbGeometryObject * object = type.new_geometry_object();
 
   if (object)
     object->set_from_binary(stream);
 
-  if (is_ewkb)
+  if (type.has_srid())
     object->set_srid(read_srid(stream));
 
   return object;
@@ -522,9 +621,8 @@ void
 QcWkbGeometryObject::init_from_binary(const QByteArray & bytes)
 {
   QDataStream stream(bytes);
-  bool is_ewkb;
-  QcWkbGeometryType type = read_header(stream, is_ewkb);
-  if (is_ewkb)
+  QcWkbGeometryType type = read_header(stream);
+  if (type.has_srid())
     set_srid(read_srid(stream));
   if (type != geometry_type())
     throw std::invalid_argument("wrong type");
@@ -547,7 +645,6 @@ QcWkbGeometryObject::read_point_3d(QDataStream & stream)
   return QcVector3DDouble(x, y, z);
 }
 
-/*
 QcVector4DDouble
 QcWkbGeometryObject::read_point_4d(QDataStream & stream)
 {
@@ -555,7 +652,6 @@ QcWkbGeometryObject::read_point_4d(QDataStream & stream)
   stream >> x >> y >> z >> m;
   return QcVector4DDouble(x, y, z, m);
 }
-*/
 
 void
 QcWkbGeometryObject::write_point(QDataStream & stream, const QcVectorDouble & point)
@@ -569,13 +665,13 @@ QcWkbGeometryObject::write_point_3d(QDataStream & stream, const QcVector3DDouble
   stream << point.x() << point.y() << point.z();
 }
 
-/*
 void
 QcWkbGeometryObject::write_point_4d(QDataStream & stream, const QcVector4DDouble & point)
 {
   stream << point.x() << point.y() << point.z() << point.t();
 }
-*/
+
+// Fixme: duplicate code or use template ?
 
 void
 QcWkbGeometryObject::read_points(QDataStream & stream, QcVectorDoubleList & points)
@@ -635,7 +731,6 @@ QcWkbGeometryObject::point_3d_to_wkt(const QcVector3DDouble & point)
   return wkt;
 }
 
-/*
 QString
 QcWkbGeometryObject::point_4d_to_wkt(const QcVector4DDouble & point)
 {
@@ -643,7 +738,6 @@ QcWkbGeometryObject::point_4d_to_wkt(const QcVector4DDouble & point)
   wkt += point_3d_to_wkt(point) + ' ' + QString::number(point.t());
   return wkt;
 }
-*/
 
 QString
 QcWkbGeometryObject::points_to_wkt(const QcVectorDoubleList & points)
@@ -663,6 +757,8 @@ QcWkbGeometryObject::points_to_wkt(const QcVectorDoubleList & points)
 }
 
 /**************************************************************************************************/
+
+const QcWkbGeometryType QcWkbPoint::m_type = QcWkbGeometryType(QcWkbGeometryType::Point);
 
 QcWkbPoint::QcWkbPoint()
   : QcWkbGeometryObject(),
@@ -723,11 +819,13 @@ QString
 QcWkbPoint::to_wkt() const
 {
   QString wkt = srid_to_ewkt();
-  wkt += geometry_type_name() + '(' + point_to_wkt(m_point) + ')';
+  wkt += geometry_type().to_wkt() + '(' + point_to_wkt(m_point) + ')';
   return wkt;
 }
 
 /**************************************************************************************************/
+
+const QcWkbGeometryType QcWkbPointM::m_type = QcWkbGeometryType(QcWkbGeometryType::Point, false, true);
 
 QcWkbPointM::QcWkbPointM()
   : QcWkbGeometryObject(),
@@ -788,7 +886,7 @@ QString
 QcWkbPointM::to_wkt() const
 {
   QString wkt;
-  wkt += geometry_type_name() + '(' + point_3d_to_wkt(m_point) + ')';
+  wkt += geometry_type().to_wkt() + '(' + point_3d_to_wkt(m_point) + ')';
   return wkt;
 }
 
@@ -853,7 +951,7 @@ QString
 QcWkbPointM::to_wkt() const
 {
   QString wkt;
-  wkt += geometry_type_name() + '(' + point_to_wkt(m_point) + ')';
+  wkt += geometry_type().to_wkt() + '(' + point_to_wkt(m_point) + ')';
   return wkt;
 }
 */
@@ -903,7 +1001,7 @@ QString
 QcWkbPointList::to_wkt() const
 {
   QString wkt;
-  wkt += geometry_type_name();
+  wkt += geometry_type().to_wkt();
   if (m_points.size())
     wkt += points_to_wkt(m_points);
   else {
@@ -913,6 +1011,8 @@ QcWkbPointList::to_wkt() const
 }
 
 /**************************************************************************************************/
+
+const QcWkbGeometryType QcWkbLineString::m_type = QcWkbGeometryType(QcWkbGeometryType::LineString);
 
 QcWkbLineString::QcWkbLineString()
   : QcWkbPointList()
@@ -939,6 +1039,8 @@ QcWkbLineString::operator=(const QcWkbLineString & other)
 }
 
 /**************************************************************************************************/
+
+const QcWkbGeometryType QcWkbPolygon::m_type = QcWkbGeometryType(QcWkbGeometryType::Polygon);
 
 QcWkbPolygon::QcWkbPolygon()
   : QcWkbGeometryObject(),
@@ -1003,7 +1105,7 @@ QString
 QcWkbPolygon::to_wkt() const
 {
   QString wkt;
-  wkt += geometry_type_name();
+  wkt += geometry_type().to_wkt();
   if (m_rings.size()) {
     wkt += '(';
     int i = 0;
@@ -1020,6 +1122,8 @@ QcWkbPolygon::to_wkt() const
 }
 
 /**************************************************************************************************/
+
+const QcWkbGeometryType QcWkbMultiPoint::m_type = QcWkbGeometryType(QcWkbGeometryType::MultiPoint);
 
 QcWkbMultiPoint::QcWkbMultiPoint()
   : QcWkbPointList()
@@ -1046,6 +1150,8 @@ QcWkbMultiPoint::operator=(const QcWkbMultiPoint & other)
 }
 
 /**************************************************************************************************/
+
+const QcWkbGeometryType QcWkbGeometryCollection::m_type = QcWkbGeometryType(QcWkbGeometryType::GeometryCollection);
 
 QcWkbGeometryCollection::QcWkbGeometryCollection()
   : QcWkbGeometryObject()
@@ -1110,7 +1216,7 @@ QString
 QcWkbGeometryCollection::to_wkt() const
 {
   QString wkt;
-  wkt += geometry_type_name();
+  wkt += geometry_type().to_wkt();
   wkt += '(';
   if (m_geometries.size()) {
     int i = 0;
