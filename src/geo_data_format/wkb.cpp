@@ -53,6 +53,10 @@ const QString MultiLineStringLabel("MultiLineString");
 const QString MultiPolygonLabel("MultiPolygon");
 const QString GeometryCollectionLabel("GeometryCollection");
 
+const QString Empty("Empty");
+
+/**************************************************************************************************/
+
 QcWkbGeometryType::QcWkbGeometryType()
   : m_base_type(0),
   m_has_z(false),
@@ -218,8 +222,26 @@ QcWkbGeometryType::new_geometry_object()
     case GeometryCollection:
       return new QcWkbGeometryCollection;
       break;
-    default:
-      return nullptr;
+    }
+  } else if (m_has_z) {
+    if (m_has_m) {
+      switch (m_base_type) {
+      case Point:
+        return new QcWkbPointZM;
+        break;
+      }
+    } else {
+      switch (m_base_type) {
+      case Point:
+        return new QcWkbPointZ;
+        break;
+      }
+    }
+  }  else if (m_has_m) {
+    switch (m_base_type) {
+    case Point:
+      return new QcWkbPointM;
+      break;
     }
   }
 
@@ -227,8 +249,6 @@ QcWkbGeometryType::new_geometry_object()
 }
 
 /**************************************************************************************************/
-
-const QString Empty("Empty");
 
 class QcWktParser
 {
@@ -338,123 +358,109 @@ public:
             has_m = true;
         } else
           has_m = true;
+        if (has_m)
+          m_location++; // for lookup_current_char
         skip_space();
       }
     } // else '(
 
-    qDebug() << "geometry type is" << type_name;
-    // Fixme: has_z/m srid
+    qDebug() << "geometry type is" << type_name << has_z << has_m;
+    // Fixme: srid
     QcWkbGeometryType type(type_name);
+    if (has_z)
+      type.set_has_z(true);
+    if (has_m)
+      type.set_has_m(true);
 
     return type;
   }
 
-  // Fixme: use an inner function to read n double
-  QcVectorDouble
-  parse_point()
+  void
+  parse_point_generic(int dimension, double point4d[4])
   {
-    qDebug() << "parse_point";
+    qDebug() << "parse_point_generic" << dimension;
 
     // Start after (
     // a space is mandatory in the grammar in order to separate coordinate components
     int separator_position = m_stream.indexOf(' ', m_location);
     if (separator_position == -1)
       throw_parser_error(QStringLiteral("expected ' '"));
-    double x = slice_stream(m_location, separator_position).toDouble();
+    point4d[0] = slice_stream(m_location, separator_position).toDouble();
 
-    skip_space();
+    int i;
+    int last_i = dimension - 1;
+    for (i = 1; i < dimension; i++) {
+      skip_space();
 
-    m_location = separator_position + 1;
-    int next_location = find_next_char(QStringLiteral(",)")); // space ?
-    if (next_location == -1)
-      throw_parser_error(QStringLiteral("expected ',' or ')'"));
-    double y = slice_stream(m_location, next_location).toDouble();
+      m_location = separator_position + 1;
+      if (i == last_i) {
+        separator_position = find_next_char(QStringLiteral(",)")); // space ?
+        if (separator_position == -1)
+          throw_parser_error(QStringLiteral("expected ',' or ')'"));
+      } else {
+        separator_position = m_stream.indexOf(' ', m_location);
+        if (separator_position == -1)
+          throw_parser_error(QStringLiteral("expected ' '"));
+      }
+      if (m_location == separator_position)
+        throw_parser_error(QStringLiteral("expected value"));
+      point4d[i] = slice_stream(m_location, separator_position).toDouble();
+    }
+    // if (i != dimension)
+    //   throw_parser_error(QStringLiteral("missing values'"));
 
-    m_location = next_location;
-    qDebug() << x << y;
-    return QcVectorDouble(x, y);
+    m_location = separator_position;
   }
 
-  QcVector3DDouble
-  parse_point_3d()
-  {
-    qDebug() << "parse_point_3d";
+  template<class T> T parse_point();
 
-    // Start after (
-    // a space is mandatory in the grammar in order to separate coordinate components
-    int separator_position = m_stream.indexOf(' ', m_location);
-    if (separator_position == -1)
-      throw_parser_error(QStringLiteral("expected ' '"));
-    double x = slice_stream(m_location, separator_position).toDouble();
-
-    skip_space();
-
-    m_location = separator_position + 1;
-    int next_location = find_next_char(QStringLiteral(",)")); // space ?
-    if (next_location == -1)
-      throw_parser_error(QStringLiteral("expected ',' or ')'"));
-    double y = slice_stream(m_location, next_location).toDouble();
-
-    skip_space();
-
-    m_location = separator_position + 1;
-    next_location = find_next_char(QStringLiteral(",)")); // space ?
-    if (next_location == -1)
-      throw_parser_error(QStringLiteral("expected ',' or ')'"));
-    double z = slice_stream(m_location, next_location).toDouble();
-
-    m_location = next_location;
-    qDebug() << x << y << z;
-    return QcVector3DDouble(x, y, z);
-  }
-
-  // Fixme: how to handle nd ?
-  QcVectorDoubleList
+  template<class T>
+  QList<T>
   parse_points()
   {
-    qDebug() << "parse_points";
+      qDebug() << "parse_points";
 
-    QcVectorDoubleList points;
-    // Start after (
-    QChar next_char = lookup_current_char();
-    bool use_parenthesis_syntax = next_char == '(';
-    while (m_location < m_location_end and next_char != ')') {
-      if (use_parenthesis_syntax) {
-        if (lookup_current_char() == '(')
+      QList<T> points;
+      // Start after (
+      QChar next_char = lookup_current_char();
+      bool use_parenthesis_syntax = next_char == '(';
+      while (m_location < m_location_end and next_char != ')') {
+        if (use_parenthesis_syntax) {
+          if (lookup_current_char() == '(')
+            m_location++;
+          else
+            throw_parser_error(QStringLiteral("expected '('"));
+        }
+        points << parse_point<T>();
+        if (use_parenthesis_syntax) {
+          if (lookup_current_char() == ')')
+            m_location++;
+          else
+            throw_parser_error(QStringLiteral("expected ')'"));
+        }
+        skip_space();
+        next_char = lookup_current_char();
+        if (next_char == ',')
           m_location++;
-        else
-          throw_parser_error(QStringLiteral("expected '('"));
+        skip_space();
       }
-      points << parse_point();
-      if (use_parenthesis_syntax) {
-        if (lookup_current_char() == ')')
-          m_location++;
-        else
-          throw_parser_error(QStringLiteral("expected ')'"));
-      }
-      skip_space();
-      next_char = lookup_current_char();
-      if (next_char == ',')
-        m_location++;
-      skip_space();
-    }
 
-    // qDebug() << points;
-    return points;
+      // qDebug() << points;
+      return points;
   }
 
-  // Fixme: how to handle nd ?
-  QList<QcVectorDoubleList>
+  template<class T>
+  QList<QList<T>>
   parse_list_of_list()
   {
     qDebug() << "parse_list_of_list";
 
-    QList<QcVectorDoubleList> list;
+    QList<QList<T>> list;
 
     while (lookup_current_char() != ')') {
       if (lookup_current_char() == '(') {
         m_location++;
-        list << parse_points();
+        list << parse_points<T>();
       } else
         throw_parser_error(QStringLiteral("expected '('"));
       if (lookup_current_char() == ')')
@@ -537,6 +543,36 @@ private:
   int m_location_end;
   const QString & m_stream;
 };
+
+template<>
+QcVectorDouble
+QcWktParser::parse_point<QcVectorDouble>()
+{
+  qDebug() << "parse_point";
+  double point4d[4];
+  parse_point_generic(2, point4d);
+  return QcVectorDouble(point4d[0], point4d[1]);
+}
+
+template<>
+QcVector3DDouble
+QcWktParser::parse_point<QcVector3DDouble>()
+{
+  qDebug() << "parse_point_3d";
+  double point4d[4];
+  parse_point_generic(3, point4d);
+  return QcVector3DDouble(point4d[0], point4d[1], point4d[2]);
+}
+
+template<>
+QcVector4DDouble
+QcWktParser::parse_point<QcVector4DDouble>()
+{
+  qDebug() << "parse_point_4d";
+  double point4d[4];
+  parse_point_generic(4, point4d);
+  return QcVector4DDouble(point4d[0], point4d[1], point4d[2], point4d[3]);
+}
 
 /**************************************************************************************************/
 
@@ -799,7 +835,7 @@ QcWkbPoint::operator==(const QcWkbPoint & other) const
 void
 QcWkbPoint::set_from_wkt(QcWktParser * parser)
 {
-  m_point = parser->parse_point();
+  m_point = parser->parse_point<QcVectorDouble>();
 }
 
 void
@@ -820,6 +856,73 @@ QcWkbPoint::to_wkt() const
 {
   QString wkt = srid_to_ewkt();
   wkt += geometry_type().to_wkt() + '(' + point_to_wkt(m_point) + ')';
+  return wkt;
+}
+
+/**************************************************************************************************/
+
+const QcWkbGeometryType QcWkbPointZ::m_type = QcWkbGeometryType(QcWkbGeometryType::Point, true, false);
+
+QcWkbPointZ::QcWkbPointZ()
+  : QcWkbGeometryObject(),
+    m_point()
+{}
+
+QcWkbPointZ::QcWkbPointZ(const QByteArray & bytes)
+  : QcWkbPointZ()
+{
+  init_from_binary(bytes);
+}
+
+QcWkbPointZ::QcWkbPointZ(double x, double y, double z)
+  : QcWkbGeometryObject(),
+  m_point(x, y, z)
+{}
+
+QcWkbPointZ::QcWkbPointZ(const QcWkbPointZ & other)
+  : QcWkbPointZ(other.x(), other.y(), other.z())
+{}
+
+QcWkbPointZ &
+QcWkbPointZ::operator=(const QcWkbPointZ & other)
+{
+  if (this != &other) {
+    m_point = other.m_point;
+  }
+
+  return *this;
+}
+
+bool
+QcWkbPointZ::operator==(const QcWkbPointZ & other) const
+{
+  return m_point == other.m_point;
+}
+
+void
+QcWkbPointZ::set_from_wkt(QcWktParser * parser)
+{
+  m_point = parser->parse_point<QcVector3DDouble>();
+}
+
+void
+QcWkbPointZ::set_from_binary(QDataStream & stream)
+{
+  m_point = read_point_3d(stream);
+}
+
+void
+QcWkbPointZ::to_binary(QDataStream & stream, bool use_big_endian) const
+{
+  write_header(stream, use_big_endian);
+  write_point_3d(stream, m_point);
+}
+
+QString
+QcWkbPointZ::to_wkt() const
+{
+  QString wkt;
+  wkt += geometry_type().to_wkt() + '(' + point_3d_to_wkt(m_point) + ')';
   return wkt;
 }
 
@@ -866,7 +969,7 @@ QcWkbPointM::operator==(const QcWkbPointM & other) const
 void
 QcWkbPointM::set_from_wkt(QcWktParser * parser)
 {
-  m_point = parser->parse_point_3d();
+  m_point = parser->parse_point<QcVector3DDouble>();
 }
 
 void
@@ -890,71 +993,72 @@ QcWkbPointM::to_wkt() const
   return wkt;
 }
 
-/*
-QcWkbPointM::QcWkbPointM()
-  : QcWkbPoint(),
-  m_m()
+/**************************************************************************************************/
+
+const QcWkbGeometryType QcWkbPointZM::m_type = QcWkbGeometryType(QcWkbGeometryType::Point, true, true);
+
+QcWkbPointZM::QcWkbPointZM()
+  : QcWkbGeometryObject(),
+    m_point()
 {}
 
-QcWkbPointM::QcWkbPointM(const QByteArray & bytes)
-  : QcWkbPointM()
+QcWkbPointZM::QcWkbPointZM(const QByteArray & bytes)
+  : QcWkbPointZM()
 {
   init_from_binary(bytes);
 }
 
-QcWkbPointM::QcWkbPointM(double x, double y, double m)
-  : QcWkbPoint(x, y),
-    m_m(m)
+QcWkbPointZM::QcWkbPointZM(double x, double y, double z, double m)
+  : QcWkbGeometryObject(),
+  m_point(x, y, z, m)
 {}
 
-QcWkbPointM::QcWkbPointM(const QcWkbPointM & other)
-  : QcWkbPointM(other.x(), other.y(), other.m())
+QcWkbPointZM::QcWkbPointZM(const QcWkbPointZM & other)
+  : QcWkbPointZM(other.x(), other.y(), other.m(), other.z())
 {}
 
-QcWkbPointM &
-QcWkbPointM::operator=(const QcWkbPointM & other)
+QcWkbPointZM &
+QcWkbPointZM::operator=(const QcWkbPointZM & other)
 {
   if (this != &other) {
-    QcWkbPoint::operator=(other);
-    m_m = other.m_m;
+    m_point = other.m_point;
   }
 
   return *this;
 }
 
 bool
-QcWkbPointM::operator==(const QcWkbPointM & other) const
+QcWkbPointZM::operator==(const QcWkbPointZM & other) const
 {
-  return QcWkbPoint::operator==(operator) and m_m == other.m_m;
+  return m_point == other.m_point;
 }
 
 void
-QcWkbPointM::set_from_wkt(QcWktParser * parser)
+QcWkbPointZM::set_from_wkt(QcWktParser * parser)
 {
-  m_point = parser->parse_point();
+  m_point = parser->parse_point<QcVector4DDouble>();
 }
 
 void
-QcWkbPointM::set_from_binary(QDataStream & stream)
+QcWkbPointZM::set_from_binary(QDataStream & stream)
 {
-  m_point = read_point(stream);
+  m_point = read_point_4d(stream);
 }
 
 void
-QcWkbPointM::to_binary(QDataStream & stream, bool use_big_endian) const
+QcWkbPointZM::to_binary(QDataStream & stream, bool use_big_endian) const
 {
   write_header(stream, use_big_endian);
-  write_point(stream, m_point);
+  write_point_4d(stream, m_point);
 }
 
 QString
-QcWkbPointM::to_wkt() const
+QcWkbPointZM::to_wkt() const
 {
   QString wkt;
-  wkt += geometry_type().to_wkt() + '(' + point_to_wkt(m_point) + ')';
+  wkt += geometry_type().to_wkt() + '(' + point_4d_to_wkt(m_point) + ')';
   return wkt;
 }
-*/
 
 /**************************************************************************************************/
 
@@ -981,7 +1085,7 @@ QcWkbPointList::operator=(const QcWkbPointList & other)
 void
 QcWkbPointList::set_from_wkt(QcWktParser * parser)
 {
-  m_points = parser->parse_points();
+  m_points = parser->parse_points<QcVectorDouble>();
 }
 
 void
@@ -1071,7 +1175,7 @@ QcWkbPolygon::operator=(const QcWkbPolygon & other)
 void
 QcWkbPolygon::set_from_wkt(QcWktParser * parser)
 {
-  m_rings = parser->parse_list_of_list();
+  m_rings = parser->parse_list_of_list<QcVectorDouble>();
 }
 
 void

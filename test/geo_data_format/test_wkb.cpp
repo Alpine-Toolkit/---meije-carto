@@ -39,7 +39,8 @@ class TestQcWkb: public QObject
   Q_OBJECT
 
 private slots:
-  void constructor();
+  void wkb_tests();
+  void wkt_tests();
   void test_wkt(const QString & input, const QString & truth);
 };
 
@@ -52,15 +53,35 @@ TestQcWkb::test_wkt(const QString & input, const QString & truth)
 }
 
 void
-  TestQcWkb::constructor()
+TestQcWkb::wkb_tests()
 {
+  QByteArray bytes;
+
   QcWkbPoint point1(1.12, 2.234);
-  qInfo() << point1.to_wkt();
-  QByteArray bytes1 = point1.to_wkb();
-  qInfo() << bytes1;
-  QcWkbPoint point2(bytes1);
+  bytes = point1.to_wkb();
+  QcWkbPoint point2(bytes);
   QVERIFY(point1 == point2);
 
+  QcWkbPointZ pointz1(1.12, 2.234, 3.456);
+  bytes = pointz1.to_wkb();
+  QcWkbPointZ pointz2(bytes);
+  QVERIFY(pointz1 == pointz2);
+
+  QcWkbPointM pointm1(1.12, 2.234, 3.456);
+  bytes = pointm1.to_wkb();
+  QcWkbPointM pointm2(bytes);
+  QVERIFY(pointm1 == pointm2);
+
+  QcWkbPointZM pointzm1(1.12, 2.234, 3.456, 4.567);
+  bytes = pointzm1.to_wkb();
+  QcWkbPointZM pointzm2(bytes);
+  QVERIFY(pointzm1 == pointzm2);
+  // qInfo() << pointzm2.to_wkt();
+}
+
+void
+TestQcWkb::wkt_tests()
+{
   test_wkt("POINT(4.1 6.6)",
            "Point(4.1 6.6)");
 
@@ -72,6 +93,15 @@ void
 
   test_wkt("POINT   (   4.1   6.6   )",
            "Point(4.1 6.6)");
+
+  test_wkt("POINT Z (4.1 6.6 7.7)",
+           "Point Z(4.1 6.6 7.7)");
+
+  test_wkt("POINT M (4.1 6.6 7.7)",
+           "Point M(4.1 6.6 7.7)");
+
+  test_wkt("POINT ZM (4.1 6.6 7.7 8.8)",
+           "Point ZM(4.1 6.6 7.7 8.8)");
 
   test_wkt("LINESTRING Empty",
            "LineString Empty");

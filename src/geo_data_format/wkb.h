@@ -46,80 +46,6 @@
 
 /**************************************************************************************************/
 
-/*
-struct Point {
-  double x;
-  double y;
-};
-
-struct LinearRing {
-  uint32_t number_of_points;
-  Point points[number_of_points];
-};
-
-struct WkbPoint {
-  char byte_order;
-  uint32_t wkb_type; // 1
-  Point point;
-};
-
-struct WkbLineString {
-  uint8_t byte_order;
-  uint32_t wkb_type; // 2
-  uint32_t number_of_points;
-  Point points[number_of_points];
-};
-
-struct WkbPolygon {
-  uint8_t byte_order;
-  uint32_t wkb_type; // 3
-  uint32_t number_of_rings;
-  LinearRing rings[number_of_rings];
-};
-
-struct WkbMultiPoint {
-  uint8_t byte_order;
-  uint32_t wkb_type; // 4
-  uint32_t number_of_points;
-  WkbPoint WkbPoints[number_of_points];
-};
-
-struct WkbMultiLineString {
-  uint8_t byte_order;
-  uint32_t wkb_type; // 5
-  uint32_t number_of_line_strings;
-  WkbLineString WkbLineStrings[number_of_line_strings];
-};
-
-struct wkbMultiPolygon {
-  uint8_t byte_order;
-  uint32_t wkb_type; // 6
-  uint32_t number_of_polygons;
-  WkbPolygon wkbPolygons[number_of_polygons];
-};
-
-WkbGeometry {
-  union {
-    WkbPoint point;
-    WkbLineString line_string;
-    WkbPolygon polygon;
-    WkbGeometryCollection collection;
-    WkbMultiPoint multi_point;
-    WkbMultiLineString multi_line_string;
-    WkbMultiPolygon multi_polygon;
-  }
-};
-
-struct WkbGeometryCollection {
-  uint8_t byte_order;
-  uint32_t wkb_type; // 7
-  uint32_t number_of_geometries;
-  WkbGeometry geometries[number_of_geometries]
-};
-*/
-
-/**************************************************************************************************/
-
 class QcWkbGeometryObject;
 
 class QcWkbGeometryType
@@ -297,6 +223,47 @@ private:
 
 /**************************************************************************************************/
 
+// Fixme: duplicated code, how to improve ?
+
+class QcWkbPointZ : public QcWkbGeometryObject
+{
+private:
+  static const QcWkbGeometryType m_type;
+
+public:
+  inline const QcWkbGeometryType & geometry_type() const { return m_type; }
+
+public:
+  QcWkbPointZ();
+  QcWkbPointZ(const QByteArray & bytes);
+  QcWkbPointZ(double x, double y, double z);
+  QcWkbPointZ(const QcWkbPointZ & other);
+
+  QcWkbPointZ & operator=(const QcWkbPointZ & other);
+
+  bool operator==(const QcWkbPointZ & other) const;
+
+  inline const QcVector3DDouble & vector() { return m_point; }
+
+  inline double x() const { return m_point.x(); }
+  inline double y() const { return m_point.y(); }
+  inline double z() const { return m_point.z(); }
+
+  inline void set_x(double x) { m_point.set_x(x); }
+  inline void set_y(double y) { m_point.set_y(y); }
+  inline void set_z(double z) { m_point.set_z(z); }
+
+  void set_from_binary(QDataStream & stream);
+  void set_from_wkt(QcWktParser * parser);
+  void to_binary(QDataStream & stream, bool use_big_endian = true) const;
+  QString to_wkt() const;
+
+private:
+  QcVector3DDouble m_point;
+};
+
+/**************************************************************************************************/
+
 class QcWkbPointM : public QcWkbGeometryObject
 {
 private:
@@ -334,25 +301,37 @@ private:
   QcVector3DDouble m_point;
 };
 
-/*
-class QcWkbPointM : public QcWkbPoint
+/**************************************************************************************************/
+
+class QcWkbPointZM : public QcWkbGeometryObject
 {
-public:
-  inline const QcWkbGeometryType & geometry_type() const { return QcWkbGeometryType::PointM; }
+private:
+  static const QcWkbGeometryType m_type;
 
 public:
-  QcWkbPointM();
-  QcWkbPointM(const QByteArray & bytes);
-  QcWkbPointM(double x, double y, double m);
-  QcWkbPointM(const QcWkbPointM & other);
+  inline const QcWkbGeometryType & geometry_type() const { return m_type; }
 
-  QcWkbPointM & operator=(const QcWkbPointM & other);
+public:
+  QcWkbPointZM();
+  QcWkbPointZM(const QByteArray & bytes);
+  QcWkbPointZM(double x, double y, double z, double m);
+  QcWkbPointZM(const QcWkbPointZM & other);
 
-  bool operator==(const QcWkbPointM & other) const;
+  QcWkbPointZM & operator=(const QcWkbPointZM & other);
 
-  inline double m() const { return m_m; }
+  bool operator==(const QcWkbPointZM & other) const;
 
-  inline void set_m(double m) { m_m = m; }
+  inline const QcVector3DDouble & vector() { return m_point; }
+
+  inline double x() const { return m_point.x(); }
+  inline double y() const { return m_point.y(); }
+  inline double z() const { return m_point.z(); }
+  inline double m() const { return m_point.t(); }
+
+  inline void set_x(double x) { m_point.set_x(x); }
+  inline void set_y(double y) { m_point.set_y(y); }
+  inline void set_z(double z) { m_point.set_z(z); }
+  inline void set_m(double m) { m_point.set_t(m); }
 
   void set_from_binary(QDataStream & stream);
   void set_from_wkt(QcWktParser * parser);
@@ -360,10 +339,8 @@ public:
   QString to_wkt() const;
 
 private:
-  QcVectorDouble m_point;
-  double m_m;
+  QcVector4DDouble m_point;
 };
-*/
 
 /**************************************************************************************************/
 
