@@ -149,13 +149,8 @@ public:
   static int read_srid(QDataStream & stream);
   void write_srid(QDataStream & stream);
 
-  static QcVectorDouble read_point(QDataStream & stream);
-  static QcVector3DDouble read_point_3d(QDataStream & stream);
-  static QcVector4DDouble read_point_4d(QDataStream & stream);
-
-  static void write_point(QDataStream & stream, const QcVectorDouble & point);
-  static void write_point_3d(QDataStream & stream, const QcVector3DDouble & point);
-  static void write_point_4d(QDataStream & stream, const QcVector4DDouble & point);
+  template<class T> static T read_point(QDataStream & stream);
+  template<class T> static void write_point(QDataStream & stream, const T & point);
 
   static QString point_to_wkt(const QcVectorDouble & point);
   static QString point_3d_to_wkt(const QcVector3DDouble & point);

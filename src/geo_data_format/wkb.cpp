@@ -665,44 +665,50 @@ QcWkbGeometryObject::init_from_binary(const QByteArray & bytes)
   set_from_binary(stream);
 }
 
+template<>
 QcVectorDouble
-QcWkbGeometryObject::read_point(QDataStream & stream)
+QcWkbGeometryObject::read_point<QcVectorDouble>(QDataStream & stream)
 {
   double x, y;
   stream >> x >> y;
   return QcVectorDouble(x, y);
 }
 
+template<>
 QcVector3DDouble
-QcWkbGeometryObject::read_point_3d(QDataStream & stream)
+QcWkbGeometryObject::read_point<QcVector3DDouble>(QDataStream & stream)
 {
   double x, y, z;
   stream >> x >> y >> z;
   return QcVector3DDouble(x, y, z);
 }
 
+template<>
 QcVector4DDouble
-QcWkbGeometryObject::read_point_4d(QDataStream & stream)
+QcWkbGeometryObject::read_point<QcVector4DDouble>(QDataStream & stream)
 {
   double x, y, z, m;
   stream >> x >> y >> z >> m;
   return QcVector4DDouble(x, y, z, m);
 }
 
+template<>
 void
-QcWkbGeometryObject::write_point(QDataStream & stream, const QcVectorDouble & point)
+QcWkbGeometryObject::write_point<QcVectorDouble>(QDataStream & stream, const QcVectorDouble & point)
 {
   stream << point.x() << point.y();
 }
 
+template<>
 void
-QcWkbGeometryObject::write_point_3d(QDataStream & stream, const QcVector3DDouble & point)
+QcWkbGeometryObject::write_point<QcVector3DDouble>(QDataStream & stream, const QcVector3DDouble & point)
 {
   stream << point.x() << point.y() << point.z();
 }
 
+template<>
 void
-QcWkbGeometryObject::write_point_4d(QDataStream & stream, const QcVector4DDouble & point)
+QcWkbGeometryObject::write_point<QcVector4DDouble>(QDataStream & stream, const QcVector4DDouble & point)
 {
   stream << point.x() << point.y() << point.z() << point.t();
 }
@@ -715,7 +721,7 @@ QcWkbGeometryObject::read_points(QDataStream & stream, QcVectorDoubleList & poin
   quint32 number_of_points;
   stream >> number_of_points;
   for (quint32 i = 0; i < number_of_points; i++)
-    points << read_point(stream);
+    points << read_point<QcVectorDouble>(stream);
 }
 
 void
@@ -841,7 +847,7 @@ QcWkbPoint::set_from_wkt(QcWktParser * parser)
 void
 QcWkbPoint::set_from_binary(QDataStream & stream)
 {
-  m_point = read_point(stream);
+  m_point = read_point<QcVectorDouble>(stream);
 }
 
 void
@@ -908,14 +914,14 @@ QcWkbPointZ::set_from_wkt(QcWktParser * parser)
 void
 QcWkbPointZ::set_from_binary(QDataStream & stream)
 {
-  m_point = read_point_3d(stream);
+  m_point = read_point<QcVector3DDouble>(stream);
 }
 
 void
 QcWkbPointZ::to_binary(QDataStream & stream, bool use_big_endian) const
 {
   write_header(stream, use_big_endian);
-  write_point_3d(stream, m_point);
+  write_point<QcVector3DDouble>(stream, m_point);
 }
 
 QString
@@ -975,14 +981,14 @@ QcWkbPointM::set_from_wkt(QcWktParser * parser)
 void
 QcWkbPointM::set_from_binary(QDataStream & stream)
 {
-  m_point = read_point_3d(stream);
+  m_point = read_point<QcVector3DDouble>(stream);
 }
 
 void
 QcWkbPointM::to_binary(QDataStream & stream, bool use_big_endian) const
 {
   write_header(stream, use_big_endian);
-  write_point_3d(stream, m_point);
+  write_point<QcVector3DDouble>(stream, m_point);
 }
 
 QString
@@ -1042,14 +1048,14 @@ QcWkbPointZM::set_from_wkt(QcWktParser * parser)
 void
 QcWkbPointZM::set_from_binary(QDataStream & stream)
 {
-  m_point = read_point_4d(stream);
+  m_point = read_point<QcVector4DDouble>(stream);
 }
 
 void
 QcWkbPointZM::to_binary(QDataStream & stream, bool use_big_endian) const
 {
   write_header(stream, use_big_endian);
-  write_point_4d(stream, m_point);
+  write_point<QcVector4DDouble>(stream, m_point);
 }
 
 QString
