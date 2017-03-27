@@ -1,6 +1,8 @@
 *~
 du.log
 
+.directory
+
 qtcarto.pro.user
 
 android-cmake-build/
@@ -13,6 +15,7 @@ doc/html/
 src/config.h
 src/scene/shaders/location_circle_shader.h
 src/scene/shaders/path_shader.h
+src/scene/shaders/point_shader.h
 
 script/open-doc.sh
 script/push-to-vps.sh
