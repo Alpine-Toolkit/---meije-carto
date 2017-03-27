@@ -81,6 +81,7 @@ SOURCES += \
   wmts/network_reply.cpp \
   wmts/providers/artic_web_map/artic_web_map_plugin.cpp \
   wmts/providers/austria/austria_plugin.cpp \
+  wmts/providers/esri/esri_plugin.cpp \
   wmts/providers/geoportail/geoportail_elevation_service_reply.cpp \
   wmts/providers/geoportail/geoportail_license.cpp \
   wmts/providers/geoportail/geoportail_location_service_reply.cpp \

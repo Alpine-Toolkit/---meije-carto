@@ -32,6 +32,7 @@
 
 #include "providers/artic_web_map/artic_web_map_plugin.h"
 #include "providers/austria/austria_plugin.h"
+#include "providers/esri/esri_plugin.h"
 #include "providers/geoportail/geoportail_plugin.h"
 #include "providers/germany/germany_plugin.h"
 #include "providers/osm/osm_plugin.h"
@@ -48,6 +49,7 @@ QcWmtsPluginManager::QcWmtsPluginManager()
   m_plugin_names
     << QcArticWebMapPlugin::PLUGIN_NAME
     << QcAustriaPlugin::PLUGIN_NAME
+    << QcEsriPlugin::PLUGIN_NAME
     << QcGeoportailPlugin::PLUGIN_NAME
     << QcGermanyPlugin::PLUGIN_NAME
     << QcOsmPlugin::PLUGIN_NAME
@@ -74,6 +76,8 @@ QcWmtsPluginManager::operator[](const QString & name)
     QcWmtsPlugin * plugin = nullptr;
     if (name == QcGeoportailPlugin::PLUGIN_NAME)
       plugin = create_plugin_geoportail();
+    else if (name == QcEsriPlugin::PLUGIN_NAME)
+      plugin = new QcEsriPlugin();
     else if (name == QcOsmPlugin::PLUGIN_NAME)
       plugin = new QcOsmPlugin();
     else if (name == QcArticWebMapPlugin::PLUGIN_NAME)
