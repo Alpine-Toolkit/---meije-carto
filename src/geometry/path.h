@@ -55,7 +55,7 @@ class QcPolygonTriangulation;
 
 /**************************************************************************************************/
 
-template <typename T, template<typename T> class Vector = QcVector>
+template <typename T, template<typename> class Vector = QcVector>
 class QC_EXPORT QcPath
 {
  public:

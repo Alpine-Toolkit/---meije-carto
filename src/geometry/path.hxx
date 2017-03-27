@@ -39,7 +39,7 @@
 
 /**************************************************************************************************/
 
-template <typename T, template<typename T> class Vector>
+template <typename T, template<typename> class Vector>
 QcPath<T, Vector>::QcPath()
   : m_vertexes(),
     m_edges(),
@@ -56,7 +56,7 @@ QcPath<T>::QcPath(int number_of_vertexes)
 }
 */
 
-template <typename T, template<typename T> class Vector>
+template <typename T, template<typename> class Vector>
 QcPath<T, Vector>::QcPath(const VertexListType & vertexes, bool closed)
   : m_vertexes(vertexes),
     m_edges(),
@@ -76,7 +76,7 @@ QcPath<T, Vector>::QcPath(const VertexListType & vertexes, bool closed)
 }
 
 /*
-template <typename T, template<typename T> class Vector>
+template <typename T, template<typename> class Vector>
 QcPath<T, Vector>::QcPath(const QVector<T> & coordinates, bool closed)
   : m_vertexes(),
     m_edges(),
@@ -93,16 +93,16 @@ QcPath<T, Vector>::QcPath(const QVector<T> & coordinates, bool closed)
 }
 */
 
-template <typename T, template<typename T> class Vector>
+template <typename T, template<typename> class Vector>
 QcPath<T, Vector>::QcPath(const QcPath & path)
   : QcPath(path.m_vertexes, path.m_closed)
 {}
 
-template <typename T, template<typename T> class Vector>
+template <typename T, template<typename> class Vector>
 QcPath<T, Vector>::~QcPath()
 {}
 
-template <typename T, template<typename T> class Vector>
+template <typename T, template<typename> class Vector>
 QcPath<T, Vector> &
 QcPath<T, Vector>::operator=(const QcPath & other)
 {
@@ -116,7 +116,7 @@ QcPath<T, Vector>::operator=(const QcPath & other)
   return *this;
 }
 
-template <typename T, template<typename T> class Vector>
+template <typename T, template<typename> class Vector>
 bool
 QcPath<T, Vector>::operator==(const QcPath & other) const
 {
@@ -136,7 +136,7 @@ QcPath<T, Vector>::operator==(const QcPath & other) const
   return true;
 }
 
-template <typename T, template<typename T> class Vector>
+template <typename T, template<typename> class Vector>
 void
 QcPath<T, Vector>::clear()
 {
@@ -146,7 +146,7 @@ QcPath<T, Vector>::clear()
   m_closed = false;
 }
 
-template <typename T, template<typename T> class Vector>
+template <typename T, template<typename> class Vector>
 void
 QcPath<T, Vector>::add_vertex(const VertexType & vertex)
 {
@@ -161,7 +161,7 @@ QcPath<T, Vector>::add_vertex(const VertexType & vertex)
   m_vertexes << vertex;
 }
 
-template <typename T, template<typename T> class Vector>
+template <typename T, template<typename> class Vector>
 int
 QcPath<T, Vector>::number_of_edges() const
 {
@@ -186,7 +186,7 @@ QcPath<T, Vector>::edge(int start_index) const
 }
 */
 
-template <typename T, template<typename T> class Vector>
+template <typename T, template<typename> class Vector>
 typename QcPath<T, Vector>::EdgeListType
 QcPath<T, Vector>::edges() const
 {
@@ -199,7 +199,7 @@ QcPath<T, Vector>::edges() const
     return m_edges;
 }
 
-template <typename T, template<typename T> class Vector>
+template <typename T, template<typename> class Vector>
 T
 QcPath<T, Vector>::length() const
 {
@@ -216,7 +216,7 @@ QcPath<T, Vector>::length() const
   return _length;
 }
 
-template <typename T, template<typename T> class Vector>
+template <typename T, template<typename> class Vector>
 typename QcPath<T, Vector>::VertexType
 QcPath<T, Vector>::barycenter() const
 {
@@ -228,7 +228,7 @@ QcPath<T, Vector>::barycenter() const
   return _barycenter / (T) number_of_vertexes();
 }
 
-template <typename T, template<typename T> class Vector>
+template <typename T, template<typename> class Vector>
 int
 QcPath<T, Vector>::nearest_vertex_index(const VertexType & point, T & distance) const
 {
@@ -248,14 +248,14 @@ QcPath<T, Vector>::nearest_vertex_index(const VertexType & point, T & distance) 
   return vertex_index_min;
 }
 
-template <typename T, template<typename T> class Vector>
+template <typename T, template<typename> class Vector>
 const typename QcPath<T, Vector>::VertexType &
 QcPath<T, Vector>::nearest_vertex(const VertexType & point, T & distance) const
 {
   return m_vertexes[nearest_vertex_index(point, distance)];
 }
 
-template <typename T, template<typename T> class Vector>
+template <typename T, template<typename> class Vector>
 const typename QcPath<T, Vector>::EdgeType &
 QcPath<T, Vector>::nearest_edge(const VertexType & point, T & distance, T & abscissa) const
 {
@@ -304,7 +304,7 @@ QcPath<T, Vector>::nearest_edge(const VertexType & point, T & distance, T & absc
   return _edges[edge_min];
 }
 
-template <typename T, template<typename T> class Vector>
+template <typename T, template<typename> class Vector>
 bool
 QcPath<T, Vector>::is_self_intersecting() const
 {
