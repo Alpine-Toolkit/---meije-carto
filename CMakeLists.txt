@@ -10,11 +10,8 @@
 
 # -D <var>:<type>=<value>: Create a cmake cache entry.
 
-# Ipl path
-# -D IPL_PATH:PATH=
-
 # Install path prefix, prepended onto install directories.
-# -D CMAKE_INSTALL_PREFIX:PATH=/usr/local/stow/bar
+# -D CMAKE_INSTALL_PREFIX:PATH=...
 
 # Choose the type of build, options are: None(CMAKE_CXX_FLAGS or
 # CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel.
