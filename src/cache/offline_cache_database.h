@@ -47,7 +47,7 @@
 class QcOfflineCacheDatabase : public QcSqliteDatabase
 {
 public:
-  QcOfflineCacheDatabase(QString sqlite_path);
+  QcOfflineCacheDatabase(const QString & sqlite_path);
   ~QcOfflineCacheDatabase();
 
   void insert_tile(const QcTileSpec & tile_spec);

@@ -51,7 +51,7 @@ const QString TILE = "tile";
 
 /**************************************************************************************************/
 
-QcOfflineCacheDatabase::QcOfflineCacheDatabase(QString sqlite_path)
+QcOfflineCacheDatabase::QcOfflineCacheDatabase(const QString & sqlite_path)
 {
   bool created = open(sqlite_path);
 
@@ -116,6 +116,7 @@ QcOfflineCacheDatabase::create_tables()
 void
 QcOfflineCacheDatabase::init_version()
 {
+  // Fixme: check api usage
   KeyValuePair kwargs;
   kwargs.insert(QStringLiteral("version"), 1);
   insert(QStringLiteral("metadata"), kwargs);
