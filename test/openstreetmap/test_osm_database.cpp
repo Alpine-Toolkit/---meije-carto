@@ -60,6 +60,8 @@ TestQcOsmDatabase::constructor()
 
   QcOsmDatabase osm_database(connection_data);
 
+  // Fixme: query visitor
+
   // const QString sql_query = "SELECT osm_id, ST_AsBinary(way) from planet_osm_point;";
   const QString sql_query = "SELECT osm_id, way from planet_osm_point;";
   //               01 01000020 31BF0D00 2D9ED55D34AF0140B45FD27366764840

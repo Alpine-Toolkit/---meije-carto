@@ -82,6 +82,8 @@ public:
   QcWgsCoordinate to_wgs(int64_t longitude, int64_t latitude);
   QcWgsCoordinateSmallFootprint to_wgs_small(int64_t longitude, int64_t latitude);
 
+  inline const QString & string(int32_t id) const { return m_string_table[id]; }
+
 private:
   void zlib_inflate();
   void lzma_inflate();
