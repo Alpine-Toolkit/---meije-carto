@@ -125,13 +125,17 @@ Application::main_task()
   // double latitude = 46.5;
 
   // Freissinieres
-  double longitude = 6.5383;
-  double latitude = 44.7523;
+  // double longitude = 6.5383;
+  // double latitude = 44.7523;
+
+  // Mont-dore
+  double longitude = 2.816;
+  double latitude = 45.54;
 
   QcWgsCoordinate center_wsg84(longitude, latitude);
   QcPseudoWebMercatorCoordinate center_mercator = center_wsg84.pseudo_web_mercator();
   QcVectorDouble center = center_mercator.vector();;
-  double radius_m = 40 * 1000;
+  double radius_m = 20 * 1000;
   QcVectorDouble half_diagonal_m(radius_m, radius_m);
 
   QcVectorDouble point1 = center + half_diagonal_m;
