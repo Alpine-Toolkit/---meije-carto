@@ -321,9 +321,18 @@ QcMapItem::send_mouse_event(QMouseEvent * event)
 bool
 QcMapItem::send_touch_event(QTouchEvent * event)
 {
-  QQuickWindowPrivate * _window = window() ? QQuickWindowPrivate::get(window()) : nullptr;
+  QQuickPointerDevice * touch_device = QQuickPointerDevice::touchDevice(event->device());
   const QTouchEvent::TouchPoint & point = event->touchPoints().first();
-  QQuickItem * grabber = _window ? _window->itemForTouchPointId.value(point.id()) : nullptr;
+  QQuickWindowPrivate * window_private = QQuickWindowPrivate::get(window());
+
+  auto touch_point_grabber_item = [touch_device, window_private](const QTouchEvent::TouchPoint & point) -> QQuickItem * {
+    if (QQuickEventPoint * event_pointer = window_private->pointerEventInstance(touch_device)->pointById(point.id()))
+      return event_pointer->grabber();
+    return nullptr;
+  };
+
+  QQuickItem * grabber = touch_point_grabber_item(point);
+
   // Fixme: faster ?
   bool is_mouse_area = QString(grabber->metaObject()->className()).startsWith(QStringLiteral("QQuickMouseArea"));
 
@@ -340,7 +349,7 @@ QcMapItem::send_touch_event(QTouchEvent * event)
 
     steal_event = m_gesture_area->is_active(); // recheck value
     // Fixme: duplicated code ???
-    grabber = _window ? _window->itemForTouchPointId.value(point.id()) : nullptr;
+    grabber = touch_point_grabber_item(point);
 
     if (grabber and steal_event and !grabber->keepTouchGrab() and grabber != this) {
       QVector<int> ids;
@@ -359,9 +368,9 @@ QcMapItem::send_touch_event(QTouchEvent * event)
 
   } else {
     // ungrab if necessary and deliver event
-    if (event->type() == QEvent::TouchEnd
-        and (_window and _window->itemForTouchPointId.value(point.id()) == this))
-      ungrabTouchPoints();
+    //old// if (event->type() == QEvent::TouchEnd
+    //old//     and (_window and _window->itemForTouchPointId.value(point.id()) == this))
+    //old//   ungrabTouchPoints();
     return false;
   }
 }
