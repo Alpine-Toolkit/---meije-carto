@@ -73,7 +73,7 @@ set(QTCARTO_VERSION ${QTCARTO_VERSION_MAJOR}.${QTCARTO_VERSION_MINOR}.${QTCARTO_
 #
 
 if(ANDROID)
- ADD_DEFINITIONS(-DON_ANDROID)
+  ADD_DEFINITIONS(-DON_ANDROID -DANDROID)
 endif(ANDROID)
 
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
@@ -169,17 +169,21 @@ endif(NOT ANDROID)
 # Find Protobuf
 #
 
-include(FindProtobuf)
-find_package(Protobuf REQUIRED)
-include_directories(${PROTOBUF_INCLUDE_DIR})
+if(NOT ANDROID)
+  include(FindProtobuf)
+  find_package(Protobuf REQUIRED)
+  include_directories(${PROTOBUF_INCLUDE_DIR})
+endif(NOT ANDROID)
 
 ####################################################################################################
 #
 # Find Zlib
 #
 
-find_package(ZLIB REQUIRED)
-include_directories(${ZLIB_INCLUDE_DIR})
+if(NOT ANDROID)
+  find_package(ZLIB REQUIRED)
+  include_directories(${ZLIB_INCLUDE_DIR})
+endif(NOT ANDROID)
 
 ####################################################################################################
 
