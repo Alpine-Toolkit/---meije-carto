@@ -44,8 +44,8 @@ set(PROJECT_INTERN_NAME PROJ)
 
 include(Proj4Version)
 proj_version(MAJOR 4 MINOR 9 PATCH 3)
-set(PROJ_API_VERSION "11")
-set(PROJ_BUILD_VERSION "11.0.0")
+set(PROJ_API_VERSION "12")
+set(PROJ_BUILD_VERSION "12.0.0")
 
 ####################################################################################################
 
@@ -87,6 +87,10 @@ endif(USE_THREAD AND NOT Threads_FOUND)
 
 ####################################################################################################
 
+if(ANDROID)
+ ADD_DEFINITIONS(-DANDROID)
+endif(ANDROID)
+
 add_definitions(-Dproj_EXPORTS)
 # add_definitions(-DNDEBUG)
 
@@ -113,6 +117,7 @@ SET(SRC_LIBPROJ_PJ
   PJ_boggs.c
   PJ_bonne.c
   PJ_calcofi.c
+  PJ_cart.c
   PJ_cass.c
   PJ_cc.c
   PJ_cea.c
@@ -139,6 +144,9 @@ SET(SRC_LIBPROJ_PJ
   PJ_gstmerc.c
   PJ_hammer.c
   PJ_hatano.c
+  PJ_helmert.c
+  PJ_hgridshift.c
+  PJ_horner.c
   PJ_igh.c
   PJ_isea.c
   PJ_imw_p.c
@@ -173,6 +181,7 @@ SET(SRC_LIBPROJ_PJ
   PJ_omerc.c
   PJ_ortho.c
   PJ_patterson.c
+  PJ_pipeline.c
   PJ_poly.c
   PJ_putp2.c
   PJ_putp3.c
@@ -190,6 +199,7 @@ SET(SRC_LIBPROJ_PJ
   PJ_sts.c
   PJ_tcc.c
   PJ_tcea.c
+  PJ_times.c
   PJ_tmerc.c
   PJ_tpeqd.c
   PJ_urm5.c
@@ -197,6 +207,7 @@ SET(SRC_LIBPROJ_PJ
   PJ_vandg.c
   PJ_vandg2.c
   PJ_vandg4.c
+  PJ_vgridshift.c
   PJ_wag2.c
   PJ_wag3.c
   PJ_wag7.c
@@ -237,6 +248,7 @@ SET(SRC_LIBPROJ_CORE
   pj_fwd3d.c
   pj_gauss.c
   pj_gc_reader.c
+  pj_generic_selftest.c
   pj_geocent.c
   pj_gridcatalog.c
   pj_gridinfo.c
@@ -254,12 +266,14 @@ SET(SRC_LIBPROJ_CORE
   pj_mlfn.c
   pj_msfn.c
   pj_mutex.c
+  pj_obs_api.c
   pj_open_lib.c
   pj_param.c
   pj_phi2.c
   pj_pr_list.c
   pj_qsfn.c
   pj_release.c
+  pj_run_selftests.c
   pj_strerrno.c
   pj_transform.c
   pj_tsfn.c
@@ -276,6 +290,7 @@ SET(SRC_LIBPROJ_CORE
 set(HEADERS_LIBPROJ
   projects.h
   proj_api.h
+  proj.h
   geodesic.h
   )
 
