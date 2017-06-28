@@ -5,6 +5,9 @@
 #BUILD_TYPE=Release
 BUILD_TYPE=Debug
 
+rm -f android.toolchain.cmake
+ln -sf /home/fabrice/home/developpement/qtcarto-application/android-build/android-cmake/android.toolchain.cmake
+
 cmake \
   -DCMAKE_TOOLCHAIN_FILE=android.toolchain.cmake \
   -DANDROID_NDK=/opt/android-ndk-r10e \
