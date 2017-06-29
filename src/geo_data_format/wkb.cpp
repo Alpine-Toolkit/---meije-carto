@@ -97,7 +97,8 @@ QcWkbGeometryType::QcWkbGeometryType(quint32 type)
   }
 
   if (m_base_type < 1 or m_base_type > Triangle)
-    throw std::invalid_argument("bad type");
+    qCritical() << QLatin1String("bad type") << m_base_type;
+  // throw std::invalid_argument("bad type");
 }
 
 QcWkbGeometryType::QcWkbGeometryType(const QString & type_name)
@@ -121,7 +122,8 @@ QcWkbGeometryType::QcWkbGeometryType(const QString & type_name)
   else if (are_string_equal(type_name, GeometryCollectionLabel))
     m_base_type = GeometryCollection;
   else
-    throw std::invalid_argument("bad type");
+    qCritical() << "bad type" << type_name;
+  // throw std::invalid_argument("bad type");
 }
 
 QcWkbGeometryType &
@@ -328,8 +330,8 @@ public:
   void
   throw_parser_error(const QString & error_message)
   {
-    qDebug() << QStringLiteral("Error") << m_stream.left(m_location) << '\n' << m_stream.right(m_location_end - m_location);
-    throw std::invalid_argument(error_message.toStdString().c_str());
+    qCritical() << m_stream.left(m_location) << '\n' << m_stream.right(m_location_end - m_location);
+    // throw std::invalid_argument(error_message.toStdString().c_str());
   }
 
   QcWkbGeometryType
@@ -630,7 +632,8 @@ QcWkbGeometryObject::write_header(QDataStream & stream, bool use_big_endian, boo
 {
   // Fixme: use_ewkb
   if (use_ewkb and !has_srid())
-    throw std::invalid_argument("ewkb require a valid srid");;
+    qCritical() << QLatin1String("ewkb require a valid srid");
+  // throw std::invalid_argument("ewkb require a valid srid");
   write_byte_order(stream, use_big_endian);
   quint32 type = geometry_type().to_wkb();
   stream << type;
@@ -661,7 +664,8 @@ QcWkbGeometryObject::init_from_binary(const QByteArray & bytes)
   if (type.has_srid())
     set_srid(read_srid(stream));
   if (type != geometry_type())
-    throw std::invalid_argument("wrong type");
+    qCritical() << QLatin1String("wrong type");
+  // throw std::invalid_argument("wrong type");
   set_from_binary(stream);
 }
 
